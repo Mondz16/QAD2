@@ -38,135 +38,172 @@ while ($row_company = $result_companies->fetch_assoc()) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>College and Programs</title>
-    <style>
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid black;
-            text-align: left;
-            padding: 8px;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-        }
-    </style>
+    <link rel="stylesheet" href="college_style.css">
 </head>
-<body>
-    <h2>University of Southeastern Philippines</h2>
-    
-    <table>
-        <caption>Colleges</caption>
-        <tr>
-            <th>College Code</th>
-            <th>College Name</th>
-            <th>Programs</th>
-            <th>Actions</th>
-        </tr>
-        <?php foreach ($collegePrograms as $id => $college): ?>
-        <tr>
-            <td><?php echo htmlspecialchars($college['college_code']); ?></td>
-            <td><?php echo htmlspecialchars($college['college_name']); ?></td>
-            <td>
-                <?php 
-                $programCount = count($college['programs']);
-                echo $programCount . " programs"; 
-                ?>
-                <button onclick="showPrograms(<?php echo $id; ?>)">Show All Programs</button>
-            </td>
-            <td>
-                <button onclick="location.href='edit_college.php?id=<?php echo $id; ?>'">Edit</button>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-    </table>
-    <br><button onclick="location.href='add_college.php'">Add College</button><br><br>
-    <br>
-    
-    <table>
-        <caption>Companies</caption>
-        <tr>
-            <th>Company Code</th>
-            <th>Company Name</th>
-            <th>Actions</th>
-        </tr>
-        <?php foreach ($companyDetails as $id => $company): ?>
-        <tr>
-            <td><?php echo htmlspecialchars($company['company_code']); ?></td>
-            <td><?php echo htmlspecialchars($company['company_name']); ?></td>
-            <td>
-                <button onclick="location.href='edit_company.php?id=<?php echo $id; ?>'">Edit</button>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-    </table>
 
-    <div id="programModal" class="modal">
-        <div class="modal-content">
-            <span onclick="closeModal()" style="float: right; cursor: pointer;">&times;</span>
-            <h2>Programs</h2>
-            <table>
+<body>
+    <div class="wrapper">
+        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+
+        <div class="container">
+            <div class="header">
+                <div class="headerLeft">
+                    <div class="USePData">
+                        <img class="USeP" src="images/USePLogo.png" height="36">
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div class="headerLeftText">
+                            <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                    <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                </h>
+                            </div>
+                            <h>Accreditor Portal</h>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="pageHeader">
+        <div class="headerRight">
+            <a class="btn" href="admin.php">Back</a>
+        </div>
+        <h2>University of Southeastern Philippines</h2>
+    </div>
+
+    <div class="container2">
+        <table>
+            <tr>
+                <th class="table_header" colspan="3">
+                    Colleges
+                </th>
+                <th class="button-container">
+                    <div>
+                        <button onclick="location.href='add_college.php'">Add College</button>
+                    </div>
+                </th>
+            </tr>
+            <tr>
+                <th>College Code</th>
+                <th>College Name</th>
+                <th>Programs</th>
+                <th>Actions</th>
+            </tr>
+            <?php foreach ($collegePrograms as $id => $college) : ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($college['college_code']); ?></td>
+                    <td><?php echo htmlspecialchars($college['college_name']); ?></td>
+                    <td>
+                        <?php
+                        $programCount = count($college['programs']);
+                        echo $programCount . " programs";
+                        ?>
+                    </td>
+                    <td>
+                        <button class="view_button" onclick="showPrograms(<?php echo $id; ?>)">View</button>
+                        <button class="edit_button" onclick="location.href='edit_college.php?id=<?php echo $id; ?>'">Edit</button>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+
+        <br>
+
+        <table>
+            <tr>
+                <th class="table_header" colspan="2">
+                    Company
+                </th>
+                <th class="button-container">
+                    <div>
+                        <button onclick="location.href='add_company.php'">Add Company</button>
+                    </div>
+                </th>
+            </tr>
+            <tr>
+                <th>Company Code</th>
+                <th>Company Name</th>
+                <th>Actions</th>
+            </tr>
+            <?php foreach ($companyDetails as $id => $company) : ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($company['company_code']); ?></td>
+                    <td><?php echo htmlspecialchars($company['company_name']); ?></td>
+                    <td>
+                        <button onclick="location.href='edit_company.php?id=<?php echo $id; ?>'">Edit</button>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+
+        <!-- Modal for showing programs -->
+        <div id="programModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Programs</h2>
+                <table id="modalTable">
+                    <tr>
+                        <th>Program</th>
+                        <th>Level</th>
+                        <th>Date Received</th>
+                    </tr>
+                    <!-- Program details will be populated here using JavaScript -->
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var modal = document.getElementById("programModal");
+        var span = document.getElementsByClassName("close")[0];
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function showPrograms(collegeId) {
+            var collegePrograms = <?php echo json_encode($collegePrograms); ?>;
+            var programs = collegePrograms[collegeId].programs;
+
+            var modalTable = document.getElementById("modalTable");
+            modalTable.innerHTML = `
                 <tr>
                     <th>Program</th>
                     <th>Level</th>
                     <th>Date Received</th>
                 </tr>
-                <tbody id="programDetails">
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <br><button onclick="location.href='add_company.php'">Add Company</button><br><br>
-    <button onclick="location.href='admin.php'">Back</button>
-    <script>
-        const collegePrograms = <?php echo json_encode($collegePrograms); ?>;
+            `;
 
-        function showPrograms(collegeId) {
-            const modal = document.getElementById('programModal');
-            const programDetails = document.getElementById('programDetails');
-            programDetails.innerHTML = '';
+            programs.forEach(function(program) {
+                var row = modalTable.insertRow();
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
 
-            collegePrograms[collegeId].programs.forEach(program => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${program.program}</td>
-                    <td>${program.level}</td>
-                    <td>${program.date_received}</td>
-                `;
-                programDetails.appendChild(row);
+                cell1.innerHTML = program.program;
+                cell2.innerHTML = program.level;
+                cell3.innerHTML = program.date_received;
             });
 
-            modal.style.display = 'block';
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('programModal');
-            modal.style.display = 'none';
+            modal.style.display = "block";
         }
     </script>
 </body>
+
 </html>
