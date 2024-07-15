@@ -1,0 +1,83 @@
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f8f8;
+    color: #333;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 10px;
+}
+
+/* Header and Navigation Styles */
+.site-header {
+    background-color: #dc3545; /* Same color as the login button */
+    padding: 10px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.site-header nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.site-header .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.site-header .nav-list li {
+    margin: 0 10px;
+}
+
+.site-header .nav-list li a {
+    text-decoration: none;
+    color: white;
+    padding: 10px 15px;
+    display: block;
+    transition: background-color 0.3s ease;
+}
+
+.site-header .nav-list li a:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.site-header .nav-list li.btn a {
+    background-color: white;
+    color: #dc3545;
+    border-radius: 5px;
+    padding: 10px 20px;
+}
+
+.site-header .nav-list li.btn a:hover {
+    background-color: #ffc2c3;
+    color: #dc3545;
+}
+
+/* Main Content Styles */
+.admin-content {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.admin-content h1 {
+    color: #dc3545;
+    margin-bottom: 20px;
+}
+
+.admin-content p {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #666;
+}
