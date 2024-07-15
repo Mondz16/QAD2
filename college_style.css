@@ -6,46 +6,91 @@
     font-family: "Quicksand", sans-serif;
 }
 
-body {
-    background-color: #f8f9fa;
-}
-
 .container {
     max-width: 1280px;
-    padding: 0 24px;
+    padding-left: 24px;
+    padding-right: 24px;
     width: 100%;
-    margin: 0 auto;
+    display: block;
     box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.container2{
-    max-width: 1500px;
-    padding: 0 24px;
-    width: 100%;
-    margin: 0 auto;
-    box-sizing: border-box;
+h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 10px;
 }
 
 .header {
     height: 58px;
     width: 100%;
     display: flex;
+    flex-flow: unset;
     justify-content: space-between;
     align-items: center;
+    align-content: unset;
+    overflow: unset;
 }
 
 .headerLeft {
-    display: flex;
-    align-items: center;
+    order: unset;
+    flex: unset;
+    align-self: unset;
 }
 
 .USePData {
+    height: 100%;
+    width: 100%;
     display: flex;
+    flex-flow: unset;
+    place-content: unset;
     align-items: center;
+    overflow: unset;
+}
+
+.headerLeftText {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: unset;
+    place-content: unset;
+    align-items: unset;
+    overflow: unset;
+    font-size: 18px;
+}
+
+.headerRight {
+    order: unset;
+    flex: unset;
+    align-self: unset;
+}
+
+.SDMD {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    place-content: unset;
+    align-items: center;
+    overflow: unset;
+}
+
+.headerRightText {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: unset;
+    place-content: unset;
+    align-items: flex-end;
+    overflow: unset;
+    text-align: right;
 }
 
 .headerLeftText h1, .headerLeftText h2 {
     margin: 0;
+    padding: 0;
 }
 
 .headerRight .btn {
@@ -71,6 +116,14 @@ body {
     margin-bottom: 30px;
 }
 
+
+.container2{
+    max-width: 1500px;
+    padding: 0 24px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
 
 h2 {
     text-align: center;

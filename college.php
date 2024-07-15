@@ -52,8 +52,8 @@ while ($row_company = $result_companies->fetch_assoc()) {
 
         <div class="container">
             <div class="header">
-                <div class="headerLeft">
-                    <div class="USePData">
+                 <div class="headerLeft">
+                    <div class=USePData>
                         <img class="USeP" src="images/USePLogo.png" height="36">
                         <div style="height: 0px; width: 16px;"></div>
                         <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
@@ -63,15 +63,15 @@ while ($row_company = $result_companies->fetch_assoc()) {
                                 <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
                                     <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
                                     <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
-                                </h>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span></h>
                             </div>
-                            <h>Accreditor Portal</h>
+                                <h>Accreditor Portal</h>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
     </div>
     
     <div class="pageHeader">
