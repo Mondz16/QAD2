@@ -73,40 +73,6 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
-$sql = "CREATE TABLE IF NOT EXISTS internal_pending_registrations (
-    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    type VARCHAR(255) NOT NULL,
-    first_name VARCHAR(255) NOT NULL,
-    middle_initial VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    usep_email VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    college VARCHAR(255) NOT NULL
-)";
-
-if ($conn->query($sql) === TRUE) {
-    echo "Table internal_pending_registrations created successfully<br>";
-} else {
-    echo "Error creating table: " . $conn->error . "<br>";
-}
-
-$sql = "CREATE TABLE IF NOT EXISTS external_pending_registrations (
-    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    type VARCHAR(255) NOT NULL,
-    first_name VARCHAR(255) NOT NULL,
-    middle_initial VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    usep_email VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    company VARCHAR(255) NOT NULL
-)";
-
-if ($conn->query($sql) === TRUE) {
-    echo "Table external_pending_registrations created successfully<br>";
-} else {
-    echo "Error creating table: " . $conn->error . "<br>";
-}
-
 $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     user_id VARCHAR(255) PRIMARY KEY,
     type VARCHAR(255) NOT NULL,
@@ -115,7 +81,8 @@ $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     last_name VARCHAR(255) NOT NULL,
     usep_email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    college VARCHAR(255) NOT NULL
+    college VARCHAR(255) NOT NULL,
+    status ENUM('pending', 'approved', 'denied') NOT NULL DEFAULT 'pending'
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -132,7 +99,8 @@ $sql = "CREATE TABLE IF NOT EXISTS external_users (
     last_name VARCHAR(255) NOT NULL,
     usep_email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    company VARCHAR(255) NOT NULL
+    company VARCHAR(255) NOT NULL,
+    status ENUM('pending', 'approved') NOT NULL DEFAULT 'pending'
 )";
 
 if ($conn->query($sql) === TRUE) {
