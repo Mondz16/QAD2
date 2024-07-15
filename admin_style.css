@@ -1,64 +1,109 @@
-/* General Styles */
-body {
-    font-family: 'Arial', sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap');
+* {
     margin: 0;
     padding: 0;
-    background-color: #f8f8f8;
-    color: #333;
+    box-sizing: border-box;
+    font-family: "Quicksand", sans-serif;
+}
+
+.container {
+    max-width: 1280px;
+    padding-left: 24px;
+    padding-right: 24px;
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 h1, h2, h3, h4, h5, h6 {
     margin: 0 0 10px;
 }
 
-/* Header and Navigation Styles */
-.site-header {
-    background-color: #dc3545; /* Same color as the login button */
-    padding: 10px 0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.site-header nav {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-.site-header .nav-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+.header {
+    height: 58px;
+    width: 100%;
     display: flex;
+    flex-flow: unset;
     justify-content: space-between;
     align-items: center;
+    align-content: unset;
+    overflow: unset;
 }
 
-.site-header .nav-list li {
-    margin: 0 10px;
+.headerLeft {
+    order: unset;
+    flex: unset;
+    align-self: unset;
 }
 
-.site-header .nav-list li a {
-    text-decoration: none;
+.USePData {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    place-content: unset;
+    align-items: center;
+    overflow: unset;
+}
+
+.headerLeftText {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: unset;
+    place-content: unset;
+    align-items: unset;
+    overflow: unset;
+    font-size: 18px;
+}
+
+.headerRight {
+    order: unset;
+    flex: unset;
+    align-self: unset;
+}
+
+.SDMD {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    place-content: unset;
+    align-items: center;
+    overflow: unset;
+}
+
+.headerRightText {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: unset;
+    place-content: unset;
+    align-items: flex-end;
+    overflow: unset;
+    text-align: right;
+}
+
+.headerLeftText h1, .headerLeftText h2 {
+    margin: 0;
+    padding: 0;
+}
+
+.headerRight .btn {
+    background-color: #dc3545;
     color: white;
-    padding: 10px 15px;
-    display: block;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
     transition: background-color 0.3s ease;
 }
 
-.site-header .nav-list li a:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-.site-header .nav-list li.btn a {
-    background-color: white;
-    color: #dc3545;
-    border-radius: 5px;
-    padding: 10px 20px;
-}
-
-.site-header .nav-list li.btn a:hover {
-    background-color: #ffc2c3;
-    color: #dc3545;
+.headerRight .btn:hover {
+    background-color: #b82c3b;
 }
 
 /* Main Content Styles */
@@ -72,7 +117,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .admin-content h1 {
-    color: #dc3545;
+    color: rgb(87, 87, 87);
     margin-bottom: 20px;
 }
 
@@ -80,4 +125,41 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 16px;
     line-height: 1.5;
     color: #666;
+}
+
+/* Navigation Styles */
+nav {
+    margin: 50px auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 1000px;
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    display: contents;
+}
+
+.nav-list li {
+    background-color: white;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nav-list li:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.nav-list li a {
+    text-decoration: none;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
 }
