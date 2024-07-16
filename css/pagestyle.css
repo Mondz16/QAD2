@@ -69,3 +69,72 @@ body {
         text-align: center; /* Center content on mobile */
     }
 }
+.account-type-selection {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.account-type-option {
+    border: 1px solid #ced4da;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s, color 0.3s;
+    position: relative;
+}
+
+.account-type-option input {
+    display: none;
+}
+
+.account-type-option::before {
+    content: '';
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid #ced4da;
+    background-color: white;
+    margin-right: 10px;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.account-type-option.selected {
+    background: linear-gradient(275.52deg, #FF7A7A 0.28%, #E6A33E 100%);
+    color: white;
+}
+
+.account-type-option.selected::before {
+    background: linear-gradient(275.52deg, #FF7A7A 0.28%, #E6A33E 100%);
+    border-color: white;
+}
+
+.account-type-option.selected .circle {
+    background-color: white;
+}
+.stbtn {
+    color: white;
+    background: linear-gradient(275.52deg, #FF7A7A 0.28%, #E6A33E 100%); 
+    border: 1px solid #ced4da;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s, color 0.3s;
+    position: relative;
+}
+.lbtn {
+    color: black;
+    font-size: 0.9em;
+    background: white; 
+    border: 2px solid #ced4da;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    align-items: center;
+    position: relative;
+}
