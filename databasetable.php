@@ -82,7 +82,7 @@ $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     usep_email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     college VARCHAR(255) NOT NULL,
-    status ENUM('pending', 'approved', 'denied') NOT NULL DEFAULT 'pending'
+    status ENUM('pending', 'approved') NOT NULL DEFAULT 'pending'
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -131,7 +131,7 @@ $sql = "CREATE TABLE IF NOT EXISTS team (
     mi VARCHAR(10) NOT NULL,
     lname VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
-    status ENUM('pending', 'accept', 'decline') NOT NULL DEFAULT 'pending',
+    status ENUM('pending', 'accepted') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (schedule_id) REFERENCES schedule(id)
 )";
 
@@ -147,6 +147,24 @@ $sql = "CREATE TABLE IF NOT EXISTS notifications (
     message TEXT NOT NULL,
     is_read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table team_members created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+$sql = "CREATE TABLE IF NOT EXISTS assessment (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    team_id INT(6) UNSIGNED,
+    result VARCHAR(255) NOT NULL,
+    area_evaluated VARCHAR(10) NOT NULL,
+    findings VARCHAR(255) NOT NULL,
+    recommendations VARCHAR(255) NOT NULL,
+    evaluator VARCHAR(255) NOT NULL,
+    evaluator_signature VARCHAR(255) NOT NULL,
+    FOREIGN KEY (team_id) REFERENCES team(id)
 )";
 
 if ($conn->query($sql) === TRUE) {
