@@ -144,7 +144,6 @@ nav {
 
 .nav-list li {
     background-color: white;
-    padding: 20px;
     text-align: center;
     border: 1px solid #e5e5e5;
     border-radius: 8px;
@@ -162,4 +161,8 @@ nav {
     color: #333;
     font-size: 16px;
     font-weight: 600;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
 }
