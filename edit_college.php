@@ -35,6 +35,7 @@ while ($row = $programs_result->fetch_assoc()) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit College</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
+
     <style>
         * {
             margin: 0;
@@ -274,6 +275,7 @@ while ($row = $programs_result->fetch_assoc()) {
             </div>
             <form action="edit_college_process.php" method="post">
                 <input type="hidden" name="college_id" value="<?php echo $college_id; ?>">
+                <input type="hidden" name="removed_program_ids" id="removed_program_ids" value="">
                 <div class="form-group">
                     <label for="college_name">College Name:</label>
                     <input type="text" id="college_name" name="college_name" value="<?php echo htmlspecialchars($college['college_name']); ?>" required>
@@ -292,42 +294,48 @@ while ($row = $programs_result->fetch_assoc()) {
                         <label for="date_received_<?php echo $index + 1; ?>">Date Received:</label>
                         <input type="date" id="date_received_<?php echo $index + 1; ?>" name="dates_received[]" value="<?php echo htmlspecialchars($program['date_received']); ?>" required>
                         <div class="btn-group">
-                            <button type="button" class="remove-program-button" onclick="removeProgram(this)">Remove Program</button>
+                            <button type="button" class="remove-program-button" onclick="removeProgram(this, <?php echo htmlspecialchars($program['id']); ?>)">Remove Program</button>
                         </div>
                     </div>
                 <?php endforeach; ?>
                 <div class="form-buttons">
                     <input type="submit" class="update-college-button" value="Update College">
-                    <button type="button" class="add-program-button" onclick="addProgram(this)">Add Program</button>
+                    <button type="button" class="add-program-button" onclick="addProgram()">Add Program</button>
                 </div>
             </form>
-
         </div>
 
         <script>
-            function addProgram(btn) {
+            let removedProgramIds = [];
+
+            function addProgram() {
                 const formButtons = document.querySelector('.form-buttons');
                 const newProgramDiv = document.createElement('div');
                 newProgramDiv.classList.add('form-group', 'programs');
                 newProgramDiv.innerHTML = `
-                <label for="new_program">Program:</label>
-                <input type="text" id="new_program" name="new_programs[]" required>
-                <label for="new_level">Level:</label>
-                <input type="text" id="new_level" name="new_levels[]" required>
-                <label for="new_date_received">Date Received:</label>
-                <input type="date" id="new_date_received" name="new_dates_received[]" required>
-                <div class="btn-group">
-                    <button type="button" class="remove-program-button" onclick="removeProgram(this)">Remove Program</button>
-                </div>
-            `;
+                    <label for="new_program">Program:</label>
+                    <input type="text" id="new_program" name="new_programs[]" required>
+                    <label for="new_level">Level:</label>
+                    <input type="text" id="new_level" name="new_levels[]" required>
+                    <label for="new_date_received">Date Received:</label>
+                    <input type="date" id="new_date_received" name="new_dates_received[]" required>
+                    <div class="btn-group">
+                        <button type="button" class="remove-program-button" onclick="removeProgram(this)">Remove Program</button>
+                    </div>
+                `;
                 formButtons.parentNode.insertBefore(newProgramDiv, formButtons);
             }
 
-            function removeProgram(btn) {
+            function removeProgram(btn, programId = null) {
+                if (programId) {
+                    removedProgramIds.push(programId);
+                    document.getElementById('removed_program_ids').value = removedProgramIds.join(',');
+                }
                 const programDiv = btn.parentNode.parentNode;
                 programDiv.parentNode.removeChild(programDiv);
             }
         </script>
+    </div>
 </body>
 
 </html>
