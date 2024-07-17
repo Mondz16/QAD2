@@ -86,9 +86,5 @@
     </table>
     </div>
 </body>
-<<<<<<< Updated upstream
 
 </html>
-=======
-</html>
->>>>>>> Stashed changes
