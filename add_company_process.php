@@ -4,7 +4,6 @@ session_start();
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -71,7 +70,6 @@ session_start();
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <h2>Operation Result</h2>
@@ -82,32 +80,44 @@ session_start();
 
                 include 'connection.php';
 
-                $sql = "SELECT MAX(company_code) AS max_code FROM company";
-                $result = $conn->query($sql);
-                $row = $result->fetch_assoc();
-                $max_code = $row['max_code'];
+                // Check if the company name already exists
+                $check_stmt = $conn->prepare("SELECT * FROM company WHERE company_name = ?");
+                $check_stmt->bind_param("s", $company_name);
+                $check_stmt->execute();
+                $result = $check_stmt->get_result();
 
-                if ($max_code === null || $max_code < 20) {
-                    $new_company_code = 21;
+                if ($result->num_rows > 0) {
+                    echo "<p class='error'>Error: Company name already exists. <a href='add_company.php'>Try again</a></p>";
                 } else {
-                    $new_company_code = $max_code + 1;
-                }
+                    // Proceed with adding the company if no duplicate is found
+                    $sql = "SELECT MAX(company_code) AS max_code FROM company";
+                    $result = $conn->query($sql);
+                    $row = $result->fetch_assoc();
+                    $max_code = $row['max_code'];
 
-                if ($new_company_code > 35) {
-                    echo "<p class='error'>Error: Maximum number of companies reached. <a href='college.php'>Back to Colleges and Companies</a></p>";
-                } else {
-                    $stmt = $conn->prepare("INSERT INTO company (company_code, company_name) VALUES (?, ?)");
-                    $stmt->bind_param("is", $new_company_code, $company_name);
-
-                    if ($stmt->execute()) {
-                        echo "<p class='success'>Company added successfully.</p>";
+                    if ($max_code === null || $max_code < 20) {
+                        $new_company_code = 21;
                     } else {
-                        echo "<p class='error'>Error: " . $stmt->error . "</p>";
+                        $new_company_code = $max_code + 1;
                     }
 
-                    $stmt->close();
+                    if ($new_company_code > 35) {
+                        echo "<p class='error'>Error: Maximum number of companies reached. <a href='college.php'>Back to Colleges and Companies</a></p>";
+                    } else {
+                        $stmt = $conn->prepare("INSERT INTO company (company_code, company_name) VALUES (?, ?)");
+                        $stmt->bind_param("is", $new_company_code, $company_name);
+
+                        if ($stmt->execute()) {
+                            echo "<p class='success'>Company added successfully.</p>";
+                        } else {
+                            echo "<p class='error'>Error: " . $stmt->error . "</p>";
+                        }
+
+                        $stmt->close();
+                    }
                 }
 
+                $check_stmt->close();
                 $conn->close();
             }
             ?>
@@ -115,5 +125,4 @@ session_start();
         <button class="button-primary" onclick="window.location.href='college.php'">OK</button>
     </div>
 </body>
-
 </html>
