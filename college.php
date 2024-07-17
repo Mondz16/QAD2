@@ -1,7 +1,7 @@
 <?php
 include 'connection.php';
 
-$sql_colleges = "SELECT id, college_code, college_name FROM college ORDER BY id ASC";
+$sql_colleges = "SELECT id, college_code, college_name, college_email FROM college ORDER BY id ASC";
 $result_colleges = $conn->query($sql_colleges);
 
 $collegePrograms = [];
@@ -9,6 +9,7 @@ while ($row_college = $result_colleges->fetch_assoc()) {
     $collegePrograms[$row_college['id']] = [
         'college_code' => $row_college['college_code'],
         'college_name' => $row_college['college_name'],
+        'college_email' => $row_college['college_email'],
         'programs' => []
     ];
 }
@@ -84,6 +85,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
         <tr>
             <th>College Code</th>
             <th>College Name</th>
+            <th>College Email</th>
             <th>Programs</th>
             <th>Actions</th>
         </tr>
@@ -91,6 +93,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
         <tr>
             <td><?php echo htmlspecialchars($college['college_code']); ?></td>
             <td><?php echo htmlspecialchars($college['college_name']); ?></td>
+            <td><?php echo htmlspecialchars($college['college_email']); ?></td>
             <td>
                 <?php 
                 $programCount = count($college['programs']);

@@ -11,6 +11,7 @@ if ($conn->connect_error) {
 }
 
 $college_name = $_POST['college_name'];
+$college_email = $_POST['college_email'];
 $programs = $_POST['programs'];
 $levels = $_POST['levels'];
 $dates_received = $_POST['dates_received'];
@@ -30,9 +31,9 @@ if (intval($next_code) > 15) {
     die("All college codes from 01 to 15 have been used.");
 }
 
-$sql = "INSERT INTO college (college_code, college_name) VALUES (?, ?)";
+$sql = "INSERT INTO college (college_code, college_name, college_email) VALUES (?, ?, ?)";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ss", $next_code, $college_name);
+$stmt->bind_param("sss", $next_code, $college_name, $college_email);
 
 if ($stmt->execute()) {
     echo "College added successfully with code $next_code.<br>";
