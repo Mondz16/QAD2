@@ -129,6 +129,7 @@ while ($row = $programs_result->fetch_assoc()) {
         }
 
         input[type="text"],
+        input[type="email"],
         input[type="date"] {
             width: 100%;
             padding: 10px;
@@ -237,7 +238,6 @@ while ($row = $programs_result->fetch_assoc()) {
 </head>
 
 <body>
-<<<<<<< Updated upstream
     <div class="wrapper">
         <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
 
@@ -260,80 +260,56 @@ while ($row = $programs_result->fetch_assoc()) {
                             <h>Accreditor Portal</h>
                         </div>
                     </div>
-=======
-    <h2>Edit College</h2>
-    <form action="edit_college_process.php" method="post">
-        <input type="hidden" name="college_id" value="<?php echo $college_id; ?>">
-        <div class="form-group">
-            <label for="college_name">College Name:</label>
-            <input type="text" id="college_name" name="college_name" value="<?php echo htmlspecialchars($college['college_name']); ?>" required>
-        </div>
-        <div class="form-group">
-            <label for="college_email">College Email:</label>
-            <input type="email" id="college_email" name="college_email" value="<?php echo htmlspecialchars($college['college_email']); ?>" required>
-        </div>
-        <?php foreach ($programs as $index => $program): ?>
-            <div class="form-group programs">
-                <input type="hidden" name="program_ids[]" value="<?php echo htmlspecialchars($program['id']); ?>">
-                <label for="program_<?php echo $index + 1; ?>">Program:</label>
-                <input type="text" id="program_<?php echo $index + 1; ?>" name="programs[]" value="<?php echo htmlspecialchars($program['program']); ?>" required>
-                <label for="level_<?php echo $index + 1; ?>">Level:</label>
-                <input type="text" id="level_<?php echo $index + 1; ?>" name="levels[]" value="<?php echo htmlspecialchars($program['level']); ?>" required>
-                <label for="date_received_<?php echo $index + 1; ?>">Date Received:</label>
-                <input type="date" id="date_received_<?php echo $index + 1; ?>" name="dates_received[]" value="<?php echo htmlspecialchars($program['date_received']); ?>" required>
-                <div class="btn-group">
-                    <?php if ($index === count($programs) - 1): ?>
-                        <button type="button" class="add-btn" onclick="addProgram(this)">Add Program</button>
-                    <?php endif; ?>
-                    <button type="button" class="remove-btn" onclick="removeProgram(this)">Remove Program</button>
->>>>>>> Stashed changes
                 </div>
             </div>
         </div>
-        <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
-    </div>
-    <div class="container2">
 
-        <div class="pageHeader">
-            <div class="headerRight">
-                <a class="btn" href="college.php">Back</a>
+
+        <div class="container2">
+            <div class="pageHeader">
+                <div class="headerRight">
+                    <a class="btn" href="college.php">Back</a>
+                </div>
+                <h2>Edit College</h2>
             </div>
-            <h2>Edit College</h2>
-        </div>
-        <form action="edit_college_process.php" method="post">
-            <input type="hidden" name="college_id" value="<?php echo $college_id; ?>">
-            <div class="form-group">
-                <label for="college_name">College Name:</label>
-                <input type="text" id="college_name" name="college_name" value="<?php echo htmlspecialchars($college['college_name']); ?>" required>
-            </div>
-            <?php foreach ($programs as $index => $program) : ?>
-                <div class="form-group programs">
-                    <input type="hidden" name="program_ids[]" value="<?php echo htmlspecialchars($program['id']); ?>">
-                    <label for="program_<?php echo $index + 1; ?>">Program:</label>
-                    <input type="text" id="program_<?php echo $index + 1; ?>" name="programs[]" value="<?php echo htmlspecialchars($program['program']); ?>" required>
-                    <label for="level_<?php echo $index + 1; ?>">Level:</label>
-                    <input type="text" id="level_<?php echo $index + 1; ?>" name="levels[]" value="<?php echo htmlspecialchars($program['level']); ?>" required>
-                    <label for="date_received_<?php echo $index + 1; ?>">Date Received:</label>
-                    <input type="date" id="date_received_<?php echo $index + 1; ?>" name="dates_received[]" value="<?php echo htmlspecialchars($program['date_received']); ?>" required>
-                    <div class="btn-group">
-                        <button type="button" class="remove-program-button" onclick="removeProgram(this)">Remove Program</button>
+            <form action="edit_college_process.php" method="post">
+                <input type="hidden" name="college_id" value="<?php echo $college_id; ?>">
+                <div class="form-group">
+                    <label for="college_name">College Name:</label>
+                    <input type="text" id="college_name" name="college_name" value="<?php echo htmlspecialchars($college['college_name']); ?>" required>
+                </div>
+                <div class="form-group">
+                    <label for="college_email">College Email:</label>
+                    <input type="email" id="college_email" name="college_email" value="<?php echo htmlspecialchars($college['college_email']); ?>" required>
+                </div>
+                <?php foreach ($programs as $index => $program) : ?>
+                    <div class="form-group programs">
+                        <input type="hidden" name="program_ids[]" value="<?php echo htmlspecialchars($program['id']); ?>">
+                        <label for="program_<?php echo $index + 1; ?>">Program:</label>
+                        <input type="text" id="program_<?php echo $index + 1; ?>" name="programs[]" value="<?php echo htmlspecialchars($program['program']); ?>" required>
+                        <label for="level_<?php echo $index + 1; ?>">Level:</label>
+                        <input type="text" id="level_<?php echo $index + 1; ?>" name="levels[]" value="<?php echo htmlspecialchars($program['level']); ?>" required>
+                        <label for="date_received_<?php echo $index + 1; ?>">Date Received:</label>
+                        <input type="date" id="date_received_<?php echo $index + 1; ?>" name="dates_received[]" value="<?php echo htmlspecialchars($program['date_received']); ?>" required>
+                        <div class="btn-group">
+                            <button type="button" class="remove-program-button" onclick="removeProgram(this)">Remove Program</button>
+                        </div>
                     </div>
+                <?php endforeach; ?>
+                <div class="form-buttons">
+                    <input type="submit" class="update-college-button" value="Update College">
+                    <button type="button" class="add-program-button" onclick="addProgram(this)">Add Program</button>
                 </div>
-            <?php endforeach; ?>
-            <div class="form-buttons">
-                <input type="submit" class="update-college-button" value="Update College">
-                <button type="button" class="add-program-button" onclick="addProgram(this)">Add Program</button>
-            </div>
-        </form>
+            </form>
 
-    </div>
+        </div>
 
-    <script>
-        function addProgram(btn) {
-            const formButtons = document.querySelector('.form-buttons');
-            const newProgramDiv = document.createElement('div');
-            newProgramDiv.classList.add('form-group', 'programs');
-            newProgramDiv.innerHTML = `
+        <script>
+            function addProgram(btn) {
+                const formButtons = document.querySelector('.form-buttons');
+                const newProgramDiv = document.createElement('div');
+                newProgramDiv.classList.add('form-group', 'programs');
+                newProgramDiv.innerHTML = `
                 <label for="new_program">Program:</label>
                 <input type="text" id="new_program" name="new_programs[]" required>
                 <label for="new_level">Level:</label>
@@ -344,14 +320,14 @@ while ($row = $programs_result->fetch_assoc()) {
                     <button type="button" class="remove-program-button" onclick="removeProgram(this)">Remove Program</button>
                 </div>
             `;
-            formButtons.parentNode.insertBefore(newProgramDiv, formButtons);
-        }
+                formButtons.parentNode.insertBefore(newProgramDiv, formButtons);
+            }
 
-        function removeProgram(btn) {
-            const programDiv = btn.parentNode.parentNode;
-            programDiv.parentNode.removeChild(programDiv);
-        }
-    </script>
+            function removeProgram(btn) {
+                const programDiv = btn.parentNode.parentNode;
+                programDiv.parentNode.removeChild(programDiv);
+            }
+        </script>
 </body>
 
 </html>

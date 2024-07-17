@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
     $action = $_POST['action'];
 
-    $sql = "SELECT * FROM internal_pending_registrations WHERE id = ?";
+    $sql = "SELECT * FROM internal_users WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id);
     $stmt->execute();
@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_type = "internal";
 
     if ($result->num_rows == 0) {
-        $sql = "SELECT * FROM external_pending_registrations WHERE id = ?";
+        $sql = "SELECT * FROM external_users WHERE user_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();

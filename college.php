@@ -46,59 +46,6 @@ while ($row_company = $result_companies->fetch_assoc()) {
     <title>College and Programs</title>
     <link rel="stylesheet" href="college_style.css">
 </head>
-<<<<<<< Updated upstream
-=======
-<body>
-    <h2>University of Southeastern Philippines</h2>
-    
-    <table>
-        <caption>Colleges</caption>
-        <tr>
-            <th>College Code</th>
-            <th>College Name</th>
-            <th>College Email</th>
-            <th>Programs</th>
-            <th>Actions</th>
-        </tr>
-        <?php foreach ($collegePrograms as $id => $college): ?>
-        <tr>
-            <td><?php echo htmlspecialchars($college['college_code']); ?></td>
-            <td><?php echo htmlspecialchars($college['college_name']); ?></td>
-            <td><?php echo htmlspecialchars($college['college_email']); ?></td>
-            <td>
-                <?php 
-                $programCount = count($college['programs']);
-                echo $programCount . " programs"; 
-                ?>
-                <button onclick="showPrograms(<?php echo $id; ?>)">Show All Programs</button>
-            </td>
-            <td>
-                <button onclick="location.href='edit_college.php?id=<?php echo $id; ?>'">Edit</button>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-    </table>
-    <br><button onclick="location.href='add_college.php'">Add College</button><br><br>
-    <br>
-    
-    <table>
-        <caption>Companies</caption>
-        <tr>
-            <th>Company Code</th>
-            <th>Company Name</th>
-            <th>Actions</th>
-        </tr>
-        <?php foreach ($companyDetails as $id => $company): ?>
-        <tr>
-            <td><?php echo htmlspecialchars($company['company_code']); ?></td>
-            <td><?php echo htmlspecialchars($company['company_name']); ?></td>
-            <td>
-                <button onclick="location.href='edit_company.php?id=<?php echo $id; ?>'">Edit</button>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-    </table>
->>>>>>> Stashed changes
 
 <body>
     <div class="wrapper">
@@ -138,7 +85,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
     <div class="container2">
         <table>
             <tr>
-                <th class="table_header" colspan="3">
+                <th class="table_header" colspan="4">
                     Colleges
                 </th>
                 <th class="button-container">
@@ -150,6 +97,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
             <tr>
                 <th>College Code</th>
                 <th>College Name</th>
+                <th>College Email</th>
                 <th>Programs</th>
                 <th>Actions</th>
             </tr>
@@ -157,6 +105,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
                 <tr>
                     <td><?php echo htmlspecialchars($college['college_code']); ?></td>
                     <td><?php echo htmlspecialchars($college['college_name']); ?></td>
+                    <td><?php echo htmlspecialchars($college['college_email']); ?></td>
                     <td>
                         <?php
                         $programCount = count($college['programs']);

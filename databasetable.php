@@ -69,40 +69,6 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
-$sql = "CREATE TABLE IF NOT EXISTS internal_pending_registrations (
-    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    type VARCHAR(255) NOT NULL,
-    first_name VARCHAR(255) NOT NULL,
-    middle_initial VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    usep_email VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    college VARCHAR(255) NOT NULL
-)";
-
-if ($conn->query($sql) === TRUE) {
-    echo "Table internal_pending_registrations created successfully<br>";
-} else {
-    echo "Error creating table: " . $conn->error . "<br>";
-}
-
-$sql = "CREATE TABLE IF NOT EXISTS external_pending_registrations (
-    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    type VARCHAR(255) NOT NULL,
-    first_name VARCHAR(255) NOT NULL,
-    middle_initial VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    usep_email VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    company VARCHAR(255) NOT NULL
-)";
-
-if ($conn->query($sql) === TRUE) {
-    echo "Table external_pending_registrations created successfully<br>";
-} else {
-    echo "Error creating table: " . $conn->error . "<br>";
-}
-
 $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     user_id VARCHAR(255) PRIMARY KEY,
     college_id INT(6) UNSIGNED,
@@ -111,12 +77,8 @@ $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     last_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-<<<<<<< Updated upstream
-    college VARCHAR(255) NOT NULL
-=======
     status ENUM('pending', 'approved') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (college_id) REFERENCES college(id)
->>>>>>> Stashed changes
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -133,13 +95,9 @@ $sql = "CREATE TABLE IF NOT EXISTS external_users (
     last_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-<<<<<<< Updated upstream
-    company VARCHAR(255) NOT NULL
-=======
     company VARCHAR(255) NOT NULL,
     status ENUM('pending', 'approved') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (company_id) REFERENCES company(id)
->>>>>>> Stashed changes
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -170,14 +128,9 @@ $sql = "CREATE TABLE IF NOT EXISTS team (
     schedule_id INT(6) UNSIGNED,
     internal_users_id VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
-<<<<<<< Updated upstream
-    status ENUM('pending', 'accept', 'decline') NOT NULL DEFAULT 'pending',
-    FOREIGN KEY (schedule_id) REFERENCES schedule(id)
-=======
     status ENUM('pending', 'accepted') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (schedule_id) REFERENCES schedule(id),
     FOREIGN KEY (internal_users_id) REFERENCES internal_users(user_id)
->>>>>>> Stashed changes
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -200,9 +153,6 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
-<<<<<<< Updated upstream
-$sql_check_admin = "SELECT * FROM users WHERE user_id = 'admin'";
-=======
 $sql = "CREATE TABLE IF NOT EXISTS assessment (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     team_id INT(6) UNSIGNED,
@@ -223,7 +173,6 @@ if ($conn->query($sql) === TRUE) {
 }
 
 $sql_check_admin = "SELECT * FROM admin WHERE user_id = 'admin'";
->>>>>>> Stashed changes
 $result_check_admin = $conn->query($sql_check_admin);
 
 if ($result_check_admin->num_rows === 0) {
