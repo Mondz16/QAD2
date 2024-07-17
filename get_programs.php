@@ -4,18 +4,21 @@ include 'connection.php';
 if (isset($_POST['college_id'])) {
     $college_id = $_POST['college_id'];
 
-    $sql = "SELECT id, program FROM program WHERE college_id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $college_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    // Query to fetch programs that are not scheduled
+    $sql = "SELECT p.id, p.program 
+            FROM program p
+            WHERE p.college_id = $college_id 
+            AND NOT EXISTS (
+                SELECT 1 FROM schedule s 
+                WHERE s.program = p.program
+            )
+            ORDER BY p.program";
 
-    $options = '<option value="">Select Program</option>';
+    $result = $conn->query($sql);
+
+    echo '<option value="">Select Program</option>';
     while ($row = $result->fetch_assoc()) {
-        $options .= '<option value="' . htmlspecialchars($row['id']) . '">' . htmlspecialchars($row['program']) . '</option>';
+        echo "<option value='{$row['id']}'>{$row['program']}</option>";
     }
-    echo $options;
-
-    $stmt->close();
 }
 ?>

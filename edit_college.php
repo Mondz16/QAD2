@@ -87,10 +87,6 @@ while ($row = $programs_result->fetch_assoc()) {
             <label for="college_name">College Name:</label>
             <input type="text" id="college_name" name="college_name" value="<?php echo htmlspecialchars($college['college_name']); ?>" required>
         </div>
-        <div class="form-group">
-            <label for="college_email">College Email:</label>
-            <input type="email" id="college_email" name="college_email" value="<?php echo htmlspecialchars($college['college_email']); ?>" required>
-        </div>
         <?php foreach ($programs as $index => $program): ?>
             <div class="form-group programs">
                 <input type="hidden" name="program_ids[]" value="<?php echo htmlspecialchars($program['id']); ?>">

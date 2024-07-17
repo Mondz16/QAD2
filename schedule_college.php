@@ -1,67 +1,119 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule Details</title>
-    <style>
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid black;
-            text-align: left;
-            padding: 8px;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
-</head>
-<body>
-    <h2>Schedule Details for <?php echo htmlspecialchars($_GET['college']); ?></h2>
-    <table>
-        <tr>
-            <th>Program</th>
-            <th>Level Applied</th>
-            <th>Schedule Date</th>
-            <th>Schedule Time</th>
-        </tr>
-        <?php
-        include 'connection.php';
+<?php
+include 'connection.php';
 
-        $college_name = urldecode($_GET['college']);
-        $sql = "SELECT s.id, p.program, s.level_applied, s.schedule_date, s.schedule_time
-                FROM schedule s
-                JOIN program p ON s.program_id = p.id
-                JOIN college c ON s.college_id = c.id
-                WHERE c.college_name = ?
-                ORDER BY s.schedule_date, s.schedule_time";
+// Handle form submissions for reschedule and cancel actions
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['reschedule'])) {
+        $schedule_id = mysqli_real_escape_string($conn, $_POST['schedule_id']);
+        header("Location: reschedule.php?schedule_id=$schedule_id");
+        exit();
+    } elseif (isset($_POST['cancel'])) {
+        $schedule_id = mysqli_real_escape_string($conn, $_POST['schedule_id']);
+        header("Location: schedule_cancel.php?schedule_id=$schedule_id");
+        exit();
+    }
+}
 
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $college_name);
-        $stmt->execute();
-        $result = $stmt->get_result();
+// Retrieve schedules and their team information for the specified college
+if (isset($_GET['college'])) {
+    $college = mysqli_real_escape_string($conn, $_GET['college']);
 
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                echo "<tr>";
-                echo "<td>" . htmlspecialchars($row['program']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['level_applied']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['schedule_date']) . "</td>";
-                echo "<td>" . htmlspecialchars($row['schedule_time']) . "</td>";
-                echo "</tr>";
+    $sql = "SELECT s.id, s.program, s.schedule_date, TIME_FORMAT(s.schedule_time, '%h:%i %p') AS schedule_time_format,
+                   t.fname, t.mi, t.lname, t.role, t.status
+            FROM schedule s
+            LEFT JOIN team t ON s.id = t.schedule_id
+            WHERE s.college = '$college'
+            ORDER BY s.id";
+
+    $result = $conn->query($sql);
+
+    echo "<h2>Schedules for $college</h2>";
+    echo '<a href="schedule.php">Back</a>';
+
+    if ($result->num_rows > 0) {
+        echo "<table>";
+        echo "<tr><th>Program</th><th>Date</th><th>Time</th><th>Team Leader</th><th>Team Members</th><th>Actions</th></tr>";
+
+        $current_schedule_id = null;
+        $team_leader = null;
+        $team_members = [];
+
+        while ($row = $result->fetch_assoc()) {
+            if ($row['id'] != $current_schedule_id) {
+                // Output the schedule details if not first iteration
+                if ($current_schedule_id !== null) {
+                    echo "<tr>";
+                    echo "<td>" . htmlspecialchars($current_row["program"]) . "</td>";
+                    echo "<td>" . htmlspecialchars($current_row["schedule_date"]) . "</td>";
+                    echo "<td>" . htmlspecialchars($current_row["schedule_time_format"]) . "</td>";
+                    echo "<td>" . htmlspecialchars($team_leader['name']) . " - " . htmlspecialchars($team_leader['status']) . "</td>";
+                    echo "<td>"; // Start of team members column
+                    foreach ($team_members as $member) {
+                        echo htmlspecialchars($member['name']) . " - " . htmlspecialchars($member['status']) . "<br>"; // Output each member and their status
+                    }
+                    echo "</td>";
+                    echo "<td>"; // Actions column
+                    echo "<form method='post' action=''>";
+                    echo "<input type='hidden' name='schedule_id' value='" . $current_row['id'] . "'>";
+                    echo "<input type='submit' name='reschedule' value='Reschedule'>";
+                    echo "<input type='submit' name='cancel' value='Cancel'>";
+                    echo "</form>";
+                    echo "</td>";
+                    echo "</tr>";
+                }
+
+                // Reset arrays for new schedule
+                $current_schedule_id = $row['id'];
+                $team_leader = null;
+                $team_members = [];
             }
-        } else {
-            echo "<tr><td colspan='4'>No schedules found for this college</td></tr>";
+
+            // Determine if current row is a team leader or member
+            if ($row['role'] === 'team leader') {
+                $team_leader = [
+                    'name' => $row["fname"] . " " . $row["mi"] . " " . $row["lname"],
+                    'status' => ucfirst($row["status"]) // Capitalize the status
+                ];
+            } elseif ($row['role'] === 'team member') {
+                $team_members[] = [
+                    'name' => $row["fname"] . " " . $row["mi"] . " " . $row["lname"],
+                    'status' => ucfirst($row["status"]) // Capitalize the status
+                ];
+            }
+
+            // Store the current row to output after the loop ends
+            $current_row = $row;
         }
 
-        $stmt->close();
-        $conn->close();
-        ?>
-    </table><br>
-    <button onclick="location.href='schedule.php'">Back</button>
-</body>
-</html>
+        // Output the last schedule's details after loop ends
+        if ($current_schedule_id !== null) {
+            echo "<tr>";
+            echo "<td>" . htmlspecialchars($current_row["program"]) . "</td>";
+            echo "<td>" . htmlspecialchars($current_row["schedule_date"]) . "</td>";
+            echo "<td>" . htmlspecialchars($current_row["schedule_time_format"]) . "</td>";
+            echo "<td>" . htmlspecialchars($team_leader['name']) . " - " . htmlspecialchars($team_leader['status']) . "</td>";
+            echo "<td>"; // Start of team members column
+            foreach ($team_members as $member) {
+                echo htmlspecialchars($member['name']) . " - " . htmlspecialchars($member['status']) . "<br>"; // Output each member and their status
+            }
+            echo "</td>";
+            echo "<td>"; // Actions column
+            echo "<form method='post' action=''>";
+            echo "<input type='hidden' name='schedule_id' value='" . $current_row['id'] . "'>";
+            echo "<input type='submit' name='reschedule' value='Reschedule'>";
+            echo "<input type='submit' name='cancel' value='Cancel'>";
+            echo "</form>";
+            echo "</td>";
+            echo "</tr>";
+        }
+
+        echo "</table>";
+    } else {
+        echo "No schedules found for $college";
+    }
+} else {
+    echo "Error: College parameter not specified";
+}
+
+$conn->close();
+?>
