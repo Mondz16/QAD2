@@ -21,18 +21,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $evaluator_signature = $_FILES['evaluator_signature'];
 
     // Retrieve user details
-    $sql_user = "SELECT first_name, middle_initial, last_name FROM internal_users WHERE user_id = ?";
+    $sql_user = "SELECT user_id FROM internal_users WHERE user_id = ?";
     $stmt_user = $conn->prepare($sql_user);
     $stmt_user->bind_param("s", $user_id);
     $stmt_user->execute();
-    $stmt_user->bind_result($first_name, $middle_initial, $last_name);
+    $stmt_user->bind_result($user_id);
     $stmt_user->fetch();
     $stmt_user->close();
 
     // Retrieve team_id from the team table
-    $sql_team = "SELECT id, schedule_id FROM team WHERE fname = ? AND mi = ? AND lname = ? AND role IN ('team leader', 'team member') AND status = 'accepted'";
+    $sql_team = "SELECT id, schedule_id FROM team WHERE internal_users_id = ? AND role IN ('team leader', 'team member') AND status = 'accepted'";
     $stmt_team = $conn->prepare($sql_team);
-    $stmt_team->bind_param("sss", $first_name, $middle_initial, $last_name);
+    $stmt_team->bind_param("s", $user_id);  // Corrected variable name here
     $stmt_team->execute();
     $stmt_team->bind_result($team_id, $schedule_id);
     $stmt_team->fetch();
@@ -43,12 +43,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // Retrieve schedule details from the database
-    $sql_schedule = "SELECT college, program, level_applied, schedule_date FROM schedule WHERE id = ?";
+     // Retrieve schedule details from the database
+    $sql_schedule = "
+        SELECT 
+            c.college_name, 
+            p.program, 
+            s.level_applied, 
+            s.schedule_date 
+        FROM schedule s
+        JOIN college c ON s.college_id = c.id
+        JOIN program p ON s.program_id = p.id
+        WHERE s.id = ?";
     $stmt_schedule = $conn->prepare($sql_schedule);
     $stmt_schedule->bind_param("i", $schedule_id);
     $stmt_schedule->execute();
-    $stmt_schedule->bind_result($college, $program, $level_applied, $schedule_date);
+    $stmt_schedule->bind_result($college_name, $program_name, $level_applied, $schedule_date);
     $stmt_schedule->fetch();
     $stmt_schedule->close();
 
@@ -71,10 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Add dynamic data to the PDF
     $pdf->SetXY(43, 90); // Adjust position
-    $pdf->Write(0, $college);
+    $pdf->Write(0, $college_name);
 
     $pdf->SetXY(43, 103); // Adjust position
-    $pdf->Write(0, $program);
+    $pdf->Write(0, $program_name);
 
     $pdf->SetXY(43, 116); // Adjust position
     $pdf->Write(0, $level_applied);
@@ -105,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdf->Output('F', $output_path);
 
     // Insert assessment details into the database
-    $sql_insert = "INSERT INTO assessment (team_id, result, area_evaluated, findings, recommendations, evaluator, evaluator_signature, assessment_file, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'submitted')";
+    $sql_insert = "INSERT INTO assessment (team_id, result, area_evaluated, findings, recommendations, evaluator, evaluator_signature, assessment_file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt_insert = $conn->prepare($sql_insert);
     $stmt_insert->bind_param("isssssss", $team_id, $result, $area_evaluated, $findings, $recommendations, $evaluator, $signature_path, $output_path);
     $stmt_insert->execute();

@@ -22,6 +22,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo $id . "<br>";
     }
 
+    // Fetch college name
+    $sql_college = "SELECT college_name FROM college WHERE id = ?";
+    $stmt_college = $conn->prepare($sql_college);
+    $stmt_college->bind_param("i", $collegeId);
+    $stmt_college->execute();
+    $stmt_college->bind_result($college_name);
+    $stmt_college->fetch();
+    $stmt_college->close();
+
+    // Fetch program name
+    $sql_program = "SELECT program FROM program WHERE id = ?";
+    $stmt_program = $conn->prepare($sql_program);
+    $stmt_program->bind_param("i", $programId);
+    $stmt_program->execute();
+    $stmt_program->bind_result($program);
+    $stmt_program->fetch();
+    $stmt_program->close();
+
     // Check if the date already exists
     $sql_check_date = "SELECT id FROM schedule WHERE schedule_date = ?";
     $stmt_check_date = $conn->prepare($sql_check_date);
@@ -57,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_insert_leader->close();
 
         // Insert notification for team leader
-        $message = "New schedule created: College - $collegeId, Program - $programId, Level - $level, Date - $date, Time - $time. You are assigned as the team leader.";
+        $message = "New schedule created: College - $college_name, Program - $program, Level - $level, Date - $date, Time - $time. You are assigned as the team leader.";
         $sql_notification = "INSERT INTO notifications (user_id, message) VALUES (?, ?)";
         $stmt_notification = $conn->prepare($sql_notification);
         $stmt_notification->bind_param("ss", $team_leader_id, $message);
@@ -75,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt_insert_members->close();
 
             // Insert notification for team members
-            $message = "New schedule created: College - $collegeId, Program - $programId, Level - $level, Date - $date, Time - $time. You are assigned as a team member.";
+            $message = "New schedule created: College - $college_name, Program - $program, Level - $level, Date - $date, Time - $time. You are assigned as a team member.";
             $stmt_notification = $conn->prepare($sql_notification);
             $stmt_notification->bind_param("ss", $member_id, $message);
             $stmt_notification->execute();

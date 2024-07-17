@@ -21,7 +21,7 @@ $stmt_notifications->bind_result($notification_id, $message, $created_at);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Internal Accreditor</title>
+    <title>Internal Accreditor - Notifications</title>
     <link rel="stylesheet" href="loginstyle.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
     <style>
@@ -78,24 +78,26 @@ $stmt_notifications->bind_result($notification_id, $message, $created_at);
             border-radius: 10px;
         }
         .notification {
+            background-color: #f0f0f0;
             padding: 10px;
-            border-bottom: 1px solid #ccc;
-        }
-        .notification:last-child {
-            border-bottom: none;
+            margin-bottom: 10px;
+            border-radius: 5px;
         }
         .notification p {
-            margin: 0 0 5px;
+            margin: 0;
         }
         .notification small {
-            color: #999;
+            color: #666;
+        }
+        .notification form {
+            margin-top: 10px;
         }
         .notification form button {
+            margin-right: 10px;
             background-color: #5cb85c;
             color: #fff;
             border: none;
             padding: 5px 10px;
-            margin-right: 5px;
             border-radius: 5px;
             cursor: pointer;
         }
@@ -107,6 +109,21 @@ $stmt_notifications->bind_result($notification_id, $message, $created_at);
         }
         .notification form button[name="action"][value="decline"]:hover {
             background-color: #c9302c;
+        }
+        .back-btn {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .back-btn .btn {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .back-btn .btn:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
@@ -125,7 +142,22 @@ $stmt_notifications->bind_result($notification_id, $message, $created_at);
         </nav>
     </header>
     <div class="notifications">
-        <h2>Welcome to Internal Panel</h2>
+        <h2>Notifications</h2>
+        <?php while ($stmt_notifications->fetch()): ?>
+            <div class="notification">
+                <p><?php echo $message; ?></p>
+                <small><?php echo $created_at; ?></small>
+                <form action="internal_notification_process.php" method="POST">
+                    <input type="hidden" name="notification_id" value="<?php echo $notification_id; ?>">
+                    <button type="submit" name="action" value="accept">Accept</button>
+                    <button type="submit" name="action" value="decline">Decline</button>
+                </form>
+            </div>
+        <?php endwhile; ?>
+        <?php $stmt_notifications->close(); ?>
+        <div class="back-btn">
+            <a href="internal.php" class="btn">Back to Home</a>
+        </div>
     </div>
 </body>
 </html>
