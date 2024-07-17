@@ -13,7 +13,19 @@ if ($conn->connect_error) {
 }
 
 function displayRegistrations($conn, $tableName, $title) {
-    $sql = "SELECT * FROM $tableName WHERE status = 'pending'";
+    $sql = "";
+    if ($tableName === 'internal_users') {
+        $sql = "SELECT i.user_id, i.first_name, i.middle_initial, i.last_name, i.email, c.college_name
+                FROM internal_users i
+                LEFT JOIN college c ON i.college_id = c.id
+                WHERE i.status = 'pending'";
+    } elseif ($tableName === 'external_users') {
+        $sql = "SELECT e.user_id, e.first_name, e.middle_initial, e.last_name, e.email, e.company
+                FROM external_users e
+                LEFT JOIN company c ON e.company_id = c.id
+                WHERE e.status = 'pending'";
+    }
+
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
@@ -21,25 +33,37 @@ function displayRegistrations($conn, $tableName, $title) {
         echo "<table border='1'>
             <tr>
                 <th>ID</th>
-                <th>Internal/External</th>
                 <th>First Name</th>
                 <th>Middle Initial</th>
                 <th>Last Name</th>
-                <th>Email</th>
-                <th>College/Company</th>
-                <th>Actions</th>
+                <th>Email</th>";
+        
+        // Additional columns based on table type
+        if ($tableName === 'internal_users') {
+            echo "<th>College</th>";
+        } elseif ($tableName === 'external_users') {
+            echo "<th>Company</th>";
+        }
+
+        echo "<th>Actions</th>
             </tr>";
 
         while ($row = $result->fetch_assoc()) {
             echo "<tr>
                 <td>{$row['user_id']}</td>
-                <td>{$row['type']}</td>
                 <td>{$row['first_name']}</td>
                 <td>{$row['middle_initial']}</td>
                 <td>{$row['last_name']}</td>
-                <td>{$row['usep_email']}</td>
-                <td>" . (isset($row['college']) ? $row['college'] : $row['company']) . "</td>
-                <td>
+                <td>{$row['email']}</td>";
+            
+            // Display additional column data based on table type
+            if ($tableName === 'internal_users') {
+                echo "<td>{$row['college_name']}</td>";
+            } elseif ($tableName === 'external_users') {
+                echo "<td>{$row['company']}</td>";
+            }
+
+            echo "<td>
                     <form action='registration_approval.php' method='post' style='display:inline;'>
                         <input type='hidden' name='id' value='{$row['user_id']}'>
                         <input type='hidden' name='action' value='approve'>
@@ -56,7 +80,7 @@ function displayRegistrations($conn, $tableName, $title) {
 
         echo "</table>";
     } else {
-        echo "<p>No pending registrations.</p>";
+        echo "<p>No pending registrations for $title.</p>";
     }
 }
 ?>

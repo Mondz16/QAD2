@@ -105,9 +105,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdf->Output('F', $output_path);
 
     // Insert assessment details into the database
-    $sql_insert = "INSERT INTO assessment (team_id, result, area_evaluated, findings, recommendations, evaluator, evaluator_signature) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $sql_insert = "INSERT INTO assessment (team_id, result, area_evaluated, findings, recommendations, evaluator, evaluator_signature, assessment_file, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'submitted')";
     $stmt_insert = $conn->prepare($sql_insert);
-    $stmt_insert->bind_param("issssss", $team_id, $result, $area_evaluated, $findings, $recommendations, $evaluator, $signature_path);
+    $stmt_insert->bind_param("isssssss", $team_id, $result, $area_evaluated, $findings, $recommendations, $evaluator, $signature_path, $output_path);
     $stmt_insert->execute();
     $stmt_insert->close();
 

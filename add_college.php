@@ -12,6 +12,10 @@
             <label for="college_name">College Name:</label>
             <input type="text" id="college_name" name="college_name" required>
         </div>
+        <div class="form-group">
+            <label for="college_email">College Email:</label>
+            <input type="email" id="college_email" name="college_email" required>
+        </div>
         <div id="programs">
             <div class="form-group programs" id="program_1_group">
                 <label for="program_1">Program:</label>

@@ -8,18 +8,9 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 }
 
 // Check if the assessment has been submitted
-$assessment_submitted = isset($_SESSION['assessment_submitted']) && $_SESSION['assessment_submitted'];
+$assessment_submitted = false;
 
-// Retrieve schedule details from URL parameters
-if (isset($_GET['college'], $_GET['program'], $_GET['level'], $_GET['date'], $_GET['time'])) {
-    $college = $_GET['college'];
-    $program = $_GET['program'];
-    $level = $_GET['level'];
-    $date = $_GET['date'];
-    $time = $_GET['time'];
-}
-
-// Get logged-in user details
+// Retrieve logged-in user details
 $user_id = $_SESSION['user_id'];
 $sql_user_details = "SELECT first_name, middle_initial, last_name FROM internal_users WHERE user_id = ?";
 $stmt_user_details = $conn->prepare($sql_user_details);
@@ -29,19 +20,42 @@ $stmt_user_details->bind_result($first_name, $middle_initial, $last_name);
 $stmt_user_details->fetch();
 $stmt_user_details->close();
 
-// Query to check if user's name matches a team member's name with accepted status
-$sql_check_team = "SELECT s.id, s.college, s.program, s.level_applied, s.schedule_date, s.schedule_time
-                   FROM team t
-                   INNER JOIN schedule s ON t.schedule_id = s.id
-                   WHERE t.fname = ? AND t.mi = ? AND t.lname = ? AND t.status = 'accepted'";
-$stmt_check_team = $conn->prepare($sql_check_team);
-$stmt_check_team->bind_param("sss", $first_name, $middle_initial, $last_name);
-$stmt_check_team->execute();
-$stmt_check_team->bind_result($schedule_id, $team_college, $team_program, $team_level, $team_date, $team_time);
+// Query to find team_id based on user's name
+$sql_find_team_id = "SELECT id FROM team WHERE fname = ? AND mi = ? AND lname = ?";
+$stmt_find_team_id = $conn->prepare($sql_find_team_id);
+$stmt_find_team_id->bind_param("sss", $first_name, $middle_initial, $last_name);
+$stmt_find_team_id->execute();
+$stmt_find_team_id->bind_result($team_id);
+$stmt_find_team_id->fetch();
+$stmt_find_team_id->close();
 
-// Fetch the first matching row (assuming there should only be one match)
-$stmt_check_team->fetch();
-$stmt_check_team->close();
+if ($team_id) {
+    // Check if there's an assessment with this team_id and status 'submitted'
+    $sql_check_assessment = "SELECT status FROM assessment WHERE team_id = ?";
+    $stmt_check_assessment = $conn->prepare($sql_check_assessment);
+    $stmt_check_assessment->bind_param("i", $team_id);
+    $stmt_check_assessment->execute();
+    $stmt_check_assessment->bind_result($assessment_status);
+    $stmt_check_assessment->fetch();
+    $stmt_check_assessment->close();
+
+    if ($assessment_status == 'submitted') {
+        // If assessment is submitted, set assessment_submitted to true
+        $assessment_submitted = true;
+    } else {
+        // Retrieve schedule details based on team_id from schedule table
+        $sql_get_schedule = "SELECT s.id, s.college, s.program, s.level_applied, s.schedule_date, s.schedule_time
+                             FROM schedule s
+                             INNER JOIN team t ON s.id = t.schedule_id
+                             WHERE t.id = ?";
+        $stmt_get_schedule = $conn->prepare($sql_get_schedule);
+        $stmt_get_schedule->bind_param("i", $team_id);
+        $stmt_get_schedule->execute();
+        $stmt_get_schedule->bind_result($schedule_id, $team_college, $team_program, $team_level, $team_date, $team_time);
+        $stmt_get_schedule->fetch();
+        $stmt_get_schedule->close();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -96,72 +110,62 @@ $stmt_check_team->close();
 <div class="admin-content">
     <h1>Internal Assessment Details</h1>
     <?php if ($assessment_submitted): ?>
-    <p>Assessment has already been submitted.</p>
+        <p>Assessment has already been submitted.</p>
     <?php elseif (isset($team_college)): ?>
-    <div>
-        <p><strong>College:</strong> <?php echo $team_college; ?></p>
-        <p><strong>Program:</strong> <?php echo $team_program; ?></p>
-        <p><strong>Level Applied:</strong> <?php echo $team_level; ?></p>
-        <p><strong>Schedule Date:</strong> <?php echo $team_date; ?></p>
-        <p><strong>Schedule Time:</strong> <?php echo $team_time; ?></p>
-    </div>
-    <button onclick="openPopup()">Assessment</button>
+        <div>
+            <p><strong>College:</strong> <?php echo $team_college; ?></p>
+            <p><strong>Program:</strong> <?php echo $team_program; ?></p>
+            <p><strong>Level Applied:</strong> <?php echo $team_level; ?></p>
+            <p><strong>Schedule Date:</strong> <?php echo $team_date; ?></p>
+            <p><strong>Schedule Time:</strong> <?php echo $team_time; ?></p>
+        </div>
+        <button onclick="openPopup()">Assessment</button>
 
-    <!-- Popup Form -->
-    <div class="overlay" id="overlay"></div>
-    <div class="popup" id="popup">
-        <h2>Assessment Form</h2>
-        <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
-            
-        <label for="college">College:</label>
-        <input type="text" id="college" name="college" value="<?php echo $team_college; ?>" readonly><br><br>
-        
-        <label for="program">Program:</label>
-        <input type="text" id="program" name="program" value="<?php echo $team_program; ?>" readonly><br><br>
-        
-        <label for="level">Level Applied:</label>
-        <input type="text" id="level" name="level" value="<?php echo $team_level; ?>" readonly><br><br>
-        
-        <label for="date">Schedule Date:</label>
-        <input type="text" id="date" name="date" value="<?php echo $team_date; ?>" readonly><br><br>
+        <!-- Popup Form -->
+        <div class="overlay" id="overlay"></div>
+        <div class="popup" id="popup">
+            <h2>Assessment Form</h2>
 
-        <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
-            <label for="result">Result:</label>
-            <input type="text" id="result" name="result" required><br><br>
-            
-            <label for="area_evaluated">Area Evaluated:</label>
-            <input type="text" id="area_evaluated" name="area_evaluated" required><br><br>
-            
-            <label for="findings">Findings:</label>
-            <textarea id="findings" name="findings" rows="4" required></textarea><br><br>
-            
-            <label for="recommendations">Recommendations:</label>
-            <textarea id="recommendations" name="recommendations" rows="4" required></textarea><br><br>
-            
-            <label for="evaluator">Evaluator:</label>
-            <input type="text" id="evaluator" name="evaluator" required><br><br>
-            
-            <label for="evaluator_signature">Evaluator Signature (PNG format):</label>
-            <input type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required><br><br>
-            
-            <button type="submit">Submit Assessment</button>
-        </form>
-        <button onclick="closePopup()">Close</button>
-    </div>
-    <script>
-        function openPopup() {
-            document.getElementById("overlay").style.display = "block";
-            document.getElementById("popup").style.display = "block";
-        }
-
-        function closePopup() {
-            document.getElementById("overlay").style.display = "none";
-            document.getElementById("popup").style.display = "none";
-        }
-    </script>
+            <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
+                <label for="college">College:</label>
+                <input type="text" id="college" name="college" value="<?php echo $team_college; ?>" readonly><br><br>
+                <label for="program">Program:</label>
+                <input type="text" id="program" name="program" value="<?php echo $team_program; ?>" readonly><br><br>
+                <label for="level">Level Applied:</label>
+                <input type="text" id="level" name="level" value="<?php echo $team_level; ?>" readonly><br><br>
+                <label for="date">Schedule Date:</label>
+                <input type="text" id="date" name="date" value="<?php echo $team_date; ?>" readonly><br><br>
+                <label for="result">Result:</label>
+                <input type="text" id="result" name="result" required><br><br>
+                <label for="area_evaluated">Area Evaluated:</label>
+                <input type="text" id="area_evaluated" name="area_evaluated" required><br><br>
+                <label for="findings">Findings:</label>
+                <textarea id="findings" name="findings" rows="4" required></textarea><br><br>
+                <label for="recommendations">Recommendations:</label>
+                <textarea id="recommendations" name="recommendations" rows="4" required></textarea><br><br>
+                <label for="evaluator">Evaluator:</label>
+                <input type="text" id="evaluator" name="evaluator" required><br><br>
+                <label for="evaluator_signature">Evaluator Signature (PNG format):</label>
+                <input type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required><br><br>
+                <button type="submit">Submit Assessment</button>
+            </form>
+            <button onclick="closePopup()">Close</button>
+        </div>
     <?php else: ?>
-    <p>No accepted schedule found for the logged-in user.</p>
+        <p>No accepted schedule found for the logged-in user.</p>
     <?php endif; ?>
 </div>
+<script>
+    function openPopup() {
+        document.getElementById("overlay").style.display = "block";
+        document.getElementById("popup").style.display = "block";
+    }
+
+    function closePopup() {
+        document.getElementById("overlay").style.display = "none";
+        document.getElementById("popup").style.display = "none";
+    }
+</script>
 </body>
 </html>

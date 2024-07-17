@@ -3,6 +3,7 @@ include 'connection.php';
 
 $college_id = $_POST['college_id'];
 $college_name = $_POST['college_name'];
+$college_email = $_POST['college_email'];
 $program_ids = $_POST['program_ids'];
 $programs = $_POST['programs'];
 $levels = $_POST['levels'];
@@ -11,9 +12,9 @@ $new_programs = $_POST['new_programs'];
 $new_levels = $_POST['new_levels'];
 $new_dates_received = $_POST['new_dates_received'];
 
-$sql = "UPDATE college SET college_name = ? WHERE id = ?";
+$sql = "UPDATE college SET college_name = ?, college_email = ? WHERE id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("si", $college_name, $college_id);
+$stmt->bind_param("ssi", $college_name, $college_email, $college_id);
 $stmt->execute();
 
 foreach ($program_ids as $index => $program_id) {

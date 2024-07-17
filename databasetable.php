@@ -33,7 +33,8 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS college (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     college_code VARCHAR(255) NOT NULL,
-    college_name VARCHAR(255) NOT NULL
+    college_name VARCHAR(255) NOT NULL,
+    college_email VARCHAR(255) NOT NULL
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -57,13 +58,8 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
-$sql = "CREATE TABLE IF NOT EXISTS users (
+$sql = "CREATE TABLE IF NOT EXISTS admin (
     user_id VARCHAR(255) PRIMARY KEY,
-    role VARCHAR(255) NOT NULL,
-    first_name VARCHAR(255) NOT NULL,
-    middle_initial VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    usep_email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL
 )";
 
@@ -75,14 +71,14 @@ if ($conn->query($sql) === TRUE) {
 
 $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     user_id VARCHAR(255) PRIMARY KEY,
-    type VARCHAR(255) NOT NULL,
+    college_id INT(6) UNSIGNED,
     first_name VARCHAR(255) NOT NULL,
     middle_initial VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
-    usep_email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    college VARCHAR(255) NOT NULL,
-    status ENUM('pending', 'approved') NOT NULL DEFAULT 'pending'
+    status ENUM('pending', 'approved') NOT NULL DEFAULT 'pending',
+    FOREIGN KEY (college_id) REFERENCES college(id)
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -93,14 +89,15 @@ if ($conn->query($sql) === TRUE) {
 
 $sql = "CREATE TABLE IF NOT EXISTS external_users (
     user_id VARCHAR(255) PRIMARY KEY,
-    type VARCHAR(255) NOT NULL,
+    company_id INT(6) UNSIGNED,
     first_name VARCHAR(255) NOT NULL,
     middle_initial VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
-    usep_email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     company VARCHAR(255) NOT NULL,
-    status ENUM('pending', 'approved') NOT NULL DEFAULT 'pending'
+    status ENUM('pending', 'approved') NOT NULL DEFAULT 'pending',
+    FOREIGN KEY (company_id) REFERENCES company(id)
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -111,11 +108,13 @@ if ($conn->query($sql) === TRUE) {
 
 $sql = "CREATE TABLE IF NOT EXISTS schedule (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    college VARCHAR(255) NOT NULL,
-    program VARCHAR(255) NOT NULL,
+    college_id INT(6) UNSIGNED,
+    program_id INT(6) UNSIGNED,
     level_applied INT(6) NOT NULL,
     schedule_date DATE NOT NULL,
-    schedule_time TIME NOT NULL
+    schedule_time TIME NOT NULL,
+    FOREIGN KEY (college_id) REFERENCES college(id),
+    FOREIGN KEY (program_id) REFERENCES program(id)
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -127,12 +126,11 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS team (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     schedule_id INT(6) UNSIGNED,
-    fname VARCHAR(255) NOT NULL,
-    mi VARCHAR(10) NOT NULL,
-    lname VARCHAR(255) NOT NULL,
+    internal_users_id VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
     status ENUM('pending', 'accepted') NOT NULL DEFAULT 'pending',
-    FOREIGN KEY (schedule_id) REFERENCES schedule(id)
+    FOREIGN KEY (schedule_id) REFERENCES schedule(id),
+    FOREIGN KEY (internal_users_id) REFERENCES internal_users(user_id)
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -164,6 +162,7 @@ $sql = "CREATE TABLE IF NOT EXISTS assessment (
     recommendations VARCHAR(255) NOT NULL,
     evaluator VARCHAR(255) NOT NULL,
     evaluator_signature VARCHAR(255) NOT NULL,
+    assessment_file VARCHAR(255) NOT NULL,
     FOREIGN KEY (team_id) REFERENCES team(id)
 )";
 
@@ -173,14 +172,14 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
-$sql_check_admin = "SELECT * FROM users WHERE user_id = 'admin'";
+$sql_check_admin = "SELECT * FROM admin WHERE user_id = 'admin'";
 $result_check_admin = $conn->query($sql_check_admin);
 
 if ($result_check_admin->num_rows === 0) {
     $hashed_password = password_hash("admin", PASSWORD_DEFAULT);
 
-    $sql_create_admin = "INSERT INTO users (user_id, role, first_name, middle_initial, last_name, usep_email, password) 
-                         VALUES ('admin', 'admin', 'Vience', 'A.', 'Banzali', 'admin@example.com', '$hashed_password')";
+    $sql_create_admin = "INSERT INTO admin (user_id, password) 
+                         VALUES ('admin', '$hashed_password')";
 
     if ($conn->query($sql_create_admin) === TRUE) {
         echo "Admin account created successfully<br>";

@@ -19,8 +19,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     include 'connection.php';
 
-    function generate_unique_number($conn) {
-        $sql_count_users = "SELECT COUNT(*) AS count FROM users";
+    // Function to generate unique user_id
+    function generate_unique_number($conn, $table) {
+        $sql_count_users = "SELECT COUNT(*) AS count FROM $table";
         $result_count_users = $conn->query($sql_count_users);
         $count_users = $result_count_users->fetch_assoc()['count'];
 
@@ -31,8 +32,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($type == 'internal') {
         $college_id = $_POST['college'];
 
-        $sql_college = "SELECT college_code, college_name FROM college WHERE id = ?";
-        $stmt_college = $conn->prepare($sql_college);
+        // Fetch college details based on college_id
+        $stmt_college = $conn->prepare("SELECT college_code, college_name FROM college WHERE id = ?");
         $stmt_college->bind_param("i", $college_id);
         $stmt_college->execute();
         $result_college = $stmt_college->get_result();
@@ -46,16 +47,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit;
         }
 
-        $unique_number = generate_unique_number($conn);
+        $table = "internal_users"; // Table to insert into
+        $unique_number = generate_unique_number($conn, $table);
         $user_id = $college_code . "-11-" . $unique_number;
 
-        $stmt_internal = $conn->prepare("INSERT INTO internal_users (user_id, type, first_name, middle_initial, last_name, usep_email, password, college, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')");
-        $stmt_internal->bind_param("ssssssss", $user_id, $type, $first_name, $middle_initial, $last_name, $email, $hashed_password, $college_name);
+        // Insert into internal_users table
+        $stmt_internal = $conn->prepare("INSERT INTO $table (user_id, college_id, first_name, middle_initial, last_name, email, password, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
+        $stmt_internal->bind_param("sisssss", $user_id, $college_id, $first_name, $middle_initial, $last_name, $email, $hashed_password);
         if ($stmt_internal->execute()) {
-            $stmt_user = $conn->prepare("INSERT INTO users (user_id, role, first_name, middle_initial, last_name, usep_email, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt_user->bind_param("sssssss", $user_id, $type, $first_name, $middle_initial, $last_name, $email, $hashed_password);
-            $stmt_user->execute();
-            $stmt_user->close();
             echo "Registration successful and pending for internal approval. Your User ID: " . $user_id . " <a href='login.php'>OK</a>";
         } else {
             echo "Error: " . $stmt_internal->error;
@@ -64,8 +63,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif ($type == 'external') {
         $company_id = $_POST['company'];
 
-        $sql_company = "SELECT company_code, company_name FROM company WHERE id = ?";
-        $stmt_company = $conn->prepare($sql_company);
+        // Fetch company details based on company_id
+        $stmt_company = $conn->prepare("SELECT company_code, company_name FROM company WHERE id = ?");
         $stmt_company->bind_param("i", $company_id);
         $stmt_company->execute();
         $result_company = $stmt_company->get_result();
@@ -79,16 +78,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit;
         }
 
-        $unique_number = generate_unique_number($conn);
+        $table = "external_users"; // Table to insert into
+        $unique_number = generate_unique_number($conn, $table);
         $user_id = $company_code . "-22-" . $unique_number;
 
-        $stmt_external = $conn->prepare("INSERT INTO external_users (user_id, type, first_name, middle_initial, last_name, usep_email, password, company, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')");
-        $stmt_external->bind_param("ssssssss", $user_id, $type, $first_name, $middle_initial, $last_name, $email, $hashed_password, $company_name);
+        // Insert into external_users table
+        $stmt_external = $conn->prepare("INSERT INTO $table (user_id, company_id, first_name, middle_initial, last_name, email, password, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
+        $stmt_external->bind_param("sisssss", $user_id, $company_id, $first_name, $middle_initial, $last_name, $email, $hashed_password);
         if ($stmt_external->execute()) {
-            $stmt_user = $conn->prepare("INSERT INTO users (user_id, role, first_name, middle_initial, last_name, usep_email, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt_user->bind_param("sssssss", $user_id, $type, $first_name, $middle_initial, $last_name, $email, $hashed_password);
-            $stmt_user->execute();
-            $stmt_user->close();
             echo "Registration successful and pending for external approval. Your User ID: " . $user_id . " <a href='login.php'>OK</a>";
         } else {
             echo "Error: " . $stmt_external->error;
