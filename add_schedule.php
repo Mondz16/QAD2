@@ -8,7 +8,6 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Schedule</title>
-<<<<<<< Updated upstream
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet" />
     <style>
@@ -82,8 +81,6 @@ session_start();
             background-color: #6c757d;
         }
     </style>
-=======
->>>>>>> Stashed changes
 </head>
 <body>
     <div class="form-container">
@@ -91,11 +88,7 @@ session_start();
         <form action="add_schedule_process.php" method="POST" id="schedule-form">
             <div class="form-group">
                 <label for="college">College:</label>
-<<<<<<< Updated upstream
-                <select id="college" name="college" onchange="fetchPrograms(); fetchUsers();" required class="select2">
-=======
-                <select id="college" name="college" onchange="fetchPrograms(); fetchTeamLeadersAndMembers();" required>
->>>>>>> Stashed changes
+                <select id="college" name="college" onchange="fetchPrograms(); fetchTeamLeadersAndMembers();" required class="select2">
                     <option value="">Select College</option>
                     <?php
                     include 'connection.php';
@@ -140,20 +133,13 @@ session_start();
             </div>
             <div class="form-group">
                 <label for="team-members">Team Members:</label>
-<<<<<<< Updated upstream
-                <div class="team-member-input">
-                    <select name="team_members[]" required class="select2 team-member-select">
-                        <option value="">Select Team Member</option>
-                    </select>
-                    <button type="button" class="add-team-member-button" onclick="addTeamMemberInput()">Add</button>
-=======
                 <div id="team-members-container">
                     <div class="team-member-input">
                         <select name="team_members[]" class="team-member-select" required onchange="updateDropdowns()">
                             <option value="">Select Team Member</option>
                         </select>
+                        <button type="button" class="add-team-member-button" onclick="addTeamMemberInput()">Add</button>
                     </div>
->>>>>>> Stashed changes
                 </div>
             </div>
             <div class="form-group">
