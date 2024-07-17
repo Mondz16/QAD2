@@ -34,6 +34,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user_type = "internal";
     }
 
+    $message = "";
+    $message_class = "";
+
     if ($result->num_rows == 1) {
         $row = $result->fetch_assoc();
 
@@ -45,7 +48,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt_update_internal->execute();
                 $stmt_update_internal->close();
 
-                echo "User approved with ID: " . $id;
+                $message = "User approved with ID: " . $id;
+                $message_class = "success";
             } elseif ($user_type == "external") {
                 $sql_update_external = "UPDATE external_users SET status = 'approved' WHERE user_id = ?";
                 $stmt_update_external = $conn->prepare($sql_update_external);
@@ -53,7 +57,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt_update_external->execute();
                 $stmt_update_external->close();
 
-                echo "User approved with ID: " . $id;
+                $message = "User approved with ID: " . $id;
+                $message_class = "success";
             }
         } else if ($action == "deny") {
             if ($user_type == "internal") {
@@ -70,14 +75,96 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt_delete_external->close();
             }
 
-            echo "User registration rejected.";
+            $message = "User registration rejected.";
+            $message_class = "error";
         }
-
-        echo '<br><button onclick="window.location.href=\'registration.php\'">OK</button>';
     } else {
-        echo "Invalid registration ID.";
+        $message = "Invalid registration ID.";
+        $message_class = "error";
     }
 }
 
 $conn->close();
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation Result</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Quicksand", sans-serif;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 750px;
+            padding: 24px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #973939;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .button-primary {
+            background-color: #2cb84f;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .button-primary:hover {
+            background-color: #259b42;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Operation Result</h2>
+        <div class="message <?php echo $message_class; ?>">
+            <?php echo $message; ?>
+        </div>
+        <button class="button-primary" onclick="window.location.href='registration.php'">OK</button>
+    </div>
+</body>
+
+</html>
