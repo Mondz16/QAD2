@@ -1,7 +1,7 @@
 <?php
 include 'connection.php';
 
-$sql_colleges = "SELECT id, college_code, college_name FROM college ORDER BY id ASC";
+$sql_colleges = "SELECT id, college_code, college_name, college_email FROM college ORDER BY id ASC";
 $result_colleges = $conn->query($sql_colleges);
 
 $collegePrograms = [];
@@ -9,6 +9,7 @@ while ($row_college = $result_colleges->fetch_assoc()) {
     $collegePrograms[$row_college['id']] = [
         'college_code' => $row_college['college_code'],
         'college_name' => $row_college['college_name'],
+        'college_email' => $row_college['college_email'],
         'programs' => []
     ];
 }
@@ -45,6 +46,59 @@ while ($row_company = $result_companies->fetch_assoc()) {
     <title>College and Programs</title>
     <link rel="stylesheet" href="college_style.css">
 </head>
+<<<<<<< Updated upstream
+=======
+<body>
+    <h2>University of Southeastern Philippines</h2>
+    
+    <table>
+        <caption>Colleges</caption>
+        <tr>
+            <th>College Code</th>
+            <th>College Name</th>
+            <th>College Email</th>
+            <th>Programs</th>
+            <th>Actions</th>
+        </tr>
+        <?php foreach ($collegePrograms as $id => $college): ?>
+        <tr>
+            <td><?php echo htmlspecialchars($college['college_code']); ?></td>
+            <td><?php echo htmlspecialchars($college['college_name']); ?></td>
+            <td><?php echo htmlspecialchars($college['college_email']); ?></td>
+            <td>
+                <?php 
+                $programCount = count($college['programs']);
+                echo $programCount . " programs"; 
+                ?>
+                <button onclick="showPrograms(<?php echo $id; ?>)">Show All Programs</button>
+            </td>
+            <td>
+                <button onclick="location.href='edit_college.php?id=<?php echo $id; ?>'">Edit</button>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </table>
+    <br><button onclick="location.href='add_college.php'">Add College</button><br><br>
+    <br>
+    
+    <table>
+        <caption>Companies</caption>
+        <tr>
+            <th>Company Code</th>
+            <th>Company Name</th>
+            <th>Actions</th>
+        </tr>
+        <?php foreach ($companyDetails as $id => $company): ?>
+        <tr>
+            <td><?php echo htmlspecialchars($company['company_code']); ?></td>
+            <td><?php echo htmlspecialchars($company['company_name']); ?></td>
+            <td>
+                <button onclick="location.href='edit_company.php?id=<?php echo $id; ?>'">Edit</button>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </table>
+>>>>>>> Stashed changes
 
 <body>
     <div class="wrapper">

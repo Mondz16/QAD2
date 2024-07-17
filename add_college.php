@@ -235,6 +235,7 @@
 </head>
 
 <body>
+<<<<<<< Updated upstream
     <div class="wrapper">
         <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
 
@@ -258,6 +259,27 @@
                         </div>
                     </div>
                 </div>
+=======
+    <h2>Add College and Programs</h2>
+    <form action="add_college_process.php" method="post">
+        <div class="form-group">
+            <label for="college_name">College Name:</label>
+            <input type="text" id="college_name" name="college_name" required>
+        </div>
+        <div class="form-group">
+            <label for="college_email">College Email:</label>
+            <input type="email" id="college_email" name="college_email" required>
+        </div>
+        <div id="programs">
+            <div class="form-group programs" id="program_1_group">
+                <label for="program_1">Program:</label>
+                <input type="text" id="program_1" name="programs[]" required>
+                <label for="level_1">Level:</label>
+                <input type="text" id="level_1" name="levels[]" required>
+                <label for="date_received_1">Date Received:</label>
+                <input type="date" id="date_received_1" name="dates_received[]" required>
+                <button type="button" onclick="addProgram()">+</button>
+>>>>>>> Stashed changes
             </div>
         </div>
         <div style="height: 1px; width: 100%; background: #E5E5E5"></div>

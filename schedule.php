@@ -63,7 +63,7 @@
 
         $sql = "SELECT c.college_name, COUNT(s.id) AS total_schedules 
                 FROM college c 
-                LEFT JOIN schedule s ON c.college_name = s.college 
+                LEFT JOIN schedule s ON c.id = s.college_id 
                 GROUP BY c.college_name 
                 ORDER BY c.college_name";
 
@@ -86,5 +86,9 @@
     </table>
     </div>
 </body>
+<<<<<<< Updated upstream
 
 </html>
+=======
+</html>
+>>>>>>> Stashed changes

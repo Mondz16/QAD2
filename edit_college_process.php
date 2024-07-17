@@ -1,6 +1,7 @@
 <?php
 include 'connection.php';
 
+<<<<<<< Updated upstream
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve POST data
     $college_id = $_POST['college_id'];
@@ -19,6 +20,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_update_college = $conn->prepare($sql_update_college);
     $stmt_update_college->bind_param("si", $college_name, $college_id);
     $stmt_update_college->execute();
+=======
+$college_id = $_POST['college_id'];
+$college_name = $_POST['college_name'];
+$college_email = $_POST['college_email'];
+$program_ids = $_POST['program_ids'];
+$programs = $_POST['programs'];
+$levels = $_POST['levels'];
+$dates_received = $_POST['dates_received'];
+$new_programs = $_POST['new_programs'];
+$new_levels = $_POST['new_levels'];
+$new_dates_received = $_POST['new_dates_received'];
+
+$sql = "UPDATE college SET college_name = ?, college_email = ? WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ssi", $college_name, $college_email, $college_id);
+$stmt->execute();
+>>>>>>> Stashed changes
 
     // Update existing programs
     $sql_update_program = "UPDATE program SET program = ?, level = ?, date_received = ? WHERE id = ?";
@@ -52,4 +70,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     header("Location: college.php");
     exit();
 }
+<<<<<<< Updated upstream
 ?>
+=======
+
+foreach ($new_programs as $index => $new_program) {
+    $new_level = $new_levels[$index];
+    $new_date_received = $new_dates_received[$index];
+
+    $sql = "INSERT INTO program (program, level, date_received, college_id) VALUES (?, ?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sssi", $new_program, $new_level, $new_date_received, $college_id);
+    $stmt->execute();
+}
+
+$stmt->close();
+$conn->close();
+
+header("Location: college.php");
+exit;
+?>
+>>>>>>> Stashed changes
