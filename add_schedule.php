@@ -1,3 +1,7 @@
+<?php
+session_start();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +10,77 @@
     <title>Add Schedule</title>
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Quicksand", sans-serif;
+        }
+        body {
+            padding: 20px;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        select, input[type="date"], input[type="time"] {
+            width: calc(100% - 10px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .team-member-input {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .team-member-input select {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .add-team-member-button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .add-team-member-button:hover {
+            background-color: #0056b3;
+        }
+        button[type="submit"], button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+            text-align: center;
+        }
+        button[type="submit"]:hover, button:hover {
+            background-color: #0056b3;
+        }
+        button[type="button"] {
+            background-color: #6c757d;
+        }
+    </style>
 </head>
 <body>
     <div class="form-container">
@@ -13,11 +88,11 @@
         <form action="add_schedule_process.php" method="POST" id="schedule-form">
             <div class="form-group">
                 <label for="college">College:</label>
-                <select id="college" name="college" onchange="fetchPrograms(); fetchUsers();" required>
+                <select id="college" name="college" onchange="fetchPrograms(); fetchUsers();" required class="select2">
                     <option value="">Select College</option>
                     <?php
                     include 'connection.php';
-                    
+
                     $sql = "SELECT id, college_name FROM college ORDER BY college_name";
                     $result = $conn->query($sql);
 
@@ -29,7 +104,7 @@
             </div>
             <div class="form-group">
                 <label for="program">Program:</label>
-                <select id="program" name="program" onchange="fetchProgramLevel()" required>
+                <select id="program" name="program" onchange="fetchProgramLevel()" required class="select2">
                     <option value="">Select Program</option>
                 </select>
                 <span id="program-level"></span>
@@ -61,17 +136,12 @@
                     <select name="team_members[]" required class="select2 team-member-select">
                         <option value="">Select Team Member</option>
                     </select>
+                    <button type="button" class="add-team-member-button" onclick="addTeamMemberInput()">Add</button>
                 </div>
             </div>
-            <br>
-            <div class="form-group">
-                <button type="button" onclick="addTeamMemberInput()">Add Team Member</button>
-            </div>
-            <br>
             <div class="form-group">
                 <button type="submit">Submit</button>
             </div>
-            <br>
         </form>
         <button onclick="location.href='schedule.php'">Back</button>
     </div>
@@ -105,7 +175,7 @@
             <select name="team_members[]" required class="select2 team-member-select">
                 <option value="">Select Team Member</option>
             </select>
-            <button type="button" onclick="removeTeamMemberInput(this)">Remove</button>
+            <button type="button" class="add-team-member-button" onclick="removeTeamMemberInput(this)">Remove</button>
         `;
         container.appendChild(newInputDiv);
 
