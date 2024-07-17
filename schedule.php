@@ -15,7 +15,7 @@
         <div class="container">
             <div class="header">
                 <div class="headerLeft">
-                    <div class="USePData">
+                    <div class=USePData>
                         <img class="USeP" src="images/USePLogo.png" height="36">
                         <div style="height: 0px; width: 16px;"></div>
                         <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
@@ -34,6 +34,7 @@
                 </div>
             </div>
         </div>
+        <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
     </div>
     <div class="pageHeader">
         <div class="headerRight">
