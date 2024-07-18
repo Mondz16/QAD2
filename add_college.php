@@ -292,7 +292,7 @@
                         <button type="button" class="remove-program-button" onclick="removeProgram(this)">Remove Program</button>
                     </div>
                 </div>
-                <button type="submit" class="button button-primary">Add College</button>
+                <button type="submit" class="button button-primary">Submit</button>
                 <button type="button" class="add-program-button" onclick="addProgram()">Add Program</button>
             </form>
         </div>

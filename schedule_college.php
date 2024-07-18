@@ -362,7 +362,7 @@
                         $scheduleDateTime = strtotime($row['schedule_date'] . ' ' . $row['schedule_time']);
                         $currentDateTime = time();
 
-                        if ($currentDateTime > $scheduleDateTime && $row['schedule_status'] !== 'done') {
+                        if ($currentDateTime > $scheduleDateTime && $row['schedule_status'] !== 'done' && $row['schedule_status'] !== 'cancelled') {
                             // Update the schedule status to "done" in the database
                             $update_sql = "UPDATE schedule SET schedule_status = 'done' WHERE id = ?";
                             $update_stmt = $conn->prepare($update_sql);
@@ -382,8 +382,12 @@
                         echo "<td>" . htmlspecialchars($row['schedule_status']) . "</td>";
                         echo "<td>";
                         echo "<a class='action-btn' href='#' onclick='openTeamModal(" . $row['id'] . ")'>View Team</a>";
-                        echo "<a class='action-btn' href='#' onclick='openRescheduleModal(" . $row['id'] . ")'>Reschedule</a>";
-                        echo "<a class='action-btn cancel' href='schedule_cancel_process.php?schedule_id=" . $row['id'] . "'>Cancel</a>";
+                        if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'done') {
+                            echo "<a class='action-btn' href='#' onclick='openRescheduleModal(" . $row['id'] . ")'>Reschedule</a>";
+                        }
+                        if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'done') {
+                            echo "<a class='action-btn cancel' href='schedule_cancel_process.php?schedule_id=" . $row['id'] . "&college=" . $college_name . "'>Cancel</a>";
+                        }
                         echo "</td>";
                         echo "</tr>";
                     }
@@ -405,6 +409,7 @@
             <span class="close" onclick="closeRescheduleModal()">&times;</span>
             <form action="schedule_update_process.php" method="post">
                 <input type="hidden" name="schedule_id" id="schedule_id">
+                <input type="hidden" name="college" value="<?php echo htmlspecialchars($_GET['college']); ?>">
                 <div class="form-group">
                     <label for="new_date">New Date:</label>
                     <input type="date" id="new_date" name="new_date" required>
@@ -420,6 +425,7 @@
             </form>
         </div>
     </div>
+
 
     <!-- Team Modal -->
     <div id="teamModal" class="modal">

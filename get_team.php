@@ -8,10 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['college_id'])) {
     $sql = "
         SELECT iu.user_id, CONCAT(iu.first_name, ' ', iu.middle_initial, ' ', iu.last_name) AS name
         FROM internal_users iu
-        LEFT JOIN team t ON iu.user_id = t.internal_users_id
         WHERE iu.status = 'approved'
         AND iu.college_id != ?
-        AND t.internal_users_id IS NULL
     ";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $college_id);

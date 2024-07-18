@@ -10,18 +10,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $team_leader_id = mysqli_real_escape_string($conn, $_POST['team_leader']);
     $team_members_ids = $_POST['team_members'];
 
-    // Debugging statements to check received data
-    echo "College ID: " . $collegeId . "<br>";
-    echo "Program ID: " . $programId . "<br>";
-    echo "Level: " . $level . "<br>";
-    echo "Date: " . $date . "<br>";
-    echo "Time: " . $time . "<br>";
-    echo "Team Leader ID: " . $team_leader_id . "<br>";
-    echo "Team Members IDs:<br>";
-    foreach ($team_members_ids as $id) {
-        echo $id . "<br>";
-    }
-
     // Fetch college name
     $sql_college = "SELECT college_name FROM college WHERE id = ?";
     $stmt_college = $conn->prepare($sql_college);
@@ -41,14 +29,94 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_program->close();
 
     // Check if the date already exists
-    $sql_check_date = "SELECT id FROM schedule WHERE schedule_date = ?";
-    $stmt_check_date = $conn->prepare($sql_check_date);
+    $sql_check_status = "SELECT id FROM schedule WHERE id = ? AND schedule_status != 'cancelled'";
+    $stmt_check_date = $conn->prepare($sql_check_status);
     $stmt_check_date->bind_param("s", $date);
     $stmt_check_date->execute();
     $stmt_check_date->store_result();
 
     if ($stmt_check_date->num_rows > 0) {
-        echo "Error: Schedule already exists for the selected date.";
+        echo "<!DOCTYPE html>
+<html lang=\"en\">
+
+<head>
+    <meta charset=\"UTF-8\">
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <title>Operation Result</title>
+    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: \"Quicksand\", sans-serif;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 750px;
+            padding: 24px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #973939;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .button-primary {
+            background-color: #2cb84f;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .button-primary:hover {
+            background-color: #259b42;
+        }
+    </style>
+</head>
+
+<body>
+    <div class=\"container\">
+        <h2>Operation Result</h2>
+        <div class=\"message\">
+            Error: Schedule already exists for the selected date.
+        </div>
+        <button class=\"button-primary\" onclick=\"window.location.href='add_schedule.php'\">OK</button>
+    </div>
+</body>
+
+</html>";
         $stmt_check_date->close();
         $conn->close();
         exit();
@@ -100,11 +168,170 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt_notification->close();
         }
 
-        echo "New schedule and team members added successfully";
-        echo '<br><button onclick="location.href=\'schedule.php\'">OK</button>';
+        echo "<!DOCTYPE html>
+<html lang=\"en\">
+
+<head>
+    <meta charset=\"UTF-8\">
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <title>Operation Result</title>
+    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: \"Quicksand\", sans-serif;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 750px;
+            padding: 24px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #973939;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .button-primary {
+            background-color: #2cb84f;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .button-primary:hover {
+            background-color: #259b42;
+        }
+    </style>
+</head>
+
+<body>
+    <div class=\"container\">
+        <h2>Operation Result</h2>
+        <div class=\"message\">
+            New schedule and team members added successfully
+        </div>
+        <button class=\"button-primary\" onclick=\"window.location.href='schedule.php'\">OK</button>
+    </div>
+</body>
+
+</html>";
 
     } else {
-        echo "Error: " . $stmt_schedule->error;
+        echo "<!DOCTYPE html>
+<html lang=\"en\">
+
+<head>
+    <meta charset=\"UTF-8\">
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <title>Operation Result</title>
+    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: \"Quicksand\", sans-serif;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 750px;
+            padding: 24px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #973939;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .button-primary {
+            background-color: #2cb84f;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .button-primary:hover {
+            background-color: #259b42;
+        }
+    </style>
+</head>
+
+<body>
+    <div class=\"container\">
+        <h2>Operation Result</h2>
+        <div class=\"message\">
+            " . $stmt_schedule->error . "
+        </div>
+        <button class=\"button-primary\" onclick=\"window.location.href='add_schedule.php'\">OK</button>
+    </div>
+</body>
+
+</html>";
     }
 
     $stmt_schedule->close();
