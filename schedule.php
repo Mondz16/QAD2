@@ -36,12 +36,14 @@
         </div>
         <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
     </div>
+
     <div class="pageHeader">
         <div class="headerRight">
             <a class="btn" href="admin.php">Back</a>
         </div>
         <h2>University of Southeastern Philippines</h2>
     </div>
+
     <div class="container2">
     <table>
         <tr>
