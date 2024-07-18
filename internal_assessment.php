@@ -17,6 +17,8 @@ $stmt_user_details->bind_result($first_name, $middle_initial, $last_name);
 $stmt_user_details->fetch();
 $stmt_user_details->close();
 
+$full_name = $first_name . ' ' . $middle_initial . ' ' . $last_name;
+
 // Query to find team_id based on user's user_id and check the status
 $sql_find_team_id = "SELECT id, status FROM team WHERE internal_users_id = ?";
 $stmt_find_team_id = $conn->prepare($sql_find_team_id);
@@ -29,6 +31,29 @@ $stmt_find_team_id->close();
 $assessment_submitted = false;
 
 if ($team_id && $status === 'accepted') {
+    // Check if assessment has already been submitted for the team
+    $sql_check_assessment = "SELECT id FROM assessment WHERE team_id = ?";
+    $stmt_check_assessment = $conn->prepare($sql_check_assessment);
+    $stmt_check_assessment->bind_param("i", $team_id);
+    $stmt_check_assessment->execute();
+    $stmt_check_assessment->store_result();
+    if ($stmt_check_assessment->num_rows > 0) {
+        $assessment_submitted = true;
+    }
+    $stmt_check_assessment->close();
+
+    
+if ($assessment_submitted) {
+    // Retrieve the assessment file path
+    $sql_get_assessment_file = "SELECT assessment_file FROM assessment WHERE team_id = ?";
+    $stmt_get_assessment_file = $conn->prepare($sql_get_assessment_file);
+    $stmt_get_assessment_file->bind_param("i", $team_id);
+    $stmt_get_assessment_file->execute();
+    $stmt_get_assessment_file->bind_result($assessment_file);
+    $stmt_get_assessment_file->fetch();
+    $stmt_get_assessment_file->close();
+}
+
     // Retrieve schedule details based on team_id from schedule table
     $sql_get_schedule = "SELECT s.id, c.college_name AS college_name, p.program AS program, s.level_applied, s.schedule_date, s.schedule_time
                          FROM schedule s
@@ -50,7 +75,7 @@ if ($team_id && $status === 'accepted') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Internal Assessment</title>
-    <link rel="stylesheet" href="admin_style.css">
+    <link rel="stylesheet" href="loginstyle.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -183,61 +208,111 @@ if ($team_id && $status === 'accepted') {
     <header class="site-header">
         <nav>
             <ul class="nav-list">
-                <li><a href="internal_notification.php">Notification</a></li>
-                <li><a href="internal_assessment.php">Assessment</a></li>
+                <li class="btn"><a href="internal.php">Home</a></li>
+                <li class="btn"><a href="internal_notification.php">Notification</a></li>
+                <li class="btn"><a href="internal_assessment.php">Assessment</a></li>
                 <li class="btn"><a href="logout.php">Log Out</a></li>
             </ul>
         </nav>
     </header>
     <div class="notifications">
         <h1>Internal Assessment Details</h1>
-        <?php if ($assessment_submitted): ?>
-            <p>Assessment has already been submitted.</p>
-        <?php elseif (isset($schedule_id)): ?>
-            <div>
-                <p><strong>College:</strong> <?php echo $college_name; ?></p>
-                <p><strong>Program:</strong> <?php echo $program; ?></p>
-                <p><strong>Level Applied:</strong> <?php echo $level_applied; ?></p>
-                <p><strong>Schedule Date:</strong> <?php echo $schedule_date; ?></p>
-                <p><strong>Schedule Time:</strong> <?php echo $schedule_time; ?></p>
-            </div>
-            <button onclick="openPopup()">Assessment</button>
+        <div class="notification">
+            <?php if ($assessment_submitted && isset($schedule_id)): ?>
+                <div>
+                    <p><strong>College:</strong> <?php echo $college_name; ?></p>
+                    <p><strong>Program:</strong> <?php echo $program; ?></p>
+                    <p><strong>Level Applied:</strong> <?php echo $level_applied; ?></p>
+                    <p><strong>Schedule Date:</strong> <?php echo $schedule_date; ?></p>
+                    <p><strong>Schedule Time:</strong> <?php echo $schedule_time; ?></p>
+                </div>
+                <p>This schedule's assessment has already been submitted.</p>
+                <a href="<?php echo $assessment_file; ?>" download>Download Assessment PDF</a> <button onclick="openPopup()">Reassess?</button>
 
-            <!-- Popup Form -->
-            <div class="overlay" id="overlay"></div>
-            <div class="popup" id="popup">
-                <h2>Assessment Form</h2>
+                <!-- Popup Form -->
+                <div class="overlay" id="overlay"></div>
+                <div class="popup" id="popup">
+                    <h2>Assessment Form</h2>
 
-                <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
-                    <label for="college">College:</label>
-                    <input type="text" id="college" name="college" value="<?php echo $college_name; ?>" readonly><br><br>
-                    <label for="program">Program:</label>
-                    <input type="text" id="program" name="program" value="<?php echo $program; ?>" readonly><br><br>
-                    <label for="level">Level Applied:</label>
-                    <input type="text" id="level" name="level" value="<?php echo $level_applied; ?>" readonly><br><br>
-                    <label for="date">Schedule Date:</label>
-                    <input type="text" id="date" name="date" value="<?php echo $schedule_date; ?>" readonly><br><br>
-                    <label for="result">Result:</label>
-                    <input type="text" id="result" name="result" required><br><br>
-                    <label for="area_evaluated">Area Evaluated:</label>
-                    <input type="text" id="area_evaluated" name="area_evaluated" required><br><br>
-                    <label for="findings">Findings:</label>
-                    <textarea id="findings" name="findings" rows="4" required></textarea><br><br>
-                    <label for="recommendations">Recommendations:</label>
-                    <textarea id="recommendations" name="recommendations" rows="4" required></textarea><br><br>
-                    <label for="evaluator">Evaluator:</label>
-                    <input type="text" id="evaluator" name="evaluator" required><br><br>
-                    <label for="evaluator_signature">Evaluator Signature (PNG format):</label>
-                    <input type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required><br><br>
-                    <button type="submit">Submit Assessment</button>
-                </form>
-                <button onclick="closePopup()">Close</button>
-            </div>
-        <?php else: ?>
-            <p>No accepted schedule found for the logged-in user.</p>
-        <?php endif; ?>
+                    <form action="internal_reassessment_process.php" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
+                        <label for="college">College:</label>
+                        <input type="text" id="college" name="college" value="<?php echo $college_name; ?>" readonly><br><br>
+                        <label for="program">Program:</label>
+                        <input type="text" id="program" name="program" value="<?php echo $program; ?>" readonly><br><br>
+                        <label for="level">Level Applied:</label>
+                        <input type="text" id="level" name="level" value="<?php echo $level_applied; ?>" readonly><br><br>
+                        <label for="date">Schedule Date:</label>
+                        <input type="text" id="date" name="date" value="<?php echo $schedule_date; ?>" readonly><br><br>
+                        <label for="result">Result:</label>
+                        <input type="text" id="result" name="result" required><br><br>
+                        <label for="area_evaluated">Area Evaluated:</label>
+                        <input type="text" id="area_evaluated" name="area_evaluated" required><br><br>
+                        <label for="findings">Findings:</label>
+                        <textarea id="findings" name="findings" rows="4" required></textarea><br><br>
+                        <label for="recommendations">Recommendations:</label>
+                        <textarea id="recommendations" name="recommendations" rows="4" required></textarea><br><br>
+                        <label for="evaluator">Evaluator:</label>
+                        <input type="text" id="evaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly   ><br><br>
+                        <label for="evaluator_signature">Evaluator Signature (PNG format):</label>
+                        <input type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required><br><br>
+                        <button type="submit">Submit Assessment</button>
+                    </form>
+                    <button onclick="closePopup()">Close</button>
+                </div>
+        </div>
+
+        <div class="notification">
+            <?php elseif (isset($schedule_id)): ?>
+                <div>
+                    <p><strong>College:</strong> <?php echo $college_name; ?></p>
+                    <p><strong>Program:</strong> <?php echo $program; ?></p>
+                    <p><strong>Level Applied:</strong> <?php echo $level_applied; ?></p>
+                    <p><strong>Schedule Date:</strong> <?php echo $schedule_date; ?></p>
+                    <p><strong>Schedule Time:</strong> <?php echo $schedule_time; ?></p>
+                </div>
+                <button onclick="openPopup()">Assess</button>
+
+                <!-- Popup Form -->
+                <div class="overlay" id="overlay"></div>
+                <div class="popup" id="popup">
+                    <h2>Assessment Form</h2>
+
+                    <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
+                        <label for="college">College:</label>
+                        <input type="text" id="college" name="college" value="<?php echo $college_name; ?>" readonly><br><br>
+                        <label for="program">Program:</label>
+                        <input type="text" id="program" name="program" value="<?php echo $program; ?>" readonly><br><br>
+                        <label for="level">Level Applied:</label>
+                        <input type="text" id="level" name="level" value="<?php echo $level_applied; ?>" readonly><br><br>
+                        <label for="date">Schedule Date:</label>
+                        <input type="text" id="date" name="date" value="<?php echo $schedule_date; ?>" readonly><br><br>
+                        <label for="result">Result:</label>
+                        <input type="text" id="result" name="result" required><br><br>
+                        <label for="area_evaluated">Area Evaluated:</label>
+                        <input type="text" id="area_evaluated" name="area_evaluated" required><br><br>
+                        <label for="findings">Findings:</label>
+                        <textarea id="findings" name="findings" rows="4" required></textarea><br><br>
+                        <label for="recommendations">Recommendations:</label>
+                        <textarea id="recommendations" name="recommendations" rows="4" required></textarea><br><br>
+                        <label for="evaluator">Evaluator:</label>
+                        <input type="text" id="evaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly   ><br><br>
+                        <label for="evaluator_signature">Evaluator Signature (PNG format):</label>
+                        <input type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required><br><br>
+                        <button type="submit">Submit Assessment</button>
+                    </form>
+                    <button onclick="closePopup()">Close</button>
+                </div>
+            <?php else: ?>
+                <p>No schedule details found for the team.</p>
+            <?php endif; ?>
+        </div>
     </div>
+    <div class="back-btn">
+        <a href="internal_notification.php" class="btn">Back</a>
+    </div>
+
     <script>
         function openPopup() {
             document.getElementById("overlay").style.display = "block";
