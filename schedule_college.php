@@ -342,25 +342,28 @@
 
                 $college_name = urldecode($_GET['college']);
                 $sql = "SELECT s.id, p.program, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status
-    FROM schedule s
-    JOIN program p ON s.program_id = p.id
-    JOIN college c ON s.college_id = c.id
-    WHERE c.college_name = ?
-    ORDER BY s.schedule_date, s.schedule_time";
+                        FROM schedule s
+                        JOIN program p ON s.program_id = p.id
+                        JOIN college c ON s.college_id = c.id
+                        WHERE c.college_name = ?
+                        ORDER BY s.schedule_date, s.schedule_time";
 
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("s", $college_name);
                 $stmt->execute();
                 $result = $stmt->get_result();
 
+                // Set the timezone to Asia/Manila
+                date_default_timezone_set('Asia/Manila');
+
                 if ($result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
                         $schedule_date = date("F-d-Y", strtotime($row['schedule_date']));
                         $schedule_time = date("h:i A", strtotime($row['schedule_time']));
 
-                        // Check if the current date and time have passed the schedule date and time
-                        $scheduleDateTime = strtotime($row['schedule_date'] . ' ' . $row['schedule_time']);
-                        $currentDateTime = time();
+                        // Create DateTime objects with the Asia/Manila timezone
+                        $scheduleDateTime = new DateTime($row['schedule_date'] . ' ' . $row['schedule_time'], new DateTimeZone('Asia/Manila'));
+                        $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
 
                         if ($currentDateTime > $scheduleDateTime && $row['schedule_status'] !== 'done' && $row['schedule_status'] !== 'cancelled') {
                             // Update the schedule status to "done" in the database
@@ -384,9 +387,7 @@
                         echo "<a class='action-btn' href='#' onclick='openTeamModal(" . $row['id'] . ")'>View Team</a>";
                         if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'done') {
                             echo "<a class='action-btn' href='#' onclick='openRescheduleModal(" . $row['id'] . ")'>Reschedule</a>";
-                        }
-                        if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'done') {
-                            echo "<a class='action-btn cancel' href='schedule_cancel_process.php?schedule_id=" . $row['id'] . "&college=" . $college_name . "'>Cancel</a>";
+                            echo "<a class='action-btn cancel' href='schedule_cancel_process.php?schedule_id=" . $row['id'] . "&college=" . urlencode($college_name) . "'>Cancel</a>";
                         }
                         echo "</td>";
                         echo "</tr>";

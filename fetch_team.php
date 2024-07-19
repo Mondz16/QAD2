@@ -49,6 +49,9 @@ if ($result->num_rows > 0) {
             case 'accepted':
                 $bgColor = 'background-color: #1fd655;';
                 break;
+            case 'declined':
+                $bgColor = 'background-color: red;';
+                break;
         }
         echo "<tr>";
         echo "<td>" . htmlspecialchars($row['first_name']) . "</td>";
@@ -65,4 +68,3 @@ if ($result->num_rows > 0) {
 
 $stmt->close();
 $conn->close();
-?>
