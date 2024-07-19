@@ -60,10 +60,14 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 18px;
 }
 
-.headerRight {
+.headerRight, .bodyLeft {
     order: unset;
     flex: unset;
     align-self: unset;
+}
+
+.body {
+margin-left: 300px;
 }
 
 .SDMD {
@@ -93,7 +97,7 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0;
 }
 
-.headerRight .btn {
+.headerRight .btn, .bodyLeft .btn {
     background-color: #dc3545;
     color: white;
     padding: 10px 20px;
@@ -102,7 +106,7 @@ h1, h2, h3, h4, h5, h6 {
     transition: background-color 0.3s ease;
 }
 
-.headerRight .btn:hover {
+.headerRight .btn:hover, .bodyLeft .btn:hover {
     background-color: #b82c3b;
 }
 

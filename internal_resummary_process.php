@@ -13,10 +13,8 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
-    $result = $_POST['result'];
-    $area_evaluated = $_POST['area_evaluated'];
-    $findings = $_POST['findings'];
-    $recommendations = $_POST['recommendations'];
+    $areas = $_POST['areas'];
+    $results = $_POST['results'];
     $evaluator = $_POST['evaluator'];
     $evaluator_signature = $_FILES['evaluator_signature'];
 
@@ -55,14 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Upload evaluator signature
     $signature_path = 'signatures/' . basename($evaluator_signature['name']);
     if (!move_uploaded_file($evaluator_signature['tmp_name'], $signature_path)) {
-        echo "<script>alert('Failed to upload signature.'); window.location.href = 'internal_assessment.php';</script>";
+        echo "Failed to upload signature.";
         exit();
     }
 
     // Load PDF template
     $pdf = new FPDI();
     $pdf->AddPage();
-    $pdf->setSourceFile('Assessments/assessment.pdf');
+    $pdf->setSourceFile('Summary/summary.pdf');
     $tplIdx = $pdf->importPage(1);
     $pdf->useTemplate($tplIdx);
 
@@ -70,69 +68,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdf->SetFont('Arial', '', 12);
 
     // Add dynamic data to the PDF
-    $pdf->SetXY(43, 90); // Adjust position
+    $pdf->SetXY(50, 90); // Adjust position
     $pdf->Write(0, $college_name);
 
-    $pdf->SetXY(43, 103); // Adjust position
+    $pdf->SetXY(50, 103); // Adjust position
     $pdf->Write(0, $program_name);
 
-    $pdf->SetXY(43, 116); // Adjust position
+    $pdf->SetXY(50, 116); // Adjust position
     $pdf->Write(0, $level_applied);
 
-    $pdf->SetXY(170, 103); // Adjust position
-    $pdf->Write(0, $schedule_date);
+    $pdf->SetXY(12, 141); // Adjust position
+    $pdf->MultiCell(37, 5, $areas);
 
-    $pdf->SetXY(145, 116); // Adjust position
-    $pdf->Write(0, $result);
+    $pdf->SetXY(50, 139); // Adjust position
+    $pdf->MultiCell(148, 5, $results);
 
-    $pdf->SetXY(13, 141); // Adjust position
-    $pdf->MultiCell(38, 5, $area_evaluated);
-
-    $pdf->SetXY(58, 141); // Adjust position
-    $pdf->MultiCell(61, 5, $findings);
-
-    $pdf->SetXY(125, 141); // Adjust position
-    $pdf->MultiCell(70, 5, $recommendations);
-
-    $pdf->SetXY(45, 259); // Adjust position
+    $pdf->SetXY(45, 258); // Adjust position
     $pdf->Write(0, $evaluator);
 
     // Add evaluator signature
     $pdf->Image($signature_path, 45, 248, 40); // Adjust position and size
 
     // Save the filled PDF
-    $output_path = 'Assessments/' . $team_id . '.pdf';
+    $output_path = 'Summary/' . $team_id . '.pdf';
     $pdf->Output('F', $output_path);
 
-    // Insert or update assessment details in the database
-    $sql_check_assessment = "SELECT id FROM assessment WHERE team_id = ?";
-    $stmt_check_assessment = $conn->prepare($sql_check_assessment);
-    $stmt_check_assessment->bind_param("i", $team_id);
-    $stmt_check_assessment->execute();
-    $stmt_check_assessment->bind_result($assessment_id);
-    $stmt_check_assessment->fetch();
-    $stmt_check_assessment->close();
+    // Insert or update summary details in the database
+    $sql_check_summary = "SELECT id FROM summary WHERE team_id = ?";
+    $stmt_check_summary = $conn->prepare($sql_check_summary);
+    $stmt_check_summary->bind_param("i", $team_id);
+    $stmt_check_summary->execute();
+    $stmt_check_summary->bind_result($summary_id);
+    $stmt_check_summary->fetch();
+    $stmt_check_summary->close();
 
-    if ($assessment_id) {
+    if ($summary_id) {
         // Update existing assessment
-        $sql_update_assessment = "UPDATE assessment SET result = ?, area_evaluated = ?, findings = ?, recommendations = ?, evaluator = ?, evaluator_signature = ?, assessment_file = ? WHERE id = ?";
-        $stmt_update_assessment = $conn->prepare($sql_update_assessment);
-        $stmt_update_assessment->bind_param("sssssssi", $result, $area_evaluated, $findings, $recommendations, $evaluator, $signature_path, $output_path, $assessment_id);
-        $stmt_update_assessment->execute();
-        $stmt_update_assessment->close();
-        $message = "Assessment updated successfully.";
+        $sql_update_summary = "UPDATE summary SET areas = ?, results = ?, evaluator = ?, evaluator_signature = ?, summary_file = ? WHERE id = ?";
+        $stmt_update_summary = $conn->prepare($sql_update_summary);
+        $stmt_update_summary->bind_param("sssssi", $areas, $results, $evaluator, $signature_path, $output_path, $summary_id);
+        $stmt_update_summary->execute();
+        $stmt_update_summary->close();
+        $message = "Summary updated successfully.";
     } else {
-        // Insert new assessment
-        $sql_insert_assessment = "INSERT INTO assessment (team_id, result, area_evaluated, findings, recommendations, evaluator, evaluator_signature, assessment_file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $stmt_insert_assessment = $conn->prepare($sql_insert_assessment);
-        $stmt_insert_assessment->bind_param("isssssss", $team_id, $result, $area_evaluated, $findings, $recommendations, $evaluator, $signature_path, $output_path);
+        // Insert new summary
+        $sql_insert_summary = "INSERT INTO summary (team_id, areas, results, evaluator, evaluator_signature, summary_file) VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt_insert_summary = $conn->prepare($sql_insert_summary);
+        $stmt_insert_summary->bind_param("isssss", $team_id, $areas, $results, $evaluator, $signature_path, $output_path);
         $stmt_insert_assessment->execute();
         $stmt_insert_assessment->close();
-        $message = "Assessment submitted successfully.";
+        $message = "Summary submitted successfully.";
     }
 
     // Set session variable to indicate successful submission
-    $_SESSION['assessment_submitted'] = true;
+    $_SESSION['summary_submitted'] = true;
 
     // Output success message with popup
     echo "<script>

@@ -64,7 +64,7 @@ $sql = "CREATE TABLE IF NOT EXISTS admin (
 )";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Table users created successfully<br>";
+    echo "Table admin created successfully<br>";
 } else {
     echo "Error creating table: " . $conn->error . "<br>";
 }
@@ -129,13 +129,13 @@ $sql = "CREATE TABLE IF NOT EXISTS team (
     schedule_id INT(6) UNSIGNED,
     internal_users_id VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
-    status ENUM('pending', 'accepted') NOT NULL DEFAULT 'pending',
+    status ENUM('pending', 'accepted', 'declined') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (schedule_id) REFERENCES schedule(id),
     FOREIGN KEY (internal_users_id) REFERENCES internal_users(user_id)
 )";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Table team_members created successfully<br>";
+    echo "Table team created successfully<br>";
 } else {
     echo "Error creating table: " . $conn->error . "<br>";
 }
@@ -149,7 +149,7 @@ $sql = "CREATE TABLE IF NOT EXISTS notifications (
 )";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Table team_members created successfully<br>";
+    echo "Table notifications created successfully<br>";
 } else {
     echo "Error creating table: " . $conn->error . "<br>";
 }
@@ -168,7 +168,24 @@ $sql = "CREATE TABLE IF NOT EXISTS assessment (
 )";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Table team_members created successfully<br>";
+    echo "Table assessment created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+$sql = "CREATE TABLE IF NOT EXISTS summary (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    team_id INT(6) UNSIGNED,
+    areas VARCHAR(255) NOT NULL,
+    results VARCHAR(10) NOT NULL,
+    evaluator VARCHAR(255) NOT NULL,
+    evaluator_signature VARCHAR(255) NOT NULL,
+    summary_file VARCHAR(255) NOT NULL,
+    FOREIGN KEY (team_id) REFERENCES team(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table assessment created successfully<br>";
 } else {
     echo "Error creating table: " . $conn->error . "<br>";
 }

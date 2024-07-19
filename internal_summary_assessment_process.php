@@ -13,10 +13,8 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
-    $result = $_POST['result'];
-    $area_evaluated = $_POST['area_evaluated'];
-    $findings = $_POST['findings'];
-    $recommendations = $_POST['recommendations'];
+    $areas = $_POST['areas'];
+    $results = $_POST['results'];
     $evaluator = $_POST['evaluator'];
     $evaluator_signature = $_FILES['evaluator_signature'];
 
@@ -71,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Load PDF template
     $pdf = new FPDI();
     $pdf->AddPage();
-    $pdf->setSourceFile('Assessments/assessment.pdf');
+    $pdf->setSourceFile('Summary/summary.pdf');
     $tplIdx = $pdf->importPage(1);
     $pdf->useTemplate($tplIdx);
 
@@ -79,44 +77,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdf->SetFont('Arial', '', 12);
 
     // Add dynamic data to the PDF
-    $pdf->SetXY(43, 90); // Adjust position
+    $pdf->SetXY(50, 90); // Adjust position
     $pdf->Write(0, $college_name);
 
-    $pdf->SetXY(43, 103); // Adjust position
+    $pdf->SetXY(50, 103); // Adjust position
     $pdf->Write(0, $program_name);
 
-    $pdf->SetXY(43, 116); // Adjust position
+    $pdf->SetXY(50, 116); // Adjust position
     $pdf->Write(0, $level_applied);
 
-    $pdf->SetXY(170, 103); // Adjust position
-    $pdf->Write(0, $schedule_date);
+    $pdf->SetXY(12, 141); // Adjust position
+    $pdf->MultiCell(37, 5, $areas);
 
-    $pdf->SetXY(145, 116); // Adjust position
-    $pdf->Write(0, $result);
+    $pdf->SetXY(50, 139); // Adjust position
+    $pdf->MultiCell(148, 5, $results);
 
-    $pdf->SetXY(13, 141); // Adjust position
-    $pdf->MultiCell(38, 5, $area_evaluated);
-
-    $pdf->SetXY(58, 141); // Adjust position
-    $pdf->MultiCell(61, 5, $findings);
-
-    $pdf->SetXY(125, 141); // Adjust position
-    $pdf->MultiCell(70, 5, $recommendations);
-
-    $pdf->SetXY(45, 259); // Adjust position
+    $pdf->SetXY(45, 258); // Adjust position
     $pdf->Write(0, $evaluator);
 
     // Add evaluator signature
     $pdf->Image($signature_path, 45, 248, 40); // Adjust position and size
 
     // Save the filled PDF
-    $output_path = 'Assessments/' . $team_id . '.pdf';
+    $output_path = 'Summary/' . $team_id . '.pdf';
     $pdf->Output('F', $output_path);
 
     // Insert assessment details into the database
-    $sql_insert = "INSERT INTO assessment (team_id, result, area_evaluated, findings, recommendations, evaluator, evaluator_signature, assessment_file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql_insert = "INSERT INTO summary (team_id, areas, results, evaluator, evaluator_signature, summary_file) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt_insert = $conn->prepare($sql_insert);
-    $stmt_insert->bind_param("isssssss", $team_id, $result, $area_evaluated, $findings, $recommendations, $evaluator, $signature_path, $output_path);
+    $stmt_insert->bind_param("isssss", $team_id, $areas, $results, $evaluator, $signature_path, $output_path);
     $stmt_insert->execute();
     $stmt_insert->close();
 
