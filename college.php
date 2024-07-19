@@ -9,7 +9,7 @@ while ($row_college = $result_colleges->fetch_assoc()) {
     $collegePrograms[$row_college['id']] = [
         'college_code' => $row_college['college_code'],
         'college_name' => $row_college['college_name'],
-        'college_email' => $row_college['college_email'],
+        'college_email' => $row_college['college_email'], // Add this line
         'programs' => []
     ];
 }
@@ -39,70 +39,68 @@ while ($row_company = $result_companies->fetch_assoc()) {
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>College and Programs</title>
-    <link rel="stylesheet" href="college_style.css">
+    <title>College</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="css/pagestyle.css" rel="stylesheet">
 </head>
-
 <body>
-    <div class="wrapper">
-        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
-
-        <div class="container">
-            <div class="header">
-                <div class="headerLeft">
-                    <div class=USePData>
-                        <img class="USeP" src="images/USePLogo.png" height="36">
-                        <div style="height: 0px; width: 16px;"></div>
-                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
-                        <div style="height: 0px; width: 16px;"></div>
-                        <div class="headerLeftText">
-                            <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
-                                <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
-                                    <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
-                                </h>
-                            </div>
-                            <h>Accreditor Portal</h>
-                        </div>
-                    </div>
+<div class="container-fluid">
+<div class="row top-bar"></div>
+        <div class="row header mb-3">
+            <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
+                <img src="images/USePLogo.png" alt="USeP Logo">
+            </div>
+            <div class="col-6 col-md-4 d-flex align-items-center">
+                <div class="vertical-line"></div>
+                <div class="divider"></div>
+                <div class="text">
+                    <span class="one">One</span>
+                    <span class="datausep">Data.</span>
+                    <span class="one">One</span>
+                    <span class="datausep">USeP.</span><br>
+                    <span>Accreditor Portal</span>
                 </div>
             </div>
+            <div class="col-md-4 d-none d-md-flex align-items-center justify-content-end">
+            </div>
+            <div class="col-md-2 d-none d-md-flex align-items-center justify-content-start">
+            </div>
         </div>
-        <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
-    </div>
-
-    <div class="pageHeader">
-        <div class="headerRight">
-            <a class="btn" href="admin.php">Back</a>
+        <div class="row justify-content-start">
+            <div class="col-2"></div>
+            <div class="col text-center mt-3">
+                <div class="row">
+                <button class="col-2 mx-1 pobtn" onclick="location.href='admin.php'"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+                </svg></button>
+                <h2 class="col">University of Southeastern Philippines</h2>
+                </div>
+                <div class="row mb-3">
+            <div class="col text-start mt-5">
+                <h2>Colleges</h2>
+            </div>
+            <div class="col-auto mt-5">
+                <button class="btn refresh" onclick="location.href='add_college.php'"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                </svg>Add College</button>
+            </div>
         </div>
-        <h2>University of Southeastern Philippines</h2>
-    </div>
-
-    <div class="container2">
-        <table>
-            <tr>
-                <th class="table_header" colspan="4">
-                    Colleges
-                </th>
-                <th class="button-container">
-                    <div>
-                        <button onclick="location.href='add_college.php'">Add College</button>
-                    </div>
-                </th>
-            </tr>
-            <tr>
-                <th>College Code</th>
-                <th>College Name</th>
-                <th>College Email</th>
-                <th>Programs</th>
-                <th>Actions</th>
-            </tr>
-            <?php foreach ($collegePrograms as $id => $college) : ?>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>College Code</th>
+                        <th>College Name</th>
+                        <th>College Email</th>
+                        <th>Programs</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($collegePrograms as $id => $college) : ?>
                 <tr>
                     <td><?php echo htmlspecialchars($college['college_code']); ?></td>
                     <td><?php echo htmlspecialchars($college['college_name']); ?></td>
@@ -113,117 +111,107 @@ while ($row_company = $result_companies->fetch_assoc()) {
                         echo $programCount . " programs";
                         ?>
                     </td>
-                    <td>
-                        <button class="view_button" onclick="showPrograms(<?php echo $id; ?>)">View</button>
-                        <button class="edit_button" onclick="location.href='edit_college.php?id=<?php echo $id; ?>'">Edit</button>
+                    <td class="text-center">
+                        <button class="btn pobtn btn-sm mb-3 mb-md-0" onclick="showPrograms(<?php echo $id; ?>)">View</button>
+                        <button class="btn pobtn btn-sm" onclick="location.href='edit_college.php?id=<?php echo $id; ?>'">Edit</button>
                     </td>
                 </tr>
             <?php endforeach; ?>
-        </table>
-
-        <br>
-
-        <table>
-            <tr>
-                <th class="table_header" colspan="2">
-                    Company
-                </th>
-                <th class="button-container">
-                    <div>
-                        <button onclick="location.href='add_company.php'">Add Company</button>
-                    </div>
-                </th>
-            </tr>
-            <tr>
-                <th>Company Code</th>
-                <th>Company Name</th>
-                <th>Actions</th>
-            </tr>
-            <?php foreach ($companyDetails as $id => $company) : ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($company['company_code']); ?></td>
-                    <td><?php echo htmlspecialchars($company['company_name']); ?></td>
-                    <td>
-                        <button onclick="location.href='edit_company.php?id=<?php echo $id; ?>'">Edit</button>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </table>
-
-        <!-- Modal for showing programs -->
-        <div id="programModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Programs</h2>
-                <table id="modalTable">
-                    <tr>
-                        <th>Program</th>
-                        <th>Level <button onclick="sortPrograms('level')">Sort</button></th>
-                        <th>Date Received <button onclick="sortPrograms('date_received')">Sort</button></th>
-                    </tr>
-                    <!-- Program details will be populated here using JavaScript -->
-                </table>
+                </tbody>
+            </table>
+        </div>
+        <div class="row mb-3 mt-5">
+            <div class="col text-start">
+                <h2>Company</h2>
+            </div>
+            <div class="col-auto">
+                <button class="btn refresh" onclick="location.href='add_company.php'"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                </svg>Add Company</button>
             </div>
         </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Company Code</th>
+                        <th>Company Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($companyDetails as $id => $company) : ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($company['company_code']); ?></td>
+                            <td><?php echo htmlspecialchars($company['company_name']); ?></td>
+                            <td class="text-center">
+                                <button class="btn pobtn btn-sm" onclick="location.href='edit_company.php?id=<?php echo $id; ?>'">Edit</button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+            </div>
+            <div class="col-2"></div>
+        </div>
+</div>
+<div class="modal fade" id="programModal" tabindex="-1" aria-labelledby="programModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="programModalLabel">Programs</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Program</th>
+              <th>Level</th>
+              <th>Date Received</th>
+            </tr>
+          </thead>
+          <tbody id="programDetails">
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
     </div>
-
+  </div>
+</div>
+<footer class="row text-left mt-5">
+        <div class="col-2"></div>
+        <div class="col">
+            <p>Copyright © 2024. All Rights Reserved.</p>
+            <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
+        </div>
+        </footer>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>    
     <script>
-        var modal = document.getElementById("programModal");
-        var span = document.getElementsByClassName("close")[0];
-        var programsData = [];
+const collegePrograms = <?php echo json_encode($collegePrograms); ?>;
 
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
+function showPrograms(collegeId) {
+    const programDetails = document.getElementById('programDetails');
+    programDetails.innerHTML = '';
 
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
+    collegePrograms[collegeId].programs.forEach(program => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${program.program}</td>
+            <td>${program.level}</td>
+            <td>${program.date_received}</td>
+        `;
+        programDetails.appendChild(row);
+    });
 
-        function showPrograms(collegeId) {
-            var collegePrograms = <?php echo json_encode($collegePrograms); ?>;
-            programsData = collegePrograms[collegeId].programs;
-            displayPrograms(programsData);
-            modal.style.display = "block";
-        }
-
-        function displayPrograms(programs) {
-            var modalTable = document.getElementById("modalTable");
-            modalTable.innerHTML = `
-        <tr>
-            <th>Program</th>
-            <th>Level <button onclick="sortPrograms('level')">Sort</button></th>
-            <th>Date Received <button onclick="sortPrograms('date_received')">Sort</button></th>
-        </tr>
-    `;
-
-            programs.forEach(function(program) {
-                var row = modalTable.insertRow();
-                var cell1 = row.insertCell(0);
-                var cell2 = row.insertCell(1);
-                var cell3 = row.insertCell(2);
-
-                cell1.innerHTML = program.program;
-                cell2.innerHTML = program.level;
-                cell3.innerHTML = program.date_received;
-            });
-        }
-
-        function sortPrograms(criteria) {
-            programsData.sort(function(a, b) {
-                if (criteria === 'date_received') {
-                    return new Date(a[criteria]) - new Date(b[criteria]);
-                } else {
-                    if (a[criteria] < b[criteria]) return -1;
-                    if (a[criteria] > b[criteria]) return 1;
-                    return 0;
-                }
-            });
-            displayPrograms(programsData);
-        }
-    </script>
+    const programModal = new bootstrap.Modal(document.getElementById('programModal'));
+    programModal.show();
+}
+</script>
 </body>
-
 </html>

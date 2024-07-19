@@ -1,0 +1,245 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap');
+body {
+    font-family: "Quicksand", sans-serif;
+}
+.top-bar {
+    background: linear-gradient(275.52deg, #973939 0.28%, #B26F6F 100%);
+    height: 9px;
+}
+.header {
+    background-color: white;
+    color: black;   
+    padding: 10px 0;
+    border-bottom: 1px solid lightgrey;
+}
+.header img {
+    height: 36px;
+}
+.content {
+    margin-top: 50px;
+}
+.form-control {
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+.form-control::placeholder {
+    font-size: 0.9em;
+}
+.form-select {
+    font-size: 0.9em;
+}
+.form-check-label {
+    margin-left: 5px;
+}
+.header .one,
+.header .datausep {
+    font-weight: 600;
+    font-size: 18px;
+}
+.header .one {
+    color: rgb(229, 156, 36);
+}
+.header .datausep {
+    color: rgb(151, 57, 57);
+}
+.divider {
+    height: 0px;
+    width: 16px;
+    display: block; /* Visible on desktop */
+}
+.vertical-line {
+    height: 32px;
+    width: 1px;
+    background: #E5E5E5;
+    display: block; /* Visible on desktop */
+}
+@media (max-width: 768px) {
+    .header img {
+        height: 72px; /* Larger image size for smaller screens */
+        margin: 0 auto; /* Center the image */
+    }
+    .header .text {
+        text-align: center;
+        margin-top: 10px;
+    }
+    .divider, .vertical-line {
+        display: none; /* Hide on mobile */
+    }
+    .header .col-12 {
+        text-align: center; /* Center content on mobile */
+    }
+}
+.account-type-selection {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.account-type-option {
+    border: 1px solid #ced4da;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s, color 0.3s;
+    position: relative;
+}
+
+.account-type-option input {
+    display: none;
+}
+
+.account-type-option::before {
+    content: '';
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid #ced4da;
+    background-color: white;
+    margin-right: 10px;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.account-type-option.selected {
+    background: linear-gradient(275.52deg, #973939 0.28%, #B26F6F 100%);
+    color: white;
+}
+
+.account-type-option.selected::before {
+    background: linear-gradient(275.52deg, #973939 0.28%, #B26F6F 100%);
+    border-color: white;
+}
+
+.account-type-option.selected .circle {
+    background-color: white;
+}
+.stbtn {
+    color: white;
+    background: linear-gradient(275.52deg, #973939 0.28%, #B26F6F 100%);
+    border: 1px solid #ced4da;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s, color 0.3s;
+    position: relative;
+}
+.lbtn {
+    color: black;
+    font-size: 0.9em;
+    background: white; 
+    border: 2px solid #ced4da;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    align-items: center;
+    position: relative;
+}
+.menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+.menu button {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.menu button:hover {
+    background-color: #f0f0f0;
+}
+.refresh {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.refresh button {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.refresh button:hover {
+    background-color: #218838;
+}
+.content {
+    padding: 20px;
+}
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+.table th {
+    background-color: #f0f0f0;
+}
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+.controls button {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+.refresh {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+}
+.refresh:hover {
+    background-color: #218838;
+}
+.controls .add {
+    background-color: #fff;
+    color: #000;
+}
+.controls .add:hover {
+    background-color: #f0f0f0;
+}
+.nebtn {
+    color: black;
+    border-radius: 10px; 
+    outline: unset; 
+    text-decoration: none; 
+    cursor: pointer; 
+    padding: 16px; 
+    font-size: 16px;
+}
+.pobtn {
+    color: white; 
+    background: linear-gradient(275.52deg, #973939 0.28%, #B26F6F 100%); 
+    border: unset; 
+    outline: unset; 
+    text-decoration: none; 
+    cursor: pointer; 
+    border-radius: 10px; 
+    padding: 16px; 
+    font-size: 16px;
+}
+.nebtn:hover {
+    border: 1px solid black;
+}
+.pobtn:hover {
+    color: white;
+}
+.table-responsive {
+    margin-bottom: 1rem;
+}
