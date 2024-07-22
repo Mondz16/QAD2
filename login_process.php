@@ -1,6 +1,89 @@
 <?php
 session_start();
-//wewew
+
+function display_message($message, $type) {
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Operation Result</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: "Quicksand", sans-serif;
+            }
+
+            body {
+                background-color: #f9f9f9;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+            }
+
+            .container {
+                max-width: 750px;
+                padding: 24px;
+                background-color: #fff;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                text-align: center;
+            }
+
+            h2 {
+                font-size: 24px;
+                color: #973939;
+                margin-bottom: 20px;
+            }
+
+            .message {
+                margin-bottom: 20px;
+                font-size: 18px;
+            }
+
+            .success {
+                color: green;
+            }
+
+            .error {
+                color: red;
+            }
+
+            .button-primary {
+                background-color: #2cb84f;
+                color: #fff;
+                border: none;
+                padding: 10px 20px;
+                cursor: pointer;
+                border-radius: 4px;
+                margin-top: 10px;
+                color: white;
+                font-size: 16px;
+            }
+
+            .button-primary:hover {
+                background-color: #259b42;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Operation Result</h2>
+            <div class="message">
+                <p class='<?php echo $type; ?>'><?php echo htmlspecialchars($message); ?></p>
+            </div>
+            <button class="button-primary" onclick="window.location.href='login.php'">OK</button>
+        </div>
+    </body>
+    </html>
+    <?php
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_id = $_POST['user_id'];
     $password = $_POST['password'];
@@ -56,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: internal.php");
             exit;
         } else {
-            echo "Internal user status is pending";
+            display_message("Internal user status is pending", "error");
             exit;
         }
     }
@@ -69,13 +152,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: external.php");
             exit;
         } else {
-            echo "External user status is pending";
+            display_message("External user status is pending", "error");
             exit;
         }
     }
 
     // If no match found in any table
-    echo "User not found or password incorrect";
+    display_message("User not found or password incorrect", "error");
 
     $conn->close();
 }

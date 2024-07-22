@@ -29,6 +29,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         return $unique_number;
     }
 
+    $registration_success = false;
+    $user_id = '';
+
     if ($type == 'internal') {
         $college_id = $_POST['college'];
 
@@ -55,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_internal = $conn->prepare("INSERT INTO $table (user_id, college_id, first_name, middle_initial, last_name, email, password, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
         $stmt_internal->bind_param("sisssss", $user_id, $college_id, $first_name, $middle_initial, $last_name, $email, $hashed_password);
         if ($stmt_internal->execute()) {
-            echo "Registration successful and pending for internal approval. Your User ID: " . $user_id . " <a href='login.php'>OK</a>";
+            $registration_success = true;
         } else {
             echo "Error: " . $stmt_internal->error;
         }
@@ -71,6 +74,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($result_company->num_rows > 0) {
             $row_company = $result_company->fetch_assoc();
+            $company_code = $row_company['company_code'];
             $company_name = $row_company['company_name'];
         } else {
             echo "Invalid company selected.";
@@ -85,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_external = $conn->prepare("INSERT INTO $table (user_id, company_id, first_name, middle_initial, last_name, email, password, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
         $stmt_external->bind_param("sisssss", $user_id, $company_id, $first_name, $middle_initial, $last_name, $email, $hashed_password);
         if ($stmt_external->execute()) {
-            echo "Registration successful and pending for external approval. Your User ID: " . $user_id . " <a href='login.php'>OK</a>";
+            $registration_success = true;
         } else {
             echo "Error: " . $stmt_external->error;
         }
@@ -95,5 +99,91 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     $conn->close();
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Operation Result</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: "Quicksand", sans-serif;
+            }
+
+            body {
+                background-color: #f9f9f9;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+            }
+
+            .container {
+                max-width: 750px;
+                padding: 24px;
+                background-color: #fff;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                text-align: center;
+            }
+
+            h2 {
+                font-size: 24px;
+                color: #973939;
+                margin-bottom: 20px;
+            }
+
+            .message {
+                margin-bottom: 20px;
+                font-size: 18px;
+            }
+
+            .success {
+                color: green;
+            }
+
+            .error {
+                color: red;
+            }
+
+            .button-primary {
+                background-color: #2cb84f;
+                color: #fff;
+                border: none;
+                padding: 10px 20px;
+                cursor: pointer;
+                border-radius: 4px;
+                margin-top: 10px;
+                color: white;
+                font-size: 16px;
+            }
+
+            .button-primary:hover {
+                background-color: #259b42;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Operation Result</h2>
+            <div class="message">
+                <?php
+                if ($registration_success) {
+                    echo "<p class='success'>Registration successful and pending for approval. Your User ID: " . htmlspecialchars($user_id) . "</p>";
+                } else {
+                    echo "<p class='error'>Registration failed. Please try again.</p>";
+                }
+                ?>
+            </div>
+            <button class="button-primary" onclick="window.location.href='login.php'">OK</button>
+        </div>
+    </body>
+    </html>
+    <?php
 }
 ?>
