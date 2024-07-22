@@ -9,6 +9,7 @@ if (isset($_GET['schedule_id']) && isset($_GET['college'])) {
     $sql_update_status = "UPDATE schedule SET schedule_status = 'cancelled' WHERE id = '$schedule_id'";
     if ($conn->query($sql_update_status) === TRUE) {
         // Redirect to schedule_college.php with the college parameter
+        header('Location:schedule_college.php?college='. $college);
         echo "Updated successfully";
         exit();
     } else {

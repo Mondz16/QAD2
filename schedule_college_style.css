@@ -1,0 +1,320 @@
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Quicksand", sans-serif;
+}
+
+table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table,
+th,
+td {
+  border: 1px solid #ddd;
+  text-align: left;
+  padding: 12px;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+  color: #333;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.container {
+  max-width: 1280px;
+  padding-left: 24px;
+  padding-right: 24px;
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.header {
+  height: 58px;
+  width: 100%;
+  display: flex;
+  flex-flow: unset;
+  justify-content: space-between;
+  align-items: center;
+  align-content: unset;
+  overflow: unset;
+}
+
+.headerLeft {
+  order: unset;
+  flex: unset;
+  align-self: unset;
+}
+
+.USePData {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-flow: unset;
+  place-content: unset;
+  align-items: center;
+  overflow: unset;
+}
+
+.headerLeftText {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: unset;
+  place-content: unset;
+  align-items: unset;
+  overflow: unset;
+  font-size: 18px;
+}
+
+.headerRight {
+  order: unset;
+  flex: unset;
+  align-self: unset;
+}
+
+.SDMD {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-flow: unset;
+  place-content: unset;
+  align-items: center;
+  overflow: unset;
+}
+
+.headerRightText {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: unset;
+  place-content: unset;
+  align-items: flex-end;
+  overflow: unset;
+  text-align: right;
+}
+
+.headerLeftText h1,
+.headerLeftText h2 {
+  margin: 0;
+  padding: 0;
+}
+
+.headerRight .btn {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 20px;
+  text-decoration: none;
+  border-radius: 5px;
+  margin-left: -500px;
+  transition: background-color 0.3s ease;
+}
+
+.headerRight .btn:hover {
+  background-color: #b82c3b;
+}
+
+.pageHeader {
+  display: flex;
+  max-width: 1920px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 50px;
+  margin-bottom: 30px;
+}
+
+.pageHeader h2 {
+  text-align: center;
+  margin: 20px 0;
+  color: #333;
+}
+
+.schedule-table {
+  max-width: 1500px;
+  padding: 0 24px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.action-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 5px 10px;
+  margin-right: 5px;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  font-size: 14px;
+}
+
+.action-btn:hover {
+  background-color: #0056b3;
+}
+
+.action-btn.cancel {
+  background-color: #dc3545;
+}
+
+.action-btn.cancel:hover {
+  background-color: #b82c3b;
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.4);
+  padding-top: 60px;
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 5% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 800px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.modal-footer {
+  text-align: right;
+}
+
+.modal-footer button {
+  padding: 10px 20px;
+  margin-left: 10px;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.tab {
+  cursor: pointer;
+  padding: 10px 20px;
+  margin: 0 5px;
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.tab.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.tab:hover {
+  background-color: #d4d4d4;
+}
+
+.hidden {
+  display: none;
+}
+/* Dropdown Button */
+.dropbtn {
+    background-color: #888;
+    color: white;
+    padding: 10px 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+    background-color: #dc3545;
+}
+
+.filter-container{
+    display: flex;
+    padding: 0px 240px;
+    justify-content: flex-end;
+}

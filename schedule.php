@@ -66,7 +66,7 @@
 
         $sql = "SELECT c.college_name, COUNT(s.id) AS total_schedules 
                 FROM college c 
-                LEFT JOIN schedule s ON c.id = s.college_id 
+                LEFT JOIN schedule s ON c.code = s.college_code 
                 GROUP BY c.college_name 
                 ORDER BY c.college_name";
 

@@ -8,8 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['college_id'])) {
     $sql = "
         SELECT iu.user_id, CONCAT(iu.first_name, ' ', iu.middle_initial, ' ', iu.last_name) AS name
         FROM internal_users iu
-        WHERE iu.status = 'approved'
-        AND iu.college_id != ?
+        WHERE iu.status = 'active'
+        AND iu.college_code != ?
     ";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $college_id);

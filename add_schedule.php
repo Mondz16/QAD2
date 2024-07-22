@@ -257,11 +257,11 @@ session_start();
                         <?php
                         include 'connection.php';
 
-                        $sql = "SELECT id, college_name FROM college ORDER BY college_name";
+                        $sql = "SELECT code, college_name FROM college ORDER BY college_name";
                         $result = $conn->query($sql);
 
                         while ($row = $result->fetch_assoc()) {
-                            echo "<option value='{$row['id']}'>{$row['college_name']}</option>";
+                            echo "<option value='{$row['code']}'>{$row['college_name']}</option>";
                         }
                         ?>
                     </select>

@@ -11,7 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $team_members_ids = $_POST['team_members'];
 
     // Fetch college name
-    $sql_college = "SELECT college_name FROM college WHERE id = ?";
+    $sql_college = "SELECT college_name FROM college WHERE code = ?";
     $stmt_college = $conn->prepare($sql_college);
     $stmt_college->bind_param("i", $collegeId);
     $stmt_college->execute();
@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_college->close();
 
     // Fetch program name
-    $sql_program = "SELECT program FROM program WHERE id = ?";
+    $sql_program = "SELECT program_name FROM program WHERE id = ?";
     $stmt_program = $conn->prepare($sql_program);
     $stmt_program->bind_param("i", $programId);
     $stmt_program->execute();
@@ -124,12 +124,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $stmt_check_date->close();
 
+    date_default_timezone_set('Asia/Manila');
+    $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
+    $result = $currentDateTime->format('Y-m-d H:i:s');
+
     // Insert into schedule table
-    $sql_schedule = "INSERT INTO schedule (college_id, program_id, level_applied, schedule_date, schedule_time)
-                     VALUES (?, ?, ?, ?, ?)";
+    $sql_schedule = "INSERT INTO schedule (college_code, program_id, level_applied, schedule_date, schedule_time, status_date)
+                     VALUES (?, ?, ?, ?, ?, ?)";
     
     $stmt_schedule = $conn->prepare($sql_schedule);
-    $stmt_schedule->bind_param("iiiss", $collegeId, $programId, $level, $date, $time);
+    $stmt_schedule->bind_param("iiisss", $collegeId, $programId, $level, $date, $time, $result);
 
     if ($stmt_schedule->execute()) {
         $schedule_id = $stmt_schedule->insert_id;
@@ -142,14 +146,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_insert_leader->execute();
         $stmt_insert_leader->close();
 
-        // Insert notification for team leader
-        $message = "New schedule created: College - $college_name, Program - $program, Level - $level, Date - $date, Time - $time. You are assigned as the team leader.";
-        $sql_notification = "INSERT INTO notifications (user_id, message) VALUES (?, ?)";
-        $stmt_notification = $conn->prepare($sql_notification);
-        $stmt_notification->bind_param("ss", $team_leader_id, $message);
-        $stmt_notification->execute();
-        $stmt_notification->close();
-
         // Insert team members into team table
         $sql_insert_members = "INSERT INTO team (schedule_id, internal_users_id, role, status)
                                VALUES (?, ?, 'team member', 'pending')";
@@ -159,13 +155,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt_insert_members->bind_param("is", $schedule_id, $member_id);
             $stmt_insert_members->execute();
             $stmt_insert_members->close();
-
-            // Insert notification for team members
-            $message = "New schedule created: College - $college_name, Program - $program, Level - $level, Date - $date, Time - $time. You are assigned as a team member.";
-            $stmt_notification = $conn->prepare($sql_notification);
-            $stmt_notification->bind_param("ss", $member_id, $message);
-            $stmt_notification->execute();
-            $stmt_notification->close();
         }
 
         echo "<!DOCTYPE html>

@@ -281,7 +281,7 @@
                     <label for="college_campus">College Campus:</label>
                     <select id="college_campus" name="college_campus" required>
                         <option value="Obrero">Obrero</option>
-                        <option value="Mabini">Mabini</option>
+                        <option value="Mintal">Mintal</option>
                         <option value="Tagum">Tagum</option>
                     </select>
                 </div>
