@@ -1,38 +1,40 @@
 <?php
 include 'connection.php';
 
-$sql_colleges = "SELECT id, college_code, college_name, college_email FROM college ORDER BY id ASC";
+$sql_colleges = "SELECT code, college_name, college_campus, college_email FROM college ORDER BY code ASC";
 $result_colleges = $conn->query($sql_colleges);
 
 $collegePrograms = [];
 while ($row_college = $result_colleges->fetch_assoc()) {
-    $collegePrograms[$row_college['id']] = [
-        'college_code' => $row_college['college_code'],
+    $collegePrograms[$row_college['code']] = [
+        'code' => $row_college['code'],
         'college_name' => $row_college['college_name'],
+        'college_campus' => $row_college['college_campus'],
         'college_email' => $row_college['college_email'],
         'programs' => []
     ];
 }
 
-$sql_programs = "SELECT college_id, program, level, date_received FROM program";
+$sql_programs = "SELECT college_code, program_name, program_level, date_received FROM program";
 $result_programs = $conn->query($sql_programs);
 
 while ($row_program = $result_programs->fetch_assoc()) {
-    $collegePrograms[$row_program['college_id']]['programs'][] = [
-        'program' => $row_program['program'],
-        'level' => $row_program['level'],
+    $collegePrograms[$row_program['college_code']]['programs'][] = [
+        'program_name' => $row_program['program_name'],
+        'program_level' => $row_program['program_level'],
         'date_received' => $row_program['date_received']
     ];
 }
 
-$sql_companies = "SELECT id, company_code, company_name FROM company ORDER BY company_name";
+$sql_companies = "SELECT code, company_name, company_email FROM company ORDER BY company_name";
 $result_companies = $conn->query($sql_companies);
 
 $companyDetails = [];
 while ($row_company = $result_companies->fetch_assoc()) {
-    $companyDetails[$row_company['id']] = [
-        'company_code' => $row_company['company_code'],
-        'company_name' => $row_company['company_name']
+    $companyDetails[$row_company['code']] = [
+        'code' => $row_company['code'],
+        'company_name' => $row_company['company_name'],
+        'company_email' => $row_company['company_email']
     ];
 }
 ?>
@@ -86,7 +88,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
     <div class="container2">
         <table>
             <tr>
-                <th class="table_header" colspan="4">
+                <th class="table_header" colspan="5">
                     Colleges
                 </th>
                 <th class="button-container">
@@ -98,14 +100,16 @@ while ($row_company = $result_companies->fetch_assoc()) {
             <tr>
                 <th>College Code</th>
                 <th>College Name</th>
+                <th>College Campus</th>
                 <th>College Email</th>
                 <th>Programs</th>
                 <th>Actions</th>
             </tr>
-            <?php foreach ($collegePrograms as $id => $college) : ?>
+            <?php foreach ($collegePrograms as $code => $college) : ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($college['college_code']); ?></td>
+                    <td><?php echo htmlspecialchars($college['code']); ?></td>
                     <td><?php echo htmlspecialchars($college['college_name']); ?></td>
+                    <td><?php echo htmlspecialchars($college['college_campus']); ?></td>
                     <td><?php echo htmlspecialchars($college['college_email']); ?></td>
                     <td>
                         <?php
@@ -114,8 +118,8 @@ while ($row_company = $result_companies->fetch_assoc()) {
                         ?>
                     </td>
                     <td>
-                        <button class="view_button" onclick="showPrograms(<?php echo $id; ?>)">View</button>
-                        <button class="edit_button" onclick="location.href='edit_college.php?id=<?php echo $id; ?>'">Edit</button>
+                        <button class="view_button" onclick="showPrograms(<?php echo $code; ?>)">View</button>
+                        <button class="edit_button" onclick="location.href='edit_college.php?id=<?php echo $code; ?>'">Edit</button>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -139,9 +143,9 @@ while ($row_company = $result_companies->fetch_assoc()) {
                 <th>Company Name</th>
                 <th>Actions</th>
             </tr>
-            <?php foreach ($companyDetails as $id => $company) : ?>
+            <?php foreach ($companyDetails as $code => $company) : ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($company['company_code']); ?></td>
+                    <td><?php echo htmlspecialchars($company['code']); ?></td>
                     <td><?php echo htmlspecialchars($company['company_name']); ?></td>
                     <td>
                         <button onclick="location.href='edit_company.php?id=<?php echo $id; ?>'">Edit</button>
@@ -205,8 +209,8 @@ while ($row_company = $result_companies->fetch_assoc()) {
                 var cell2 = row.insertCell(1);
                 var cell3 = row.insertCell(2);
 
-                cell1.innerHTML = program.program;
-                cell2.innerHTML = program.level;
+                cell1.innerHTML = program.program_name;
+                cell2.innerHTML = program.program_level;
                 cell3.innerHTML = program.date_received;
             });
         }

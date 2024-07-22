@@ -278,6 +278,14 @@
                     <input type="text" id="college_name" name="college_name" required>
                 </div>
                 <div class="form-group">
+                    <label for="college_campus">College Campus:</label>
+                    <select id="college_campus" name="college_campus" required>
+                        <option value="Obrero">Obrero</option>
+                        <option value="Mabini">Mabini</option>
+                        <option value="Tagum">Tagum</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="college_email">College Email:</label>
                     <input type="email" id="college_email" name="college_email" required>
                 </div>

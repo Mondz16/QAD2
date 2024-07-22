@@ -90,7 +90,7 @@ session_start();
                     echo "<p class='error'>Error: Company name already exists. <a href='add_company.php'>Try again</a></p>";
                 } else {
                     // Proceed with adding the company if no duplicate is found
-                    $sql = "SELECT MAX(company_code) AS max_code FROM company";
+                    $sql = "SELECT MAX(code) AS max_code FROM company";
                     $result = $conn->query($sql);
                     $row = $result->fetch_assoc();
                     $max_code = $row['max_code'];
@@ -104,8 +104,8 @@ session_start();
                     if ($new_company_code > 35) {
                         echo "<p class='error'>Error: Maximum number of companies reached. <a href='college.php'>Back to Colleges and Companies</a></p>";
                     } else {
-                        $stmt = $conn->prepare("INSERT INTO company (company_code, company_name) VALUES (?, ?)");
-                        $stmt->bind_param("is", $new_company_code, $company_name);
+                        $stmt = $conn->prepare("INSERT INTO company (code, company_name) VALUES (?, ?)");
+                        $stmt->bind_param("is", $new_code, $company_name);
 
                         if ($stmt->execute()) {
                             echo "<p class='success'>Company added successfully.</p>";

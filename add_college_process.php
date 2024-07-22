@@ -85,13 +85,14 @@
             }
 
             $college_name = $_POST['college_name'];
+            $college_campus = $_POST['college_campus'];
             $college_email = $_POST['college_email'];
             $programs = $_POST['programs'];
             $levels = $_POST['levels'];
             $dates_received = $_POST['dates_received'];
 
             // Check if the college_name already exists
-            $sql_check = "SELECT id, college_code FROM college WHERE college_name = ?";
+            $sql_check = "SELECT code FROM college WHERE college_name = ?";
             $stmt_check = $conn->prepare($sql_check);
             $stmt_check->bind_param("s", $college_name);
             $stmt_check->execute();
@@ -102,12 +103,11 @@
             if ($result_check->num_rows > 0) {
                 // College name exists, use its college_id and college_code
                 $row_check = $result_check->fetch_assoc();
-                $college_id = $row_check['id'];
-                $college_code = $row_check['college_code'];
+                $college_code = $row_check['code'];
                 echo "<p class='success'>College already exists. Program(s) added successfully.</p>";
             } else {
                 // College name does not exist, insert it into the table
-                $sql_code = "SELECT MAX(college_code) AS max_code FROM college";
+                $sql_code = "SELECT MAX(code) AS max_code FROM college";
                 $result_code = $conn->query($sql_code);
                 $row_code = $result_code->fetch_assoc();
                 $max_code = $row_code['max_code'];
@@ -122,9 +122,9 @@
                     die("<p class='error'>All college codes from 01 to 15 have been used.</p>");
                 }
 
-                $sql_insert_college = "INSERT INTO college (college_code, college_name, college_email) VALUES (?, ?, ?)";
+                $sql_insert_college = "INSERT INTO college (code, college_name, college_campus, college_email) VALUES (?, ?, ?, ?)";
                 $stmt_insert_college = $conn->prepare($sql_insert_college);
-                $stmt_insert_college->bind_param("sss", $next_code, $college_name, $college_email);
+                $stmt_insert_college->bind_param("ssss", $next_code, $college_name, $college_campus, $college_email);
 
                 if ($stmt_insert_college->execute()) {
                     echo "<p class='success'>College and Program(s) added successfully.</p>";
@@ -139,7 +139,7 @@
                 $stmt_insert_college->close();
             }
 
-            $sql_program = "INSERT INTO program (program, college_id, level, date_received) VALUES (?, ?, ?, ?)";
+            $sql_program = "INSERT INTO program (program_name, college_code, program_level, date_received) VALUES (?, ?, ?, ?)";
             $stmt_program = $conn->prepare($sql_program);
 
             for ($i = 0; $i < count($programs); $i++) {
