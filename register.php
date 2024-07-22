@@ -107,12 +107,12 @@
                                     <?php
                                     include_once 'connection.php';
 
-                                    $sql_colleges = "SELECT id, college_name FROM college ORDER BY college_name";
+                                    $sql_colleges = "SELECT code, college_name FROM college ORDER BY college_name";
                                     $result_colleges = $conn->query($sql_colleges);
 
                                     if ($result_colleges && $result_colleges->num_rows > 0) {
                                         while ($row_college = $result_colleges->fetch_assoc()) {
-                                            echo "<option value='{$row_college['id']}'>{$row_college['college_name']}</option>";
+                                            echo "<option value='{$row_college['code']}'>{$row_college['college_name']}</option>";
                                         }
                                     } else {
                                         echo "<option value=''>No colleges found</option>";
@@ -128,12 +128,12 @@
                                     <?php
                                     include_once 'connection.php';
 
-                                    $sql_companies = "SELECT id, company_name FROM company ORDER BY company_name";
+                                    $sql_companies = "SELECT code, company_name FROM company ORDER BY company_name";
                                     $result_companies = $conn->query($sql_companies);
 
                                     if ($result_companies && $result_companies->num_rows > 0) {
                                         while ($row_company = $result_companies->fetch_assoc()) {
-                                            echo "<option value='{$row_company['id']}'>{$row_company['company_name']}</option>";
+                                            echo "<option value='{$row_company['code']}'>{$row_company['company_name']}</option>";
                                         }
                                     } else {
                                         echo "<option value=''>No companies found</option>";

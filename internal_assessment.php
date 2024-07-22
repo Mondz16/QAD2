@@ -19,6 +19,7 @@ $stmt_user_details->close();
 
 $full_name = $first_name . ' ' . $middle_initial . ' ' . $last_name;
 
+
 // Query to find team_id based on user's user_id and check the status
 $sql_find_team_id = "SELECT id FROM team WHERE internal_users_id = ?";
 $stmt_find_team_id = $conn->prepare($sql_find_team_id);
@@ -45,6 +46,99 @@ if ($team_id) {
     $stmt_get_schedule_status->close();
 }
 
+// Fetch the role of the logged-in user
+$user_role = null;
+$sql_get_user_role = "SELECT role FROM team WHERE internal_users_id = ?";
+$stmt_get_user_role = $conn->prepare($sql_get_user_role);
+$stmt_get_user_role->bind_param("s", $user_id);
+$stmt_get_user_role->execute();
+$stmt_get_user_role->bind_result($user_role);
+$stmt_get_user_role->fetch();
+$stmt_get_user_role->close();
+
+// Fetch all schedule IDs for the team leader
+$schedule_ids = [];
+if ($user_role === 'team leader') {
+    $sql_get_schedule_ids = "SELECT s.id 
+                             FROM schedule s
+                             INNER JOIN team t ON s.id = t.schedule_id
+                             WHERE t.internal_users_id = ?";
+    $stmt_get_schedule_ids = $conn->prepare($sql_get_schedule_ids);
+    $stmt_get_schedule_ids->bind_param("s", $user_id);
+    $stmt_get_schedule_ids->execute();
+    $result_get_schedule_ids = $stmt_get_schedule_ids->get_result();
+
+    while ($row = $result_get_schedule_ids->fetch_assoc()) {
+        $schedule_ids[] = $row['id'];
+    }
+    $stmt_get_schedule_ids->close();
+}
+
+// Fetch and display details for each schedule
+foreach ($schedule_ids as $schedule_id) {
+    $college_name = null;
+    $program = null;
+    $level_applied = null;
+    $schedule_date = null;
+    $schedule_time = null;
+    $schedule_status = null;
+    $assessment_files = [];
+    $summary_submitted = false;
+    $summary_file = null;
+
+    // Retrieve schedule details
+    $sql_get_schedule = "SELECT c.college_name AS college_name, p.program AS program, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status
+                         FROM schedule s
+                         INNER JOIN college c ON s.college_id = c.id
+                         INNER JOIN program p ON s.program_id = p.id
+                         WHERE s.id = ?";
+    $stmt_get_schedule = $conn->prepare($sql_get_schedule);
+    $stmt_get_schedule->bind_param("i", $schedule_id);
+    $stmt_get_schedule->execute();
+    $stmt_get_schedule->bind_result($college_name, $program, $level_applied, $schedule_date, $schedule_time, $schedule_status);
+    $stmt_get_schedule->fetch();
+    $stmt_get_schedule->close();
+}
+    // Check if assessment and summary have been submitted
+    if ($schedule_status === 'done') {
+        // Check if assessment has already been submitted for the team
+        $sql_check_assessment = "SELECT a.assessment_file 
+                                 FROM assessment a
+                                 INNER JOIN team t ON a.team_id = t.id
+                                 WHERE t.schedule_id = ? AND t.internal_users_id = ?";
+        $stmt_check_assessment = $conn->prepare($sql_check_assessment);
+        $stmt_check_assessment->bind_param("is", $schedule_id, $user_id);
+        $stmt_check_assessment->execute();
+        $stmt_check_assessment->bind_result($assessment_file);
+        $assessment_submitted = $stmt_check_assessment->fetch();
+        $stmt_check_assessment->close();
+
+        // Check if summary has already been submitted for the team
+        $sql_check_summary = "SELECT summary_file FROM summary WHERE team_id = ?";
+        $stmt_check_summary = $conn->prepare($sql_check_summary);
+        $stmt_check_summary->bind_param("i", $team_id);
+        $stmt_check_summary->execute();
+        $stmt_check_summary->bind_result($summary_file);
+        $summary_submitted = $stmt_check_summary->fetch();
+        $stmt_check_summary->close();
+
+        // Fetch all team members' assessment files with the same schedule_id
+        $sql_get_team_members = "SELECT t.id, a.assessment_file 
+                                 FROM team t
+                                 LEFT JOIN assessment a ON t.id = a.team_id
+                                 WHERE t.schedule_id = ? AND t.role = 'team member'";
+        $stmt_get_team_members = $conn->prepare($sql_get_team_members);
+        $stmt_get_team_members->bind_param("i", $schedule_id);
+        $stmt_get_team_members->execute();
+        $result_get_team_members = $stmt_get_team_members->get_result();
+
+        while ($row = $result_get_team_members->fetch_assoc()) {
+            if ($row['assessment_file']) {
+                $assessment_files[$row['id']] = $row['assessment_file'];
+            }
+        }
+        $stmt_get_team_members->close();
+    }
 $assessment_submitted = false;
 $assessment_file = null;
 $summary_submitted = false;
@@ -400,6 +494,7 @@ if ($schedule_id && $user_role === 'team leader') {
                     </ul>
                 </div>
                 <div class="notification">
+
                 <?php elseif ($user_role === 'team leader' && isset($schedule_id)): ?>
                     <h2>Summary Form</h2>
                     <div>

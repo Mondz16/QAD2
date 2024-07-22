@@ -18,12 +18,12 @@ function displayRegistrations($conn, $tableName, $title)
     if ($tableName === 'internal_users') {
         $sql = "SELECT i.user_id, i.first_name, i.middle_initial, i.last_name, i.email, c.college_name
                 FROM internal_users i
-                LEFT JOIN college c ON i.college_id = c.id
+                LEFT JOIN college c ON i.college_code = c.code
                 WHERE i.status = 'pending'";
     } elseif ($tableName === 'external_users') {
-        $sql = "SELECT e.user_id, e.first_name, e.middle_initial, e.last_name, e.email, e.company
+        $sql = "SELECT e.user_id, e.first_name, e.middle_initial, e.last_name, e.email, c.company_name
                 FROM external_users e
-                LEFT JOIN company c ON e.company_id = c.id
+                LEFT JOIN company c ON e.company_code = c.code
                 WHERE e.status = 'pending'";
     }
 
@@ -61,7 +61,7 @@ function displayRegistrations($conn, $tableName, $title)
             if ($tableName === 'internal_users') {
                 echo "<td>{$row['college_name']}</td>";
             } elseif ($tableName === 'external_users') {
-                echo "<td>{$row['company']}</td>";
+                echo "<td>{$row['company_name']}</td>";
             }
 
             echo "<td class='action-buttons'>

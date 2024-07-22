@@ -34,8 +34,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: internal_assessment.php");
             exit();
         } elseif ($action == 'decline') {
-            // Handle decline action if needed
-            // Redirect back to notifications page or handle as per your application logic
+            
+            $sql_update_status = "UPDATE team t 
+                                  INNER JOIN internal_users i ON t.internal_users_id = i.user_id
+                                  SET t.status = 'declined' 
+                                  WHERE i.user_id = ?";
+            $stmt_update_status = $conn->prepare($sql_update_status);
+            $stmt_update_status->bind_param("s", $_SESSION['user_id']);
+            $stmt_update_status->execute();
+            $stmt_update_status->close();
+
+            $sql_delete_notification = "DELETE FROM notifications WHERE id = ?";
+            $stmt_delete_notification = $conn->prepare($sql_delete_notification);
+            $stmt_delete_notification->bind_param("i", $notification_id);
+            $stmt_delete_notification->execute();
+            $stmt_delete_notification->close();
         }
     }
 }

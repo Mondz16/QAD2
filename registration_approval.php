@@ -42,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($action == "approve") {
             if ($user_type == "internal") {
-                $sql_update_internal = "UPDATE internal_users SET status = 'approved' WHERE user_id = ?";
+                $sql_update_internal = "UPDATE internal_users SET status = 'active', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
                 $stmt_update_internal = $conn->prepare($sql_update_internal);
                 $stmt_update_internal->bind_param("s", $id);
                 $stmt_update_internal->execute();
@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $message = "User approved with ID: " . $id;
                 $message_class = "success";
             } elseif ($user_type == "external") {
-                $sql_update_external = "UPDATE external_users SET status = 'approved' WHERE user_id = ?";
+                $sql_update_external = "UPDATE external_users SET status = 'active', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
                 $stmt_update_external = $conn->prepare($sql_update_external);
                 $stmt_update_external->bind_param("s", $id);
                 $stmt_update_external->execute();
@@ -60,23 +60,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $message = "User approved with ID: " . $id;
                 $message_class = "success";
             }
-        } else if ($action == "deny") {
+        } else if ($action == "reject") {
             if ($user_type == "internal") {
-                $sql_delete_internal = "DELETE FROM internal_users WHERE user_id = ?";
-                $stmt_delete_internal = $conn->prepare($sql_delete_internal);
-                $stmt_delete_internal->bind_param("s", $id);
-                $stmt_delete_internal->execute();
-                $stmt_delete_internal->close();
-            } else if ($user_type == "external") {
-                $sql_delete_external = "DELETE FROM external_users WHERE user_id = ?";
-                $stmt_delete_external = $conn->prepare($sql_delete_external);
-                $stmt_delete_external->bind_param("s", $id);
-                $stmt_delete_external->execute();
-                $stmt_delete_external->close();
-            }
+                $sql_update_internal = "UPDATE internal_users SET status = 'inactive', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
+                $stmt_update_internal = $conn->prepare($sql_update_internal);
+                $stmt_update_internal->bind_param("s", $id);
+                $stmt_update_internal->execute();
+                $stmt_update_internal->close();
 
-            $message = "User registration rejected.";
-            $message_class = "error";
+                $message = "User rejected with ID: " . $id;
+                $message_class = "success";
+            } else if ($user_type == "external") {
+                $sql_update_external = "UPDATE external_users SET status = 'inactive', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
+                $stmt_update_external = $conn->prepare($sql_update_external);
+                $stmt_update_external->bind_param("s", $id);
+                $stmt_update_external->execute();
+                $stmt_update_external->close();
+
+                $message = "User rejected with ID: " . $id;
+                $message_class = "error";
+            }
         }
     } else {
         $message = "Invalid registration ID.";
@@ -166,5 +169,4 @@ $conn->close();
         <button class="button-primary" onclick="window.location.href='registration.php'">OK</button>
     </div>
 </body>
-
 </html>
