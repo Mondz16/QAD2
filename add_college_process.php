@@ -91,23 +91,9 @@
             $levels = $_POST['levels'];
             $dates_received = $_POST['dates_received'];
 
-            // Check if the college_name already exists
-            $sql_check = "SELECT code FROM college WHERE college_name = ?";
-            $stmt_check = $conn->prepare($sql_check);
-            $stmt_check->bind_param("s", $college_name);
-            $stmt_check->execute();
-            $result_check = $stmt_check->get_result();
-
-            $program_success = true;
-
-            if ($result_check->num_rows > 0) {
-                // College name exists, use its college_id and college_code
-                $row_check = $result_check->fetch_assoc();
-                $college_code = $row_check['code'];
-                echo "<p class='success'>College already exists. Program(s) added successfully.</p>";
-            } else {
-                // College name does not exist, insert it into the table
-                $sql_code = "SELECT MAX(code) AS max_code FROM college";
+            // Function to get the next code
+            function getNextCode($table, $conn) {
+                $sql_code = "SELECT MAX(CAST(code AS UNSIGNED)) AS max_code FROM $table";
                 $result_code = $conn->query($sql_code);
                 $row_code = $result_code->fetch_assoc();
                 $max_code = $row_code['max_code'];
@@ -119,17 +105,36 @@
                 }
 
                 if (intval($next_code) > 15) {
-                    die("<p class='error'>All college codes from 01 to 15 have been used.</p>");
+                    die("<p class='error'>All codes from 01 to 15 have been used for $table.</p>");
                 }
+
+                return $next_code;
+            }
+
+            $program_success = true;
+
+            // Check if the college_name already exists
+            $sql_check = "SELECT code FROM college WHERE college_name = ?";
+            $stmt_check = $conn->prepare($sql_check);
+            $stmt_check->bind_param("s", $college_name);
+            $stmt_check->execute();
+            $result_check = $stmt_check->get_result();
+
+            if ($result_check->num_rows > 0) {
+                // College name exists, use its college_code
+                $row_check = $result_check->fetch_assoc();
+                $college_code = $row_check['code'];
+                echo "<p class='success'>College already exists. Program(s) added successfully.</p>";
+            } else {
+                // College name does not exist, insert it into the table
+                $college_code = getNextCode('college', $conn);
 
                 $sql_insert_college = "INSERT INTO college (code, college_name, college_campus, college_email) VALUES (?, ?, ?, ?)";
                 $stmt_insert_college = $conn->prepare($sql_insert_college);
-                $stmt_insert_college->bind_param("ssss", $next_code, $college_name, $college_campus, $college_email);
+                $stmt_insert_college->bind_param("ssss", $college_code, $college_name, $college_campus, $college_email);
 
                 if ($stmt_insert_college->execute()) {
-                    echo "<p class='success'>College and Program(s) added successfully.</p>";
-                    $college_id = $stmt_insert_college->insert_id;
-                    $college_code = $next_code;
+                    echo "<p class='success'>College added successfully.</p>";
                 } else {
                     echo "<p class='error'>Error adding college: " . $conn->error . "</p>";
                     $stmt_insert_college->close();
@@ -139,6 +144,7 @@
                 $stmt_insert_college->close();
             }
 
+            // Add programs
             $sql_program = "INSERT INTO program (program_name, college_code, program_level, date_received) VALUES (?, ?, ?, ?)";
             $stmt_program = $conn->prepare($sql_program);
 
@@ -146,7 +152,7 @@
                 $program = $programs[$i];
                 $level = $levels[$i];
                 $date_received = $dates_received[$i];
-                $stmt_program->bind_param("siss", $program, $college_id, $level, $date_received);
+                $stmt_program->bind_param("ssss", $program, $college_code, $level, $date_received);
 
                 if (!$stmt_program->execute()) {
                     echo "<p class='error'>Error adding program '$program': " . $conn->error . "</p>";
@@ -160,6 +166,7 @@
             if (!$program_success) {
                 echo "<p class='error'>Some programs could not be added.</p>";
             }
+
             ?>
         </div>
         <button class="button-primary" onclick="window.location.href='college.php'">OK</button>

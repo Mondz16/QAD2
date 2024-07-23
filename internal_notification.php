@@ -8,13 +8,6 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 }
 
 $user_id = $_SESSION['user_id'];
-
-// Fetch notifications for the logged-in user
-$sql_notifications = "SELECT id, message, created_at FROM notifications WHERE user_id = ? AND is_read = FALSE ORDER BY created_at DESC";
-$stmt_notifications = $conn->prepare($sql_notifications);
-$stmt_notifications->bind_param("s", $user_id);
-$stmt_notifications->execute();
-$stmt_notifications->bind_result($notification_id, $message, $created_at);
 ?>
 <!DOCTYPE html>
 <html lang="en">

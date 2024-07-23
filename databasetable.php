@@ -3,12 +3,15 @@ $servername = "localhost";
 $username = "root";
 $password = "";
 
+// Create connection
 $conn = new mysqli($servername, $username, $password);
 
+// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Create database
 $sql = "CREATE DATABASE IF NOT EXISTS qadDB";
 if (!$conn->query($sql)) {
     die("Error creating database: " . $conn->error);
@@ -16,10 +19,12 @@ if (!$conn->query($sql)) {
 
 $conn->close();
 
+// Reconnect to the newly created database
 include 'connection.php';
 
+// Create company table
 $sql = "CREATE TABLE IF NOT EXISTS company (
-    code INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(2) PRIMARY KEY,
     company_name VARCHAR(100) NOT NULL,
     company_email VARCHAR(255) NOT NULL
 )";
@@ -30,8 +35,9 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create college table
 $sql = "CREATE TABLE IF NOT EXISTS college (
-    code INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(2) PRIMARY KEY,
     college_name VARCHAR(100) NOT NULL,
     college_campus VARCHAR(20) NOT NULL,
     college_email VARCHAR(255) NOT NULL
@@ -43,9 +49,10 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create program table
 $sql = "CREATE TABLE IF NOT EXISTS program (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    college_code INT(6) UNSIGNED,
+    college_code VARCHAR(2),
     program_name VARCHAR(255) NOT NULL,
     program_level VARCHAR(255) NOT NULL,
     date_received DATE NOT NULL,
@@ -58,6 +65,7 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create admin table
 $sql = "CREATE TABLE IF NOT EXISTS admin (
     user_id VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255) NOT NULL
@@ -69,9 +77,10 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create internal_users table
 $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     user_id VARCHAR(10) PRIMARY KEY,
-    college_code INT(6) UNSIGNED,
+    college_code VARCHAR(2),
     first_name VARCHAR(50) NOT NULL,
     middle_initial VARCHAR(1) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
@@ -88,9 +97,10 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create external_users table
 $sql = "CREATE TABLE IF NOT EXISTS external_users (
     user_id VARCHAR(10) PRIMARY KEY,
-    company_code INT(6) UNSIGNED,
+    company_code VARCHAR(2),
     first_name VARCHAR(50) NOT NULL,
     middle_initial VARCHAR(1) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
@@ -107,11 +117,16 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create schedule table
 $sql = "CREATE TABLE IF NOT EXISTS schedule (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    college_code INT(6) UNSIGNED,
+    college_code VARCHAR(2),
     program_id INT(6) UNSIGNED,
+<<<<<<< Updated upstream
     level_applied VARCHAR(10) NOT NULL,
+=======
+    level_applied INT(6) NOT NULL,
+>>>>>>> Stashed changes
     schedule_date DATE NOT NULL,
     schedule_time TIME NOT NULL,
     schedule_status ENUM('pending', 'approved', 'cancelled') NOT NULL DEFAULT 'pending',
@@ -126,6 +141,7 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create team table
 $sql = "CREATE TABLE IF NOT EXISTS team (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     schedule_id INT(6) UNSIGNED,
@@ -143,6 +159,7 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create assessment table
 $sql = "CREATE TABLE IF NOT EXISTS assessment (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     team_id INT(6) UNSIGNED,
@@ -162,6 +179,7 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create summary table
 $sql = "CREATE TABLE IF NOT EXISTS summary (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     team_id INT(6) UNSIGNED,
@@ -179,6 +197,7 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create admin account if it doesn't exist
 $sql_check_admin = "SELECT * FROM admin WHERE user_id = 'admin'";
 $result_check_admin = $conn->query($sql_check_admin);
 
@@ -194,5 +213,6 @@ if ($result_check_admin->num_rows === 0) {
         echo "Error creating admin account: " . $conn->error . "<br>";
     }
 }
+
 echo "Setup is successful!";
 ?>

@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-function display_message($message, $type) {
+function display_message($message, $type, $redirect = 'login.php') {
     ?>
     <!DOCTYPE html>
     <html lang="en">
@@ -77,7 +77,7 @@ function display_message($message, $type) {
             <div class="message">
                 <p class='<?php echo $type; ?>'><?php echo htmlspecialchars($message); ?></p>
             </div>
-            <button class="button-primary" onclick="window.location.href='login.php'">OK</button>
+            <button class="button-primary" onclick="window.location.href='<?php echo $redirect; ?>'">OK</button>
         </div>
     </body>
     </html>
@@ -134,12 +134,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check internal_users table
     $internal_user = check_user($conn, 'internal_users', $user_id, $password);
     if ($internal_user) {
-        if ($internal_user['status'] == 'approved') {
+        if ($internal_user['status'] == 'active') {
             $_SESSION['user_id'] = $internal_user['user_id'];
             header("Location: internal.php");
             exit;
+        } elseif ($internal_user['status'] == 'inactive') {
+            echo "<script>
+                    if (confirm('This account is inactive. Would you like to apply again?')) {
+                        window.location.href = 'login_process_reactivation.php?type=internal&user_id=$user_id';
+                    } else {
+                        window.location.href = 'login.php';
+                    }
+                  </script>";
+            exit;
         } else {
-            display_message("Internal user status is pending", "error");
+            display_message("Internal user status is pending. Please wait for the admin to approve.", "error");
             exit;
         }
     }
@@ -147,12 +156,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check external_users table
     $external_user = check_user($conn, 'external_users', $user_id, $password);
     if ($external_user) {
-        if ($external_user['status'] == 'approved') {
+        if ($external_user['status'] == 'active') {
             $_SESSION['user_id'] = $external_user['user_id'];
             header("Location: external.php");
             exit;
+        } elseif ($external_user['status'] == 'inactive') {
+            echo "<script>
+                    if (confirm('This account is inactive. Would you like to apply again?')) {
+                        window.location.href = 'login_process_reactivation.php?type=external&user_id=$user_id';
+                    } else {
+                        window.location.href = 'login.php';
+                    }
+                  </script>";
+            exit;
         } else {
-            display_message("External user status is pending", "error");
+            display_message("External user status is pending. Please wait for the admin to approve.", "error");
             exit;
         }
     }

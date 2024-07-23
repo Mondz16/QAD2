@@ -281,7 +281,11 @@
                     <label for="college_campus">College Campus:</label>
                     <select id="college_campus" name="college_campus" required>
                         <option value="Obrero">Obrero</option>
+<<<<<<< Updated upstream
                         <option value="Mintal">Mintal</option>
+=======
+                        <option value="Mabini">Mintal</option>
+>>>>>>> Stashed changes
                         <option value="Tagum">Tagum</option>
                     </select>
                 </div>

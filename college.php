@@ -118,8 +118,8 @@ while ($row_company = $result_companies->fetch_assoc()) {
                         ?>
                     </td>
                     <td>
-                        <button class="view_button" onclick="showPrograms(<?php echo $code; ?>)">View</button>
-                        <button class="edit_button" onclick="location.href='edit_college.php?id=<?php echo $code; ?>'">Edit</button>
+                        <button class="view_button" onclick="showPrograms('<?php echo $code; ?>')">View</button>
+                        <button class="edit_button" onclick="location.href='edit_college.php?code=<?php echo $code; ?>'">Edit</button>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -148,7 +148,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
                     <td><?php echo htmlspecialchars($company['code']); ?></td>
                     <td><?php echo htmlspecialchars($company['company_name']); ?></td>
                     <td>
-                        <button onclick="location.href='edit_company.php?id=<?php echo $id; ?>'">Edit</button>
+                        <button onclick="location.href='edit_company.php?code=<?php echo $code; ?>'">Edit</button>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -162,7 +162,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
                 <table id="modalTable">
                     <tr>
                         <th>Program</th>
-                        <th>Level <button onclick="sortPrograms('level')">Sort</button></th>
+                        <th>Level <button onclick="sortPrograms('program_level')">Sort</button></th>
                         <th>Date Received <button onclick="sortPrograms('date_received')">Sort</button></th>
                     </tr>
                     <!-- Program details will be populated here using JavaScript -->
@@ -198,7 +198,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
             modalTable.innerHTML = `
         <tr>
             <th>Program</th>
-            <th>Level <button onclick="sortPrograms('level')">Sort</button></th>
+            <th>Level <button onclick="sortPrograms('program_level')">Sort</button></th>
             <th>Date Received <button onclick="sortPrograms('date_received')">Sort</button></th>
         </tr>
     `;

@@ -1,7 +1,7 @@
 <?php
 include 'connection.php';
 
-$college_id = $_POST['college_id'];
+$college_code = $_POST['college_code'];
 $college_name = $_POST['college_name'];
 $college_email = $_POST['college_email'];
 $program_ids = isset($_POST['program_ids']) ? $_POST['program_ids'] : [];
@@ -14,13 +14,13 @@ $new_dates_received = isset($_POST['new_dates_received']) ? $_POST['new_dates_re
 $removed_program_ids = isset($_POST['removed_program_ids']) ? explode(',', $_POST['removed_program_ids']) : [];
 
 // Update college details
-$sql = "UPDATE college SET college_name = ?, college_email = ? WHERE id = ?";
+$sql = "UPDATE college SET college_name = ?, college_email = ? WHERE code = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ssi", $college_name, $college_email, $college_id);
+$stmt->bind_param("ssi", $college_name, $college_email, $college_code);
 $stmt->execute();
 
 // Update existing programs
-$sql_update_program = "UPDATE program SET program = ?, level = ?, date_received = ? WHERE id = ?";
+$sql_update_program = "UPDATE program SET program_name = ?, program_level = ?, date_received = ? WHERE id = ?";
 $stmt_update_program = $conn->prepare($sql_update_program);
 for ($i = 0; $i < count($program_ids); $i++) {
     $stmt_update_program->bind_param("sssi", $programs[$i], $levels[$i], $dates_received[$i], $program_ids[$i]);

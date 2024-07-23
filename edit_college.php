@@ -1,18 +1,18 @@
 <?php
 include 'connection.php';
 
-$college_id = $_GET['id'];
+$college_code = $_GET['code'];
 
-$sql = "SELECT * FROM college WHERE id = ?";
+$sql = "SELECT * FROM college WHERE code = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $college_id);
+$stmt->bind_param("i", $college_code);
 $stmt->execute();
 $result = $stmt->get_result();
 $college = $result->fetch_assoc();
 
-$sql = "SELECT * FROM program WHERE college_id = ?";
+$sql = "SELECT * FROM program WHERE college_code = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $college_id);
+$stmt->bind_param("i", $college_code);
 $stmt->execute();
 $programs_result = $stmt->get_result();
 
@@ -20,8 +20,8 @@ $programs = [];
 while ($row = $programs_result->fetch_assoc()) {
     $programs[] = [
         'id' => $row['id'],
-        'program' => $row['program'],
-        'level' => $row['level'],
+        'program_name' => $row['program_name'],
+        'program_level' => $row['program_level'],
         'date_received' => $row['date_received']
     ];
 }
@@ -274,7 +274,7 @@ while ($row = $programs_result->fetch_assoc()) {
                 <h2>Edit College</h2>
             </div>
             <form action="edit_college_process.php" method="post">
-                <input type="hidden" name="college_id" value="<?php echo $college_id; ?>">
+                <input type="hidden" name="college_code" value="<?php echo $college_code; ?>">
                 <input type="hidden" name="removed_program_ids" id="removed_program_ids" value="">
                 <div class="form-group">
                     <label for="college_name">College Name:</label>
@@ -288,9 +288,9 @@ while ($row = $programs_result->fetch_assoc()) {
                     <div class="form-group programs">
                         <input type="hidden" name="program_ids[]" value="<?php echo htmlspecialchars($program['id']); ?>">
                         <label for="program_<?php echo $index + 1; ?>">Program:</label>
-                        <input type="text" id="program_<?php echo $index + 1; ?>" name="programs[]" value="<?php echo htmlspecialchars($program['program']); ?>" required>
+                        <input type="text" id="program_<?php echo $index + 1; ?>" name="programs[]" value="<?php echo htmlspecialchars($program['program_name']); ?>" required>
                         <label for="level_<?php echo $index + 1; ?>">Level:</label>
-                        <input type="text" id="level_<?php echo $index + 1; ?>" name="levels[]" value="<?php echo htmlspecialchars($program['level']); ?>" required>
+                        <input type="text" id="level_<?php echo $index + 1; ?>" name="levels[]" value="<?php echo htmlspecialchars($program['program_level']); ?>" required>
                         <label for="date_received_<?php echo $index + 1; ?>">Date Received:</label>
                         <input type="date" id="date_received_<?php echo $index + 1; ?>" name="dates_received[]" value="<?php echo htmlspecialchars($program['date_received']); ?>" required>
                         <div class="btn-group">

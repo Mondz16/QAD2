@@ -2,19 +2,32 @@
 include 'connection.php';
 session_start();
 
-if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11') {
+if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
 
-// Fetch notifications for the logged-in user
-$sql_notifications = "SELECT id, message, created_at FROM notifications WHERE user_id = ? AND is_read = FALSE ORDER BY created_at DESC";
-$stmt_notifications = $conn->prepare($sql_notifications);
-$stmt_notifications->bind_param("s", $user_id);
-$stmt_notifications->execute();
-$stmt_notifications->bind_result($notification_id, $message, $created_at);
+// Fetch user details
+$sql_user = "SELECT first_name, middle_initial, last_name, email, college_code FROM internal_users WHERE user_id = ?";
+$stmt_user = $conn->prepare($sql_user);
+$stmt_user->bind_param("s", $user_id);
+$stmt_user->execute();
+$stmt_user->bind_result($first_name, $middle_initial, $last_name, $email, $college_code);
+$stmt_user->fetch();
+$stmt_user->close();
+
+// Fetch college name
+$sql_college = "SELECT college_name FROM college WHERE code = ?";
+$stmt_college = $conn->prepare($sql_college);
+$stmt_college->bind_param("s", $college_code);
+$stmt_college->execute();
+$stmt_college->bind_result($college_name);
+$stmt_college->fetch();
+$stmt_college->close();
+
+$accreditor_type = (substr($user_id, 3, 2) == '11') ? 'Internal Accreditor' : 'External Accreditor';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -68,6 +81,20 @@ $stmt_notifications->bind_result($notification_id, $message, $created_at);
         }
         .site-header nav ul li a:hover {
             background-color: #555;
+        }
+        .profile {
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .profile h2 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        .profile p {
+            margin: 5px 0;
         }
         .notifications {
             padding: 20px;
@@ -124,8 +151,18 @@ $stmt_notifications->bind_result($notification_id, $message, $created_at);
             </ul>
         </nav>
     </header>
-    <div class="notifications">
-        <h2>Welcome to Internal Panel</h2>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="profile">
+                    <h2>Profile</h2>
+                    <p><strong>Name:</strong> <?php echo $first_name . ' ' . $middle_initial . '. ' . $last_name; ?></p>
+                    <p><strong>Type:</strong> <?php echo $accreditor_type; ?></p>
+                    <p><strong>College:</strong> <?php echo $college_name; ?></p>
+                    <p><strong>Email:</strong> <?php echo $email; ?></p>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
