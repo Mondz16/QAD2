@@ -124,7 +124,7 @@ $sql = "CREATE TABLE IF NOT EXISTS schedule (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     college_code VARCHAR(2),
     program_id INT(6) UNSIGNED,
-    level_applied INT(6) NOT NULL,
+    level_applied VARCHAR(10) NOT NULL,
     schedule_date DATE NOT NULL,
     schedule_time TIME NOT NULL,
     schedule_status ENUM('pending', 'approved', 'cancelled') NOT NULL DEFAULT 'pending',
