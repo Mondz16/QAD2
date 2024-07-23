@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add College and Programs</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -144,7 +145,8 @@
 
         input[type="text"],
         input[type="email"],
-        input[type="date"] {
+        input[type="date"],
+        select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -183,7 +185,8 @@
             color: white;
         }
 
-        .add-program-button {
+        .add-program-button,
+        .remove-program-button {
             background-color: #888;
             color: #fff;
             border: none;
@@ -194,7 +197,8 @@
             font-size: 14px;
         }
 
-        .add-program-button:hover {
+        .add-program-button:hover,
+        .remove-program-button:hover {
             background-color: #dc3545;
         }
 
@@ -212,26 +216,6 @@
             display: block;
             font-weight: 500;
         }
-        
-        .remove-program-button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-        .remove-program-button {
-            background-color: #dc3545;
-        }
-
-        .remove-program-button:hover {
-            background-color: #c82333;
-        }
-
     </style>
 </head>
 
@@ -242,7 +226,7 @@
         <div class="container">
             <div class="header">
                 <div class="headerLeft">
-                    <div class=USePData>
+                    <div class="USePData">
                         <img class="USeP" src="images/USePLogo.png" height="36">
                         <div style="height: 0px; width: 16px;"></div>
                         <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
@@ -280,8 +264,10 @@
                 <div class="form-group">
                     <label for="college_campus">College Campus:</label>
                     <select id="college_campus" name="college_campus" required>
+                        <option value="Main">Main</option>
+                        <option value="Mintal">Mintal</option>
                         <option value="Obrero">Obrero</option>
-                        <option value="Mabini">Mintal</option>
+                        <option value="Mabini">Mabini</option>
                         <option value="Tagum">Tagum</option>
                     </select>
                 </div>
@@ -290,49 +276,179 @@
                     <input type="email" id="college_email" name="college_email" required>
                 </div>
                 <div id="programs">
-                    <div class="programs">
-                        <label for="program_1">Program:</label>
-                        <input type="text" id="program_1" name="programs[]" required>
-                        <label for="level_1">Level:</label>
-                        <input type="text" id="level_1" name="levels[]" required>
-                        <label for="date_received_1">Date Received:</label>
-                        <input type="date" id="date_received_1" name="dates_received[]" required>
-                        <button type="button" class="remove-program-button" onclick="removeProgram(this)">Remove Program</button>
-                    </div>
+                    <!-- Program entries will be appended here -->
                 </div>
                 <button type="submit" class="button button-primary">Submit</button>
-                <button type="button" class="add-program-button" onclick="addProgram()">Add Program</button>
+                <button type="button" class="add-program-button" onclick="showAddProgramModal()">Add Program</button>
+                <button type="button" id="remove-program-button" class="remove-program-button" onclick="showRemoveProgramModal()">Remove Program</button>
             </form>
         </div>
     </div>
 
+    <!-- Add Program Modal -->
+    <div class="modal fade" id="programModal" tabindex="-1" aria-labelledby="programModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="programModalLabel">Add Program</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="programForm">
+                        <div class="form-group">
+                            <label for="modal_program">Program:</label>
+                            <input type="text" id="modal_program" name="modal_program" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_level">Level:</label>
+                            <select id="modal_level" name="modal_level" required>
+                                <option value="N/A">Optional</option>
+                                <option value="PSV">PSV</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_date_received">Date Received:</label>
+                            <input type="date" id="modal_date_received" name="modal_date_received" required>
+                        </div>
+                        <button type="button" class="button button-primary" onclick="addProgram()">Add Program</button>
+                        <button type="button" class="add-program-button" data-dismiss="modal"">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove Program Modal -->
+    <div class="modal fade" id="removeProgramModal" tabindex="-1" aria-labelledby="removeProgramModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="removeProgramModalLabel">Remove Program</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="removeProgramForm">
+                        <div id="removeProgramsList">
+                            <!-- Program entries will be listed here -->
+                        </div>
+                        <button type="button" class="button button-primary" onclick="removeSelectedPrograms()">Remove Selected Programs</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        let programCount = 1;
+    let programCount = 0;
 
-        function addProgram() {
-            programCount++;
-            const programsDiv = document.getElementById('programs');
+    function showAddProgramModal() {
+        $('#programModal').modal('show');
+    }
 
-            const newProgramDiv = document.createElement('div');
-            newProgramDiv.classList.add('programs');
-            newProgramDiv.innerHTML = `
-                <label for="program_${programCount}">Program:</label>
-                <input type="text" id="program_${programCount}" name="programs[]" required>
-                <label for="level_${programCount}">Level:</label>
-                <input type="text" id="level_${programCount}" name="levels[]" required>
-                <label for="date_received_${programCount}">Date Received:</label>
-                <input type="date" id="date_received_${programCount}" name="dates_received[]" required>
-                <button type="button" class="remove-program-button" onclick="removeProgram(this)">Remove Program</button>
+    function showRemoveProgramModal() {
+        $('#removeProgramModal').modal('show');
+        updateRemoveProgramsList();
+    }
+
+    function addProgram() {
+        programCount++;
+        const program = document.getElementById('modal_program').value;
+        const level = document.getElementById('modal_level').value;
+        const dateReceived = document.getElementById('modal_date_received').value;
+
+        const programsDiv = document.getElementById('programs');
+
+        const newProgramDiv = document.createElement('div');
+        newProgramDiv.classList.add('programs');
+        newProgramDiv.dataset.index = programCount; // Use data-index to identify program
+
+        newProgramDiv.innerHTML = `
+            <label for="program_${programCount}">Program:</label>
+            <input type="text" id="program_${programCount}" name="programs[]" value="${program}" readonly>
+            <label for="level_${programCount}">Level:</label>
+            <input type="text" id="level_${programCount}" name="levels[]" value="${level}" readonly>
+            <label for="date_received_${programCount}">Date Received:</label>
+            <input type="date" id="date_received_${programCount}" name="dates_received[]" value="${dateReceived}" readonly>
+        `;
+
+        programsDiv.appendChild(newProgramDiv);
+
+        // Clear the modal form fields
+        document.getElementById('programForm').reset();
+
+        // Hide the modal
+        $('#programModal').modal('hide');
+
+        // Show or hide the Remove Program button
+        toggleRemoveProgramButton();
+    }
+
+    function updateRemoveProgramsList() {
+        const removeProgramsList = document.getElementById('removeProgramsList');
+        removeProgramsList.innerHTML = '';
+
+        const programs = document.querySelectorAll('#programs .programs');
+        programs.forEach((programDiv) => {
+            const program = programDiv.querySelector(`[id^='program_']`).value;
+            const level = programDiv.querySelector(`[id^='level_']`).value;
+            const dateReceived = programDiv.querySelector(`[id^='date_received_']`).value;
+
+            const programEntryDiv = document.createElement('div');
+            programEntryDiv.classList.add('program-entry');
+            programEntryDiv.innerHTML = `
+                <input type="checkbox" id="remove_program_${programDiv.dataset.index}" name="remove_programs[]" value="${programDiv.dataset.index}">
+                <label for="remove_program_${programDiv.dataset.index}">${program} - ${level} - ${dateReceived}</label>
             `;
 
-            programsDiv.appendChild(newProgramDiv);
-        }
+            removeProgramsList.appendChild(programEntryDiv);
+        });
+    }
 
-        function removeProgram(button) {
-            const programDiv = button.parentElement;
-            programDiv.remove();
+    function removeSelectedPrograms() {
+        const checkboxes = document.querySelectorAll('#removeProgramsList input[type="checkbox"]:checked');
+        const indices = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+        // Remove programs in reverse order
+        indices.reverse().forEach(index => {
+            const programDiv = document.querySelector(`#programs .programs[data-index='${index}']`);
+            if (programDiv) {
+                programDiv.remove();
+            }
+        });
+
+        // Hide the modal
+        $('#removeProgramModal').modal('hide');
+
+        // Show or hide the Remove Program button
+        toggleRemoveProgramButton();
+    }
+
+    function toggleRemoveProgramButton() {
+        const removeProgramButton = document.getElementById('remove-program-button');
+        const programs = document.querySelectorAll('#programs .programs');
+        if (programs.length > 0) {
+            removeProgramButton.style.display = 'inline-block';
+        } else {
+            removeProgramButton.style.display = 'none';
         }
-    </script>
+    }
+
+    // Initial check to hide or show the Remove Program button on page load
+    document.addEventListener('DOMContentLoaded', toggleRemoveProgramButton);
+</script>
+
+
 </body>
 
 </html>

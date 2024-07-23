@@ -87,9 +87,15 @@
             $college_name = $_POST['college_name'];
             $college_campus = $_POST['college_campus'];
             $college_email = $_POST['college_email'];
-            $programs = $_POST['programs'];
-            $levels = $_POST['levels'];
-            $dates_received = $_POST['dates_received'];
+
+            if(isset($_POST['programs']))
+                $programs = $_POST['programs'];
+            
+            if(isset($_POST['levels']))
+                $levels = $_POST['levels'];
+            
+            if(isset($_POST['dates_received']))
+                $dates_received = $_POST['dates_received'];
 
             // Function to get the next code
             function getNextCode($table, $conn) {
@@ -148,25 +154,26 @@
             $sql_program = "INSERT INTO program (program_name, college_code, program_level, date_received) VALUES (?, ?, ?, ?)";
             $stmt_program = $conn->prepare($sql_program);
 
-            for ($i = 0; $i < count($programs); $i++) {
-                $program = $programs[$i];
-                $level = $levels[$i];
-                $date_received = $dates_received[$i];
-                $stmt_program->bind_param("ssss", $program, $college_code, $level, $date_received);
+            if(isset($_POST['programs'])){
+                for ($i = 0; $i < count($programs); $i++) {
+                    $program = $programs[$i];
+                    $level = $levels[$i];
+                    $date_received = $dates_received[$i];
+                    $stmt_program->bind_param("ssss", $program, $college_code, $level, $date_received);
 
-                if (!$stmt_program->execute()) {
-                    echo "<p class='error'>Error adding program '$program': " . $conn->error . "</p>";
-                    $program_success = false;
+                    if (!$stmt_program->execute()) {
+                        echo "<p class='error'>Error adding program '$program': " . $conn->error . "</p>";
+                        $program_success = false;
+                    }
+                }
+
+                $stmt_program->close();
+                $conn->close();
+
+                if (!$program_success) {
+                    echo "<p class='error'>Some programs could not be added.</p>";
                 }
             }
-
-            $stmt_program->close();
-            $conn->close();
-
-            if (!$program_success) {
-                echo "<p class='error'>Some programs could not be added.</p>";
-            }
-
             ?>
         </div>
         <button class="button-primary" onclick="window.location.href='college.php'">OK</button>

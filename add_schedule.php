@@ -393,9 +393,12 @@ session_start();
                 success: function(response) {
                     var currentLevel = parseInt(response.trim());
 
-                    var levelApplied = 'PSB';
+                    var levelApplied = 'N/A';
 
-                    if(currentLevel == 'PSB'){
+                    if(currentLevel == 'N/A'){
+                        levelApplied = 'PSV';
+                    }
+                    else if(currentLevel == 'PSV'){
                         levelApplied = 1;
                     }
                     else if(currentLevel < 4){
