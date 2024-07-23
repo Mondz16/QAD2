@@ -275,13 +275,6 @@ session_start();
                     <span id="program-level"></span>
                 </div>
                 <div class="form-group">
-                    <label for="level">Level Applied:</label>
-                    <select id="level" name="level" required>
-                        <option value="">Select Level</option>
-                        <!-- Options will be dynamically populated based on program selection -->
-                    </select>
-                </div>
-                <div class="form-group">
                     <label for="date">Date:</label>
                     <input type="date" id="date" name="date" required>
                 </div>
@@ -400,16 +393,20 @@ session_start();
                 success: function(response) {
                     var currentLevel = parseInt(response.trim());
 
-                    // Display current level beside the program
-                    $('#program-level').html('Current Level: ' + currentLevel);
+                    var levelApplied = 'PSB';
 
-                    // Populate the level dropdown with options
-                    $('#level').html('<option value="">Select Level</option>');
-                    for (var i = 1; i <= 4; i++) {
-                        if (i > currentLevel) {
-                            $('#level').append('<option value="' + i + '">' + i + '</option>');
-                        }
+                    if(currentLevel == 'PSB'){
+                        levelApplied = 1;
                     }
+                    else if(currentLevel < 4){
+                        levelApplied = currentLevel + 1;
+                    }
+                    else{
+                        levelApplied = currentLevel;
+                    }
+
+                    // Display current level beside the program
+                    $('#program-level').html('Current Level: ' + currentLevel + "&nbsp;&nbsp; → &nbsp;&nbsp;&nbsp;" + "Level Applied: " + levelApplied);
                 }
             });
         } else {
@@ -428,10 +425,16 @@ session_start();
                 type: 'POST',
                 data: { college_id: collegeId },
                 success: function(response) {
-                    const data = JSON.parse(response);
-                    populateDropdown('#team-leader', data.teamLeaders);
-                    populateAllTeamMemberDropdowns(data.teamMembers);
-                    updateDropdowns();
+                    console.log('Response from get_team.php:', response); // Debugging log
+                    try {
+                        const data = JSON.parse(response);
+                        console.log('Parsed data:', data); // Debugging log
+                        populateDropdown('#team-leader', data.teamLeaders);
+                        populateAllTeamMemberDropdowns(data.teamMembers);
+                        updateDropdowns();
+                    } catch (e) {
+                        console.error('Error parsing JSON response:', e);
+                    }
                 },
                 error: function(xhr, status, error) {
                     console.error('Error:', error);
@@ -442,6 +445,7 @@ session_start();
             $('.team-member-input select').html('<option value="">Select Team Member</option>');
         }
     }
+
 
     function fetchTeamMembersForNewDropdown(dropdown) {
         var collegeId = document.getElementById('college').value;
@@ -467,9 +471,11 @@ session_start();
         dropdown.empty();
         dropdown.append($('<option>').text('Select').attr('value', ''));
         options.forEach(function(option) {
-            dropdown.append($('<option>').text(option.name).attr('value', option.id));
+            const displayText = `${option.name} (${option.count} Schedules)`; // Combine name and count
+            dropdown.append($('<option>').text(displayText).attr('value', option.id));
         });
     }
+
 
     function populateAllTeamMemberDropdowns(options) {
         $('.team-member-input select').each(function() {
