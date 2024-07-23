@@ -86,6 +86,7 @@ $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(128) NOT NULL,
+    profile_picture VARCHAR(255) NOT NULL,
     status ENUM('pending', 'active', 'inactive') NOT NULL DEFAULT 'pending',
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (college_code) REFERENCES college(code)
@@ -106,6 +107,7 @@ $sql = "CREATE TABLE IF NOT EXISTS external_users (
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(128) NOT NULL,
+    profile_picture VARCHAR(255) NOT NULL,
     status ENUM('pending', 'active', 'inactive') NOT NULL DEFAULT 'pending',
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_code) REFERENCES company(code)
@@ -144,7 +146,7 @@ $sql = "CREATE TABLE IF NOT EXISTS team (
     internal_users_id VARCHAR(10) NOT NULL,
     role VARCHAR(11) NOT NULL,
     area VARCHAR(255) NOT NULL,
-    status ENUM('pending', 'accepted', 'declined') NOT NULL DEFAULT 'pending',
+    status ENUM('pending', 'accepted', 'declined', 'finished') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (schedule_id) REFERENCES schedule(id),
     FOREIGN KEY (internal_users_id) REFERENCES internal_users(user_id)
 )";
