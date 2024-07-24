@@ -13,6 +13,7 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
+    $schedule_id = $_POST['schedule_id'];
     $areas = $_POST['areas'];
     $results = $_POST['results'];
     $evaluator = $_POST['evaluator'];
@@ -27,12 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt_user->fetch();
     $stmt_user->close();
 
-    // Retrieve team_id from the team table
-    $sql_team = "SELECT id, schedule_id FROM team WHERE internal_users_id = ? AND role IN ('team leader', 'team member') AND status = 'accepted'";
+    // Retrieve team_id for the specific schedule_id
+    $sql_team = "SELECT id FROM team WHERE internal_users_id = ? AND schedule_id = ? AND role = 'team leader' AND status = 'accepted'";
     $stmt_team = $conn->prepare($sql_team);
-    $stmt_team->bind_param("s", $user_id);  // Corrected variable name here
+    $stmt_team->bind_param("si", $user_id, $schedule_id);
     $stmt_team->execute();
-    $stmt_team->bind_result($team_id, $schedule_id);
+    $stmt_team->bind_result($team_id);
     $stmt_team->fetch();
     $stmt_team->close();
 
@@ -41,15 +42,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-     // Retrieve schedule details from the database
+    // Retrieve schedule details from the database
     $sql_schedule = "
         SELECT 
             c.college_name, 
-            p.program, 
+            p.program_name, 
             s.level_applied, 
             s.schedule_date 
         FROM schedule s
-        JOIN college c ON s.college_id = c.id
+        JOIN college c ON s.college_code = c.code
         JOIN program p ON s.program_id = p.id
         WHERE s.id = ?";
     $stmt_schedule = $conn->prepare($sql_schedule);
@@ -102,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $output_path = 'Summary/' . $team_id . '.pdf';
     $pdf->Output('F', $output_path);
 
-    // Insert assessment details into the database
+    // Insert summary details into the database
     $sql_insert = "INSERT INTO summary (team_id, areas, results, evaluator, evaluator_signature, summary_file) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt_insert = $conn->prepare($sql_insert);
     $stmt_insert->bind_param("isssss", $team_id, $areas, $results, $evaluator, $signature_path, $output_path);
@@ -110,9 +111,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt_insert->close();
 
     // Set session variable to indicate successful submission
-    $_SESSION['assessment_submitted'] = true;
+    $_SESSION['summary_submitted'] = true;
 
-    echo "Assessment submitted successfully. <a href='internal.php'>Go back</a>";
+    echo "Summary submitted successfully. <a href='internal.php'>Go back</a>";
 } else {
     echo "Invalid request method.";
 }

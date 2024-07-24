@@ -13,6 +13,7 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
+    $schedule_id = $_POST['schedule_id'];
     $result = $_POST['result'];
     $area_evaluated = $_POST['area_evaluated'];
     $findings = $_POST['findings'];
@@ -29,12 +30,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt_user->fetch();
     $stmt_user->close();
 
-    // Retrieve team_id from the team table
-    $sql_team = "SELECT id, schedule_id FROM team WHERE internal_users_id = ? AND role IN ('team leader', 'team member') AND status = 'accepted'";
+    // Retrieve team_id for the specific schedule_id
+    $sql_team = "SELECT id FROM team WHERE internal_users_id = ? AND schedule_id = ? AND status = 'accepted'";
     $stmt_team = $conn->prepare($sql_team);
-    $stmt_team->bind_param("s", $user_id);  // Corrected variable name here
+    $stmt_team->bind_param("si", $user_id, $schedule_id);
     $stmt_team->execute();
-    $stmt_team->bind_result($team_id, $schedule_id);
+    $stmt_team->bind_result($team_id);
     $stmt_team->fetch();
     $stmt_team->close();
 
@@ -43,15 +44,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-     // Retrieve schedule details from the database
+    // Retrieve schedule details from the database
     $sql_schedule = "
         SELECT 
             c.college_name, 
-            p.program, 
+            p.program_name, 
             s.level_applied, 
             s.schedule_date 
         FROM schedule s
-        JOIN college c ON s.college_id = c.id
+        JOIN college c ON s.college_code = c.code
         JOIN program p ON s.program_id = p.id
         WHERE s.id = ?";
     $stmt_schedule = $conn->prepare($sql_schedule);
@@ -82,8 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdf->SetXY(43, 90); // Adjust position
     $pdf->Write(0, $college_name);
 
-    $pdf->SetXY(43, 103); // Adjust position
-    $pdf->Write(0, $program_name);
+    $pdf->SetXY(43, 98); // Adjust position
+    $pdf->MultiCell(80, 5, $program_name);
 
     $pdf->SetXY(43, 116); // Adjust position
     $pdf->Write(0, $level_applied);
