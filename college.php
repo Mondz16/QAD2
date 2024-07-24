@@ -93,6 +93,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
                 </th>
                 <th class="button-container">
                     <div>
+                        <button onclick="openImportModal()">Import</button>
                         <button onclick="location.href='add_college.php'">Add College</button>
                     </div>
                 </th>
@@ -169,20 +170,44 @@ while ($row_company = $result_companies->fetch_assoc()) {
                 </table>
             </div>
         </div>
+
+        <!-- Modal for importing colleges -->
+        <div id="importModal" class="modal">
+            <div class="import-modal-content">
+                <span class="close" onclick="closeImportModal()">&times;</span>
+                <h2>Import Colleges</h2>
+                <form action="add_college_import.php" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="excel_file">Upload Excel File:</label>
+                        <input type="file" id="excel_file" name="excel_file" accept=".xlsx, .xls" required>
+                    </div>
+                    <button type="submit" class="button button-primary">Import</button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
-        var modal = document.getElementById("programModal");
-        var span = document.getElementsByClassName("close")[0];
+        var programModal = document.getElementById("programModal");
+        var importModal = document.getElementById("importModal");
+        var spanProgram = document.getElementsByClassName("close")[0];
+        var spanImport = document.getElementsByClassName("close")[1];
         var programsData = [];
 
-        span.onclick = function() {
-            modal.style.display = "none";
+        spanProgram.onclick = function() {
+            programModal.style.display = "none";
+        }
+
+        spanImport.onclick = function() {
+            importModal.style.display = "none";
         }
 
         window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
+            if (event.target == programModal) {
+                programModal.style.display = "none";
+            }
+            if (event.target == importModal) {
+                importModal.style.display = "none";
             }
         }
 
@@ -190,7 +215,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
             var collegePrograms = <?php echo json_encode($collegePrograms); ?>;
             programsData = collegePrograms[collegeId].programs;
             displayPrograms(programsData);
-            modal.style.display = "block";
+            programModal.style.display = "block";
         }
 
         function displayPrograms(programs) {
@@ -226,6 +251,14 @@ while ($row_company = $result_companies->fetch_assoc()) {
                 }
             });
             displayPrograms(programsData);
+        }
+
+        function openImportModal() {
+            importModal.style.display = "block";
+        }
+
+        function closeImportModal() {
+            importModal.style.display = "none";
         }
     </script>
 </body>

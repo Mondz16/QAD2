@@ -29,10 +29,10 @@ for ($i = 0; $i < count($program_ids); $i++) {
 
 // Insert new programs
 if (!empty($new_programs)) {
-    $sql_insert_program = "INSERT INTO program (college_id, program, level, date_received) VALUES (?, ?, ?, ?)";
+    $sql_insert_program = "INSERT INTO program (college_code, program_name, program_level, date_received) VALUES (?, ?, ?, ?)";
     $stmt_insert_program = $conn->prepare($sql_insert_program);
     for ($j = 0; $j < count($new_programs); $j++) {
-        $stmt_insert_program->bind_param("isss", $college_id, $new_programs[$j], $new_levels[$j], $new_dates_received[$j]);
+        $stmt_insert_program->bind_param("isss", $college_code, $new_programs[$j], $new_levels[$j], $new_dates_received[$j]);
         $stmt_insert_program->execute();
     }
 }

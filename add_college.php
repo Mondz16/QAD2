@@ -281,13 +281,6 @@
                 <button type="button" class="add-program-button" onclick="showAddProgramModal()">Add Program</button>
                 <button type="button" id="remove-program-button" class="remove-program-button" onclick="showRemoveProgramModal()">Remove Program</button>
             </form>
-            <form action="add_college_import.php" method="post" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="excel_file">Upload Excel File:</label>
-                    <input type="file" id="excel_file" name="excel_file" accept=".xlsx, .xls" required>
-                </div>
-                <button type="submit" class="button button-primary">Import</button>
-            </form>
         </div>
     </div>
 

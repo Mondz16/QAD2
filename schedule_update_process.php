@@ -13,6 +13,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
 
     if ($stmt_update_schedule->execute()) {
         $college = isset($_POST['college']) ? mysqli_real_escape_string($conn, $_POST['college']) : '';
+
+        // If schedule update is successful, update team status
+        $new_status = 'pending'; // or whatever logic you have for setting the new status
+
+        $sql_update_team_status = "UPDATE team SET status = ? WHERE schedule_id = ?";
+        $stmt_update_team_status = $conn->prepare($sql_update_team_status);
+        $stmt_update_team_status->bind_param("si", $new_status, $schedule_id);
+
+        if ($stmt_update_team_status->execute()) {
+            
+        } else {
+            echo "Error updating team status: " . $conn->error;
+        }
+
+        $stmt_update_team_status->close();
         ?>
         <!DOCTYPE html>
         <html lang="en">
@@ -162,7 +177,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
         </body>
         </html>
         <?php
-    }
+    } 
 
     $stmt_update_schedule->close();
     $conn->close();

@@ -256,3 +256,34 @@ button:hover {
     text-decoration: none;
     cursor: pointer;
 }
+
+.import-modal-content{
+    max-width: 500px;
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 8px;
+}
+
+.import-modal-content h2{
+    margin-top: 0;
+}
+
+.import-modal-content form{
+    margin: 40px 0 20px 0;
+    width: 70%;
+}
+
+.import-modal-content label{
+    font-weight: bold;
+}
+
+.import-modal-content input{
+    margin-top: 10px;
+}
+
+
+.import-modal-content button{
+    margin-top: 20px;
+}

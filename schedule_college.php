@@ -50,6 +50,7 @@
             <div class="dropdown-content">
                 <a href="#" onclick="filterTable('all')">All</a>
                 <a href="#" onclick="filterTable('pending')">Pending</a>
+                <a href="#" onclick="filterTable('approved')">Approved</a>
                 <a href="#" onclick="filterTable('done')">Done</a>
                 <a href="#" onclick="filterTable('cancelled')">Cancelled</a>
             </div>
@@ -77,7 +78,7 @@
                         FROM schedule s
                         JOIN program p ON s.program_id = p.id
                         JOIN college c ON s.college_code = c.code
-                        WHERE c.college_name = ? AND s.schedule_status NOT IN ('approved', 'cancelled')
+                        WHERE c.college_name = ?
                         ORDER BY s.schedule_date, s.schedule_time";
 
                 $stmt = $conn->prepare($sql);
@@ -97,7 +98,7 @@
                         $scheduleDateTime = new DateTime($row['schedule_date'] . ' ' . $row['schedule_time'], new DateTimeZone('Asia/Manila'));
                         $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
 
-                        if ($currentDateTime > $scheduleDateTime && $row['schedule_status'] !== 'done' && $row['schedule_status'] !== 'cancelled') {
+                        if ($currentDateTime > $scheduleDateTime && $row['schedule_status'] === 'approved' && $row['schedule_status'] !== 'cancelled') {
                             // Update the schedule status to "done" in the database
                             $update_sql = "UPDATE schedule SET schedule_status = 'done' WHERE id = ?";
                             $update_stmt = $conn->prepare($update_sql);
@@ -114,10 +115,15 @@
                         echo "<td>" . htmlspecialchars($row['level_applied']) . "</td>";
                         echo "<td>" . htmlspecialchars($schedule_date) . "</td>";
                         echo "<td>" . htmlspecialchars($schedule_time) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['schedule_status']) . "</td>";
+                        if($row['schedule_status'] !== 'pending'){
+                            echo "<td>" . htmlspecialchars($row['schedule_status']) . "</td>";
+                        }
+                        else{
+                            echo "<td>waiting for approval</td>";
+                        }
                         echo "<td>";
                         echo "<a class='action-btn' href='#' onclick='openTeamModal(" . $row['id'] . ")'>View Team</a>";
-                        if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'approved') {
+                        if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'approved' && $row['schedule_status'] !== 'done') {
                             echo "<a class='action-btn approve' href='#' onclick='approveSchedule(" . $row['id'] . ")'>Approve</a>";
                             echo "<a class='action-btn reschedule' href='#' onclick='openRescheduleModal(" . $row['id'] . ")'>Reschedule</a>";
                             echo "<a class='action-btn cancel' href='schedule_cancel_process.php?schedule_id=" . $row['id'] . "&college=" . urlencode($college_name) . "'>Cancel</a>";
