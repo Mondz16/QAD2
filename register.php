@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Form</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <title>Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="css/pagestyle.css" rel="stylesheet">
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
+<<<<<<< Updated upstream
     <div class="wrapper">
         <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
         <div class="container">
@@ -169,9 +175,67 @@
                         </div>
                     </div>
                 </div>
+=======
+    <div class="container-fluid">
+        <div class="row top-bar"></div>
+        <div class="row header mb-3">
+            <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
+                <img src="images/USePLogo.png" alt="USeP Logo">
+            </div>
+            <div class="col-6 col-md-4 d-flex align-items-center">
+                <div class="vertical-line"></div>
+                <div class="divider"></div>
+                <div class="text">
+                    <span class="one">One</span>
+                    <span class="datausep">Data.</span>
+                    <span class="one">One</span>
+                    <span class="datausep">USeP.</span><br>
+                    <span>Accreditor Portal</span>
+                </div>
+            </div>
+            <div class="col-md-4 d-none d-md-flex align-items-center justify-content-end">
+                <span>Quality Assurance Division</span>
+                <div class="divider"></div>
+                <div class="vertical-line"></div>
+            </div>
+            <div class="col-md-2 d-none d-md-flex align-items-center justify-content-start">
+                <img src="images/sdmdlogo.png" alt="USeP Logo">
+>>>>>>> Stashed changes
             </div>
         </div>
+
+        <div class="row justify-content-center mt-5">
+            <div class="col-2"></div>
+            <div class="col-md-8 col-lg-6">
+                <h1>Register</h1>
+                <p class="mt-3">Select Account Type</p>
+                <div class="account-type-selection row justify-content-between">
+                    <label class="account-type-option col-md-5 col-12 p-4">
+                        <input type="radio" class="form-control" name="type" value="internal" onclick="handleAccountTypeChange(this)">
+                        Internal Accreditor
+                    </label>
+                    <label class="account-type-option col-md-5 col-12 p-4 mb-3 mb-md-0 me-md-2">
+                        <input type="radio" class="form-control" name="type" value="external" onclick="handleAccountTypeChange(this)">
+                        External Accreditor
+                    </label>
+                </div>
+                <div class="row justify-content-between mt-5">
+                    <a href="login.php" class="nebtn btn btn-block col-md-5 col-12 mb-3 mb-md-0 me-md-2">LOG IN INSTEAD</a>
+                    <button id="nextButton" type="button" class="pobtn btn btn-block col-md-5 col-12 hidden">NEXT</button>
+                </div>
+            </div>
+            <div class="col-2"></div>
+        </div>
+
+        <footer class="row text-left mt-5">
+            <div class="col-2"></div>
+            <div class="col">
+                <p>Copyright © 2024. All Rights Reserved.</p>
+                <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
+            </div>
+        </footer>
     </div>
+<<<<<<< Updated upstream
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -193,6 +257,32 @@
         document.querySelector('select[name="company"]').required = true;
     });
     });
+=======
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+        function handleAccountTypeChange(element) {
+            var nextButton = document.getElementById('nextButton');
+            nextButton.classList.remove('hidden');
+            nextButton.onclick = function() {
+                if (element.value === 'internal') {
+                    window.location.href = 'register1.php';
+                } else if (element.value === 'external') {
+                    window.location.href = 'register2.php';
+                }
+            };
+        }
+
+        document.querySelectorAll('.account-type-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.account-type-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input').checked = true;
+            });
+        });
+>>>>>>> Stashed changes
     </script>
 </body>
 </html>

@@ -70,11 +70,22 @@ if ($conn->query($sql) === TRUE) {
 }
 
 $sql = "CREATE TABLE IF NOT EXISTS internal_users (
+<<<<<<< Updated upstream
     user_id VARCHAR(255) PRIMARY KEY,
     college_id INT(6) UNSIGNED,
     first_name VARCHAR(255) NOT NULL,
     middle_initial VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
+=======
+    user_id VARCHAR(10) PRIMARY KEY,
+    college_code VARCHAR(2),
+    prefix VARCHAR(10) NOT NULL,
+    suffix VARCHAR(10) NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    middle_initial VARCHAR(1) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    gender VARCHAR(10) NOT NULL,
+>>>>>>> Stashed changes
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     status ENUM('pending', 'approved') NOT NULL DEFAULT 'pending',
@@ -88,11 +99,30 @@ if ($conn->query($sql) === TRUE) {
 }
 
 $sql = "CREATE TABLE IF NOT EXISTS external_users (
+<<<<<<< Updated upstream
     user_id VARCHAR(255) PRIMARY KEY,
     company_id INT(6) UNSIGNED,
     first_name VARCHAR(255) NOT NULL,
     middle_initial VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
+=======
+    user_id VARCHAR(10) PRIMARY KEY,
+    company_code VARCHAR(2),
+    first_name VARCHAR(50) NOT NULL,
+    middle_initial VARCHAR(1) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    gender VARCHAR(10) NOT NULL,
+    prefix VARCHAR(10) NOT NULL,
+    suffix VARCHAR(10) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    academic_rank VARCHAR(50),
+    designation VARCHAR(255) NOT NULL,
+    educational_background TEXT NOT NULL,
+    other_achievements TEXT NOT NULL,
+    permanent_address VARCHAR(255) NOT NULL,
+    present_address VARCHAR(255) NOT NULL,
+    fb_messenger VARCHAR(255) NOT NULL,
+>>>>>>> Stashed changes
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     company VARCHAR(255) NOT NULL,
