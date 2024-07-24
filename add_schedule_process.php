@@ -10,26 +10,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $team_leader_id = mysqli_real_escape_string($conn, $_POST['team_leader']);
     $team_members_ids = $_POST['team_members'];
 
-    // Fetch college name
+    // Check if the collegeId exists in the college table
     $sql_college = "SELECT college_name FROM college WHERE code = ?";
     $stmt_college = $conn->prepare($sql_college);
-    $stmt_college->bind_param("i", $collegeId);
+    $stmt_college->bind_param("s", $collegeId);  // Use "s" for string
     $stmt_college->execute();
     $stmt_college->bind_result($college_name);
     $stmt_college->fetch();
     $stmt_college->close();
 
-    // Fetch program name
-    $sql_program = "SELECT program_name FROM program WHERE id = ?";
+    if (!$college_name) {
+        echo "Error: Invalid college selected.";
+        exit();
+    }
+
+    // Check if the programId exists in the program table
+    $sql_program = "SELECT program_name FROM program WHERE id = ? AND college_code = ?";
     $stmt_program = $conn->prepare($sql_program);
-    $stmt_program->bind_param("i", $programId);
+    $stmt_program->bind_param("is", $programId, $collegeId);  // Use "i" for integer, "s" for string
     $stmt_program->execute();
-    $stmt_program->bind_result($program);
+    $stmt_program->bind_result($program_name);
     $stmt_program->fetch();
     $stmt_program->close();
 
+    if (!$program_name) {
+        echo "Error: Invalid program selected.";
+        exit();
+    }
+
     // Check if the date already exists
-    $sql_check_status = "SELECT id FROM schedule WHERE id = ? AND schedule_status != 'cancelled'";
+    $sql_check_status = "SELECT id FROM schedule WHERE schedule_date = ? AND schedule_status != 'cancelled'";
     $stmt_check_date = $conn->prepare($sql_check_status);
     $stmt_check_date->bind_param("s", $date);
     $stmt_check_date->execute();
@@ -38,7 +48,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($stmt_check_date->num_rows > 0) {
         echo "<!DOCTYPE html>
 <html lang=\"en\">
-
 <head>
     <meta charset=\"UTF-8\">
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
@@ -51,7 +60,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-sizing: border-box;
             font-family: \"Quicksand\", sans-serif;
         }
-
         body {
             background-color: #f9f9f9;
             display: flex;
@@ -59,7 +67,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             justify-content: center;
             height: 100vh;
         }
-
         .container {
             max-width: 750px;
             padding: 24px;
@@ -68,26 +75,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-
         h2 {
             font-size: 24px;
             color: #973939;
             margin-bottom: 20px;
         }
-
         .message {
             margin-bottom: 20px;
             font-size: 18px;
         }
-
         .success {
             color: green;
         }
-
         .error {
             color: red;
         }
-
         .button-primary {
             background-color: #2cb84f;
             color: #fff;
@@ -99,13 +101,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: white;
             font-size: 16px;
         }
-
         .button-primary:hover {
             background-color: #259b42;
         }
     </style>
 </head>
-
 <body>
     <div class=\"container\">
         <h2>Operation Result</h2>
@@ -115,7 +115,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <button class=\"button-primary\" onclick=\"window.location.href='add_schedule.php'\">OK</button>
     </div>
 </body>
-
 </html>";
         $stmt_check_date->close();
         $conn->close();
@@ -133,7 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                      VALUES (?, ?, ?, ?, ?, ?)";
     
     $stmt_schedule = $conn->prepare($sql_schedule);
-    $stmt_schedule->bind_param("iiisss", $collegeId, $programId, $level, $date, $time, $result);
+    $stmt_schedule->bind_param("sissss", $collegeId, $programId, $level, $date, $time, $result);
 
     if ($stmt_schedule->execute()) {
         $schedule_id = $stmt_schedule->insert_id;
@@ -159,7 +158,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         echo "<!DOCTYPE html>
 <html lang=\"en\">
-
 <head>
     <meta charset=\"UTF-8\">
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
@@ -172,7 +170,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-sizing: border-box;
             font-family: \"Quicksand\", sans-serif;
         }
-
         body {
             background-color: #f9f9f9;
             display: flex;
@@ -180,7 +177,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             justify-content: center;
             height: 100vh;
         }
-
         .container {
             max-width: 750px;
             padding: 24px;
@@ -189,26 +185,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-
         h2 {
             font-size: 24px;
             color: #973939;
             margin-bottom: 20px;
         }
-
         .message {
             margin-bottom: 20px;
             font-size: 18px;
         }
-
         .success {
             color: green;
         }
-
         .error {
             color: red;
         }
-
         .button-primary {
             background-color: #2cb84f;
             color: #fff;
@@ -220,13 +211,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: white;
             font-size: 16px;
         }
-
         .button-primary:hover {
             background-color: #259b42;
         }
     </style>
 </head>
-
 <body>
     <div class=\"container\">
         <h2>Operation Result</h2>
@@ -236,13 +225,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <button class=\"button-primary\" onclick=\"window.location.href='schedule.php'\">OK</button>
     </div>
 </body>
-
 </html>";
 
     } else {
         echo "<!DOCTYPE html>
 <html lang=\"en\">
-
 <head>
     <meta charset=\"UTF-8\">
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
@@ -255,7 +242,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-sizing: border-box;
             font-family: \"Quicksand\", sans-serif;
         }
-
         body {
             background-color: #f9f9f9;
             display: flex;
@@ -263,7 +249,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             justify-content: center;
             height: 100vh;
         }
-
         .container {
             max-width: 750px;
             padding: 24px;
@@ -272,26 +257,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-
         h2 {
             font-size: 24px;
             color: #973939;
             margin-bottom: 20px;
         }
-
         .message {
             margin-bottom: 20px;
             font-size: 18px;
         }
-
         .success {
             color: green;
         }
-
         .error {
             color: red;
         }
-
         .button-primary {
             background-color: #2cb84f;
             color: #fff;
@@ -303,13 +283,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: white;
             font-size: 16px;
         }
-
         .button-primary:hover {
             background-color: #259b42;
         }
     </style>
 </head>
-
 <body>
     <div class=\"container\">
         <h2>Operation Result</h2>
@@ -319,7 +297,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <button class=\"button-primary\" onclick=\"window.location.href='add_schedule.php'\">OK</button>
     </div>
 </body>
-
 </html>";
     }
 

@@ -12,6 +12,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $college_code = isset($_POST['college']) ? $_POST['college'] : null;
     $company_code = isset($_POST['company']) ? $_POST['company'] : null;
 
+    // File upload handling
+    $target_dir = "uploads/";
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0777, true); // Create directory if it does not exist
+    }
+    
+    if ($_FILES["profile_picture"]["error"] == UPLOAD_ERR_NO_FILE) {
+        $profile_picture = "Profile Pictures/placeholder.jpg"; // Use placeholder image
+    } else {
+        $profile_picture = $target_dir . basename($_FILES["profile_picture"]["name"]);
+        if (!move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $profile_picture)) {
+            echo "Sorry, there was an error uploading your file.";
+            exit;
+        }
+    }
+
     if ($password !== $confirm_password) {
         echo "Passwords do not match!";
         exit;
@@ -82,8 +98,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user_id = $college_code . "-11-" . $unique_number;
 
         // Insert into internal_users table
-        $stmt_internal = $conn->prepare("INSERT INTO $table (user_id, college_code, first_name, middle_initial, last_name, email, password, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
-        $stmt_internal->bind_param("sssssss", $user_id, $college_code, $first_name, $middle_initial, $last_name, $email, $hashed_password);
+        $stmt_internal = $conn->prepare("INSERT INTO $table (user_id, college_code, first_name, middle_initial, last_name, email, password, status, profile_picture) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)");
+        $stmt_internal->bind_param("ssssssss", $user_id, $college_code, $first_name, $middle_initial, $last_name, $email, $hashed_password, $profile_picture);
         if ($stmt_internal->execute()) {
             echo "Registration successful and pending for internal approval. Your User ID: " . $user_id . " <a href='login.php'>OK</a>";
         } else {
@@ -110,8 +126,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user_id = $company_code . "-22-" . $unique_number;
 
         // Insert into external_users table
-        $stmt_external = $conn->prepare("INSERT INTO $table (user_id, company_code, first_name, middle_initial, last_name, email, password, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
-        $stmt_external->bind_param("sisssss", $user_id, $company_code, $first_name, $middle_initial, $last_name, $email, $hashed_password);
+        $stmt_external = $conn->prepare("INSERT INTO $table (user_id, company_code, first_name, middle_initial, last_name, email, password, status, profile_picture) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)");
+        $stmt_external->bind_param("ssssssss", $user_id, $company_code, $first_name, $middle_initial, $last_name, $email, $hashed_password, $profile_picture);
         if ($stmt_external->execute()) {
             echo "Registration successful and pending for external approval. Your User ID: " . $user_id . " <a href='login.php'>OK</a>";
         } else {

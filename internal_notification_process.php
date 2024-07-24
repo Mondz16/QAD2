@@ -8,52 +8,32 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['notification_id']) && isset($_POST['action'])) {
-        $notification_id = $_POST['notification_id'];
-        $action = $_POST['action'];
-        
-        if ($action == 'accept') {
-            // Update team status to accepted
-            $sql_update_status = "UPDATE team t 
-                                  INNER JOIN internal_users i ON t.internal_users_id = i.user_id
-                                  SET t.status = 'accepted' 
-                                  WHERE i.user_id = ?";
-            $stmt_update_status = $conn->prepare($sql_update_status);
-            $stmt_update_status->bind_param("s", $_SESSION['user_id']);
-            $stmt_update_status->execute();
-            $stmt_update_status->close();
-            
-            // Delete the accepted notification
-            $sql_delete_notification = "DELETE FROM notifications WHERE id = ?";
-            $stmt_delete_notification = $conn->prepare($sql_delete_notification);
-            $stmt_delete_notification->bind_param("i", $notification_id);
-            $stmt_delete_notification->execute();
-            $stmt_delete_notification->close();
-            
-            // Redirect to assessment page with schedule details
-            header("Location: internal_assessment.php");
-            exit();
-        } elseif ($action == 'decline') {
-            
-            $sql_update_status = "UPDATE team t 
-                                  INNER JOIN internal_users i ON t.internal_users_id = i.user_id
-                                  SET t.status = 'declined' 
-                                  WHERE i.user_id = ?";
-            $stmt_update_status = $conn->prepare($sql_update_status);
-            $stmt_update_status->bind_param("s", $_SESSION['user_id']);
-            $stmt_update_status->execute();
-            $stmt_update_status->close();
+    $team_id = intval($_POST['team_id']);
+    $schedule_id = intval($_POST['schedule_id']);
+    $action = $_POST['action'];
 
-            $sql_delete_notification = "DELETE FROM notifications WHERE id = ?";
-            $stmt_delete_notification = $conn->prepare($sql_delete_notification);
-            $stmt_delete_notification->bind_param("i", $notification_id);
-            $stmt_delete_notification->execute();
-            $stmt_delete_notification->close();
-        }
+    if ($action === 'accept') {
+        $status = 'accepted';
+    } elseif ($action === 'decline') {
+        $status = 'declined';
+    } else {
+        header("Location: internal_notification.php");
+        exit();
     }
-}
 
-// Redirect back to notifications page if action was not handled properly
-header("Location: internal_notification.php");
-exit();
+    $sql_update = "UPDATE team SET status = ? WHERE id = ? AND schedule_id = ?";
+    $stmt_update = $conn->prepare($sql_update);
+    $stmt_update->bind_param("sii", $status, $team_id, $schedule_id);
+
+    if ($stmt_update->execute()) {
+        header("Location: internal_notification.php");
+    } else {
+        echo "Error updating notification: " . $conn->error;
+    }
+
+    $stmt_update->close();
+} else {
+    header("Location: internal_notification.php");
+}
+$conn->close();
 ?>

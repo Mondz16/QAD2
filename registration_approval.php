@@ -39,9 +39,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows == 1) {
         $row = $result->fetch_assoc();
+        $bb_cccc = substr($id, 3); // Extract bb-cccc part of the user_id
 
         if ($action == "approve") {
             if ($user_type == "internal") {
+                // Check for existing active user with the same bb-cccc part
+                $sql_check_active = "SELECT user_id FROM internal_users WHERE user_id LIKE ? AND status = 'active'";
+                $stmt_check_active = $conn->prepare($sql_check_active);
+                $like_pattern = '%-' . $bb_cccc;
+                $stmt_check_active->bind_param("s", $like_pattern);
+                $stmt_check_active->execute();
+                $result_check_active = $stmt_check_active->get_result();
+
+                if ($result_check_active->num_rows > 0) {
+                    $row_active = $result_check_active->fetch_assoc();
+                    $active_user_id = $row_active['user_id'];
+
+                    // Update the existing active user to inactive
+                    $sql_update_active = "UPDATE internal_users SET status = 'inactive' WHERE user_id = ?";
+                    $stmt_update_active = $conn->prepare($sql_update_active);
+                    $stmt_update_active->bind_param("s", $active_user_id);
+                    $stmt_update_active->execute();
+                    $stmt_update_active->close();
+                }
+
+                // Approve the current user
                 $sql_update_internal = "UPDATE internal_users SET status = 'active', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
                 $stmt_update_internal = $conn->prepare($sql_update_internal);
                 $stmt_update_internal->bind_param("s", $id);
@@ -51,6 +73,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $message = "User approved with ID: " . $id;
                 $message_class = "success";
             } elseif ($user_type == "external") {
+                // Check for existing active user with the same bb-cccc part
+                $sql_check_active = "SELECT user_id FROM external_users WHERE user_id LIKE ? AND status = 'active'";
+                $stmt_check_active = $conn->prepare($sql_check_active);
+                $like_pattern = '%-' . $bb_cccc;
+                $stmt_check_active->bind_param("s", $like_pattern);
+                $stmt_check_active->execute();
+                $result_check_active = $stmt_check_active->get_result();
+
+                if ($result_check_active->num_rows > 0) {
+                    $row_active = $result_check_active->fetch_assoc();
+                    $active_user_id = $row_active['user_id'];
+
+                    // Update the existing active user to inactive
+                    $sql_update_active = "UPDATE external_users SET status = 'inactive' WHERE user_id = ?";
+                    $stmt_update_active = $conn->prepare($sql_update_active);
+                    $stmt_update_active->bind_param("s", $active_user_id);
+                    $stmt_update_active->execute();
+                    $stmt_update_active->close();
+                }
+
+                // Approve the current user
                 $sql_update_external = "UPDATE external_users SET status = 'active', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
                 $stmt_update_external = $conn->prepare($sql_update_external);
                 $stmt_update_external->bind_param("s", $id);

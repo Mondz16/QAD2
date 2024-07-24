@@ -171,6 +171,22 @@ tr:nth-child(even) {
   background-color: #0056b3;
 }
 
+.action-btn.approve {
+  background-color: #2fde57;
+}
+
+.action-btn.approve:hover {
+  background-color: #02b32b;
+}
+
+.action-btn.reschedule {
+  background-color: #f79354;
+}
+
+.action-btn.reschedule:hover {
+  background-color: #eb6f21;
+}
+
 .action-btn.cancel {
   background-color: #dc3545;
 }

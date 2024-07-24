@@ -267,8 +267,7 @@
                         <option value="Main">Main</option>
                         <option value="Mintal">Mintal</option>
                         <option value="Obrero">Obrero</option>
-                        <option value="Mabini">Mabini</option>
-                        <option value="Tagum">Tagum</option>
+                        <option value="Mabini">Tagum-Mabini</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -281,6 +280,13 @@
                 <button type="submit" class="button button-primary">Submit</button>
                 <button type="button" class="add-program-button" onclick="showAddProgramModal()">Add Program</button>
                 <button type="button" id="remove-program-button" class="remove-program-button" onclick="showRemoveProgramModal()">Remove Program</button>
+            </form>
+            <form action="add_college_import.php" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="excel_file">Upload Excel File:</label>
+                    <input type="file" id="excel_file" name="excel_file" accept=".xlsx, .xls" required>
+                </div>
+                <button type="submit" class="button button-primary">Import</button>
             </form>
         </div>
     </div>
@@ -305,7 +311,11 @@
                             <label for="modal_level">Level:</label>
                             <select id="modal_level" name="modal_level" required>
                                 <option value="N/A">Optional</option>
+                                <option value="PSV">No Graduates Yet</option>
+                                <option value="PSV">Not Accreditable</option>
+                                <option value="PSV">TBV</option>
                                 <option value="PSV">PSV</option>
+                                <option value="PSV">Candidate</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                                 <option value="3">3</option>

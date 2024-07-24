@@ -51,6 +51,7 @@ session_start();
                 <li><a href="udas_assessment.php">UDAS Assessment</a></li>
                 <li><a href="report.php">Report</a></li>
                 <li><a href="registration.php">Registration</a></li>
+                <li><a href="college_transfer.php">College Transfer</a></li>
             </ul>
         </nav>
     </div>

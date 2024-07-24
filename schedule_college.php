@@ -56,7 +56,6 @@
         </div>
     </div>
 
-
     <div class="schedule-table">
         <table>
             <thead>
@@ -78,7 +77,7 @@
                         FROM schedule s
                         JOIN program p ON s.program_id = p.id
                         JOIN college c ON s.college_code = c.code
-                        WHERE c.college_name = ?
+                        WHERE c.college_name = ? AND s.schedule_status NOT IN ('approved', 'cancelled')
                         ORDER BY s.schedule_date, s.schedule_time";
 
                 $stmt = $conn->prepare($sql);
@@ -118,8 +117,9 @@
                         echo "<td>" . htmlspecialchars($row['schedule_status']) . "</td>";
                         echo "<td>";
                         echo "<a class='action-btn' href='#' onclick='openTeamModal(" . $row['id'] . ")'>View Team</a>";
-                        if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'done') {
-                            echo "<a class='action-btn' href='#' onclick='openRescheduleModal(" . $row['id'] . ")'>Reschedule</a>";
+                        if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'approved') {
+                            echo "<a class='action-btn approve' href='#' onclick='approveSchedule(" . $row['id'] . ")'>Approve</a>";
+                            echo "<a class='action-btn reschedule' href='#' onclick='openRescheduleModal(" . $row['id'] . ")'>Reschedule</a>";
                             echo "<a class='action-btn cancel' href='schedule_cancel_process.php?schedule_id=" . $row['id'] . "&college=" . urlencode($college_name) . "'>Cancel</a>";
                         }
                         echo "</td>";
@@ -159,7 +159,6 @@
             </form>
         </div>
     </div>
-
 
     <!-- Team Modal -->
     <div id="teamModal" class="modal">
@@ -217,8 +216,19 @@
             });
             document.querySelector('.tab[onclick="filterTable(\'' + status + '\')"]').classList.add('active');
         }
+
+        function approveSchedule(scheduleId) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'schedule_approve_process.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    location.reload(); // Reload the page to reflect the changes
+                }
+            };
+            xhr.send('schedule_id=' + scheduleId);
+        }
     </script>
 </body>
 
 </html>
-

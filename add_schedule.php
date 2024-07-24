@@ -275,6 +275,10 @@ session_start();
                     <span id="program-level"></span>
                 </div>
                 <div class="form-group">
+                    <label for="level">Level:</label>
+                    <input type="text" id="level" name="level" readonly>
+                </div>  
+                <div class="form-group">
                     <label for="date">Date:</label>
                     <input type="date" id="date" name="date" required>
                 </div>
@@ -384,40 +388,44 @@ session_start();
     }
 
     function fetchProgramLevel() {
-        var programId = document.getElementById('program').value;
-        if (programId) {
-            $.ajax({
-                url: 'get_program_level.php',
-                type: 'POST',
-                data: {program_id: programId},
-                success: function(response) {
-                    var currentLevel = parseInt(response.trim());
+    var programId = document.getElementById('program').value;
+    if (programId) {
+        $.ajax({
+            url: 'get_program_level.php',
+            type: 'POST',
+            data: { program_id: programId },
+            success: function(response) {
+                var currentLevel = response.trim();
+                var levelApplied = 'N/A';
 
-                    var levelApplied = 'N/A';
-
-                    if(currentLevel == 'N/A'){
-                        levelApplied = 'PSV';
-                    }
-                    else if(currentLevel == 'PSV'){
-                        levelApplied = 1;
-                    }
-                    else if(currentLevel < 4){
-                        levelApplied = currentLevel + 1;
-                    }
-                    else{
-                        levelApplied = currentLevel;
-                    }
-
-                    // Display current level beside the program
-                    $('#program-level').html('Current Level: ' + currentLevel + "&nbsp;&nbsp; → &nbsp;&nbsp;&nbsp;" + "Level Applied: " + levelApplied);
+                if (currentLevel === 'N/A') {
+                    levelApplied = 'Candidate';
+                } else if (currentLevel === 'Candidate') {
+                    levelApplied = 'TBV';
+                } else if (currentLevel === 'TBV') {
+                    levelApplied = 'PSV';
+                } else if (currentLevel === 'PSV') {
+                    levelApplied = 1;
+                } else if (currentLevel < 4) {
+                    levelApplied = parseInt(currentLevel) + 1;
+                } else {
+                    levelApplied = currentLevel;
                 }
-            });
-        } else {
-            // Clear both program level display and level dropdown
-            $('#program-level').html('');
-            $('#level').html('<option value="">Select Level</option>');
-        }
+
+                // Display current level beside the program
+                $('#program-level').html('Current Level: ' + currentLevel + "&nbsp;&nbsp; → &nbsp;&nbsp;&nbsp;" + "Level Applied: " + levelApplied);
+
+                // Update the readonly level input field
+                $('#level').val(levelApplied);
+            }
+        });
+    } else {
+        // Clear both program level display and level dropdown
+        $('#program-level').html('');
+        $('#level').val('');
     }
+}
+
 
     function fetchTeamLeadersAndMembers() {
         var collegeId = document.getElementById('college').value;

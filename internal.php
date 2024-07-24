@@ -10,11 +10,11 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Fetch user details
-$sql_user = "SELECT first_name, middle_initial, last_name, email, college_code FROM internal_users WHERE user_id = ?";
+$sql_user = "SELECT first_name, middle_initial, last_name, email, college_code, profile_picture FROM internal_users WHERE user_id = ?";
 $stmt_user = $conn->prepare($sql_user);
 $stmt_user->bind_param("s", $user_id);
 $stmt_user->execute();
-$stmt_user->bind_result($first_name, $middle_initial, $last_name, $email, $college_code);
+$stmt_user->bind_result($first_name, $middle_initial, $last_name, $email, $college_code, $profile_picture);
 $stmt_user->fetch();
 $stmt_user->close();
 
@@ -96,44 +96,75 @@ $accreditor_type = (substr($user_id, 3, 2) == '11') ? 'Internal Accreditor' : 'E
         .profile p {
             margin: 5px 0;
         }
-        .notifications {
-            padding: 20px;
-            max-width: 800px;
-            margin: 20px auto;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+        .profile img {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
         }
-        .notification {
-            padding: 10px;
-            border-bottom: 1px solid #ccc;
-        }
-        .notification:last-child {
-            border-bottom: none;
-        }
-        .notification p {
-            margin: 0 0 5px;
-        }
-        .notification small {
-            color: #999;
-        }
-        .notification form button {
-            background-color: #5cb85c;
+        .edit-button, .trasnfer-button {
+            background-color: #007bff;
             color: #fff;
             border: none;
-            padding: 5px 10px;
-            margin-right: 5px;
+            padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
         }
-        .notification form button:hover {
-            background-color: #4cae4c;
+        .edit-button:hover, .transfer-button:hover {
+            background-color: #0056b3;
         }
-        .notification form button[name="action"][value="decline"] {
-            background-color: #d9534f;
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
         }
-        .notification form button[name="action"][value="decline"]:hover {
-            background-color: #c9302c;
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .edit-form input,
+        .edit-form select {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .edit-form button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .edit-form button:hover {
+            background-color: #218838;
         }
     </style>
 </head>
@@ -152,17 +183,70 @@ $accreditor_type = (substr($user_id, 3, 2) == '11') ? 'Internal Accreditor' : 'E
         </nav>
     </header>
     <div class="container">
-        <div class="row">
-            <div class="col-md-3">
-                <div class="profile">
-                    <h2>Profile</h2>
-                    <p><strong>Name:</strong> <?php echo $first_name . ' ' . $middle_initial . '. ' . $last_name; ?></p>
-                    <p><strong>Type:</strong> <?php echo $accreditor_type; ?></p>
-                    <p><strong>College:</strong> <?php echo $college_name; ?></p>
-                    <p><strong>Email:</strong> <?php echo $email; ?></p>
-                </div>
-            </div>
+        <div class="profile">
+            <h2>Profile</h2>
+            <p><strong>Name:</strong> <?php echo $first_name . ' ' . $middle_initial . '. ' . $last_name; ?></p>
+            <p><strong>Type:</strong> <?php echo $accreditor_type; ?></p>
+            <p><strong>College:</strong> <?php echo $college_name; ?></p>
+            <p><strong>Email:</strong> <?php echo $email; ?></p>
+            <p><strong>Profile Picture:</strong></p>
+            <img src="<?php echo $profile_picture; ?>" alt="Profile Picture">
+            <button class="edit-button" onclick="document.getElementById('editModal').style.display='block'">Edit Profile</button>
+            <button class="transfer-button" onclick="document.getElementById('transferModal').style.display='block'">Request College Transfer</button>
         </div>
     </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('editModal').style.display='none'">&times;</span>
+            <form class="edit-form" action="update_profile.php" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
+                <input type="hidden" name="existing_profile_picture" value="<?php echo $profile_picture; ?>">
+                <input type="text" name="first_name" value="<?php echo $first_name; ?>" placeholder="First Name">
+                <input type="text" name="middle_initial" value="<?php echo $middle_initial; ?>" placeholder="Middle Initial">
+                <input type="text" name="last_name" value="<?php echo $last_name; ?>" placeholder="Last Name">
+                <input type="email" name="email" value="<?php echo $email; ?>" placeholder="Email">
+                <input type="file" name="profile_picture" accept="image/*">
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Request College Transfer Modal -->
+    <div id="transferModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('transferModal').style.display='none'">&times;</span>
+            <form class="edit-form" action="update_college.php" method="post">
+                <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
+                <input type="hidden" name="first_name" value="<?php echo $first_name; ?>">
+                <input type="hidden" name="middle_initial" value="<?php echo $middle_initial; ?>">
+                <input type="hidden" name="last_name" value="<?php echo $last_name; ?>">
+                <input type="hidden" name="email" value="<?php echo $email; ?>">
+                <select name="college_code">
+                    <?php
+                    $sql_colleges = "SELECT code, college_name FROM college ORDER BY college_name";
+                    $result_colleges = $conn->query($sql_colleges);
+                    while ($row_college = $result_colleges->fetch_assoc()) {
+                        echo "<option value='{$row_college['code']}'>{$row_college['college_name']}</option>";
+                    }
+                    ?>
+                </select>
+                <button type="submit">Request Transfer</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Close the modal when clicking outside of the modal content
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('editModal')) {
+                document.getElementById('editModal').style.display = "none";
+            }
+            if (event.target == document.getElementById('transferModal')) {
+                document.getElementById('transferModal').style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>
