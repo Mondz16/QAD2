@@ -15,7 +15,7 @@ $sql_notifications = "
     FROM team t
     JOIN schedule s ON t.schedule_id = s.id
     JOIN program p ON s.program_id = p.id
-    WHERE t.internal_users_id = ? AND t.status = 'pending'
+    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status NOT IN ('cancelled', 'finished')
 ";
 
 $stmt_notifications = $conn->prepare($sql_notifications);
@@ -189,6 +189,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
             <ul class="nav-list">
                 <li class="btn"><a href="internal.php">Home</a></li>
                 <li class="btn"><a href="internal_notification.php">Notifications</a></li>
+                <li class="btn"><a href="internal_orientation.php">Orientation</a></li>
                 <li class="btn"><a href="internal_assessment.php">Assessment</a></li>
                 <li class="btn"><a href="logout.php">Log Out</a></li>
             </ul>
@@ -201,7 +202,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                 <p><?php echo "Program: " . htmlspecialchars($program_name) . "<br>Level Applied: " . htmlspecialchars($level_applied); ?></p>
                 <p><?php echo "Date: " . htmlspecialchars($schedule_date) . "<br>Time: " . htmlspecialchars($schedule_time); ?></p>
                 <p><?php echo "Role: " . htmlspecialchars($role) . "<br>Area: " . htmlspecialchars($area); ?></p>
-                <small>Status: <?php echo htmlspecialchars($team_status); ?></small><br>
+                <p>Status: <?php echo htmlspecialchars($team_status); ?></p><br>
                 <?php if ($role === 'team leader'): ?>
                     <button type="button" onclick="openModal(<?php echo $schedule_id; ?>, <?php echo $team_id; ?>)">Accept</button>
                     <form action="internal_notification_process.php" method="POST" style="display:inline;">

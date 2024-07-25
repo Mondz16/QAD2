@@ -346,7 +346,9 @@ session_start();
                 success: function(response) {
                     $('#program').html(response);
                     $('#program-level').html(''); // Clear the program level display
-                    fetchScheduledPrograms(collegeId); // Fetch scheduled programs after populating
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
                 }
             });
         } else {

@@ -10,13 +10,13 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 $user_id = $_SESSION['user_id'];
 
 // Fetch user details for displaying in the form
-$sql_user_details = "SELECT first_name, last_name FROM internal_users WHERE user_id = ?";
+$sql_user_details = "SELECT first_name, middle_initial, last_name FROM internal_users WHERE user_id = ?";
 $stmt_user_details = $conn->prepare($sql_user_details);
 $stmt_user_details->bind_param("s", $user_id);
 $stmt_user_details->execute();
-$stmt_user_details->bind_result($first_name, $last_name);
+$stmt_user_details->bind_result($first_name, $middle_initial, $last_name);
 $stmt_user_details->fetch();
-$full_name = $first_name . ' ' . $last_name;
+$full_name = $first_name . ' ' . $middle_initial . '. ' . $last_name;
 $stmt_user_details->close();
 
 // Fetch schedule details for the logged-in user with status 'accepted'
@@ -26,7 +26,9 @@ $sql_schedules = "
     JOIN schedule s ON t.schedule_id = s.id
     JOIN program p ON s.program_id = p.id
     JOIN college c ON s.college_code = c.code
-    WHERE t.internal_users_id = ? AND t.status = 'accepted'
+    WHERE t.internal_users_id = ? 
+    AND t.status = 'accepted'
+    AND s.schedule_status NOT IN ('cancelled', 'finished')
 ";
 $stmt_schedules = $conn->prepare($sql_schedules);
 $stmt_schedules->bind_param("s", $user_id);
@@ -76,7 +78,7 @@ $stmt_summaries->close();
 // Fetch team members and their assessment status
 $team_members = [];
 $sql_team_members = "
-    SELECT t.schedule_id, t.internal_users_id, iu.first_name, iu.last_name, t.id AS team_id, 
+    SELECT t.schedule_id, t.internal_users_id, iu.first_name, iu.middle_initial, iu.last_name, t.id AS team_id, 
     (SELECT a.assessment_file FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_file, t.role
     FROM team t
     JOIN internal_users iu ON t.internal_users_id = iu.user_id
@@ -85,11 +87,11 @@ $sql_team_members = "
 $stmt_team_members = $conn->prepare($sql_team_members);
 $stmt_team_members->bind_param("s", $user_id);
 $stmt_team_members->execute();
-$stmt_team_members->bind_result($team_schedule_id, $team_member_id, $team_member_first_name, $team_member_last_name, $team_member_team_id, $team_member_assessment_file, $team_member_role);
+$stmt_team_members->bind_result($team_schedule_id, $team_member_id, $team_member_first_name, $team_member_middle_initial, $team_member_last_name, $team_member_team_id, $team_member_assessment_file, $team_member_role);
 while ($stmt_team_members->fetch()) {
     $team_members[$team_schedule_id][] = [
         'user_id' => $team_member_id,
-        'name' => $team_member_first_name . ' ' . $team_member_last_name,
+        'name' => $team_member_first_name . ' ' . $team_member_middle_initial . '. ' . $team_member_last_name,
         'team_id' => $team_member_team_id,
         'assessment_file' => $team_member_assessment_file,
         'role' => $team_member_role
@@ -271,6 +273,7 @@ $stmt_team_members->close();
             <ul class="nav-list">
                 <li class="btn"><a href="internal.php">Home</a></li>
                 <li class="btn"><a href="internal_notification.php">Notifications</a></li>
+                <li class="btn"><a href="internal_orientation.php">Orientation</a></li>
                 <li class="btn"><a href="internal_assessment.php">Assessment</a></li>
                 <li class="btn"><a href="logout.php">Log Out</a></li>
             </ul>

@@ -127,7 +127,7 @@ $sql = "CREATE TABLE IF NOT EXISTS schedule (
     level_applied VARCHAR(10) NOT NULL,
     schedule_date DATE NOT NULL,
     schedule_time TIME NOT NULL,
-    schedule_status ENUM('pending', 'approved', 'cancelled', 'done') NOT NULL DEFAULT 'pending',
+    schedule_status ENUM('pending', 'approved', 'cancelled') NOT NULL DEFAULT 'pending',
     status_date DATETIME NOT NULL,
     FOREIGN KEY (college_code) REFERENCES college(code),
     FOREIGN KEY (program_id) REFERENCES program(id)
@@ -191,6 +191,52 @@ $sql = "CREATE TABLE IF NOT EXISTS summary (
 
 if ($conn->query($sql) === TRUE) {
     echo "Table summary created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+// Create orientation table
+$sql = "CREATE TABLE IF NOT EXISTS orientation (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    schedule_id INT(6) UNSIGNED,
+    orientation_date DATE NOT NULL,
+    orientation_time TIME NOT NULL,
+    orientation_type VARCHAR(255) NOT NULL,
+    FOREIGN KEY (schedule_id) REFERENCES schedule(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table orientation created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+// Create face_to_face table
+$sql = "CREATE TABLE IF NOT EXISTS face_to_face (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    orientation_id INT(6) UNSIGNED,
+    college_building VARCHAR(255) NOT NULL,
+    room_number VARCHAR(255) NOT NULL,
+    FOREIGN KEY (orientation_id) REFERENCES orientation(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table face_to_face created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+// Create online table
+$sql = "CREATE TABLE IF NOT EXISTS online (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    orientation_id INT(6) UNSIGNED,
+    orientation_link VARCHAR(255) NOT NULL,
+    link_passcode VARCHAR(255) NOT NULL,
+    FOREIGN KEY (orientation_id) REFERENCES orientation(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table online created successfully<br>";
 } else {
     echo "Error creating table: " . $conn->error . "<br>";
 }

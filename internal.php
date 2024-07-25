@@ -177,6 +177,7 @@ $accreditor_type = (substr($user_id, 3, 2) == '11') ? 'Internal Accreditor' : 'E
             <ul class="nav-list">
                 <li class="btn"><a href="internal.php">Home</a></li>
                 <li class="btn"><a href="internal_notification.php">Notifications</a></li>
+                <li class="btn"><a href="internal_orientation.php">Orientation</a></li>
                 <li class="btn"><a href="internal_assessment.php">Assessment</a></li>
                 <li class="btn"><a href="logout.php">Log Out</a></li>
             </ul>

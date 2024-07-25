@@ -98,9 +98,9 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                             // Fetch schedule details for the team
                             $scheduleQuery = "
                                 SELECT s.id, s.level_applied, s.schedule_date, s.schedule_time, 
-                                       c.college_name, p.program 
+                                       c.college_name, p.program_name
                                 FROM schedule s
-                                JOIN college c ON s.college_id = c.id
+                                JOIN college c ON s.college_code = c.code
                                 JOIN program p ON s.program_id = p.id
                                 WHERE s.id = (
                                     SELECT schedule_id FROM team WHERE id = '$teamId'
@@ -114,7 +114,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                                 echo "<div class='assessment-box'>";
                                 echo "<h2>Assessment #" . $counter . "</h2>";
                                 echo "<div class='assessment-details'>";
-                                echo "<p><strong>College:</strong> " . $schedule['college_name'] . " | <strong>Program:</strong> " . $schedule['program'] . " | <strong>Level Applied:</strong> " . $schedule['level_applied'] . "</p>";
+                                echo "<p><strong>College:</strong> " . $schedule['college_name'] . " <br> <strong>Program:</strong> " . $schedule['program_name'] . " <br> <strong>Level Applied:</strong> " . $schedule['level_applied'] . "</p>";
                                 echo "<p><strong>Date:</strong> " . $schedule['schedule_date'] . " | <strong>Time:</strong> " . $schedule['schedule_time'] . "</p>";
                                 echo "<h3>Summary File:</h3>";
                                 echo "<a href='$summaryFile' download>Download Summary</a>";

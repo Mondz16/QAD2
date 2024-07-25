@@ -4,9 +4,16 @@ include 'connection.php';
 if (isset($_POST['college_id'])) {
     $college_id = $_POST['college_id'];
 
-    $sql = "SELECT id, program_name FROM program WHERE college_code = ?";
+    $sql = "
+        SELECT p.id, p.program_name 
+        FROM program p
+        LEFT JOIN schedule s ON p.id = s.program_id AND s.schedule_status IN ('pending', 'approved')
+        WHERE p.college_code = ? AND s.program_id IS NULL
+        ORDER BY p.program_name
+    ";
+
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $college_id);
+    $stmt->bind_param("s", $college_id);
     $stmt->execute();
     $result = $stmt->get_result();
 
