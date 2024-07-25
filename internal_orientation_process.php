@@ -28,14 +28,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     $stmt_check->close();
 
-    // Insert into orientation table
+    // Check for existing orientations on the same date with status 'pending' or 'approved'
+    $sql_date_check = "
+        SELECT id FROM orientation 
+        WHERE orientation_date = ? 
+        AND orientation_status IN ('pending', 'approved')
+    ";
+    $stmt_date_check = $conn->prepare($sql_date_check);
+    $stmt_date_check->bind_param("s", $orientation_date);
+    $stmt_date_check->execute();
+    $stmt_date_check->store_result();
+
+    if ($stmt_date_check->num_rows > 0) {
+        // An orientation on the same date already exists
+        $stmt_date_check->close();
+        header("Location: internal_orientation.php?error=orientation_date_conflict");
+        exit();
+    }
+    $stmt_date_check->close();
+
+    // Insert into orientation table with default status 'pending'
     $orientation_type = ($mode === 'online') ? 'online' : 'face_to_face';
+    $orientation_status = 'pending';
     $sql_orientation = "
-        INSERT INTO orientation (schedule_id, orientation_date, orientation_time, orientation_type)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO orientation (schedule_id, orientation_date, orientation_time, orientation_type, orientation_status)
+        VALUES (?, ?, ?, ?, ?)
     ";
     $stmt_orientation = $conn->prepare($sql_orientation);
-    $stmt_orientation->bind_param("isss", $schedule_id, $orientation_date, $orientation_time, $orientation_type);
+    $stmt_orientation->bind_param("issss", $schedule_id, $orientation_date, $orientation_time, $orientation_type, $orientation_status);
     $stmt_orientation->execute();
     $orientation_id = $stmt_orientation->insert_id;
     $stmt_orientation->close();

@@ -28,9 +28,11 @@ $sql_schedules = "
         s.schedule_date, 
         s.schedule_time, 
         s.schedule_status,
-        (SELECT COUNT(*) FROM orientation o WHERE o.schedule_id = s.id) AS orientation_requested
+        o.id AS orientation_id,
+        o.orientation_status
     FROM schedule s
     JOIN program p ON s.program_id = p.id
+    LEFT JOIN orientation o ON s.id = o.schedule_id
     WHERE s.college_code = ? 
     AND s.schedule_status IN ('pending', 'approved')
     ORDER BY s.schedule_date, s.schedule_time
@@ -42,14 +44,19 @@ $stmt_schedules->execute();
 $result_schedules = $stmt_schedules->get_result();
 
 $schedules = [];
+$current_date_time = new DateTime();  // Current date and time
+
 while ($row = $result_schedules->fetch_assoc()) {
-    if ($row['orientation_requested'] == 0) {
+    $schedule_date_time = new DateTime($row['schedule_date'] . ' ' . $row['schedule_time']);
+    if ($schedule_date_time > $current_date_time) {
         $schedules[$row['schedule_id']] = [
             'program_name' => $row['program_name'],
             'level_applied' => $row['level_applied'],
             'schedule_date' => $row['schedule_date'],
             'schedule_time' => $row['schedule_time'],
             'schedule_status' => $row['schedule_status'],
+            'orientation_id' => $row['orientation_id'],
+            'orientation_status' => $row['orientation_status'],
             'team' => []
         ];
     }
@@ -300,7 +307,21 @@ if (!empty($schedules)) {
                             <li>No team members assigned.</li>
                         <?php endif; ?>
                     </ul>
-                    <button onclick="openModal(<?php echo $schedule_id; ?>)">Request Orientation</button>
+                    <?php if ($schedule['orientation_id']): ?>
+                        <?php if ($schedule['orientation_status'] === 'pending'): ?>
+                            <p>A request for orientation has been submitted. Please wait for the approval.</p>
+                            <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
+                        <?php elseif ($schedule['orientation_status'] === 'approved'): ?>
+                            <p>This orientation request has been approved.</p>
+                            <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
+                        <?php elseif ($schedule['orientation_status'] === 'denied'): ?>
+                            <p>This orientation request has been denied. Do you want to request again?</p>
+                            <button onclick="openModal(<?php echo $schedule_id; ?>)">Rerequest Orientation</button>
+                            <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <button onclick="openModal(<?php echo $schedule_id; ?>)">Request Orientation</button>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
@@ -316,7 +337,7 @@ if (!empty($schedules)) {
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
             <h2>Request Orientation</h2>
-            <form id="orientationForm" action="internal_orientation_process.php" method="POST">
+            <form id="orientationForm" action="request_orientation_process.php" method="POST">
                 <input type="hidden" name="schedule_id" id="modal_schedule_id">
                 <div class="form-group">
                     <label for="orientation_date">Orientation Date:</label>

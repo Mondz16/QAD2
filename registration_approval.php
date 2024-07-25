@@ -12,6 +12,54 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php'; // Ensure PHPMailer is installed and autoloaded
+
+function sendEmailNotification($email, $userId, $action) {
+    $mail = new PHPMailer(true);
+
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'usepqad@gmail.com'; // SMTP username
+        $mail->Password = 'vmvf vnvq ileu tmev'; // SMTP password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        // Optional: Disable SSL certificate verification
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
+
+        // Recipients
+        $mail->setFrom('usepqad@gmail.com', 'USeP - Quality Assurance Division');
+        $mail->addAddress($email);
+
+        // Content
+        $mail->isHTML(true);
+        if ($action == 'approve') {
+            $mail->Subject = 'Registration Approved';
+            $mail->Body = "Dear User,<br><br>Your registration has been approved.<br><br>User ID: $userId<br><br>Best regards,<br>USeP - Quality Assurance Division";
+        } else if ($action == 'reject') {
+            $mail->Subject = 'Registration Rejected';
+            $mail->Body = "Dear User,<br><br>Your registration has been rejected.<br><br>User ID: $userId<br><br>Best regards,<br>USeP - Quality Assurance Division";
+        }
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
     $action = $_POST['action'];
@@ -39,7 +87,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows == 1) {
         $row = $result->fetch_assoc();
+        $email = $row['email'];
         $bb_cccc = substr($id, 3); // Extract bb-cccc part of the user_id
+
+        $conn->begin_transaction();
 
         if ($action == "approve") {
             if ($user_type == "internal") {
@@ -67,11 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $sql_update_internal = "UPDATE internal_users SET status = 'active', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
                 $stmt_update_internal = $conn->prepare($sql_update_internal);
                 $stmt_update_internal->bind_param("s", $id);
-                $stmt_update_internal->execute();
-                $stmt_update_internal->close();
 
-                $message = "User approved with ID: " . $id;
-                $message_class = "success";
             } elseif ($user_type == "external") {
                 // Check for existing active user with the same bb-cccc part
                 $sql_check_active = "SELECT user_id FROM external_users WHERE user_id LIKE ? AND status = 'active'";
@@ -97,30 +144,58 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $sql_update_external = "UPDATE external_users SET status = 'active', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
                 $stmt_update_external = $conn->prepare($sql_update_external);
                 $stmt_update_external->bind_param("s", $id);
-                $stmt_update_external->execute();
-                $stmt_update_external->close();
+            }
 
+            // Send approval email
+            $email_status = sendEmailNotification($email, $id, $action);
+            if ($email_status === true) {
+                // Commit the transaction if email is sent successfully
+                if ($user_type == "internal") {
+                    $stmt_update_internal->execute();
+                    $stmt_update_internal->close();
+                } else {
+                    $stmt_update_external->execute();
+                    $stmt_update_external->close();
+                }
+                $conn->commit();
                 $message = "User approved with ID: " . $id;
                 $message_class = "success";
+            } else {
+                // Rollback the transaction if email fails
+                $conn->rollback();
+                $message = "User approval failed due to email notification error.";
+                $message_class = "error";
             }
+
         } else if ($action == "reject") {
             if ($user_type == "internal") {
                 $sql_update_internal = "UPDATE internal_users SET status = 'inactive', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
                 $stmt_update_internal = $conn->prepare($sql_update_internal);
                 $stmt_update_internal->bind_param("s", $id);
-                $stmt_update_internal->execute();
-                $stmt_update_internal->close();
-
-                $message = "User rejected with ID: " . $id;
-                $message_class = "success";
             } else if ($user_type == "external") {
                 $sql_update_external = "UPDATE external_users SET status = 'inactive', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
                 $stmt_update_external = $conn->prepare($sql_update_external);
                 $stmt_update_external->bind_param("s", $id);
-                $stmt_update_external->execute();
-                $stmt_update_external->close();
+            }
 
+            // Send rejection email
+            $email_status = sendEmailNotification($email, $id, $action);
+            if ($email_status === true) {
+                // Commit the transaction if email is sent successfully
+                if ($user_type == "internal") {
+                    $stmt_update_internal->execute();
+                    $stmt_update_internal->close();
+                } else {
+                    $stmt_update_external->execute();
+                    $stmt_update_external->close();
+                }
+                $conn->commit();
                 $message = "User rejected with ID: " . $id;
+                $message_class = "success";
+            } else {
+                // Rollback the transaction if email fails
+                $conn->rollback();
+                $message = "User rejection failed due to email notification error.";
                 $message_class = "error";
             }
         }

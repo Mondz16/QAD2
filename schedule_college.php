@@ -6,6 +6,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schedule Details</title>
     <link rel="stylesheet" href="schedule_college_style.css">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-buttons .yes-btn {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .modal-buttons .no-btn {
+            background-color: #5bc0de;
+            color: white;
+        }
+
+        .modal-buttons .yes-btn:hover {
+            background-color: #c9302c;
+        }
+
+        .modal-buttons .no-btn:hover {
+            background-color: #31b0d5;
+        }
+    </style>
 </head>
 
 <body>
@@ -115,18 +185,17 @@
                         echo "<td>" . htmlspecialchars($row['level_applied']) . "</td>";
                         echo "<td>" . htmlspecialchars($schedule_date) . "</td>";
                         echo "<td>" . htmlspecialchars($schedule_time) . "</td>";
-                        if($row['schedule_status'] !== 'pending'){
+                        if ($row['schedule_status'] !== 'pending') {
                             echo "<td>" . htmlspecialchars($row['schedule_status']) . "</td>";
-                        }
-                        else{
+                        } else {
                             echo "<td>waiting for approval</td>";
                         }
                         echo "<td>";
                         echo "<a class='action-btn' href='#' onclick='openTeamModal(" . $row['id'] . ")'>View Team</a>";
                         if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'approved' && $row['schedule_status'] !== 'done') {
-                            echo "<a class='action-btn approve' href='#' onclick='approveSchedule(" . $row['id'] . ")'>Approve</a>";
+                            echo "<a class='action-btn approve' href='#' onclick='openApproveModal(" . $row['id'] . ")'>Approve</a>";
                             echo "<a class='action-btn reschedule' href='#' onclick='openRescheduleModal(" . $row['id'] . ")'>Reschedule</a>";
-                            echo "<a class='action-btn cancel' href='schedule_cancel_process.php?schedule_id=" . $row['id'] . "&college=" . urlencode($college_name) . "'>Cancel</a>";
+                            echo "<a class='action-btn cancel' href='#' onclick='openCancelModal(" . $row['id'] . ")'>Cancel</a>";
                         }
                         echo "</td>";
                         echo "</tr>";
@@ -138,9 +207,32 @@
                 $stmt->close();
                 $conn->close();
                 ?>
-
             </tbody>
         </table>
+    </div>
+
+    <!-- Cancel Modal -->
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCancelModal()">&times;</span>
+            <h2>Are you sure you want to cancel this schedule?</h2>
+            <div class="modal-buttons">
+                <button class="yes-btn" id="confirmCancelBtn">Yes</button>
+                <button class="no-btn" onclick="closeCancelModal()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approve Modal -->
+    <div id="approveModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeApproveModal()">&times;</span>
+            <h2>Are you sure you want to approve this schedule?</h2>
+            <div class="modal-buttons">
+                <button class="yes-btn" id="confirmApproveBtn">Yes</button>
+                <button class="no-btn" onclick="closeApproveModal()">No</button>
+            </div>
+        </div>
     </div>
 
     <!-- Reschedule Modal -->
@@ -177,7 +269,15 @@
         </div>
     </div>
 
+    <form id="approveForm" action="schedule_approve_process.php" method="post" style="display: none;">
+        <input type="hidden" name="schedule_id" id="approveScheduleId">
+        <input type="hidden" name="college" value="<?php echo htmlspecialchars($_GET['college']); ?>">
+    </form>
+
     <script>
+        let cancelScheduleId;
+        let approveScheduleId;
+
         function openRescheduleModal(scheduleId) {
             document.getElementById('schedule_id').value = scheduleId;
             document.getElementById('rescheduleModal').style.display = 'block';
@@ -190,7 +290,7 @@
         function openTeamModal(scheduleId) {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', 'fetch_team.php?schedule_id=' + scheduleId, true);
-            xhr.onreadystatechange = function() {
+            xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     document.getElementById('teamContent').innerHTML = xhr.responseText;
                     document.getElementById('teamModal').style.display = 'block';
@@ -205,7 +305,7 @@
 
         function filterTable(status) {
             var rows = document.querySelectorAll('.schedule-row');
-            rows.forEach(function(row) {
+            rows.forEach(function (row) {
                 if (status === 'all') {
                     row.style.display = '';
                 } else {
@@ -217,23 +317,38 @@
                 }
             });
 
-            document.querySelectorAll('.tab').forEach(function(tab) {
+            document.querySelectorAll('.tab').forEach(function (tab) {
                 tab.classList.remove('active');
             });
             document.querySelector('.tab[onclick="filterTable(\'' + status + '\')"]').classList.add('active');
         }
 
-        function approveSchedule(scheduleId) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'schedule_approve_process.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    location.reload(); // Reload the page to reflect the changes
-                }
-            };
-            xhr.send('schedule_id=' + scheduleId);
+        function openCancelModal(scheduleId) {
+            cancelScheduleId = scheduleId;
+            document.getElementById('cancelModal').style.display = 'block';
         }
+
+        function closeCancelModal() {
+            document.getElementById('cancelModal').style.display = 'none';
+        }
+
+        document.getElementById('confirmCancelBtn').addEventListener('click', function () {
+            window.location.href = 'schedule_cancel_process.php?schedule_id=' + cancelScheduleId + '&college=<?php echo urlencode($_GET['college']); ?>';
+        });
+
+        function openApproveModal(scheduleId) {
+            approveScheduleId = scheduleId;
+            document.getElementById('approveModal').style.display = 'block';
+        }
+
+        function closeApproveModal() {
+            document.getElementById('approveModal').style.display = 'none';
+        }
+
+        document.getElementById('confirmApproveBtn').addEventListener('click', function () {
+            document.getElementById('approveScheduleId').value = approveScheduleId;
+            document.getElementById('approveForm').submit();
+        });
     </script>
 </body>
 

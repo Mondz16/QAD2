@@ -12,20 +12,15 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-function displayRegistrations($conn, $tableName, $title)
+function displayOrientationDetails($conn, $orientationType, $title)
 {
-    $sql = "";
-    if ($tableName === 'internal_users') {
-        $sql = "SELECT i.user_id, i.first_name, i.middle_initial, i.last_name, i.email, c.college_name
-                FROM internal_users i
-                LEFT JOIN college c ON i.college_code = c.code
-                WHERE i.status = 'pending'";
-    } elseif ($tableName === 'external_users') {
-        $sql = "SELECT e.user_id, e.first_name, e.middle_initial, e.last_name, e.email, c.company_name
-                FROM external_users e
-                LEFT JOIN company c ON e.company_code = c.code
-                WHERE e.status = 'pending'";
-    }
+    $sql = "SELECT o.id, o.orientation_date, o.orientation_time, 
+            IF(o.orientation_type = 'online', ol.orientation_link, f2f.college_building) AS location,
+            IF(o.orientation_type = 'online', ol.link_passcode, f2f.room_number) AS additional_info
+            FROM orientation o
+            LEFT JOIN online ol ON o.id = ol.orientation_id
+            LEFT JOIN face_to_face f2f ON o.id = f2f.orientation_id
+            WHERE o.orientation_type = '$orientationType' AND o.orientation_status = 'pending'";
 
     $result = $conn->query($sql);
 
@@ -34,16 +29,15 @@ function displayRegistrations($conn, $tableName, $title)
         echo "<table class='data-table'>
             <tr>
                 <th>ID</th>
-                <th>First Name</th>
-                <th>Middle Initial</th>
-                <th>Last Name</th>
-                <th>Email</th>";
+                <th>Date</th>
+                <th>Time</th>";
 
-        // Additional columns based on table type
-        if ($tableName === 'internal_users') {
-            echo "<th>College</th>";
-        } elseif ($tableName === 'external_users') {
-            echo "<th>Company</th>";
+        if ($orientationType === 'online') {
+            echo "<th>Link</th>
+                  <th>Passcode</th>";
+        } elseif ($orientationType === 'face_to_face') {
+            echo "<th>Building</th>
+                  <th>Room Number</th>";
         }
 
         echo "<th>Actions</th>
@@ -51,31 +45,39 @@ function displayRegistrations($conn, $tableName, $title)
 
         while ($row = $result->fetch_assoc()) {
             echo "<tr>
-                <td>{$row['user_id']}</td>
-                <td>{$row['first_name']}</td>
-                <td>{$row['middle_initial']}</td>
-                <td>{$row['last_name']}</td>
-                <td>{$row['email']}</td>";
+                <td>{$row['id']}</td>
+                <td>{$row['orientation_date']}</td>
+                <td>{$row['orientation_time']}</td>";
 
-            // Display additional column data based on table type
-            if ($tableName === 'internal_users') {
-                echo "<td>{$row['college_name']}</td>";
-            } elseif ($tableName === 'external_users') {
-                echo "<td>{$row['company_name']}</td>";
+            if ($orientationType === 'online') {
+                echo "<td>{$row['location']}</td>
+                      <td>{$row['additional_info']}</td>";
+            } elseif ($orientationType === 'face_to_face') {
+                echo "<td>{$row['location']}</td>
+                      <td>{$row['additional_info']}</td>";
             }
 
             echo "<td class='action-buttons'>
-                    <button class='btn approve' onclick='openApproveModal(\"{$row['user_id']}\")'>Approve</button>
-                    <button class='btn reject' onclick='openRejectModal(\"{$row['user_id']}\")'>Reject</button>
+                    <form action='orientation_approval.php' method='post' style='display:inline;'>
+                        <input type='hidden' name='id' value='{$row['id']}'>
+                        <input type='hidden' name='action' value='approve'>
+                        <input type='submit' value='Approve' class='btn approve'>
+                    </form>
+                    <form action='orientation_approval.php' method='post' style='display:inline;'>
+                        <input type='hidden' name='id' value='{$row['id']}'>
+                        <input type='hidden' name='action' value='reject'>
+                        <input type='submit' value='Reject' class='btn reject'>
+                    </form>
                 </td>
             </tr>";
         }
 
         echo "</table>";
     } else {
-        echo "<p>No pending registrations for $title.</p>";
+        echo "<p>No pending orientations for $title.</p>";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -84,7 +86,7 @@ function displayRegistrations($conn, $tableName, $title)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pending Registrations</title>
+    <title>Pending Orientations</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
     <style>
         * {
@@ -312,75 +314,6 @@ function displayRegistrations($conn, $tableName, $title)
         .back-button:hover {
             opacity: 0.9;
         }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0, 0, 0);
-            background-color: rgba(0, 0, 0, 0.4);
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 400px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-
-        .modal-buttons button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .modal-buttons .yes-btn {
-            background-color: #d9534f;
-            color: white;
-        }
-
-        .modal-buttons .no-btn {
-            background-color: #5bc0de;
-            color: white;
-        }
-
-        .modal-buttons .yes-btn:hover {
-            background-color: #c9302c;
-        }
-
-        .modal-buttons .no-btn:hover {
-            background-color: #31b0d5;
-        }
     </style>
 </head>
 
@@ -414,53 +347,21 @@ function displayRegistrations($conn, $tableName, $title)
     </div>
     <div class="tab-container">
         <div class="admin-content">
-            <h1 class="tabheader">Pending Registrations</h1>
+            <h1 class="tabheader">Pending Orientations</h1>
             <div class="tabs">
-                <div class="tab active" data-tab="internal">Internal</div>
-                <div class="tab" data-tab="external">External</div>
+                <div class="tab active" data-tab="online">Online</div>
+                <div class="tab" data-tab="face_to_face">Face to Face</div>
             </div>
-            <div class="tab-content active" id="internal">
-                <?php displayRegistrations($conn, 'internal_users', 'Internal Pending Registrations'); ?>
+            <div class="tab-content active" id="online">
+                <?php displayOrientationDetails($conn, 'online', 'Online Pending Orientations'); ?>
             </div>
-            <div class="tab-content" id="external">
-                <?php displayRegistrations($conn, 'external_users', 'External Pending Registrations'); ?>
+            <div class="tab-content" id="face_to_face">
+                <?php displayOrientationDetails($conn, 'face_to_face', 'Face to Face Pending Orientations'); ?>
             </div>
         </div>
     <div>
         <button class="back-button" onclick="window.location.href='admin.php'">Back to Admin Panel</button>
     </div>
-    </div>
-
-    <!-- Approve Modal -->
-    <div id="approveModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeApproveModal()">&times;</span>
-            <h2>Are you sure you want to approve this registration?</h2>
-            <form id="approveForm" action="registration_approval.php" method="post">
-                <input type="hidden" name="id" id="approveUserId">
-                <input type="hidden" name="action" value="approve">
-                <div class="modal-buttons">
-                    <button type="submit" class="yes-btn">Yes</button>
-                    <button type="button" class="no-btn" onclick="window.location.href='registration.php'">No</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Reject Modal -->
-    <div id="rejectModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeRejectModal()">&times;</span>
-            <h2>Are you sure you want to reject this registration?</h2>
-            <form id="rejectForm" action="registration_approval.php" method="post">
-                <input type="hidden" name="id" id="rejectUserId">
-                <input type="hidden" name="action" value="reject">
-                <div class="modal-buttons">
-                    <button type="submit" class="yes-btn">Yes</button>
-                    <button type="button" class="no-btn" onclick="window.location.href='registration.php'">No</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <script>
@@ -485,24 +386,6 @@ function displayRegistrations($conn, $tableName, $title)
                 });
             });
         });
-
-        function openApproveModal(userId) {
-            document.getElementById('approveUserId').value = userId;
-            document.getElementById('approveModal').style.display = 'block';
-        }
-
-        function closeApproveModal() {
-            document.getElementById('approveModal').style.display = 'none';
-        }
-
-        function openRejectModal(userId) {
-            document.getElementById('rejectUserId').value = userId;
-            document.getElementById('rejectModal').style.display = 'block';
-        }
-
-        function closeRejectModal() {
-            document.getElementById('rejectModal').style.display = 'none';
-        }
     </script>
 </body>
 

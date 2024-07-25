@@ -127,7 +127,7 @@ $sql = "CREATE TABLE IF NOT EXISTS schedule (
     level_applied VARCHAR(10) NOT NULL,
     schedule_date DATE NOT NULL,
     schedule_time TIME NOT NULL,
-    schedule_status ENUM('pending', 'approved', 'cancelled') NOT NULL DEFAULT 'pending',
+    schedule_status ENUM('pending', 'approved', 'cancelled', 'finished') NOT NULL DEFAULT 'pending',
     status_date DATETIME NOT NULL,
     FOREIGN KEY (college_code) REFERENCES college(code),
     FOREIGN KEY (program_id) REFERENCES program(id)
@@ -202,6 +202,7 @@ $sql = "CREATE TABLE IF NOT EXISTS orientation (
     orientation_date DATE NOT NULL,
     orientation_time TIME NOT NULL,
     orientation_type VARCHAR(255) NOT NULL,
+    orientation_status ENUM('pending', 'approved', 'denied') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (schedule_id) REFERENCES schedule(id)
 )";
 
