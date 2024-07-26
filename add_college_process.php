@@ -88,17 +88,18 @@
             $college_campus = $_POST['college_campus'];
             $college_email = $_POST['college_email'];
 
-            if(isset($_POST['programs']))
+            if (isset($_POST['programs']))
                 $programs = $_POST['programs'];
-            
-            if(isset($_POST['levels']))
+
+            if (isset($_POST['levels']))
                 $levels = $_POST['levels'];
-            
-            if(isset($_POST['dates_received']))
+
+            if (isset($_POST['dates_received']))
                 $dates_received = $_POST['dates_received'];
 
             // Function to get the next code
-            function getNextCode($table, $conn) {
+            function getNextCode($table, $conn)
+            {
                 $sql_code = "SELECT MAX(CAST(code AS UNSIGNED)) AS max_code FROM $table";
                 $result_code = $conn->query($sql_code);
                 $row_code = $result_code->fetch_assoc();
@@ -151,19 +152,59 @@
             }
 
             // Add programs
-            $sql_program = "INSERT INTO program (program_name, college_code, program_level, date_received) VALUES (?, ?, ?, ?)";
+            $sql_program = "INSERT INTO program (program_name, college_code, program_level_id) VALUES (?, ?, ?)";
             $stmt_program = $conn->prepare($sql_program);
 
-            if(isset($_POST['programs'])){
+            if (isset($_POST['programs'])) {
                 for ($i = 0; $i < count($programs); $i++) {
                     $program = $programs[$i];
                     $level = $levels[$i];
                     $date_received = $dates_received[$i];
-                    $stmt_program->bind_param("ssss", $program, $college_code, $level, $date_received);
 
-                    if (!$stmt_program->execute()) {
-                        echo "<p class='error'>Error adding program '$program': " . $conn->error . "</p>";
-                        $program_success = false;
+                    if ($level === "N/A") {
+                        // Insert program with NULL for program_level_id
+                        $stmt_program->bind_param("ssi", $program, $college_code, $null);
+                        $null = NULL; // Use NULL for program_level_id when level is "N/A"
+                        if (!$stmt_program->execute()) {
+                            echo "<p class='error'>Error adding program '$program': " . $conn->error . "</p>";
+                            $program_success = false;
+                        }
+                    } else {
+                        // Insert program without program_level_id (we'll handle it separately)
+                        $stmt_program->bind_param("ssi", $program, $college_code, $null );
+                        $null = NULL; // Use NULL for program_level_id when level is "N/A"
+                        if (!$stmt_program->execute()) {
+                            echo "<p class='error'>Error adding program '$program': " . $conn->error . "</p>";
+                            $program_success = false;
+                            continue; // Skip to the next program if insertion fails
+                        }
+
+                        // Get the last inserted program ID
+                        $program_id = $conn->insert_id;
+
+                        // Insert into program_level_history
+                        $sql_program_level_history = "INSERT INTO program_level_history (program_id, program_level, date_received, year_of_validity) VALUES (?, ?, ?, ?)";
+                        $stmt_program_level_history = $conn->prepare($sql_program_level_history);
+                        $stmt_program_level_history->bind_param("isss", $program_id, $level, $date_received, $year_of_validity);
+
+                        if (!$stmt_program_level_history->execute()) {
+                            echo "<p class='error'>Error adding program level history for '$program': " . $conn->error . "</p>";
+                            $program_success = false;
+                            continue; // Skip to the next program if insertion fails
+                        }
+
+                        // Get the last inserted program level history ID
+                        $program_level_id = $conn->insert_id;
+
+                        // Update the program table with the program_level_id
+                        $sql_update_program = "UPDATE program SET program_level_id = ? WHERE id = ?";
+                        $stmt_update_program = $conn->prepare($sql_update_program);
+                        $stmt_update_program->bind_param("ii", $program_level_id, $program_id);
+
+                        if (!$stmt_update_program->execute()) {
+                            echo "<p class='error'>Error updating program with level ID for '$program': " . $conn->error . "</p>";
+                            $program_success = false;
+                        }
                     }
                 }
 
@@ -174,6 +215,7 @@
                     echo "<p class='error'>Some programs could not be added.</p>";
                 }
             }
+
             ?>
         </div>
         <button class="button-primary" onclick="window.location.href='college.php'">OK</button>

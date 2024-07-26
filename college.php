@@ -15,13 +15,25 @@ while ($row_college = $result_colleges->fetch_assoc()) {
     ];
 }
 
-$sql_programs = "SELECT college_code, program_name, program_level, date_received FROM program";
+$sql_programs = "SELECT 
+                    p.college_code, 
+                    p.program_name, 
+                    plh.program_level, 
+                    plh.date_received 
+                 FROM 
+                    program p
+                 LEFT JOIN 
+                    program_level_history plh 
+                 ON 
+                    p.program_level_id = plh.id";
+
 $result_programs = $conn->query($sql_programs);
 
 while ($row_program = $result_programs->fetch_assoc()) {
+    $program_level = $row_program['program_level'] ?? 'N/A';
     $collegePrograms[$row_program['college_code']]['programs'][] = [
         'program_name' => $row_program['program_name'],
-        'program_level' => $row_program['program_level'],
+        'program_level' => $program_level,
         'date_received' => $row_program['date_received']
     ];
 }
@@ -38,7 +50,6 @@ while ($row_company = $result_companies->fetch_assoc()) {
     ];
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -235,7 +246,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
                 var cell3 = row.insertCell(2);
 
                 cell1.innerHTML = program.program_name;
-                cell2.innerHTML = program.program_level;
+                cell2.innerHTML = program.program_level || 'N/A';
                 cell3.innerHTML = program.date_received;
             });
         }

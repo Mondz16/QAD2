@@ -18,7 +18,8 @@ if ($conn->connect_error) {
 }
 
 // Function to get the next college code
-function getNextCollegeCode($conn) {
+function getNextCollegeCode($conn)
+{
     $sql_code = "SELECT MAX(CAST(code AS UNSIGNED)) AS max_code FROM college";
     $result_code = $conn->query($sql_code);
     $row_code = $result_code->fetch_assoc();
@@ -38,7 +39,8 @@ function getNextCollegeCode($conn) {
 }
 
 // Function to convert Excel date to YYYY-MM-DD format
-function excelDateToDate($excelDate) {
+function excelDateToDate($excelDate)
+{
     if (is_numeric($excelDate)) {
         $unixDate = ($excelDate - 25569) * 86400; // Convert Excel date to Unix timestamp
         return gmdate("Y-m-d", $unixDate);
@@ -94,12 +96,29 @@ if (isset($_FILES['excel_file']['name'])) {
                 $stmt_insert_college->bind_param("ssss", $college_code, $college_name, $college_campus, $college_email);
                 $stmt_insert_college->execute();
             }
-
-            // Insert Program
-            $sql_insert_program = "INSERT INTO program (college_code, program_name, program_level, date_received) VALUES (?, ?, ?, ?)";
+            // Insert Program into the program table
+            $sql_insert_program = "INSERT INTO program (college_code, program_name) VALUES (?, ?)";
             $stmt_insert_program = $conn->prepare($sql_insert_program);
-            $stmt_insert_program->bind_param("ssss", $college_code, $program_name, $program_level, $date_received);
+            $stmt_insert_program->bind_param("ss", $college_code, $program_name);
             $stmt_insert_program->execute();
+
+            // Get the last inserted program ID
+            $program_id = $conn->insert_id;
+
+            // Insert Program Level History into the program_level_history table
+            $sql_insert_program_level_history = "INSERT INTO program_level_history (program_id, program_level, date_received, year_of_validity) VALUES (?, ?, ?, ?)";
+            $stmt_insert_program_level_history = $conn->prepare($sql_insert_program_level_history);
+            $stmt_insert_program_level_history->bind_param("isss", $program_id, $program_level, $date_received, $year_of_validity);
+            $stmt_insert_program_level_history->execute();
+
+            // Get the last inserted program level history ID
+            $program_level_id = $conn->insert_id;
+
+            // Update the program table with the program_level_id
+            $sql_update_program = "UPDATE program SET program_level_id = ? WHERE id = ?";
+            $stmt_update_program = $conn->prepare($sql_update_program);
+            $stmt_update_program->bind_param("ii", $program_level_id, $program_id);
+            $stmt_update_program->execute();
         }
 
         $message = "Data imported successfully!";
@@ -191,4 +210,5 @@ $conn->close();
         <button class="button-primary" onclick="window.location.href='college.php'">OK</button>
     </div>
 </body>
+
 </html>

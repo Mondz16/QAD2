@@ -264,9 +264,8 @@
                 <div class="form-group">
                     <label for="college_campus">College Campus:</label>
                     <select id="college_campus" name="college_campus" required>
-                        <option value="Main">Main</option>
-                        <option value="Mintal">Mintal</option>
                         <option value="Obrero">Obrero</option>
+                        <option value="Mintal">Mintal</option>
                         <option value="Mabini">Tagum-Mabini</option>
                     </select>
                 </div>

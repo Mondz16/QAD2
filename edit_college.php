@@ -3,6 +3,7 @@ include 'connection.php';
 
 $college_code = $_GET['code'];
 
+// Fetch college details
 $sql = "SELECT * FROM college WHERE code = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $college_code);
@@ -10,7 +11,20 @@ $stmt->execute();
 $result = $stmt->get_result();
 $college = $result->fetch_assoc();
 
-$sql = "SELECT * FROM program WHERE college_code = ?";
+// Fetch programs along with their levels and date received from program_level_history
+$sql = "SELECT 
+            p.id, 
+            p.program_name, 
+            plh.program_level, 
+            plh.date_received 
+        FROM 
+            program p
+        LEFT JOIN 
+            program_level_history plh 
+        ON 
+            p.program_level_id = plh.id 
+        WHERE 
+            p.college_code = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $college_code);
 $stmt->execute();
@@ -21,7 +35,7 @@ while ($row = $programs_result->fetch_assoc()) {
     $programs[] = [
         'id' => $row['id'],
         'program_name' => $row['program_name'],
-        'program_level' => $row['program_level'],
+        'program_level' => $row['program_level'] ?? 'N/A',
         'date_received' => $row['date_received']
     ];
 }
@@ -292,9 +306,9 @@ while ($row = $programs_result->fetch_assoc()) {
                             <label for="program_<?php echo $index + 1; ?>">Program:</label>
                             <input type="text" id="program_<?php echo $index + 1; ?>" name="programs[]" value="<?php echo htmlspecialchars($program['program_name']); ?>" required>
                             <label for="level_<?php echo $index + 1; ?>">Level:</label>
-                            <input type="text" id="level_<?php echo $index + 1; ?>" name="levels[]" value="<?php echo htmlspecialchars($program['program_level']); ?>" required>
+                            <input type="text" id="level_<?php echo $index + 1; ?>" name="levels[]" value="<?php echo htmlspecialchars($program['program_level']); ?>" readonly required>
                             <label for="date_received_<?php echo $index + 1; ?>">Date Received:</label>
-                            <input type="date" id="date_received_<?php echo $index + 1; ?>" name="dates_received[]" value="<?php echo htmlspecialchars($program['date_received']); ?>" required>
+                            <input type="date" id="date_received_<?php echo $index + 1; ?>" name="dates_received[]" value="<?php echo htmlspecialchars($program['date_received']); ?>" readonly required>
                         </div>
                     <?php endforeach; ?>
                 </div>
