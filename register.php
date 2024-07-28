@@ -58,7 +58,7 @@
                     <div style="height: 8px; width: 0px;"></div>
                     <form action="register_process.php" method="post" enctype="multipart/form-data">
                         <div class="form-profile-wrapper">
-                            <div class="form-section">
+                            <div class="register-form">
                                 <div class="internal-external">
                                     <div class="internal-externalSelect">
                                         <input id="internal" type="radio" name="type" value="internal" required>

@@ -9,14 +9,25 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 
 $user_id = $_SESSION['user_id'];
 
-// Fetch the college code of the logged-in user
-$sql_college_code = "SELECT college_code FROM internal_users WHERE user_id = ?";
-$stmt_college_code = $conn->prepare($sql_college_code);
-$stmt_college_code->bind_param("s", $user_id);
-$stmt_college_code->execute();
-$stmt_college_code->bind_result($college_code);
-$stmt_college_code->fetch();
-$stmt_college_code->close();
+// Fetch user details
+$sql_user = "SELECT first_name, middle_initial, last_name, email, college_code, profile_picture FROM internal_users WHERE user_id = ?";
+$stmt_user = $conn->prepare($sql_user);
+$stmt_user->bind_param("s", $user_id);
+$stmt_user->execute();
+$stmt_user->bind_result($first_name, $middle_initial, $last_name, $email, $college_code, $profile_picture);
+$stmt_user->fetch();
+$stmt_user->close();
+
+// Fetch college name
+$sql_college = "SELECT college_name FROM college WHERE code = ?";
+$stmt_college = $conn->prepare($sql_college);
+$stmt_college->bind_param("s", $college_code);
+$stmt_college->execute();
+$stmt_college->bind_result($college_name);
+$stmt_college->fetch();
+$stmt_college->close();
+
+$accreditor_type = (substr($user_id, 3, 2) == '11') ? 'Internal Accreditor' : 'External Accreditor';
 
 // Fetch schedules matching the college code and status 'pending' or 'approved'
 $sql_schedules = "
@@ -99,163 +110,46 @@ if (!empty($schedules)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Internal Accreditor - Orientation Requests</title>
-    <link rel="stylesheet" href="loginstyle.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-        .wrapper {
-            text-align: center;
-            padding: 20px;
-            background-color: #fff;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .wrapper header {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        .site-header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .site-header nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            text-align: center;
-        }
-        .site-header nav ul li {
-            display: inline;
-            margin: 0 10px;
-        }
-        .site-header nav ul li a {
-            color: #fff;
-            text-decoration: none;
-            padding: 10px 20px;
-            background-color: #444;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .site-header nav ul li a:hover {
-            background-color: #555;
-        }
-        .schedules {
-            padding: 20px;
-            max-width: 800px;
-            margin: 20px auto;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-        .schedule {
-            background-color: #f0f0f0;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-        }
-        .schedule p {
-            margin: 0;
-        }
-        .schedule small {
-            color: #666;
-        }
-        .schedule form {
-            margin-top: 10px;
-        }
-        .schedule form button {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .schedule form button:hover {
-            background-color: #0056b3;
-        }
-        .back-btn {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .back-btn .btn {
-            background-color: #007bff;
-            color: #fff;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .back-btn .btn:hover {
-            background-color: #0056b3;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 50%;
-            top: 20%;
-            transform: translate(-50%, -20%);
-            width: 100%;
-            max-width: 600px;
-            background-color: rgba(0,0,0,0.4);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15px auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
-            border-radius: 10px;
-            position: relative;
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input[type="text"],
-        .form-group input[type="datetime-local"] {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .form-group input[type="radio"] {
-            margin-right: 5px;
-        }
-        .form-inline {
-            display: flex;
-            align-items: center;
-        }
-        .form-inline label {
-            margin: 0 10px 0 0;
-        }
-    </style>
 </head>
 <body>
     <div class="wrapper">
-        <header>Internal Accreditor</header>
+        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+        <div class="container">
+            <div class="header">
+                <div class="headerLeft">
+                    <div class="USePData">
+                        <img class="USeP" src="images/USePLogo.png" height="36">
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div class="headerLeftText">
+                            <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                    <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span></h>
+                            </div>
+                            <h>Accreditor Portal</h>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="headerRight">
+                    <div class="SDMD">
+                        <div class="headerRightText">
+                            <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                        </div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <img class="USeP" src="images/SDMDLogo.png" height="36">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
     </div>
     <header class="site-header">
         <nav>
@@ -268,6 +162,16 @@ if (!empty($schedules)) {
             </ul>
         </nav>
     </header>
+    <div style="height: 30px; width: 0px;"></div>
+    <div class="container">
+        <div class="profile">
+            <img src="<?php echo $profile_picture; ?>" alt="Profile Picture" class="profile-picture">
+            <div class="profile-details">
+                <p class="profile-name"><?php echo $first_name . ' ' . $middle_initial . '. ' . $last_name; ?></p>
+                <p class="profile-type"><?php echo $college_name; ?> (<?php echo $accreditor_type; ?>)</p>
+            </div>
+        </div>
+    </div>
     <div class="schedules">
         <h2>Orientation Requests</h2>
         <?php if (!empty($schedules)): ?>
@@ -327,9 +231,6 @@ if (!empty($schedules)) {
         <?php else: ?>
             <p>No schedules found.</p>
         <?php endif; ?>
-        <div class="back-btn">
-            <a href="internal.php" class="btn">Back to Home</a>
-        </div>
     </div>
 
     <!-- Modal -->
@@ -337,7 +238,7 @@ if (!empty($schedules)) {
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
             <h2>Request Orientation</h2>
-            <form id="orientationForm" action="request_orientation_process.php" method="POST">
+            <form id="orientationForm" action="internal_orientation_process.php" method="POST">
                 <input type="hidden" name="schedule_id" id="modal_schedule_id">
                 <div class="form-group">
                     <label for="orientation_date">Orientation Date:</label>
@@ -347,7 +248,7 @@ if (!empty($schedules)) {
                     <label for="orientation_time">Orientation Time:</label>
                     <input type="time" id="orientation_time" name="orientation_time" required>
                 </div>
-                <div class="form-group form-inline">
+                <div class="form-group form-inline horizontal-radio-group">
                     <input type="radio" id="online" name="mode" value="online" checked onclick="toggleMode('online')">
                     <label for="online">Online</label>
                     <input type="radio" id="f2f" name="mode" value="f2f" onclick="toggleMode('f2f')">

@@ -5,9 +5,10 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php'; // Ensure PHPMailer is installed and autoloaded
 
-if (isset($_GET['schedule_id']) && isset($_GET['college'])) {
-    $schedule_id = mysqli_real_escape_string($conn, $_GET['schedule_id']);
-    $college_code = mysqli_real_escape_string($conn, $_GET['college']);
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id']) && isset($_POST['college'])) {
+    $schedule_id = mysqli_real_escape_string($conn, $_POST['schedule_id']);
+    $college_code = mysqli_real_escape_string($conn, $_POST['college']);
+    $cancel_reason = mysqli_real_escape_string($conn, $_POST['cancel_reason']); // Get the cancellation reason
 
     // Set the timezone to Philippines
     date_default_timezone_set('Asia/Manila');
@@ -93,12 +94,13 @@ if (isset($_GET['schedule_id']) && isset($_GET['college'])) {
                 $mail->Subject = 'Schedule Cancelled';
                 $mail->Body = "
                     Dear Team,<br><br>
-                    The schedule has been cancelled with the following details:<br>
+                    The schedule below has been cancelled with the following details:<br>
                     <b>College:</b> {$college_name}<br>
                     <b>Program:</b> {$schedule_details['program_name']}<br>
                     <b>Level Applied:</b> {$schedule_details['level_applied']}<br>
                     <b>Scheduled Date:</b> $formatted_schedule_date<br>
-                    <b>Scheduled Time:</b> $formatted_schedule_time<br><br>
+                    <b>Scheduled Time:</b> $formatted_schedule_time<br>
+                    <b>Reason:</b> $cancel_reason<br><br>
                     Best regards,<br>
                     USeP - Quality Assurance Division
                 ";

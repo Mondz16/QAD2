@@ -277,7 +277,11 @@ session_start();
                 <div class="form-group">
                     <label for="level">Level:</label>
                     <input type="text" id="level" name="level" readonly>
-                </div>  
+                </div>
+                <div class="form-group">
+                    <label for="level_validity">Years of Validity:</label>
+                    <input type="text" id="level_validity" name="level_validity" value="3" required>
+                </div>
                 <div class="form-group">
                     <label for="date">Date:</label>
                     <input type="date" id="date" name="date" required>

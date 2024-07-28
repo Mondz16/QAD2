@@ -16,7 +16,8 @@ function displayOrientationDetails($conn, $orientationType, $title)
 {
     $sql = "SELECT o.id, o.orientation_date, o.orientation_time, 
             IF(o.orientation_type = 'online', ol.orientation_link, f2f.college_building) AS location,
-            IF(o.orientation_type = 'online', ol.link_passcode, f2f.room_number) AS additional_info
+            IF(o.orientation_type = 'online', ol.link_passcode, f2f.room_number) AS additional_info,
+            o.schedule_id
             FROM orientation o
             LEFT JOIN online ol ON o.id = ol.orientation_id
             LEFT JOIN face_to_face f2f ON o.id = f2f.orientation_id
@@ -58,16 +59,9 @@ function displayOrientationDetails($conn, $orientationType, $title)
             }
 
             echo "<td class='action-buttons'>
-                    <form action='orientation_approval.php' method='post' style='display:inline;'>
-                        <input type='hidden' name='id' value='{$row['id']}'>
-                        <input type='hidden' name='action' value='approve'>
-                        <input type='submit' value='Approve' class='btn approve'>
-                    </form>
-                    <form action='orientation_approval.php' method='post' style='display:inline;'>
-                        <input type='hidden' name='id' value='{$row['id']}'>
-                        <input type='hidden' name='action' value='reject'>
-                        <input type='submit' value='Reject' class='btn reject'>
-                    </form>
+                    <button class='btn approve' onclick='openApproveModal({$row['id']})'>Approve</button>
+                    <button class='btn deny' onclick='openDenyModal({$row['id']})'>Deny</button>
+                    <button class='btn view' onclick='viewSchedule({$row['schedule_id']})'>View Schedule</button>
                 </td>
             </tr>";
         }
@@ -292,8 +286,13 @@ function displayOrientationDetails($conn, $orientationType, $title)
             color: white;
         }
 
-        .btn.reject {
+        .btn.deny {
             background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn.view {
+            background-color: #3498db;
             color: white;
         }
 
@@ -313,6 +312,75 @@ function displayOrientationDetails($conn, $orientationType, $title)
 
         .back-button:hover {
             opacity: 0.9;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-buttons .yes-btn {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .modal-buttons .no-btn {
+            background-color: #5bc0de;
+            color: white;
+        }
+
+        .modal-buttons .yes-btn:hover {
+            background-color: #c9302c;
+        }
+
+        .modal-buttons .no-btn:hover {
+            background-color: #31b0d5;
         }
     </style>
 </head>
@@ -359,12 +427,105 @@ function displayOrientationDetails($conn, $orientationType, $title)
                 <?php displayOrientationDetails($conn, 'face_to_face', 'Face to Face Pending Orientations'); ?>
             </div>
         </div>
-    <div>
-        <button class="back-button" onclick="window.location.href='admin.php'">Back to Admin Panel</button>
-    </div>
+        <div>
+            <button class="back-button" onclick="window.location.href='admin.php'">Back to Admin Panel</button>
+        </div>
     </div>
 
+    <!-- Approve Modal -->
+    <div id="approveModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeApproveModal()">&times;</span>
+            <h2>Are you sure you want to approve this orientation request?</h2>
+            <div class="modal-buttons">
+                <button class="yes-btn" id="confirmApproveBtn">Yes</button>
+                <button class="no-btn" onclick="closeApproveModal()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deny Modal -->
+    <div id="denyModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDenyModal()">&times;</span>
+            <h2>Are you sure you want to deny this orientation request?</h2>
+            <div class="modal-buttons">
+                <button class="yes-btn" id="confirmDenyBtn">Yes</button>
+                <button class="no-btn" onclick="closeDenyModal()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Modal -->
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeScheduleModal()">&times;</span>
+            <h2>Schedule Details</h2>
+            <div id="scheduleContent"></div>
+            <div class="modal-footer">
+                <button class="close-btn" onclick="closeScheduleModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <form id="approveForm" action="orientation_approval.php" method="post" style="display: none;">
+        <input type="hidden" name="id" id="approveOrientationId">
+        <input type="hidden" name="action" value="approve">
+    </form>
+
+    <form id="denyForm" action="orientation_approval.php" method="post" style="display: none;">
+        <input type="hidden" name="id" id="denyOrientationId">
+        <input type="hidden" name="action" value="deny">
+    </form>
+
     <script>
+        let approveOrientationId;
+        let denyOrientationId;
+
+        function openApproveModal(id) {
+            approveOrientationId = id;
+            document.getElementById('approveModal').style.display = 'block';
+        }
+
+        function closeApproveModal() {
+            document.getElementById('approveModal').style.display = 'none';
+        }
+
+        function openDenyModal(id) {
+            denyOrientationId = id;
+            document.getElementById('denyModal').style.display = 'block';
+        }
+
+        function closeDenyModal() {
+            document.getElementById('denyModal').style.display = 'none';
+        }
+
+        function viewSchedule(scheduleId) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get_schedule.php?schedule_id=' + scheduleId, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    document.getElementById('scheduleContent').innerHTML = xhr.responseText;
+                    document.getElementById('scheduleModal').style.display = 'block';
+                }
+            };
+            xhr.send();
+        }
+
+        function closeScheduleModal() {
+            document.getElementById('scheduleModal').style.display = 'none';
+        }
+
+        document.getElementById('confirmApproveBtn').addEventListener('click', function() {
+            document.getElementById('approveOrientationId').value = approveOrientationId;
+            document.getElementById('approveForm').submit();
+        });
+
+        document.getElementById('confirmDenyBtn').addEventListener('click', function() {
+            document.getElementById('denyOrientationId').value = denyOrientationId;
+            document.getElementById('denyForm').submit();
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');

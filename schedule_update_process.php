@@ -9,10 +9,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
     $schedule_id = mysqli_real_escape_string($conn, $_POST['schedule_id']);
     $new_date = mysqli_real_escape_string($conn, $_POST['new_date']);
     $new_time = mysqli_real_escape_string($conn, $_POST['new_time']);
+    $reason = mysqli_real_escape_string($conn, $_POST['reason']); // Get the reason
 
-    // Format the date and time
-    $formatted_date = date("F j, Y", strtotime($new_date));
-    $formatted_time = date("g:i A", strtotime($new_time));
+    // Format the new date and time
+    $formatted_new_date = date("F j, Y", strtotime($new_date));
+    $formatted_new_time = date("g:i A", strtotime($new_time));
+
+    // Fetch the old date and time before updating
+    $sql_get_old_schedule = "SELECT schedule_date, schedule_time FROM schedule WHERE id = ?";
+    $stmt_get_old_schedule = $conn->prepare($sql_get_old_schedule);
+    $stmt_get_old_schedule->bind_param("i", $schedule_id);
+    $stmt_get_old_schedule->execute();
+    $old_schedule_result = $stmt_get_old_schedule->get_result();
+    $old_schedule = $old_schedule_result->fetch_assoc();
+
+    $formatted_old_date = date("F j, Y", strtotime($old_schedule['schedule_date']));
+    $formatted_old_time = date("g:i A", strtotime($old_schedule['schedule_time']));
 
     // Start transaction
     $conn->begin_transaction();
@@ -41,6 +53,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
                 $stmt_get_schedule_details->execute();
                 $schedule_result = $stmt_get_schedule_details->get_result();
                 $schedule_details = $schedule_result->fetch_assoc();
+
+                // Fetch college name
+                $sql_get_college_name = "SELECT college_name FROM college WHERE code = ?";
+                $stmt_get_college_name = $conn->prepare($sql_get_college_name);
+                $stmt_get_college_name->bind_param("s", $schedule_details['college_code']);
+                $stmt_get_college_name->execute();
+                $college_result = $stmt_get_college_name->get_result();
+                $college_name_row = $college_result->fetch_assoc();
+                $college_name = $college_name_row['college_name'];
 
                 // Fetch college email
                 $sql_get_college_email = "SELECT college_email FROM college WHERE code = ?";
@@ -99,12 +120,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
                     $mail->Subject = 'Schedule Rescheduled';
                     $mail->Body = "
                         Dear Team,<br><br>
-                        Your schedule has been rescheduled with the following details:<br>
-                        <b>College:</b> {$schedule_details['college_code']}<br>
+                        The schedule below has been rescheduled from <b style='color:red;'>{$formatted_old_date} at {$formatted_old_time}</b> to <b style='color:green;'>{$formatted_new_date} at {$formatted_new_time}</b> with the following details:<br>
+                        <b>College:</b> {$college_name}<br>
                         <b>Program:</b> {$schedule_details['program_name']}<br>
                         <b>Level Applied:</b> {$schedule_details['level_applied']}<br>
-                        <b>New Date:</b> $formatted_date<br>
-                        <b>New Time:</b> $formatted_time<br><br>
+                        <b>Reason:</b> $reason<br><br>
                         Best regards,<br>
                         USeP - Quality Assurance Division
                     ";
@@ -120,6 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
                 $stmt_get_emails->close();
                 $stmt_get_schedule_details->close();
                 $stmt_get_college_email->close();
+                $stmt_get_college_name->close();
             } else {
                 $conn->rollback();
                 $error_message = "Error updating team status: " . $conn->error;

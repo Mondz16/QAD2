@@ -9,6 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $collegeId = mysqli_real_escape_string($conn, $_POST['college']);
     $programId = mysqli_real_escape_string($conn, $_POST['program']);
     $level = mysqli_real_escape_string($conn, $_POST['level']);
+    $level_validity = mysqli_real_escape_string($conn, $_POST['level_validity']);
     $date = mysqli_real_escape_string($conn, $_POST['date']);
     $time = mysqli_real_escape_string($conn, $_POST['time']);
     $team_leader_id = mysqli_real_escape_string($conn, $_POST['team_leader']);
@@ -136,11 +137,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     try {
         // Insert into schedule table
-        $sql_schedule = "INSERT INTO schedule (college_code, program_id, level_applied, schedule_date, schedule_time, status_date)
-                         VALUES (?, ?, ?, ?, ?, ?)";
+        $sql_schedule = "INSERT INTO schedule (college_code, program_id, level_applied, level_validity, schedule_date, schedule_time, status_date)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         $stmt_schedule = $conn->prepare($sql_schedule);
-        $stmt_schedule->bind_param("sissss", $collegeId, $programId, $level, $date, $time, $result);
+        $stmt_schedule->bind_param("sisssss", $collegeId, $programId, $level, $level_validity, $date, $time, $result);
         $stmt_schedule->execute();
 
         $schedule_id = $stmt_schedule->insert_id;

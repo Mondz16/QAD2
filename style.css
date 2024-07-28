@@ -16,6 +16,7 @@
     margin-left: auto;
     margin-right: auto;
 }
+
 .header {
     height: 58px;
     width: 100%;
@@ -28,59 +29,114 @@
 }
 
 .headerLeft {
-    order: unset; flex: unset; align-self: unset;
+    order: unset;
+    flex: unset;
+    align-self: unset;
 }
+
 .USePData {
-    height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: center; overflow: unset;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    place-content: unset;
+    align-items: center;
+    overflow: unset;
 }
 
 .headerLeftText {
-    height: 100%; width: 100%; display: flex; flex-direction: column; flex-wrap: unset; place-content: unset; align-items: unset; overflow: unset;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: unset;
+    place-content: unset;
+    align-items: unset;
+    overflow: unset;
     font-size: 18px;
 }
 
 .headerRight {
-    order: unset; flex: unset; align-self: unset;
+    order: unset;
+    flex: unset;
+    align-self: unset;
 }
 
 .SDMD {
-    height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: center; overflow: unset;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    place-content: unset;
+    align-items: center;
+    overflow: unset;
 }
 
 .headerRightText {
-    height: 100%; width: 100%; display: flex; flex-direction: column; flex-wrap: unset; place-content: unset; align-items: flex-end; overflow: unset; text-align: right;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: unset;
+    place-content: unset;
+    align-items: flex-end;
+    overflow: unset;
+    text-align: right;
 }
 
 .body {
-    padding: 0 52px; width: 100%; display: flex; flex-wrap: wrap; box-sizing: border-box; 
+    padding: 0 52px;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    box-sizing: border-box;
 }
 
 .bodyLeft {
-    flex-grow: 0; max-width: 100%; flex-basis: 75%; margin: 0; box-sizing: border-box;
+    flex-grow: 0;
+    max-width: 100%;
+    flex-basis: 75%;
+    margin: 0;
+    box-sizing: border-box;
 }
 
 .name {
     display: flex;
     gap: 20px;
-    width: 94.5%;
+    width: 97%;
 }
 
 .nameContainer {
-    padding: 12px 20px; 
-    border-color: rgb(170, 170, 170); 
-    border-style: solid; 
-    border-width: 1px; 
+    padding: 12px 20px;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: 1px;
     border-radius: 8px;
     flex: 1;
 }
 
-.user_idText, .passwordText, .firstname, .middleinitial, .lastname, .email, .company {
-    color: #575757; width: 100%; border: 0; resize: none; outline: 0; padding: 0; font-size: 1rem; background: transparent; caret-color: #575757;
+.user_idText,
+.passwordText,
+.firstname,
+.middleinitial,
+.lastname,
+.email,
+.company {
+    color: #575757;
+    width: 100%;
+    border: 0;
+    resize: none;
+    outline: 0;
+    padding: 0;
+    font-size: 1rem;
+    background: transparent;
+    caret-color: #575757;
 }
 
 .showpasswordText {
     margin-right: 120px;
 }
+
 .showpasswordContainer {
     display: flex;
     align-items: center;
@@ -94,15 +150,44 @@
 
 #showPasswordCheckbox {
     margin-right: 10px;
-    height: 22px; width: 22px; border-width: 1px; border-style: solid; border-color: rgb(170, 170, 170); border-radius: 8px; background: transparent;
+    height: 22px;
+    width: 22px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius: 8px;
+    background: transparent;
 }
 
 .login {
-    color: rgb(255, 255, 255); min-width: 120px; white-space: unset; padding: 16px 55px; font-size: 1rem; font-weight: bold; text-transform: uppercase; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%); border: unset; outline: unset; text-decoration: none; border-radius: 10px; cursor: pointer;
+    color: rgb(255, 255, 255);
+    min-width: 120px;
+    white-space: unset;
+    padding: 16px 55px;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+    border: unset;
+    outline: unset;
+    text-decoration: none;
+    border-radius: 10px;
+    cursor: pointer;
 }
 
 .signup {
-    margin-right: 35px; color: black; text-decoration: none; min-width: 120px; white-space: unset; padding: 16px 55px; font-size: 1rem; font-weight: bold; text-transform: uppercase; border: 1px solid; border-radius: 10px; cursor: pointer;
+    margin-right: 35px;
+    color: black;
+    text-decoration: none;
+    min-width: 120px;
+    white-space: unset;
+    padding: 16px 55px;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: 1px solid;
+    border-radius: 10px;
+    cursor: pointer;
 }
 
 .login:hover {
@@ -125,7 +210,7 @@ input[type="radio"] {
     display: none;
 }
 
-label {
+.register-form label {
     position: relative;
     color: black;
     cursor: pointer;
@@ -139,7 +224,7 @@ label {
     width: 349px;
 }
 
-label:before {
+.register-form label:before {
     content: "";
     height: 30px;
     width: 30px;
@@ -148,12 +233,12 @@ label:before {
     margin-right: 20px;
 }
 
-input[type="radio"]:checked + label{
+.register-form input[type="radio"]:checked+label {
     background-color: #b44c4c;
     color: white;
 }
 
-input[type="radio"]:checked + label:before {
+.register-form input[type="radio"]:checked+label:before {
     height: 16px;
     width: 16px;
     border: 10px solid white;
@@ -198,4 +283,360 @@ input[type="radio"]:checked + label:before {
 
 .profile-section {
     width: 20%;
+}
+
+.site-header {
+    width: 100%;
+    background-color: #fff;
+    /* Optional: Background color */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Optional: Shadow for depth */
+}
+
+.site-header nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.nav-list {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    /* Adjust spacing between items */
+}
+
+.nav-list .btn {
+    margin: 0 10px;
+}
+
+.nav-list .btn a {
+    text-decoration: none;
+    font-size: 16px;
+    color: #333;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.nav-list .btn a:hover {
+    background-color: #eaeaea;
+    /* Hover effect */
+}
+
+.notifications, .schedules {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.notification-list, .schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.notification, .schedule {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    overflow: hidden;
+}
+
+.notification p, .schedule p {
+    margin: 5px 0;
+}
+
+.notification ul, .schedule ul {
+    margin-left: 20px; /* Adjust left margin for bullet points */
+    padding-left: 20px;
+}
+
+.notification-actions, .schedule-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.accept-button,
+.decline-button,
+.schedule button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.decline-button, .schedule .decline-button {
+    background-color: #dc3545;
+}
+
+.accept-button:hover, .schedule button:hover {
+    background-color: #0056b3;
+}
+
+.decline-button:hover, .schedule .decline-button:hover {
+    background-color: #c82333;
+}
+
+.back-btn {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.back-btn .btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.back-btn .btn:hover {
+    background-color: #0056b3;
+}
+
+.assessments {
+    padding: 20px;
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+.assessment {
+    background-color: #f0f0f0;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+.assessment p {
+    margin: 0;
+}
+.assessment small {
+    color: #666;
+}
+.assessment form {
+    margin-top: 10px;
+}
+.assessment form button {
+    margin-right: 10px;
+    background-color: #5cb85c;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.assessment form button:hover {
+    background-color: #4cae4c;
+}
+.assessment form button[name="action"][value="decline"] {
+    background-color: #d9534f;
+}
+.assessment form button[name="action"][value="decline"]:hover {
+    background-color: #c9302c;
+}
+
+.assessmentmodal, .Summarymodal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    top: 15%;
+    transform: translate(-50%, 0);
+    width: 80%;
+    max-width: 600px;
+    height: auto;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,.5);
+    border-radius: 10px;
+}
+.assessmentmodal-content, .Summarymodal-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,.5);
+}
+.close, .Summaryclose {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close:hover, .close:focus, .Summaryclose:hover, .Summaryclose:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+.form-group input[type="text"], .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+.form-group input[type="file"] {
+    padding: 8px;
+}
+.modal-footer {
+    text-align: right;
+}
+.modal-footer button {
+    margin-left: 10px;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.profile-picture {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 20px;
+}
+
+.profile-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-name {
+    font-size: 22px;
+    margin-bottom: 5px;
+    text-align: center;
+    width: 100%;
+}
+
+.profile-type {
+    font-size: 18px;
+    margin-bottom: 15px;
+    text-align: center;
+    width: 100%;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.edit-button,
+.transfer-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.edit-button:hover,
+.transfer-button:hover {
+    background-color: #0056b3;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.edit-form input,
+.edit-form select,
+#orientationForm input,
+#orientationForm select {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.edit-form button,
+#orientationForm button {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.edit-form button:hover,
+#orientationForm button:hover {
+    background-color: #218838;
+}
+
+.horizontal-radio-group {
+    display: flex;
+    align-items: center;
+    width: 200px;
+}
+
+.horizontal-radio-group input[type="radio"] {
+    margin-right: 5px;
+}
+
+.horizontal-radio-group label {
+    margin-right: 20px; /* Adjust as necessary for spacing */
+    white-space: nowrap; /* Prevent labels from wrapping */
 }

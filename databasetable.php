@@ -140,6 +140,7 @@ $sql = "CREATE TABLE IF NOT EXISTS schedule (
     college_code VARCHAR(2),
     program_id INT(6) UNSIGNED,
     level_applied VARCHAR(10) NOT NULL,
+    level_validity INT(6) NOT NULL,
     schedule_date DATE NOT NULL,
     schedule_time TIME NOT NULL,
     schedule_status ENUM('pending', 'approved', 'cancelled', 'finished') NOT NULL DEFAULT 'pending',
@@ -253,6 +254,27 @@ $sql = "CREATE TABLE IF NOT EXISTS online (
 
 if ($conn->query($sql) === TRUE) {
     echo "Table online created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+// Create udas_assessment table
+$sql = "CREATE TABLE IF NOT EXISTS udas_assessment (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    schedule_id INT(6) UNSIGNED,
+    area VARCHAR(255) NOT NULL,
+    comments VARCHAR(255) NOT NULL,
+    remarks VARCHAR(255) NOT NULL,
+    udas_assessment_file VARCHAR(255) NOT NULL,
+    submission_date VARCHAR(255) NOT NULL,
+    qad_officer VARCHAR(255) NOT NULL,
+    qad_officer_signature VARCHAR(255) NOT NULL,
+    qad_director VARCHAR(255) NOT NULL,
+    FOREIGN KEY (schedule_id) REFERENCES schedule(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table udas_assessment created successfully<br>";
 } else {
     echo "Error creating table: " . $conn->error . "<br>";
 }

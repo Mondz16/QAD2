@@ -215,11 +215,19 @@
     <div id="cancelModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeCancelModal()">&times;</span>
-            <h2>Are you sure you want to cancel this schedule?</h2>
-            <div class="modal-buttons">
-                <button class="yes-btn" id="confirmCancelBtn">Yes</button>
-                <button class="no-btn" onclick="closeCancelModal()">No</button>
-            </div>
+            <form id="cancelForm" action="schedule_cancel_process.php" method="post">
+                <input type="hidden" name="schedule_id" id="cancel_schedule_id">
+                <input type="hidden" name="college" value="<?php echo htmlspecialchars($_GET['college']); ?>">
+                <h2>Are you sure you want to cancel this schedule?</h2>
+                <div class="form-group">
+                    <label for="cancel_reason">Reason:</label>
+                    <textarea id="cancel_reason" name="cancel_reason" rows="5" cols="52" required></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button class="yes-btn" type="submit">Yes</button>
+                    <button class="no-btn" type="button" onclick="closeCancelModal()">No</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -249,6 +257,10 @@
                 <div class="form-group">
                     <label for="new_time">New Time:</label>
                     <input type="time" id="new_time" name="new_time" required>
+                </div>
+                <div class="form-group">
+                    <label for="reason">Reason:</label>
+                    <textarea id="reason" name="reason" rows="5" cols="52" required></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" onclick="closeRescheduleModal()">Cancel</button>
@@ -325,6 +337,7 @@
 
         function openCancelModal(scheduleId) {
             cancelScheduleId = scheduleId;
+            document.getElementById('cancel_schedule_id').value = scheduleId;
             document.getElementById('cancelModal').style.display = 'block';
         }
 
@@ -332,12 +345,9 @@
             document.getElementById('cancelModal').style.display = 'none';
         }
 
-        document.getElementById('confirmCancelBtn').addEventListener('click', function () {
-            window.location.href = 'schedule_cancel_process.php?schedule_id=' + cancelScheduleId + '&college=<?php echo urlencode($_GET['college']); ?>';
-        });
-
         function openApproveModal(scheduleId) {
             approveScheduleId = scheduleId;
+            document.getElementById('approveScheduleId').value = scheduleId;
             document.getElementById('approveModal').style.display = 'block';
         }
 
@@ -346,7 +356,6 @@
         }
 
         document.getElementById('confirmApproveBtn').addEventListener('click', function () {
-            document.getElementById('approveScheduleId').value = approveScheduleId;
             document.getElementById('approveForm').submit();
         });
     </script>

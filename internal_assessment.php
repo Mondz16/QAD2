@@ -9,6 +9,26 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 
 $user_id = $_SESSION['user_id'];
 
+// Fetch user details
+$sql_user = "SELECT first_name, middle_initial, last_name, email, college_code, profile_picture FROM internal_users WHERE user_id = ?";
+$stmt_user = $conn->prepare($sql_user);
+$stmt_user->bind_param("s", $user_id);
+$stmt_user->execute();
+$stmt_user->bind_result($first_name, $middle_initial, $last_name, $email, $college_code, $profile_picture);
+$stmt_user->fetch();
+$stmt_user->close();
+
+// Fetch college name
+$sql_college = "SELECT college_name FROM college WHERE code = ?";
+$stmt_college = $conn->prepare($sql_college);
+$stmt_college->bind_param("s", $college_code);
+$stmt_college->execute();
+$stmt_college->bind_result($user_college_name);
+$stmt_college->fetch();
+$stmt_college->close();
+
+$accreditor_type = (substr($user_id, 3, 2) == '11') ? 'Internal Accreditor' : 'External Accreditor';
+
 // Fetch user details for displaying in the form
 $sql_user_details = "SELECT first_name, middle_initial, last_name FROM internal_users WHERE user_id = ?";
 $stmt_user_details = $conn->prepare($sql_user_details);
@@ -105,168 +125,47 @@ $stmt_team_members->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Internal Accreditor - Assessment</title>
-    <link rel="stylesheet" href="loginstyle.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-        .wrapper {
-            text-align: center;
-            padding: 20px;
-            background-color: #fff;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .wrapper header {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        .site-header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .site-header nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            text-align: center;
-        }
-        .site-header nav ul li {
-            display: inline;
-            margin: 0 10px;
-        }
-        .site-header nav ul li a {
-            color: #fff;
-            text-decoration: none;
-            padding: 10px 20px;
-            background-color: #444;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .site-header nav ul li a:hover {
-            background-color: #555;
-        }
-        .notifications {
-            padding: 20px;
-            max-width: 800px;
-            margin: 20px auto;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-        .notification {
-            background-color: #f0f0f0;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-        }
-        .notification p {
-            margin: 0;
-        }
-        .notification small {
-            color: #666;
-        }
-        .notification form {
-            margin-top: 10px;
-        }
-        .notification form button {
-            margin-right: 10px;
-            background-color: #5cb85c;
-            color: #fff;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .notification form button:hover {
-            background-color: #4cae4c;
-        }
-        .notification form button[name="action"][value="decline"] {
-            background-color: #d9534f;
-        }
-        .notification form button[name="action"][value="decline"]:hover {
-            background-color: #c9302c;
-        }
-        .back-btn {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .back-btn .btn {
-            background-color: #007bff;
-            color: #fff;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .back-btn .btn:hover {
-            background-color: #0056b3;
-        }
-        .modal, .Summarymodal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 50%;
-            top: 15%;
-            transform: translate(-50%, 0);
-            width: 80%;
-            max-width: 600px;
-            height: auto;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,.5);
-            border-radius: 10px;
-        }
-        .modal-content, .Summarymodal-content {
-            background-color: #fefefe;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,.5);
-        }
-        .close, .Summaryclose {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close:hover, .close:focus, .Summaryclose:hover, .Summaryclose:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input[type="text"], .form-group textarea, .form-group select {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .form-group input[type="file"] {
-            padding: 8px;
-        }
-        .modal-footer {
-            text-align: right;
-        }
-        .modal-footer button {
-            margin-left: 10px;
-        }
-    </style>
+    
 </head>
 <body>
     <div class="wrapper">
-        <header>Internal Accreditor</header>
+        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+        <div class="container">
+            <div class="header">
+                <div class="headerLeft">
+                    <div class="USePData">
+                        <img class="USeP" src="images/USePLogo.png" height="36">
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div class="headerLeftText">
+                            <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                    <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span></h>
+                            </div>
+                            <h>Accreditor Portal</h>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="headerRight">
+                    <div class="SDMD">
+                        <div class="headerRightText">
+                            <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                        </div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <img class="USeP" src="images/SDMDLogo.png" height="36">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
     </div>
     <header class="site-header">
         <nav>
@@ -279,15 +178,31 @@ $stmt_team_members->close();
             </ul>
         </nav>
     </header>
-    <div class="notifications">
+    <div style="height: 30px; width: 0px;"></div>
+    <div class="container">
+        <div class="profile">
+            <img src="<?php echo $profile_picture; ?>" alt="Profile Picture" class="profile-picture">
+            <div class="profile-details">
+                <p class="profile-name"><?php echo $first_name . ' ' . $middle_initial . '. ' . $last_name; ?></p>
+                <p class="profile-type"><?php echo $user_college_name; ?> (<?php echo $accreditor_type; ?>)</p>
+            </div>
+        </div>
+    </div>
+    <div class="assessments">
         <h2>Assessment</h2>
         <?php foreach ($schedules as $schedule): ?>
-            <div class="notification">
+            <div class="assessment">
                 <p><strong>College:</strong> <?php echo htmlspecialchars($schedule['college_name']); ?></p>
                 <p><strong>Program:</strong> <?php echo htmlspecialchars($schedule['program_name']); ?></p>
                 <p><strong>Level Applied:</strong> <?php echo htmlspecialchars($schedule['level_applied']); ?></p>
-                <p><strong>Schedule Date:</strong> <?php echo htmlspecialchars($schedule['schedule_date']); ?></p>
-                <p><strong>Schedule Time:</strong> <?php echo htmlspecialchars($schedule['schedule_time']); ?></p>
+                <p><strong>Schedule Date:</strong> <?php 
+                    $schedule_date = new DateTime($schedule['schedule_date']);
+                    echo $schedule_date->format('F j, Y'); 
+                ?></p>
+                <p><strong>Schedule Time:</strong> <?php 
+                    $schedule_time = new DateTime($schedule['schedule_time']);
+                    echo $schedule_time->format('g:i A'); 
+                ?></p>
                 <?php if ($schedule['role'] === 'team leader'): ?>
                     <?php
                         $team_member_count = 0;
@@ -332,8 +247,8 @@ $stmt_team_members->close();
     </div>
 
     <!-- Popup Form for Team Member -->
-    <div class="modal" id="popup">
-        <div class="modal-content">
+    <div class="assessmentmodal" id="popup">
+        <div class="assessmentmodal-content">
             <span class="close" onclick="closePopup()">&times;</span>
             <h2>Assessment Form</h2>
             <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
@@ -446,5 +361,3 @@ $stmt_team_members->close();
     </script>
 </body>
 </html>
-
-<?php $conn->close(); ?>

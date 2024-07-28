@@ -7,10 +7,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['college_id'])) {
     // Prepare and execute the combined query
     $sql = "
         SELECT iu.user_id, CONCAT(iu.first_name, ' ', iu.middle_initial, ' ', iu.last_name) AS name,
-               (SELECT COUNT(*) FROM team t 
+               (SELECT COUNT(*) 
+                FROM team t 
                 JOIN schedule s ON t.schedule_id = s.id 
                 WHERE t.internal_users_id = iu.user_id 
-                AND s.schedule_status NOT IN ('cancelled', 'finished')) AS count
+                AND s.schedule_status NOT IN ('cancelled', 'finished')
+                AND t.status NOT IN ('declined', 'finished')) AS count
         FROM internal_users iu
         WHERE iu.status = 'active'
         AND iu.college_code != ?
