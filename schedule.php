@@ -64,10 +64,10 @@
         <?php
         include 'connection.php';
 
-        $sql = "SELECT c.college_name, COUNT(s.id) AS total_schedules 
+        $sql = "SELECT c.college_name, c.code as college_code, COUNT(s.id) AS total_schedules 
                 FROM college c 
                 LEFT JOIN schedule s ON c.code = s.college_code 
-                GROUP BY c.college_name 
+                GROUP BY c.college_name, c.code 
                 ORDER BY c.college_name";
 
         $result = $conn->query($sql);
@@ -75,9 +75,9 @@
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 echo "<tr>";
-                echo "<td>" . $row["college_name"] . "</td>";
-                echo "<td>" . $row["total_schedules"] . "</td>";
-                echo "<td><button onclick="."location.href='schedule_college.php?college=" . urlencode($row["college_name"]) . "'>View</button></td>";
+                echo "<td>" . htmlspecialchars($row["college_name"]) . "</td>";
+                echo "<td>" . htmlspecialchars($row["total_schedules"]) . "</td>";
+                echo "<td><button onclick=\"location.href='schedule_college.php?college=" . urlencode($row["college_name"]) . "&college_code=" . htmlspecialchars($row["college_code"]) . "'\">View</button></td>";
                 echo "</tr>";
             }
         } else {

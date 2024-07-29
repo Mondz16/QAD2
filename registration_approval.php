@@ -6,18 +6,18 @@ $db_username = "root";
 $db_password = "";
 $dbname = "qadDB";
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php'; // Ensure PHPMailer is installed and autoloaded
+
 $conn = new mysqli($servername, $db_username, $db_password, $dbname);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require 'vendor/autoload.php'; // Ensure PHPMailer is installed and autoloaded
-
-function sendEmailNotification($email, $userId, $action) {
+function sendEmailNotification($email, $userId, $action, $reason = '') {
     $mail = new PHPMailer(true);
 
     try {
@@ -50,7 +50,7 @@ function sendEmailNotification($email, $userId, $action) {
             $mail->Body = "Dear User,<br><br>Your registration has been approved.<br><br>User ID: $userId<br><br>Best regards,<br>USeP - Quality Assurance Division";
         } else if ($action == 'reject') {
             $mail->Subject = 'Registration Rejected';
-            $mail->Body = "Dear User,<br><br>Your registration has been rejected.<br><br>User ID: $userId<br><br>Best regards,<br>USeP - Quality Assurance Division";
+            $mail->Body = "Dear User,<br><br>Your registration has been rejected.<br><br>User ID: $userId<br><br>Reason: $reason<br><br>Best regards,<br>USeP - Quality Assurance Division";
         }
 
         $mail->send();
@@ -63,6 +63,7 @@ function sendEmailNotification($email, $userId, $action) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
     $action = $_POST['action'];
+    $reason = isset($_POST['reason']) ? $_POST['reason'] : '';
 
     $user_type = "";
     $sql = "SELECT * FROM internal_users WHERE user_id = ?";
@@ -179,7 +180,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
             // Send rejection email
-            $email_status = sendEmailNotification($email, $id, $action);
+            $email_status = sendEmailNotification($email, $id, $action, $reason);
             if ($email_status === true) {
                 // Commit the transaction if email is sent successfully
                 if ($user_type == "internal") {

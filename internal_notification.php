@@ -31,10 +31,11 @@ $accreditor_type = (substr($user_id, 3, 2) == '11') ? 'Internal Accreditor' : 'E
 
 // Fetch notifications for the logged-in user
 $sql_notifications = "
-    SELECT s.id AS schedule_id, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status, t.id AS team_id, t.role, t.area, t.status, t.internal_users_id
+    SELECT s.id AS schedule_id, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status, t.id AS team_id, t.role, t.area, t.status, t.internal_users_id, c.college_name
     FROM team t
     JOIN schedule s ON t.schedule_id = s.id
     JOIN program p ON s.program_id = p.id
+    JOIN college c ON s.college_code = c.code
     WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status NOT IN ('cancelled', 'finished')
 ";
 
@@ -42,7 +43,7 @@ $stmt_notifications = $conn->prepare($sql_notifications);
 $stmt_notifications->bind_param("s", $user_id);
 $stmt_notifications->execute();
 $stmt_notifications->store_result();
-$stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $schedule_date, $schedule_time, $schedule_status, $team_id, $role, $area, $team_status, $internal_users_id);
+$stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $schedule_date, $schedule_time, $schedule_status, $team_id, $role, $area, $team_status, $internal_users_id, $college_name);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -122,6 +123,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                 $time = new DateTime($schedule_time);
                 ?>
                 <div class="notification">
+                    <p><strong>College:</strong> <?php echo htmlspecialchars($college_name); ?></p>
                     <p><strong>Program:</strong> <?php echo htmlspecialchars($program_name); ?></p>
                     <p><strong>Level Applied:</strong> <?php echo htmlspecialchars($level_applied); ?></p>
                     <p><strong>Date:</strong> <?php echo $date->format('F j, Y'); ?></p>

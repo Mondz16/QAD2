@@ -16,6 +16,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['college_id'])) {
         FROM internal_users iu
         WHERE iu.status = 'active'
         AND iu.college_code != ?
+        AND NOT EXISTS (
+            SELECT 1
+            FROM internal_users iu2
+            WHERE SUBSTRING(iu2.user_id, 3) = SUBSTRING(iu.user_id, 3)
+            AND iu2.user_id != iu.user_id
+            AND iu2.status IN ('pending', 'active')
+            AND iu.status IN ('pending', 'active')
+        )
+        AND NOT EXISTS (
+            SELECT 1
+            FROM internal_users iu3
+            WHERE SUBSTRING(iu3.user_id, 3) = SUBSTRING(iu.user_id, 3)
+            AND iu3.status = 'inactive'
+            AND iu.status = 'inactive'
+        )
     ";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $college_id);

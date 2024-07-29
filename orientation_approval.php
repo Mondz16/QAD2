@@ -59,6 +59,7 @@ function sendEmail($recipients, $subject, $body) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
     $action = $_POST['action'];
+    $reason = isset($_POST['reason']) ? $_POST['reason'] : '';
 
     // Fetch schedule_id from orientation
     $sql = "SELECT schedule_id, orientation_date, orientation_time, orientation_type FROM orientation WHERE id = ?";
@@ -68,6 +69,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_result($schedule_id, $orientation_date, $orientation_time, $orientation_type);
     $stmt->fetch();
     $stmt->close(); // Close the statement after fetching the data
+
+    // Format the date and time
+    $formatted_orientation_date = date("F j, Y", strtotime($orientation_date));
+    $formatted_orientation_time = date("g:i A", strtotime($orientation_time));
 
     // Fetch schedule details
     $sql = "SELECT s.schedule_date, s.schedule_time, s.level_applied, s.schedule_status, 
@@ -84,6 +89,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->fetch();
     $stmt->close(); // Close the statement after fetching the data
 
+    // Format the date and time
+    $formatted_schedule_date = date("F j, Y", strtotime($schedule_date));
+    $formatted_schedule_time = date("g:i A", strtotime($schedule_time));
+
     // Fetch internal users' emails
     $sql = "SELECT email FROM internal_users WHERE college_code = ?";
     $stmt = $conn->prepare($sql);
@@ -99,20 +108,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Prepare email body
     $subject = "Orientation Request " . ucfirst($action);
+    $body .= "<p>The orientation for the schedule detail below has been " . ($action == "approve" ? "approved." : "denied.") . "</p>";
     $body = "<p>Schedule Details:</p>";
     $body .= "<p><strong>Program:</strong> " . htmlspecialchars($program_name) . "</p>";
     $body .= "<p><strong>College:</strong> " . htmlspecialchars($college_name) . " (" . htmlspecialchars($college_campus) . ")</p>";
-    $body .= "<p><strong>Date:</strong> " . htmlspecialchars($schedule_date) . "</p>";
-    $body .= "<p><strong>Time:</strong> " . htmlspecialchars($schedule_time) . "</p>";
+    $body .= "<p><strong>Date:</strong> " . htmlspecialchars($formatted_schedule_date) . "</p>";
+    $body .= "<p><strong>Time:</strong> " . htmlspecialchars($formatted_schedule_time) . "</p>";
     $body .= "<p><strong>Level Applied:</strong> " . htmlspecialchars($level_applied) . "</p>";
     $body .= "<p><strong>Status:</strong> " . htmlspecialchars($schedule_status) . "</p>";
 
-    $body .= "<p>Orientation Details:</p>";
-    $body .= "<p><strong>Orientation Date:</strong> " . htmlspecialchars($orientation_date) . "</p>";
-    $body .= "<p><strong>Orientation Time:</strong> " . htmlspecialchars($orientation_time) . "</p>";
+    $body .= "<br><p>Orientation Details:</p>";
+    $body .= "<p><strong>Orientation Date:</strong> " . htmlspecialchars($formatted_orientation_date) . "</p>";
+    $body .= "<p><strong>Orientation Time:</strong> " . htmlspecialchars($formatted_orientation_time) . "</p>";
     $body .= "<p><strong>Orientation Type:</strong> " . htmlspecialchars($orientation_type) . "</p>";
 
-    $body .= "<p>The orientation for the schedule detail above has been " . ($action == "approve" ? "approved." : "denied.") . "</p>";
+    if ($action == "deny") {
+        $body .= "<p><strong>Reason for Denial:</strong> " . htmlspecialchars($reason) . "</p>";
+    }
 
     // Send email
     if (sendEmail($recipients, $subject, $body)) {

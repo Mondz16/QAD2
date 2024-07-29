@@ -45,10 +45,12 @@ function displayOrientationDetails($conn, $orientationType, $title)
             </tr>";
 
         while ($row = $result->fetch_assoc()) {
+            $formatted_date = date("F j, Y", strtotime($row['orientation_date']));
+            $formatted_time = date("g:i A", strtotime($row['orientation_time']));
             echo "<tr>
                 <td>{$row['id']}</td>
-                <td>{$row['orientation_date']}</td>
-                <td>{$row['orientation_time']}</td>";
+                <td>{$formatted_date}</td>
+                <td>{$formatted_time}</td>";
 
             if ($orientationType === 'online') {
                 echo "<td>{$row['location']}</td>
@@ -382,6 +384,15 @@ function displayOrientationDetails($conn, $orientationType, $title)
         .modal-buttons .no-btn:hover {
             background-color: #31b0d5;
         }
+
+        .modal-buttons textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            resize: none;
+        }
     </style>
 </head>
 
@@ -449,6 +460,7 @@ function displayOrientationDetails($conn, $orientationType, $title)
         <div class="modal-content">
             <span class="close" onclick="closeDenyModal()">&times;</span>
             <h2>Are you sure you want to deny this orientation request?</h2>
+            <textarea rows="3" cols="52" id="denyReason" placeholder="Enter reason for denial"></textarea>
             <div class="modal-buttons">
                 <button class="yes-btn" id="confirmDenyBtn">Yes</button>
                 <button class="no-btn" onclick="closeDenyModal()">No</button>
@@ -476,6 +488,7 @@ function displayOrientationDetails($conn, $orientationType, $title)
     <form id="denyForm" action="orientation_approval.php" method="post" style="display: none;">
         <input type="hidden" name="id" id="denyOrientationId">
         <input type="hidden" name="action" value="deny">
+        <input type="hidden" name="reason" id="denyReasonInput">
     </form>
 
     <script>
@@ -522,7 +535,13 @@ function displayOrientationDetails($conn, $orientationType, $title)
         });
 
         document.getElementById('confirmDenyBtn').addEventListener('click', function() {
+            const reason = document.getElementById('denyReason').value;
+            if (reason.trim() === "") {
+                alert("Please provide a reason for denial.");
+                return;
+            }
             document.getElementById('denyOrientationId').value = denyOrientationId;
+            document.getElementById('denyReasonInput').value = reason;
             document.getElementById('denyForm').submit();
         });
 

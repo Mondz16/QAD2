@@ -40,10 +40,12 @@ $sql_schedules = "
         s.schedule_time, 
         s.schedule_status,
         o.id AS orientation_id,
-        o.orientation_status
+        o.orientation_status,
+        c.college_name
     FROM schedule s
     JOIN program p ON s.program_id = p.id
     LEFT JOIN orientation o ON s.id = o.schedule_id
+    JOIN college c ON s.college_code = c.code
     WHERE s.college_code = ? 
     AND s.schedule_status IN ('pending', 'approved')
     ORDER BY s.schedule_date, s.schedule_time
@@ -68,6 +70,7 @@ while ($row = $result_schedules->fetch_assoc()) {
             'schedule_status' => $row['schedule_status'],
             'orientation_id' => $row['orientation_id'],
             'orientation_status' => $row['orientation_status'],
+            'college_name' => $row['college_name'],
             'team' => []
         ];
     }
@@ -177,6 +180,7 @@ if (!empty($schedules)) {
         <?php if (!empty($schedules)): ?>
             <?php foreach ($schedules as $schedule_id => $schedule): ?>
                 <div class="schedule">
+                    <p>College: <?php echo htmlspecialchars($schedule['college_name']); ?></p>
                     <p><?php echo "Program: " . htmlspecialchars($schedule['program_name']) . "<br>Level Applied: " . htmlspecialchars($schedule['level_applied']); ?></p>
                     <p><?php 
                         $date = new DateTime($schedule['schedule_date']);

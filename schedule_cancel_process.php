@@ -207,7 +207,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id']) && isse
                 <?php echo isset($error_message) ? $error_message : 'Unknown error.'; ?>
             <?php endif; ?>
         </div>
-        <a class="button-primary" href="schedule_college.php?college=<?php echo urlencode($college_code); ?>#">OK</a>
+        <a class="button-primary" href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($college_code); ?>">OK</a>
     </div>
 </body>
 </html>

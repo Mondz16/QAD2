@@ -6,78 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schedule Details</title>
     <link rel="stylesheet" href="schedule_college_style.css">
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0, 0, 0);
-            background-color: rgba(0, 0, 0, 0.4);
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 400px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-
-        .modal-buttons button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .modal-buttons .yes-btn {
-            background-color: #d9534f;
-            color: white;
-        }
-
-        .modal-buttons .no-btn {
-            background-color: #5bc0de;
-            color: white;
-        }
-
-        .modal-buttons .yes-btn:hover {
-            background-color: #c9302c;
-        }
-
-        .modal-buttons .no-btn:hover {
-            background-color: #31b0d5;
-        }
-    </style>
 </head>
-
 <body>
     <div class="wrapper">
         <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
@@ -144,6 +73,7 @@
                 include 'connection.php';
 
                 $college_name = urldecode($_GET['college']);
+                $college_code = htmlspecialchars($_GET['college_code']); // Added to get college_code
                 $sql = "SELECT s.id, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status
                         FROM schedule s
                         JOIN program p ON s.program_id = p.id
@@ -281,6 +211,23 @@
         </div>
     </div>
 
+    <!-- View User Modal -->
+<div id="viewUserModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="document.getElementById('viewUserModal').style.display='none'">&times;</span>
+        <div id="viewUserContent"></div>
+    </div>
+</div>
+
+<!-- Change User Modal -->
+<div id="changeUserModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="document.getElementById('changeUserModal').style.display='none'">&times;</span>
+        <div id="changeUserContent"></div>
+    </div>
+</div>
+
+
     <form id="approveForm" action="schedule_approve_process.php" method="post" style="display: none;">
         <input type="hidden" name="schedule_id" id="approveScheduleId">
         <input type="hidden" name="college" value="<?php echo htmlspecialchars($_GET['college']); ?>">
@@ -358,6 +305,32 @@
         document.getElementById('confirmApproveBtn').addEventListener('click', function () {
             document.getElementById('approveForm').submit();
         });
+
+        function viewUser(userId) {
+            // Open a modal to view user details
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'view_user.php?user_id=' + userId, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    document.getElementById('viewUserContent').innerHTML = xhr.responseText;
+                    document.getElementById('viewUserModal').style.display = 'block';
+                }
+            };
+            xhr.send();
+        }
+
+        function changeUser(teamId) {
+            // Open a modal to change user
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'change_user.php?team_id=' + teamId + '&college_code=' + encodeURIComponent('<?php echo $_GET["college_code"]; ?>'), true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    document.getElementById('changeUserContent').innerHTML = xhr.responseText;
+                    document.getElementById('changeUserModal').style.display = 'block';
+                }
+            };
+            xhr.send();
+        }
     </script>
 </body>
 

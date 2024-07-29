@@ -381,6 +381,15 @@ function displayRegistrations($conn, $tableName, $title)
         .modal-buttons .no-btn:hover {
             background-color: #31b0d5;
         }
+
+        .modal-buttons textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            resize: none;
+        }
     </style>
 </head>
 
@@ -455,6 +464,7 @@ function displayRegistrations($conn, $tableName, $title)
             <form id="rejectForm" action="registration_approval.php" method="post">
                 <input type="hidden" name="id" id="rejectUserId">
                 <input type="hidden" name="action" value="reject">
+                <textarea rows="3" cols="52" id="rejectReason" name="reason" placeholder="Enter reason for rejection"></textarea>
                 <div class="modal-buttons">
                     <button type="submit" class="yes-btn">Yes</button>
                     <button type="button" class="no-btn" onclick="window.location.href='registration.php'">No</button>
@@ -503,6 +513,14 @@ function displayRegistrations($conn, $tableName, $title)
         function closeRejectModal() {
             document.getElementById('rejectModal').style.display = 'none';
         }
+
+        document.getElementById('rejectForm').addEventListener('submit', function(e) {
+            const reason = document.getElementById('rejectReason').value;
+            if (reason.trim() === "") {
+                alert("Please provide a reason for rejection.");
+                e.preventDefault();
+            }
+        });
     </script>
 </body>
 
