@@ -1,9 +1,13 @@
 <?php
 include 'connection.php';
+include 'token_storage.php'; // Include token storage functions
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use Google\Client;
+use Google\Service\Calendar;
 
-require 'vendor/autoload.php'; // Ensure PHPMailer is installed and autoloaded
+require 'vendor/autoload.php'; // Ensure PHPMailer and Google Client libraries are autoloaded
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $schedule_id = intval($_POST['schedule_id']);
@@ -23,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($stmt_update_status->execute()) {
             // Fetch schedule details
-            $sql_get_schedule_details = "SELECT s.college_code, s.schedule_date, s.schedule_time, p.program_name, s.level_applied FROM schedule s JOIN program p ON s.program_id = p.id WHERE s.id = ?";
+            $sql_get_schedule_details = "SELECT s.college_code, s.schedule_date, s.schedule_time, p.program_name, s.level_applied, s.program_id FROM schedule s JOIN program p ON s.program_id = p.id WHERE s.id = ?";
             $stmt_get_schedule_details = $conn->prepare($sql_get_schedule_details);
             $stmt_get_schedule_details->bind_param("i", $schedule_id);
             $stmt_get_schedule_details->execute();
@@ -103,11 +107,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 ";
 
                 $mail->send();
-                $conn->commit();
                 $email_success = true;
+
+                // Google Client for Calendar API
+                $client = new Client();
+                $client->setAuthConfig('F:/xampp/htdocs/QAD2/secure/credentials.json'); // Path to your credentials.json file
+                $client->addScope(Google\Service\Calendar::CALENDAR);
+                $accessToken = getToken(); // Retrieve the access token
+                $client->setAccessToken($accessToken);
+
+                // Check if the access token is expired and refresh it if needed
+                if ($client->isAccessTokenExpired()) {
+                    $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+                    storeToken($client->getAccessToken()); // Store the new access token
+                }
+
+                $service = new Calendar($client);
+
+                // Create the events for the scheduled date and two days before
+                $eventDetails = [
+                    [
+                        'summary' => "UDAS Assessment for {$schedule_details['program_name']} schedule",
+                        'start' => date('c', strtotime($schedule_details['schedule_date'] . ' 08:00:00')),
+                        'end' => date('c', strtotime($schedule_details['schedule_date'] . ' 17:00:00'))
+                    ],
+                    [
+                        'summary' => "UDAS Assessment for {$schedule_details['program_name']} schedule",
+                        'start' => date('c', strtotime('-2 days', strtotime($schedule_details['schedule_date'] . ' 08:00:00'))),
+                        'end' => date('c', strtotime('-2 days', strtotime($schedule_details['schedule_date'] . ' 17:00:00')))
+                    ]
+                ];
+
+                foreach ($eventDetails as $details) {
+                    $event = new Calendar\Event([
+                        'summary' => $details['summary'],
+                        'start' => ['dateTime' => $details['start'], 'timeZone' => 'Asia/Manila'],
+                        'end' => ['dateTime' => $details['end'], 'timeZone' => 'Asia/Manila']
+                    ]);
+                    $createdEvent = $service->events->insert('primary', $event);
+
+                    // Log event details to a file
+                    $logMessage = "Event created: " . $createdEvent->htmlLink . "\n";
+                    file_put_contents('F:/xampp/htdocs/QAD2/secure/calendar_event_log.txt', $logMessage, FILE_APPEND);
+                }
+
+                $conn->commit();
             } catch (Exception $e) {
                 $conn->rollback();
-                $email_error = "Schedule approval and email notification failed due to internet problem.";
+                $email_error = "Schedule approval and email notification failed: " . $mail->ErrorInfo . ' ' . $e->getMessage();
             }
 
             $stmt_get_emails->close();
@@ -204,7 +251,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php echo isset($error_message) ? $error_message : 'Unknown error.'; ?>
             <?php endif; ?>
         </div>
-        <a class="button-primary" href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($college_code); ?>">OK</a>
+        <a class="button-primary" href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($schedule_details['college_code']); ?>">OK</a>
     </div>
 </body>
 </html>

@@ -122,7 +122,7 @@
                         }
                         echo "<td>";
                         echo "<a class='action-btn' href='#' onclick='openTeamModal(" . $row['id'] . ")'>View Team</a>";
-                        if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'approved' && $row['schedule_status'] !== 'done') {
+                        if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'approved' && $row['schedule_status'] !== 'done' && $row['schedule_status'] !== 'finished') {
                             echo "<a class='action-btn approve' href='#' onclick='openApproveModal(" . $row['id'] . ")'>Approve</a>";
                             echo "<a class='action-btn reschedule' href='#' onclick='openRescheduleModal(" . $row['id'] . ")'>Reschedule</a>";
                             echo "<a class='action-btn cancel' href='#' onclick='openCancelModal(" . $row['id'] . ")'>Cancel</a>";

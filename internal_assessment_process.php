@@ -104,11 +104,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdf->SetXY(125, 141); // Adjust position
     $pdf->MultiCell(70, 5, $recommendations);
 
-    $pdf->SetXY(45, 259); // Adjust position
+    $centerTextX = 65.5; // The center X coordinate where you want to center the text
+    $textYPosition = 258; // The Y coordinate where you want to place the text
+    $textWidth = $pdf->GetStringWidth($evaluator);
+
+    // Calculate the X position to center the text
+    $textXPosition = $centerTextX - ($textWidth / 2);
+
+    // Print the QAD Officer's name centered at the specified centerTextX
+    $pdf->SetXY($textXPosition, $textYPosition);
     $pdf->Write(0, $evaluator);
 
-    // Add evaluator signature
-    $pdf->Image($signature_path, 45, 248, 40); // Adjust position and size
+    // Calculate the X and Y positions to center the image
+    $centerImageX = 67; // The center X coordinate where you want to center the image
+    $centerImageY = 252; // The center Y coordinate where you want to center the image
+    $imageWidth = 40; // The width of the signature image
+    $imageHeight = 15; // The height of the signature image (adjust based on actual image aspect ratio)
+    $imageXPosition = $centerImageX - ($imageWidth / 2);
+    $imageYPosition = $centerImageY - ($imageHeight / 2);
+
+    // Add QAD Officer Signature
+    $pdf->Image($signature_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight); // Adjust positions as needed
 
     // Save the filled PDF
     $output_path = 'Assessments/' . $team_id . '.pdf';

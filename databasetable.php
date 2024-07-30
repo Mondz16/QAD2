@@ -193,6 +193,22 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create approved_assessment table
+$sql = "CREATE TABLE IF NOT EXISTS approved_assessment (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    assessment_id INT(6) UNSIGNED,
+    team_leader VARCHAR(255) NOT NULL,
+    team_leader_signature VARCHAR(255) NOT NULL,
+    approved_assessment_file VARCHAR(255) NOT NULL,
+    FOREIGN KEY (assessment_id) REFERENCES assessment(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table approved_assessment created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
 // Create summary table
 $sql = "CREATE TABLE IF NOT EXISTS summary (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -207,6 +223,22 @@ $sql = "CREATE TABLE IF NOT EXISTS summary (
 
 if ($conn->query($sql) === TRUE) {
     echo "Table summary created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+// Create approved_summary table
+$sql = "CREATE TABLE IF NOT EXISTS approved_summary (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    summary_id INT(6) UNSIGNED,
+    qad VARCHAR(255) NOT NULL,
+    qad_signature VARCHAR(255) NOT NULL,
+    approved_summary_file VARCHAR(255) NOT NULL,
+    FOREIGN KEY (summary_id) REFERENCES summary(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table approved_summary created successfully<br>";
 } else {
     echo "Error creating table: " . $conn->error . "<br>";
 }

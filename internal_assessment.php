@@ -95,10 +95,19 @@ while ($stmt_summaries->fetch()) {
 }
 $stmt_summaries->close();
 
+// Fetch approved assessments
+$approved_assessments = [];
+$sql_approved_assessments = "SELECT assessment_id FROM approved_assessment";
+$result_approved_assessments = $conn->query($sql_approved_assessments);
+while ($row = $result_approved_assessments->fetch_assoc()) {
+    $approved_assessments[] = $row['assessment_id'];
+}
+
 // Fetch team members and their assessment status
 $team_members = [];
 $sql_team_members = "
     SELECT t.schedule_id, t.internal_users_id, iu.first_name, iu.middle_initial, iu.last_name, t.id AS team_id, 
+    (SELECT a.id FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_id, 
     (SELECT a.assessment_file FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_file, t.role
     FROM team t
     JOIN internal_users iu ON t.internal_users_id = iu.user_id
@@ -107,12 +116,13 @@ $sql_team_members = "
 $stmt_team_members = $conn->prepare($sql_team_members);
 $stmt_team_members->bind_param("s", $user_id);
 $stmt_team_members->execute();
-$stmt_team_members->bind_result($team_schedule_id, $team_member_id, $team_member_first_name, $team_member_middle_initial, $team_member_last_name, $team_member_team_id, $team_member_assessment_file, $team_member_role);
+$stmt_team_members->bind_result($team_schedule_id, $team_member_id, $team_member_first_name, $team_member_middle_initial, $team_member_last_name, $team_member_team_id, $team_member_assessment_id, $team_member_assessment_file, $team_member_role);
 while ($stmt_team_members->fetch()) {
     $team_members[$team_schedule_id][] = [
         'user_id' => $team_member_id,
         'name' => $team_member_first_name . ' ' . $team_member_middle_initial . '. ' . $team_member_last_name,
         'team_id' => $team_member_team_id,
+        'assessment_id' => $team_member_assessment_id,
         'assessment_file' => $team_member_assessment_file,
         'role' => $team_member_role
     ];
@@ -127,7 +137,6 @@ $stmt_team_members->close();
     <title>Internal Accreditor - Assessment</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
-    
 </head>
 <body>
     <div class="wrapper">
@@ -207,11 +216,15 @@ $stmt_team_members->close();
                     <?php
                         $team_member_count = 0;
                         $submitted_count = 0;
+                        $approved_count = 0;
                         foreach ($team_members[$schedule['schedule_id']] as $member) {
                             if ($member['role'] !== 'team leader') {
                                 $team_member_count++;
                                 if ($member['assessment_file']) {
                                     $submitted_count++;
+                                }
+                                if (in_array($member['assessment_id'], $approved_assessments)) {
+                                    $approved_count++;
                                 }
                             }
                         }
@@ -221,17 +234,25 @@ $stmt_team_members->close();
                         <p>You have already submitted a summary for this schedule.</p>
                     <?php elseif ($submitted_count < $team_member_count): ?>
                         <p>All team members must submit their assessments before you can submit a summary.</p>
+                    <?php elseif ($approved_count < $team_member_count): ?>
+                        <p>You must approve all team members' assessments before you can submit a summary.</p>
                     <?php else: ?>
                         <button onclick="SummaryopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">Summary</button>
-                        <h3>Submitted Assessments:</h3>
-                        <ul>
-                        <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
-                            <?php if ($member['assessment_file'] && $member['role'] !== 'team leader'): ?>
-                                <li><?php echo htmlspecialchars($member['name']); ?>: <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>">Download Assessment</a></li>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                        </ul>
                     <?php endif; ?>
+                    <h3>Submitted Assessments:</h3>
+                    <ul>
+                    <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
+                        <?php if ($member['assessment_file'] && $member['role'] !== 'team leader'): ?>
+                            <li><?php echo htmlspecialchars($member['name']); ?>: <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>">Download Assessment</a>
+                                <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
+                                    <i class="fas fa-check"></i>
+                                <?php else: ?>
+                                    <button onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">Approve Assessment</button>
+                                <?php endif; ?>
+                            </li>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                    </ul>
                 <?php else: ?>
                     <?php if (in_array($schedule['team_id'], $existing_assessments)): ?>
                         <p>You have already submitted an assessment for this schedule.</p>
@@ -274,7 +295,7 @@ $stmt_team_members->close();
                 <label for="recommendations">Recommendations:</label>
                 <textarea id="recommendations" name="recommendations" rows="4" required></textarea><br><br>
                 <label for="evaluator">Evaluator:</label>
-                <input type="text" id="evaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly><br><br>
+                <input type="text" id="evaluator" name="evaluator" value="<?php echo $full_name; ?>" ><br><br>
                 <label for="evaluator_signature">Evaluator Signature (PNG format):</label>
                 <input type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required><br><br>
                 <div class="modal-footer">
@@ -316,6 +337,26 @@ $stmt_team_members->close();
         </div>
     </div>
 
+    <!-- Popup Form for Approving Assessment -->
+    <div class="approvalmodal" id="approveAssessmentPopup">
+        <div class="approvalmodal-content">
+            <span class="close" onclick="closeApproveAssessmentPopup()">&times;</span>
+            <h2>Approve Assessment</h2>
+            <form action="approve_assessment_process.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="team_id" id="approve_team_id">
+                <input type="hidden" name="assessment_file" id="approve_assessment_file">
+                <label for="team_leader">Team Leader:</label>
+                <input type="text" id="team_leader" name="team_leader" value="<?php echo $full_name; ?>" readonly><br><br>
+                <label for="team_leader_signature">Team Leader Signature (PNG format):</label>
+                <input type="file" id="team_leader_signature" name="team_leader_signature" accept="image/png" required><br><br>
+                <div class="modal-footer">
+                    <button type="button" onclick="closeApproveAssessmentPopup()">Close</button>
+                    <button type="submit">Approve Assessment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         function openPopup(schedule) {
             document.getElementById('modal_schedule_id').value = schedule.schedule_id;
@@ -347,16 +388,41 @@ $stmt_team_members->close();
                     var areas = JSON.parse(areasXhr.responseText);
                     document.getElementById('areas').value = areas.join('\n');
                     document.getElementById('areas').readOnly = true;
-                    document.getElementById('Summarypopup').style.display = 'block';
                 } else {
                     console.error('Failed to fetch team areas.');
                 }
             };
             areasXhr.send();
+
+            // Fetch team members' results
+            var resultsXhr = new XMLHttpRequest();
+            resultsXhr.open('GET', 'get_team_results.php?schedule_id=' + schedule.schedule_id, true);
+            resultsXhr.onreadystatechange = function() {
+                if (resultsXhr.readyState == 4 && resultsXhr.status == 200) {
+                    var results = JSON.parse(resultsXhr.responseText);
+                    document.getElementById('results').value = results.join('\n');
+                } else {
+                    console.error('Failed to fetch team results.');
+                }
+            };
+            resultsXhr.send();
+
+            document.getElementById('Summarypopup').style.display = 'block';
         }
 
         function SummaryclosePopup() {
             document.getElementById('Summarypopup').style.display = 'none';
+        }
+
+        function approveAssessmentPopup(member) {
+            document.getElementById('approve_team_id').value = member.team_id;
+            document.getElementById('approve_assessment_file').value = member.assessment_file;
+
+            document.getElementById('approveAssessmentPopup').style.display = 'block';
+        }
+
+        function closeApproveAssessmentPopup() {
+            document.getElementById('approveAssessmentPopup').style.display = 'none';
         }
     </script>
 </body>

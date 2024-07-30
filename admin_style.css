@@ -171,4 +171,25 @@ nav {
     padding: 20px;
 }
 
-/* updated admin style */
+.assessment-box {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.assessment-box h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.assessment-details {
+    margin-left: 20px;
+}
+
+/* Scrollable container for assessments */
+.scrollable-container {
+    max-height: 500px; /* Adjust the maximum height as needed */
+    overflow-y: auto;
+    overflow-x: hidden;
+}
