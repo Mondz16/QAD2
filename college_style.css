@@ -223,27 +223,56 @@ button:hover {
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
+    max-width: 500px;
     border-radius: 8px;
+    text-align: center;
 }
 
 .modal-content h2 {
-    margin-top: 0;
+    margin-bottom: 20px;
 }
 
-.modal-content table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-.modal-content th, .modal-content td {
-    padding: 10px;
+.modal-content .form-group {
+    margin-bottom: 20px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
 }
 
-.modal-content tr:last-child td {
-    border-bottom: none;
+.modal-content .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.modal-content .form-group input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.modal-content .modal-btn-group {
+    display: flex;
+    justify-content: space-between;
+}
+
+.modal-content .modal-btn-group .btn {
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    width: 45%;
+}
+
+.modal-content .modal-btn-group .btn-secondary {
+    background-color: #e9ecef;
+    border: none;
+    color: black;
+}
+
+.modal-content .modal-btn-group .btn-primary {
+    background-color: #28a745;
+    border: none;
+    color: white;
 }
 
 .close {

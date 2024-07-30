@@ -3,8 +3,11 @@ body {
     font-family: "Quicksand", sans-serif;
 }
 .top-bar {
-    background: linear-gradient(275.52deg, #973939 0.28%, #B26F6F 100%);
+    background: linear-gradient(275.52deg, #FF7A7A 0%, #CD7E7E 96%);
     height: 9px;
+}
+.bg-white {
+    background-color: #fff;
 }
 .header {
     background-color: white;
@@ -173,18 +176,7 @@ body {
 .content {
     padding: 20px;
 }
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.table th, .table td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-}
-.table th {
-    background-color: #f0f0f0;
-}
+
 .controls {
     display: flex;
     justify-content: space-between;
@@ -225,7 +217,7 @@ body {
 }
 .pobtn {
     color: white; 
-    background: linear-gradient(275.52deg, #973939 0.28%, #B26F6F 100%); 
+    background: linear-gradient(275.52deg, #FF7A7A 0%, #CD7E7E 96%); 
     border: unset; 
     outline: unset; 
     text-decoration: none; 
@@ -241,5 +233,38 @@ body {
     color: white;
 }
 .table-responsive {
-    margin-bottom: 1rem;
+    overflow-x: auto;
+}
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.table th {
+    background-color: #fff;
+    font-weight: bold;
+}
+.table tr {
+    background-color: #fff;
+}
+.table th:first-child {
+    border-top-left-radius: 10px;
+}
+.table th:last-child {
+    border-top-right-radius: 10px;
+}
+.table tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+.table tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+.btn-view {
+    background-color: #007bff;
+    color: white;
+}
+.btn-edit {
+    background-color: #6c757d;
+    color: white;
 }

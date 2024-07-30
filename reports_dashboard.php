@@ -31,12 +31,14 @@ $conn->close();
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <link rel="stylesheet" type="text/css" href="reports_dashboard_styles.css">
 </head>
+
 <body>
     <div class="dashboard-container">
         <div class="card-container">
@@ -92,6 +94,9 @@ $conn->close();
                 </div>
             </div>
         </div>
+        <div id="program-level-history-container">
+            <canvas id="programLevelHistoryCanvas"></canvas>
+        </div>
     </div>
 
     <script>
@@ -125,12 +130,56 @@ $conn->close();
             });
         }
 
+        function fetchProgramLevelHistoryData(campus, college, program) {
+            fetch('fetch_program_level_history.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        campus: campus,
+                        college: college,
+                        program: program
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Display data in the chart
+                    displayProgramLevelHistoryChart(data);
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        // Function to display the chart
+        function displayProgramLevelHistoryChart(data) {
+            const ctx = document.getElementById('programLevelHistoryCanvas').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Program Level History',
+                        data: data.values,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
         async function updateCharts() {
             const programLevel = document.getElementById('programLevel').value;
             const year = document.getElementById('year').value;
-            
+
             await updateBarChart(programLevel, year);
-            await updatePieChart(programLevel, year);
             updateRecentPrograms();
         }
 
@@ -358,12 +407,13 @@ $conn->close();
             plugins: [ChartDataLabels]
         });
 
-        
+
         window.addEventListener('DOMContentLoaded', async () => {
             await fetchYears();
             updateCharts();
             updatePieChart();
             updateRecentPrograms();
+            fetchProgramLevelHistoryData('Campus1', 'College1', 'Program1');
 
             document.getElementById('programLevel').addEventListener('change', async () => {
                 await updateCharts();
@@ -375,4 +425,5 @@ $conn->close();
         });
     </script>
 </body>
+
 </html>
