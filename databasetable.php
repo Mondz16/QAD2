@@ -102,7 +102,8 @@ $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     email VARCHAR(255) NOT NULL,
     password VARCHAR(128) NOT NULL,
     profile_picture VARCHAR(255) NOT NULL,
-    status ENUM('pending', 'active', 'inactive') NOT NULL DEFAULT 'pending',
+    status ENUM('pending', 'active', 'inactive', '') NOT NULL,
+    otp VARCHAR(255) NOT NULL,
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (college_code) REFERENCES college(code)
 )";
@@ -123,7 +124,8 @@ $sql = "CREATE TABLE IF NOT EXISTS external_users (
     email VARCHAR(255) NOT NULL,
     password VARCHAR(128) NOT NULL,
     profile_picture VARCHAR(255) NOT NULL,
-    status ENUM('pending', 'active', 'inactive') NOT NULL DEFAULT 'pending',
+    status ENUM('pending', 'active', 'inactive', '') NOT NULL,
+    otp VARCHAR(255) NOT NULL,
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_code) REFERENCES company(code)
 )";

@@ -254,7 +254,9 @@ $stmt_team_members->close();
                     <?php endforeach; ?>
                     </ul>
                 <?php else: ?>
-                    <?php if (in_array($schedule['team_id'], $existing_assessments)): ?>
+                    <?php if ($schedule['area'] == ''): ?>
+                        <p>Your team leader should assign area first before you can assess.</p>
+                    <?php elseif (in_array($schedule['team_id'], $existing_assessments)): ?>
                         <p>You have already submitted an assessment for this schedule.</p>
                     <?php else: ?>
                         <button onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">Assess</button>

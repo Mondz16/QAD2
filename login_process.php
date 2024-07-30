@@ -134,6 +134,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check internal_users table
     $internal_user = check_user($conn, 'internal_users', $user_id, $password);
     if ($internal_user) {
+        if ($internal_user['otp'] != 'verified') {
+            header("Location: verify_otp.php?email=" . urlencode($internal_user['email']) . "&type=internal");
+            exit;
+        }
         if ($internal_user['status'] == 'active') {
             $_SESSION['user_id'] = $internal_user['user_id'];
             header("Location: internal.php");
@@ -156,6 +160,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check external_users table
     $external_user = check_user($conn, 'external_users', $user_id, $password);
     if ($external_user) {
+        if ($external_user['otp'] != 'verified') {
+            header("Location: verify_otp.php?email=" . urlencode($external_user['email']) . "&type=external");
+            exit;
+        }
         if ($external_user['status'] == 'active') {
             $_SESSION['user_id'] = $external_user['user_id'];
             header("Location: external.php");
