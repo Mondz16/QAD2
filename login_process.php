@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-function display_message($message, $type, $redirect = 'login.php') {
+function display_popup($message, $type, $redirect = 'login.php', $has_apply_cancel = false, $apply_redirect = '') {
     ?>
     <!DOCTYPE html>
     <html lang="en">
@@ -9,76 +9,43 @@ function display_message($message, $type, $redirect = 'login.php') {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Operation Result</title>
+        <link rel="stylesheet" href="index.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-                font-family: "Quicksand", sans-serif;
-            }
-
-            body {
-                background-color: #f9f9f9;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-            }
-
-            .container {
-                max-width: 750px;
-                padding: 24px;
-                background-color: #fff;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                text-align: center;
-            }
-
-            h2 {
-                font-size: 24px;
-                color: #973939;
-                margin-bottom: 20px;
-            }
-
-            .message {
-                margin-bottom: 20px;
-                font-size: 18px;
-            }
-
-            .success {
-                color: green;
-            }
-
-            .error {
-                color: red;
-            }
-
-            .button-primary {
-                background-color: #2cb84f;
-                color: #fff;
-                border: none;
-                padding: 10px 20px;
-                cursor: pointer;
-                border-radius: 4px;
-                margin-top: 10px;
-                color: white;
-                font-size: 16px;
-            }
-
-            .button-primary:hover {
-                background-color: #259b42;
-            }
-        </style>
     </head>
     <body>
-        <div class="container">
-            <h2>Operation Result</h2>
-            <div class="message">
-                <p class='<?php echo $type; ?>'><?php echo htmlspecialchars($message); ?></p>
+        <div id="errorPopup" class="popup" style="display: block;">
+            <div class="popup-content">
+                <span class="close-btn" id="closeErrorBtn">&times;</span>
+                <div style="height: 50px; width: 0px;"></div>
+                <img class="Error" src="images/Error.png" height="100">
+                <div style="height: 20px; width: 0px;"></div>
+                <div class="popup-text"><?php echo $message; ?></div>
+                <div style="height: 50px; width: 0px;"></div>
+                <?php if ($has_apply_cancel): ?>
+                    <button class="cancel" onclick="window.location.href='login.php'">Cancel</button>
+                    <a href="<?php echo $apply_redirect; ?>" class="apply">Apply</a>
+                <?php else: ?>
+                    <a href="javascript:void(0);" class="okay" id="closePopup">Okay</a>
+                <?php endif; ?>
+                <div style="height: 100px; width: 0px;"></div>
+                <div class="hairpop-up"></div>
             </div>
-            <button class="button-primary" onclick="window.location.href='<?php echo $redirect; ?>'">OK</button>
         </div>
+        <script>
+            document.getElementById('closePopup').addEventListener('click', function() {
+                window.location.href = '<?php echo $redirect; ?>';
+            });
+
+            document.getElementById('closeErrorBtn').addEventListener('click', function() {
+                window.location.href = '<?php echo $redirect; ?>';
+            });
+
+            window.addEventListener('click', function(event) {
+                if (event.target == document.getElementById('errorPopup')) {
+                    window.location.href = '<?php echo $redirect; ?>';
+                }
+            });
+        </script>
     </body>
     </html>
     <?php
@@ -143,16 +110,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: internal.php");
             exit;
         } elseif ($internal_user['status'] == 'inactive') {
-            echo "<script>
-                    if (confirm('This account is inactive. Would you like to apply again?')) {
-                        window.location.href = 'login_process_reactivation.php?type=internal&user_id=$user_id';
-                    } else {
-                        window.location.href = 'login.php';
-                    }
-                  </script>";
+            $message = "This account is inactive.<br>Would you like to apply again?";
+            display_popup($message, "error", "login.php", true, "login_process_reactivation.php?type=internal&user_id=$user_id");
             exit;
         } else {
-            display_message("Internal user status is pending. Please wait for the admin to approve.", "error");
+            $message = "This user's status is pending.<br>Please wait for the admin to approve.";
+            display_popup($message, "error");
             exit;
         }
     }
@@ -169,22 +132,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: external.php");
             exit;
         } elseif ($external_user['status'] == 'inactive') {
-            echo "<script>
-                    if (confirm('This account is inactive. Would you like to apply again?')) {
-                        window.location.href = 'login_process_reactivation.php?type=external&user_id=$user_id';
-                    } else {
-                        window.location.href = 'login.php';
-                    }
-                  </script>";
+            $message = "This account is inactive.<br>Would you like to apply again?";
+            display_popup($message, "error", "login.php", true, "login_process_reactivation.php?type=external&user_id=$user_id");
             exit;
         } else {
-            display_message("External user status is pending. Please wait for the admin to approve.", "error");
+            $message = "This user's status is pending.<br>Please wait for the admin to approve.";
+            display_popup($message, "error");
             exit;
         }
     }
 
     // If no match found in any table
-    display_message("User not found or password incorrect", "error");
+    display_popup("User not found or password incorrect", "error");
 
     $conn->close();
 }

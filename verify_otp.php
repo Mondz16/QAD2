@@ -143,7 +143,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         window.onload = function () {
-            var duration = 5; // 180 seconds timer
+            var duration = 180; // 180 seconds timer
             var display = document.querySelector('#time');
             startTimer(duration, display);
         };

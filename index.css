@@ -165,7 +165,7 @@
     background: #ff7070;
 }
 
-.signup, .okay, .resend {
+.signup, .okay, .resend, .apply, .cancel {
     color: black;
     text-decoration: none;
     white-space: unset;
@@ -177,11 +177,28 @@
     cursor: pointer;
 }
 
-.okay {
+.apply {
+    background-color: #34C759;
+    color: white;
+}
+
+.cancel {
+    padding: 16px 45px;
+    margin-right: 10px;
+    color: #AFAFAF;
+}
+
+.cancel:hover {
+    color: #858181;
+}
+.okay, .apply {
     padding: 16px 55px;
     min-width: 120px;
 }
 
+.apply:hover {
+    background-color: #28b04b;
+}
 .signup {
     margin-right: 35px;
     padding: 16px 55px;
