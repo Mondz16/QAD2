@@ -1,4 +1,3 @@
-/* Existing CSS */
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap');
 * {
     margin: 0;
@@ -91,7 +90,7 @@
     text-align: center; /* Center text */
 }
 
-.body, .body1 {
+.body, .body1, .body2 {
     padding: 0 52px;
     width: 100%;
     display: flex;
@@ -99,12 +98,20 @@
     box-sizing: border-box;
 }
 
-.bodyLeft, .bodyRight {
+.bodyLeft, .bodyRight, .bodyLeft1, .bodyRight1 {
     flex-grow: 0;
-    max-width: 50%;
-    flex-basis: 50%;
     margin-left: 0;
     box-sizing: border-box;
+}
+
+.bodyLeft, .bodyRight {
+    max-width: 50%;
+    flex-basis: 50%;
+}
+
+.bodyLeft1 {
+    max-width: 100%;
+    flex-basis: 70%;
 }
 
 .bodyLeft, .bodyRight {
@@ -131,15 +138,14 @@
     font-size: 20px;
 }
 
-.login {
+.login, .verify {
     color: rgb(255, 255, 255);
-    min-width: 120px;
     white-space: unset;
     padding: 16px 55px;
     font-size: 1rem;
     font-weight: bold;
     text-transform: uppercase;
-    background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+    background: #FF7A7A;
     border: unset;
     outline: unset;
     text-decoration: none;
@@ -147,16 +153,22 @@
     cursor: pointer;
 }
 
-.login:hover {
-    background: linear-gradient(275.52deg, #973939 0.28%, #B26F6F 100%);
+.login {
+    min-width: 120px;
 }
 
-.signup, .okay {
+.verify {
+    min-width: 455px;
+}
+
+.login:hover, .verify:hover {
+    background: #ff7070;
+}
+
+.signup, .okay, .resend {
     color: black;
     text-decoration: none;
-    min-width: 120px;
     white-space: unset;
-    padding: 16px 55px;
     font-size: 1rem;
     font-weight: bold;
     text-transform: uppercase;
@@ -165,12 +177,31 @@
     cursor: pointer;
 }
 
-.signup {
-    margin-right: 35px;
+.okay {
+    padding: 16px 55px;
+    min-width: 120px;
 }
 
-.signup:hover, .okay:hover {
+.signup {
+    margin-right: 35px;
+    padding: 16px 55px;
+    min-width: 120px;
+}
+
+.resend {
+    padding: 16px 30px;
+    min-width: 120px;
+    margin-left: 30px;
+}
+
+.signup:hover, .okay:hover, .resend:hover {
     background-color: #EAEAEA;
+}
+
+.resend.disabled {
+    background-color: #EAEAEA;
+    color: #c2c2c2;
+    cursor: not-allowed;
 }
 
 .popup {
@@ -252,13 +283,55 @@
     border-bottom-right-radius: 10px;
 }
 
+.name {
+    display: flex;
+    gap: 10px;
+    width: 720px;
+}
+
+.nameContainer, .prefixContainer {
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 8px;
+    flex: 1;
+}
+
+.nameContainer {
+    padding: 12px 20px;
+}
+.prefixContainer {
+    flex: 0 0 18%; /* Adjust as needed */
+}
+
+.middleinitialContainer {
+    flex: 0 0 10%;
+}
+
+.prefixContainer select {
+    width: 100%;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    font-size: 1rem;
+    -webkit-appearance: none; /* Remove default dropdown arrow in WebKit browsers */
+    -moz-appearance: none; /* Remove default dropdown arrow in Firefox */
+    appearance: none; /* Remove default dropdown arrow */
+    background-color: transparent; /* Ensure background is transparent */
+    cursor: pointer; /* Change cursor to pointer */
+    padding: 12px 20px;
+}
+
 .user_idText,
 .passwordText,
+.prefix,
 .firstname,
 .middleinitial,
 .lastname,
 .email,
-.company {
+.college,
+.company,
+.gender {
     color: #575757;
     width: 100%;
     border: 0;
@@ -271,7 +344,7 @@
 }
 
 .showpasswordText {
-    margin-right: 120px;
+    margin-right: 86px;
 }
 
 .showpasswordContainer {
@@ -286,22 +359,44 @@
 }
 
 #showPasswordCheckbox {
+    display: none; /* Hide the default checkbox */
+}
+
+/* Create a custom checkbox */
+#showPasswordCheckbox + .custom-checkbox {
     margin-right: 10px;
-    height: 22px;
-    width: 22px;
+    height: 25px;
+    width: 25px;
     border-width: 1px;
     border-style: solid;
     border-color: rgb(170, 170, 170);
     border-radius: 8px;
     background: transparent;
+    transition: background-color 0.3s, border-color 0.3s;
+    position: relative;
 }
 
-#showpassword {
-    all: initial;
+/* Hover effect */
+#showPasswordCheckbox + .custom-checkbox:hover {
+    border-color: rgb(87, 87, 87);
+    background-color: rgba(87, 87, 87, 0.1);
 }
 
-#showpassword:before {
-    all: initial;
+/* Checked effect */
+#showPasswordCheckbox:checked + .custom-checkbox {
+    background-color: #FF7A7A;
+    border-color: rgb(87, 87, 87);
+}
+
+/* Checkmark */
+#showPasswordCheckbox:checked + .custom-checkbox::after {
+    content: '\2713';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
 }
 
 input[type="radio"] {
@@ -313,7 +408,7 @@ input[type="radio"] {
     color: black;
     cursor: pointer;
     font-size: 20px;
-    border: 2px solid black;
+    border: 1px solid #7B7B7B;
     border-radius: 8px;
     padding: 20px 25px;
     margin-right: 20px;
@@ -322,33 +417,17 @@ input[type="radio"] {
     width: 349px;
 }
 
-.register-form label:before {
-    content: "";
-    height: 30px;
-    width: 30px;
-    border: 3px solid black;
-    border-radius: 50%;
-    margin-right: 20px;
-}
-
 .register-form input[type="radio"]:checked+label {
-    background-color: #b44c4c;
+    background-color: #FF7A7A;
     color: white;
 }
 
-.register-form input[type="radio"]:checked+label:before {
-    height: 16px;
-    width: 16px;
-    border: 10px solid white;
-    background-color: #b44c4c;
-}
-
-.college-company {
+.college-company-gender {
     position: relative;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
-.college-company select {
+.college-company-gender select {
     width: 721px;
     padding: 12px 20px;
     border: 1px solid #aaa;
@@ -361,7 +440,19 @@ input[type="radio"] {
     cursor: pointer;
 }
 
-.college-company .icon {
+.college-company-gender select:focus {
+    border: 1px solid #aaa; /* Customize the border color on focus */
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+}
+
+.gender1 input:focus {
+    border: 1px solid #aaa; /* Customize the border color on focus */
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+}
+
+.college-company-gender .icon {
     position: absolute;
     top: 50%;
     right: 15px;
@@ -382,3 +473,4 @@ input[type="radio"] {
 .profile-section {
     width: 20%;
 }
+

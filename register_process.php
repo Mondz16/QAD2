@@ -8,30 +8,19 @@ use PHPMailer\PHPMailer\Exception;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $type = $_POST['type'];
+    $prefix = $_POST['prefix'];
     $first_name = $_POST['first_name'];
     $middle_initial = $_POST['middle_initial'];
     $last_name = $_POST['last_name'];
     $email = $_POST['email'];
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
+    $gender = $_POST['gender'] === 'Others' ? $_POST['gender_others'] : $_POST['gender'];
     $college_code = isset($_POST['college']) ? $_POST['college'] : null;
     $company_code = isset($_POST['company']) ? $_POST['company'] : null;
 
-    // File upload handling
-    $target_dir = "uploads/";
-    if (!is_dir($target_dir)) {
-        mkdir($target_dir, 0777, true); // Create directory if it does not exist
-    }
-    
-    if ($_FILES["profile_picture"]["error"] == UPLOAD_ERR_NO_FILE) {
-        $profile_picture = "Profile Pictures/placeholder.jpg"; // Use placeholder image
-    } else {
-        $profile_picture = $target_dir . basename($_FILES["profile_picture"]["name"]);
-        if (!move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $profile_picture)) {
-            echo "Sorry, there was an error uploading your file.";
-            exit;
-        }
-    }
+    // Set profile_picture to default value
+    $profile_picture = "Profile Pictures/placeholder.jpg"; 
 
     if ($password !== $confirm_password) {
         echo "Passwords do not match!";
@@ -46,11 +35,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     function check_existing_user($conn, $first_name, $middle_initial, $last_name, $email) {
         $stmt = $conn->prepare("
-            SELECT status 
+            SELECT status, otp 
             FROM internal_users 
             WHERE first_name = ? AND middle_initial = ? AND last_name = ? AND email = ?
             UNION 
-            SELECT status 
+            SELECT status, otp 
             FROM external_users 
             WHERE first_name = ? AND middle_initial = ? AND last_name = ? AND email = ?");
         $stmt->bind_param("ssssssss", $first_name, $middle_initial, $last_name, $email, $first_name, $middle_initial, $last_name, $email);
@@ -58,29 +47,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         return $stmt->get_result();
     }
 
-    function check_existing_email($conn, $email) {
-        $stmt = $conn->prepare("SELECT email FROM internal_users WHERE email = ? UNION SELECT email FROM external_users WHERE email = ?");
-        $stmt->bind_param("ss", $email, $email);
-        $stmt->execute();
-        return $stmt->get_result();
-    }
-
-    // Check if email already exists
-    $result_email = check_existing_email($conn, $email);
-
-    if ($result_email->num_rows > 0) {
-        echo "<script>
-                alert('This email is already registered in the system. Please use a different email.');
-                window.location.href = 'register.php';
-              </script>";
-        exit;
-    }
-
     $result_existing = check_existing_user($conn, $first_name, $middle_initial, $last_name, $email);
 
     if ($result_existing->num_rows > 0) {
         $row_existing = $result_existing->fetch_assoc();
         $status = $row_existing['status'];
+        $otp_status = $row_existing['otp'];
+        
+        if ($otp_status !== 'verified') {
+            echo "<script>
+                    alert('This account is already registered but not verified. Redirecting to OTP verification page.');
+                    window.location.href = 'verify_otp.php?email=" . urlencode($email) . "&type=" . urlencode($type) . "';
+                  </script>";
+            exit;
+        }
+
         if ($status == 'inactive') {
             echo "<script>
                     if (confirm('This information is already registered in the system but inactive. Would you like to apply again?')) {
@@ -98,6 +79,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                   window.location.href = 'login.php';
                   </script>";
         }
+        exit;
+    }
+    
+    function check_existing_email($conn, $email) {
+        $stmt = $conn->prepare("SELECT email FROM internal_users WHERE email = ? UNION SELECT email FROM external_users WHERE email = ?");
+        $stmt->bind_param("ss", $email, $email);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+
+    // Check if email already exists
+    $result_email = check_existing_email($conn, $email);
+
+    if ($result_email->num_rows > 0) {
+        echo "<script>
+                alert('This email is already registered in the system. Please use a different email.');
+                window.location.href = 'register.php';
+              </script>";
         exit;
     }
 
@@ -130,8 +129,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user_id = $college_code . "-11-" . $unique_number;
 
         // Insert into internal_users table
-        $stmt_internal = $conn->prepare("INSERT INTO $table (user_id, college_code, first_name, middle_initial, last_name, email, password, profile_picture, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt_internal->bind_param("sssssssss", $user_id, $college_code, $first_name, $middle_initial, $last_name, $email, $hashed_password, $profile_picture, $hashed_otp);
+        $stmt_internal = $conn->prepare("INSERT INTO $table (user_id, college_code, prefix, first_name, middle_initial, last_name, email, password, gender, profile_picture, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt_internal->bind_param("sssssssssss", $user_id, $college_code, $prefix, $first_name, $middle_initial, $last_name, $email, $hashed_password, $gender, $profile_picture, $hashed_otp);
         if ($stmt_internal->execute()) {
             // Send OTP Email
             sendOTPEmail($email, $otp); // Send the plain OTP to the user
@@ -161,8 +160,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user_id = $company_code . "-22-" . $unique_number;
 
         // Insert into external_users table
-        $stmt_external = $conn->prepare("INSERT INTO $table (user_id, company_code, first_name, middle_initial, last_name, email, password, profile_picture, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt_external->bind_param("sssssssss", $user_id, $company_code, $first_name, $middle_initial, $last_name, $email, $hashed_password, $profile_picture, $hashed_otp);
+        $stmt_external = $conn->prepare("INSERT INTO $table (user_id, company_code, prefix, first_name, middle_initial, last_name, email, password, gender, profile_picture, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt_external->bind_param("sssssssssss", $user_id, $company_code, $prefix, $first_name, $middle_initial, $last_name, $email, $hashed_password, $gender, $profile_picture, $hashed_otp);
         if ($stmt_external->execute()) {
             // Send OTP Email
             sendOTPEmail($email, $otp); // Send the plain OTP to the user

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +7,6 @@
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
 </head>
-
 <body>
     <div class="wrapper">
         <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
@@ -65,7 +63,7 @@
                     <form id="loginForm" method="POST" action="login_process.php" novalidate>
                         <div class="username" style="width: 400px;">
                             <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                                <input class="user_idText" type="text" name="user_id" placeholder="User ID">
+                                <input class="user_idText" type="text" name="user_id" id="user_id" placeholder="User ID">
                             </div>
                         </div>
 
@@ -73,7 +71,7 @@
 
                         <div class="password" style="width: 400px;">
                             <div class="passwordContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                                <input class="passwordText" type="password" name="password" placeholder="Password">
+                                <input class="passwordText" type="password" name="password" id="password" placeholder="Password">
                             </div>
                         </div>
 
@@ -83,9 +81,10 @@
                             <div class="showpasswordContainer">
                                 <label id="showpassword">
                                     <input type="checkbox" id="showPasswordCheckbox">
+                                    <span class="custom-checkbox"></span>
                                     <span class="showpasswordText">Show Password</span>
                                 </label>
-                                <a href="login.php" style="color: rgb(87, 87, 87); font-weight: 500; text-decoration: none;">Forgot password?</a>
+                                <a href="forgot_password.php" style="color: rgb(87, 87, 87); font-weight: 500; text-decoration: underline;">FORGOT PASSWORD?</a>
                             </div>
                         </div>
 
@@ -134,13 +133,15 @@
             <div id="userIdErrorMessage" style="display: none;">User ID is Empty<br><br><span style="color: #7B7B7B;">User ID is a required<br>field. Please fill it up to continue.</span></div>
             <div id="passwordErrorMessage" style="display: none;">Password is Empty<br><br><span style="color: #7B7B7B;">Password is a required<br>field. Please fill it up to continue.</span></div>
             <div style="height: 50px; width: 0px;"></div>
-            <a href="login.php" class="okay">Okay</a>
+            <a href="javascript:void(0);" class="okay" id="closePopup">Okay</a>
             <div style="height: 100px; width: 0px;"></div>
             <div class="hairpop-up"></div>
         </div>
     </div>
 
     <script>
+        let tempUserId = '';
+
         document.getElementById('showPasswordCheckbox').addEventListener('change', function() {
             var passwordInput = document.querySelector('.passwordText');
             if (this.checked) {
@@ -157,8 +158,10 @@
 
             if (!userIdInput.value) {
                 errorMessage = document.getElementById('userIdErrorMessage').innerHTML;
+                tempUserId = userIdInput.value;
             } else if (!passwordInput.value) {
                 errorMessage = document.getElementById('passwordErrorMessage').innerHTML;
+                tempUserId = userIdInput.value;
             }
 
             if (errorMessage) {
@@ -170,16 +173,23 @@
 
         document.getElementById('closeErrorBtn').addEventListener('click', function() {
             document.getElementById('errorPopup').style.display = 'none';
+            document.getElementById('user_id').value = tempUserId;
         });
 
-        document.querySelector('.popup .close-error').addEventListener('click', function() {
+        document.getElementById('closePopup').addEventListener('click', function() {
             document.getElementById('errorPopup').style.display = 'none';
+            document.getElementById('user_id').value = tempUserId;
         });
 
         window.addEventListener('click', function(event) {
             if (event.target == document.getElementById('errorPopup')) {
                 document.getElementById('errorPopup').style.display = 'none';
+                document.getElementById('user_id').value = tempUserId;
             }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            tempUserId = '';
         });
     </script>
 </body>
