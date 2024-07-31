@@ -3,144 +3,24 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule List</title>
+    <title>Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="stylesheet" href="css/sidebar.css">
-    <link href="css/pagestyle.css" rel="stylesheet">
-    <style>
-        *   {
-            font-family: "Quicksand";
-        }
-        .custom-btn-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 10px;
-            border: 1px solid #AFAFAF;
-            border-radius: 10px;
-        }
-
-        .custom-btn-group .btn-toggle {
-            border-radius: 4px;
-            padding: 10px 20px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;    
-            width: 160px;
-            height: 50px;
-            font-size: 18px;
-        }
-
-        .btn-colleges {
-            background-color: #FF7A7A;
-            color: white;
-            border: none;
-        }
-
-        .btn-company {
-            background-color: #f8f9fa;
-            color: black;
-            border: 1px solid #ced4da;
-        }
-
-        .btn-add-schedule {
-            background-color: #2CB84F;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-            width: 200px;
-            height: 50px;
-        }
-
-        .btn-add-schedule:hover {
-            background-color: #259b42;
-        }
-
-        .custom-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .custom-table th,
-        .custom-table td {
-            padding: 15px 30px;
-            text-align: left;
-            border-bottom: 1px solid #AFAFAF;
-            font-size: 16px
-        }
-
-        .custom-table th {
-            background-color: #fff;
-            font-weight: bold;
-        }
-
-        .custom-table th:last-child {
-            padding-right: 80px;
-            text-align: right;
-        }
-
-        .custom-table th:nth-child(2) {
-            padding: 15px 0px;
-            text-align: right;
-        }
-
-
-        .custom-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .custom-table tr td:nth-child(1) {
-            width: 600px;
-        }
-
-        .custom-table tr td:nth-child(2) {
-            text-align: center;
-            width: 175px;
-        }
-        
-        .custom-table tr td:nth-child(3) {    
-            display: flex;
-            padding-right: 80px;
-            justify-content: flex-end;
-        }
-
-        .custom-table .btn-view {
-            background-color: transparent;
-            border: 1px solid #ced4da;
-            border-radius: 7px;
-            padding: 5px 15px;
-            color: black;
-            transition: background-color 0.3s ease;
-        }
-
-        .custom-table .btn-view:hover {
-            background-color: #ced4da;
-        }
-
-        .hidden {
+    <link href="css/schedule_college_pagestyle.css" rel="stylesheet">
+</head>
+<style>
+.hidden {
             display: none;
         }
-
-        thead{
-            background-color: #fff;
-        }
-    </style>
-</head>
-
+        </style>
 <body>
     <div class="wrapper">
         <!-- Sidebar -->
         <aside id="sidebar">
+        <div class="row" style=" background: linear-gradient(275.52deg, #CD7E7E 0%, #FF7A7A 96%); height: 9px;"></div>
             <div class="d-flex">
                 <button class="toggle-btn" type="button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grid" viewBox="0 0 16 16">
@@ -237,7 +117,7 @@
         <div class="main">
             <div class="row top-bar"></div>
             <div class="row header mb-3">
-                <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
+            <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
                     <img src="images/USePLogo.png" alt="USeP Logo">
                 </div>
                 <div class="col-6 col-md-4 d-flex align-items-start">
@@ -249,121 +129,65 @@
                         <span class="one">One</span>
                         <span class="datausep">USeP.</span><br>
                         <span>Quality Assurance Division</span>
-                    </div>
+                        </div>
                 </div>
                 <div class="col-md-4 d-none d-md-flex align-items-center justify-content-end">
                 </div>
                 <div class="col-md-2 d-none d-md-flex align-items-center justify-content-start">
                 </div>
             </div>
-            <div class="container text-center mt-4">
-                <h1 class="mb-5 mt-5">SCHEDULE</h1>
-                <div class="custom-btn-group">
-                    <div>
-                        <button id="collegesBtn" class="btn-toggle btn-colleges"
-                            onclick="showTable('collegeTable', 'collegesBtn')">COLLEGES</button>
-                        <button id="sucBtn" class="btn-toggle btn-company"
-                            onclick="showTable('sucTable', 'sucBtn')">COMPANY</button>
-                    </div>
-                    <button class="btn-add-schedule" onclick="location.href='add_schedule.php'" \>ADD SCHEDULE &nbsp;&nbsp;<svg xmlns="http://www.w3.org/2000/svg"
-                            width="16" height="16" fill="currentColor" class="bi bi-calendar-plus" viewBox="0 0 16 16">
-                            <path
-                                d="M8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7" />
-                            <path
-                                d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
-                        </svg></button>
-                </div>
-                <div class="row">
-                    <div class="table-responsive col-12">
-                        <table id="collegeTable" class="custom-table">
-                            <thead>
-                                <tr>
-                                    <th>COLLEGE NAME</th>
-                                    <th>TOTAL SCHEDULES</th>
-                                    <th>ACTIONS</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- PHP code for generating table rows goes here -->
-                                <?php
-                                include 'connection.php';
-
-                                $sql = "SELECT c.college_name, c.code as college_code, COUNT(s.id) AS total_schedules 
-                                        FROM college c 
-                                        LEFT JOIN schedule s ON c.code = s.college_code 
-                                        GROUP BY c.college_name, c.code 
-                                        ORDER BY c.college_name";
-
-                                $result = $conn->query($sql);
-
-                                if ($result->num_rows > 0) {
-                                    while ($row = $result->fetch_assoc()) {
-                                        echo "<tr>";
-                                        echo "<td>" . htmlspecialchars($row["college_name"]) . "</td>";
-                                        echo "<td>" . htmlspecialchars($row["total_schedules"]) . "</td>";
-                                        echo "<td><button class='btn-view' onclick=\"location.href='schedule_college.php?college=" . urlencode($row["college_name"]) . "&college_code=" . htmlspecialchars($row["college_code"]) . "'\">VIEW</button></td>";
-                                        echo "</tr>";
-                                    }
-                                } else {
-                                    echo "<tr><td colspan='2'>No colleges found</td></tr>";
-                                }
-
-                                $conn->close();
-                                ?>
-                            </tbody>
-                        </table>
-                        <table id="sucTable" class="custom-table hidden">
-                            <thead>
-                                <tr>
-                                    <th>SUC/COMPANY CODE</th>
-                                    <th>SUC/COMPANY NAME</th>
-                                    <th>SUC/COMPANY ADDRESS</th>
-                                    <th>SUC/COMPANY EMAIL</th>
-                                    <th>PROGRAMS</th>
-                                    <th>ACTIONS</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Repeat the <tr> block above as needed -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="container text-center mt-4 ps-5">
+        <h1>SCHEDULE DETAILS FOR COLLEGE OF EDUCATION</h1>
+        <div class="text-end">
+        <button class="mt-3 py-2 button btn-wte rounded-2 border luspad">FILTER <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="ms-2 bi bi-funnel" viewBox="0 0 16 16">
+            <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
+            </svg></button>
+        </div>
+        <div class="row mt-3">
+            <div class="table-responsive col-12">
+                <table id="collegeTable" class="table border rounded-2 text-start">
+                    <thead>
+                        <tr>
+                            <th>PROGRAM NAME</th>
+                            <th>LEVEL APPLIED</th>
+                            <th>DATE</th>
+                            <th>TIME</th>
+                            <th>STATUS</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>College of Teachers and Technology Education</td>
+                            <td>4</td>
+                            <td>JULY-26-2024</td>
+                            <td>02:05 PM</td>
+                            <td>WAITING FOR APPROVAL</td>
+                            <td>
+                                <button class="button view-team">VIEW TEAM</button>
+                                <button class="button approve mt-lg-0 mt-1">APPROVE</button>
+                                <button class="button reschedule mt-lg-0 mt-1">RESCHEDULE</button>
+                                <button class="button cancel mt-lg-0 mt-1">CANCEL</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
+        </div>
+    </div>
 
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous">
-    </script>
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
     <script>
         const hamBurger = document.querySelector(".toggle-btn");
 
         hamBurger.addEventListener("click", function () {
             document.querySelector("#sidebar").classList.toggle("expand");
         });
-
-        function showTable(tableId, buttonId) {
-            const tables = document.querySelectorAll('.custom-table');
-            tables.forEach(table => {
-                if (table.id === tableId) {
-                    table.classList.remove('hidden');
-                } else {
-                    table.classList.add('hidden');
-                }
-            });
-
-            const buttons = document.querySelectorAll('.btn-toggle');
-            buttons.forEach(button => {
-                button.classList.remove('btn-colleges');
-                button.classList.add('btn-company');
-            });
-
-            const activeButton = document.getElementById(buttonId);
-            activeButton.classList.remove('btn-company');
-            activeButton.classList.add('btn-colleges');
-        }
     </script>
 </body>
 

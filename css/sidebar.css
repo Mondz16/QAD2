@@ -33,7 +33,7 @@ body {
 .main {
     flex: 1;
     transition: margin-left 0.25s ease; /* Smooth transition for margin change */
-    background-color: #fafbfe;
+    background-color: #fff;
 }
 
 #sidebar {
@@ -42,15 +42,18 @@ body {
     z-index: 1000;
     transition: all .25s ease-in-out;
     background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Shadow effect */
-    position: fixed; /* Fix position */
-    height: 100vh; /* Full viewport height */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);    
+    position: fixed;
+    height: 100vh;
     left: 0;
     top: 0;
-    overflow: auto; /* Scroll if content exceeds height */
+    overflow: auto;
     display: flex;
-    flex-direction: column; /* Align children in a column */
+    flex-direction: column;
     padding-right: 3px;
+    overflow-x: hidden;
+    margin-top: 10px;
+    padding-bottom: 10px;
 }
 
 #sidebar.expand {

@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap');
+
 body {
     font-family: "Quicksand", sans-serif;
+    overflow-x: hidden;
 }
 .top-bar {
     background: linear-gradient(275.52deg, #FF7A7A 0%, #CD7E7E 96%);
@@ -216,22 +218,11 @@ body {
     font-size: 16px;
 }
 .pobtn {
-    color: white; 
-    background: linear-gradient(275.52deg, #FF7A7A 0%, #CD7E7E 96%); 
-    border: unset; 
-    outline: unset; 
-    text-decoration: none; 
-    cursor: pointer; 
-    border-radius: 10px; 
-    padding: 16px; 
-    font-size: 16px;
-}
-.nebtn:hover {
-    border: 1px solid black;
-}
-.pobtn:hover {
+    background-color: #FF7A7A;
     color: white;
+    border: none;
 }
+
 .table-responsive {
     overflow-x: auto;
 }

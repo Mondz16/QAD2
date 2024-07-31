@@ -7,14 +7,9 @@
 }
 
 .container {
-    max-width: 1280px;
-    padding-left: 24px;
-    padding-right: 24px;
     width: 100%;
     display: block;
     box-sizing: border-box;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -22,14 +17,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .header {
-    height: 58px;
-    width: 100%;
-    display: flex;
-    flex-flow: unset;
-    justify-content: space-between;
-    align-items: center;
-    align-content: unset;
-    overflow: unset;
+    background-color: white;
+    color: black;
+    padding: 10px 0;
+    border-bottom: 1px solid lightgrey;
 }
 
 .headerLeft {
@@ -116,6 +107,83 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 30px;
 }
 
+.custom-btn-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 10px;
+    border: 1px solid #AFAFAF;
+    border-radius: 10px;
+}
+
+.custom-btn-group .btn-toggle {
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 160px;
+    height: 50px;
+    font-size: 18px;
+    background-color: white;
+}
+
+.custom-btn-group .btn-colleges {
+    background-color: #FF7A7A;
+    color: white;
+    border: none;
+}
+
+.btn-add-schedule {
+    background-color: #2CB84F;
+    color: white;
+    border: none;
+    padding: 10px 0px;
+    display: flex;
+    align-items: center;
+    font-weight: lighter;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    width: 170px;
+    height: 50px;
+    justify-content: center;
+}
+
+.btn-add-schedule:hover {
+    background-color: #28a745;
+}
+
+.btn-import{
+    background-color: #fff;
+    border: 1px solid #AFAFAF;
+    padding: 10px 0px;
+    display: flex;
+    align-items: center;
+    font-weight: lighter;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    width: 140px;
+    height: 50px;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.btn-import:hover {
+    background-color: #ced4da;
+}
+
+.btn-company {
+    transition: background-color 0.3s ease;
+    background-color: #f8f9fa;
+    color: #888;
+    border: 1px solid #ced4da;
+    font-weight: lighter !important;
+}
+
+.btn-company:hover {
+    background-color: #FF7A7A;
+    color: white;
+    font-weight: bold !important;
+}
 
 .container2{
     max-width: 1500px;
@@ -134,9 +202,8 @@ h2 {
 table {
     width: 100%;
     border-collapse: collapse;
-    margin: 20px 0;
+    margin: 0px 0;
     background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -175,6 +242,7 @@ table {
 th, td {
     padding: 15px;
     text-align: left;
+    font-size: 16px;
     border-bottom: 1px solid #e5e5e5;
 }
 
@@ -182,25 +250,16 @@ th {
     background-color: #f1f1f1;
 }
 
+tr td:first-child{
+    max-width: 600px;
+}
+
 tr:last-child td {
     border-bottom: none;
 }
 
-button {
-    padding: 10px 15px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
 .button {
     background-color: #2CB84F;
-}
-button:hover {
-    background-color: #b82c3b;
 }
 
 .modal {
@@ -223,7 +282,7 @@ button:hover {
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
-    max-width: 500px;
+    max-width: 1200px;
     border-radius: 8px;
     text-align: center;
 }
@@ -281,6 +340,9 @@ button:hover {
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
+    text-align: end;
+    margin-right: 30px;
+    margin-bottom: 15px;
 }
 
 .close:hover, .close:focus {
@@ -289,33 +351,125 @@ button:hover {
     cursor: pointer;
 }
 
-.import-modal-content{
-    max-width: 500px;
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.import-modal-content {
     background-color: #fefefe;
-    margin: 5% auto;
-    padding: 20px;
+    margin: 15% auto;
+    padding: 10px 30px 20px 30px;
     border: 1px solid #888;
-    border-radius: 8px;
+    max-width: 400px;
+    border-radius: 10px;
 }
 
-.import-modal-content h2{
-    margin-top: 0;
-}
-
-.import-modal-content form{
-    margin: 40px 0 20px 0;
-    width: 70%;
-}
-
-.import-modal-content label{
+.import-modal-content h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 20px;
     font-weight: bold;
 }
 
-.import-modal-content input{
-    margin-top: 10px;
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
 }
 
+.form-group label {
+    margin-bottom: 10px;
+}
 
-.import-modal-content button{
-    margin-top: 20px;
+.form-group input {
+    padding: 10px;
+    font-size: 16px;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn-cancel,
+.btn-add-program {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background-color: #fff;
+    transition: background-color 0.3s ease;
+    color: #888;
+    border: 1px solid #aaa;
+    width: 150px;
+}
+
+.btn-cancel:hover{
+    background-color: #ced4da;
+}
+
+.btn-add-program {
+    background-color: #2cb84f;
+    transition: background-color 0.3s ease;
+    color: white;
+    width: 180px;
+}
+
+.btn-add-program:hover{
+    background-color: #28a745;
+}
+
+.custom-table{
+    margin-top: 5px;
+}
+
+.custom-table th, .custom-table td {
+    padding: 15px 30px;
+    text-align: left;
+    border-bottom: 1px solid #AFAFAF;
+    background-color: #fff;
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+.view-button{
+    padding: 10px 15px;
+    border: 1px solid #aaa;
+    background-color: #fff;
+    border-radius: 7px;
+    transition: background-color 0.3s ease;
+}
+
+.view-button:hover{
+    background-color: #ced4da;
+}
+
+.edit-button{
+    padding: 10px 15px;
+    border: 1px solid #aaa;
+    background-color: #fff;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.edit-button:hover{
+    background-color: #ced4da;
+}
+
+.sort-buttons {
+    border: none;
 }
