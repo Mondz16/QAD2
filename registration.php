@@ -30,8 +30,7 @@ function displayRegistrations($conn, $tableName, $title)
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
-        echo "<h2 class='table-title'>$title</h2>";
-        echo "<table class='data-table'>
+        echo "<table id='collegeTable' class='data-table table border rounded-2'>
             <tr>
                 <th>ID</th>
                 <th>First Name</th>
@@ -50,6 +49,7 @@ function displayRegistrations($conn, $tableName, $title)
             </tr>";
 
         while ($row = $result->fetch_assoc()) {
+            $full_name = $row['first_name'] . " " . $row['middle_initial'] . " " . $row["last_name"];
             echo "<tr>
                 <td>{$row['user_id']}</td>
                 <td>{$row['first_name']}</td>
@@ -65,8 +65,8 @@ function displayRegistrations($conn, $tableName, $title)
             }
 
             echo "<td class='action-buttons'>
-                    <button class='btn approve' onclick='openApproveModal(\"{$row['user_id']}\")'>Approve</button>
-                    <button class='btn reject' onclick='openRejectModal(\"{$row['user_id']}\")'>Reject</button>
+                    <button class='btn btn-approve btn-sm' onclick='openApproveModal(\"{$row['user_id']}\")'>Approve</button>
+                    <button class='btn btn-reject btn-sm' onclick='openRejectModal(\"{$row['user_id']}\")'>Reject</button>
                 </td>
             </tr>";
         }
@@ -85,395 +85,231 @@ function displayRegistrations($conn, $tableName, $title)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pending Registrations</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Quicksand", sans-serif;
-        }
-
-        body {
-            background-color: #f9f9f9;
-        }
-
-        .container {
-            max-width: 1280px;
-            padding-left: 24px;
-            padding-right: 24px;
-            width: 100%;
-            display: block;
-            box-sizing: border-box;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .header {
-            height: 58px;
-            width: 100%;
-            display: flex;
-            flex-flow: unset;
-            justify-content: space-between;
-            align-items: center;
-            align-content: unset;
-            overflow: unset;
-        }
-
-        .headerLeft {
-            order: unset;
-            flex: unset;
-            align-self: unset;
-        }
-
-        .USePData {
-            height: 100%;
-            width: 100%;
-            display: flex;
-            flex-flow: unset;
-            place-content: unset;
-            align-items: center;
-            overflow: unset;
-        }
-
-        .headerLeftText {
-            height: 100%;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            flex-wrap: unset;
-            place-content: unset;
-            align-items: unset;
-            overflow: unset;
-            font-size: 18px;
-        }
-
-        .headerRight {
-            order: unset;
-            flex: unset;
-            align-self: unset;
-        }
-
-        .SDMD {
-            height: 100%;
-            width: 100%;
-            display: flex;
-            flex-flow: unset;
-            place-content: unset;
-            align-items: center;
-            overflow: unset;
-        }
-
-        .headerRightText {
-            height: 100%;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            flex-wrap: unset;
-            place-content: unset;
-            align-items: flex-end;
-            overflow: unset;
-            text-align: right;
-        }
-
-        .headerLeftText h1,
-        .headerLeftText h2 {
-            margin: 0;
-            padding: 0;
-        }
-
-        .headerRight .btn {
-            background-color: #dc3545;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-left: -500px;
-            transition: background-color 0.3s ease;
-        }
-
-        .headerRight .btn:hover {
-            background-color: #b82c3b;
-        }
-
-        .admin-content {
-            max-width: 1200px;
-            width: 100%;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .tab-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .tabheader {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .tabs {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            cursor: pointer;
-            background-color: #f2f2f2;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-        }
-
-        .tab.active {
-            background-color: #fff;
-            font-weight: bold;
-            border-bottom: 2px solid #973939;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .table-title {
-            font-size: 24px;
-            color: #973939;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .data-table th {
-            background-color: #f2f2f2;
-        }
-
-        .data-table tr:hover {
-            background-color: #f1f1f1;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .btn.approve {
-            background-color: #2cb84f;
-            color: white;
-        }
-
-        .btn.reject {
-            background-color: #e74c3c;
-            color: white;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        .back-button {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        .back-button:hover {
-            opacity: 0.9;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0, 0, 0);
-            background-color: rgba(0, 0, 0, 0.4);
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 400px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-
-        .modal-buttons button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .modal-buttons .yes-btn {
-            background-color: #d9534f;
-            color: white;
-        }
-
-        .modal-buttons .no-btn {
-            background-color: #5bc0de;
-            color: white;
-        }
-
-        .modal-buttons .yes-btn:hover {
-            background-color: #c9302c;
-        }
-
-        .modal-buttons .no-btn:hover {
-            background-color: #31b0d5;
-        }
-
-        .modal-buttons textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 20px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            resize: none;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link href="css/registration_pagestyle.css" rel="stylesheet">
 </head>
 
 <body>
     <div class="wrapper">
-        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+        <aside id="sidebar">
+            <div class="d-flex">
+                <button class="toggle-btn" type="button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-grid" viewBox="0 0 16 16">
+                        <path
+                            d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z" />
+                    </svg>
+                </button>
+                <div class="sidebar-logo">
+                    <a href="#">SQAD</a>
+                </div>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="sidebar-item">
+                    <a href="admin_sidebar.php" class="sidebar-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-person" viewBox="0 0 16 16">
+                            <path
+                                d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z" />
+                        </svg>
+                        <span style="margin-left: 8px;">Admin Profile</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="schedule.php" class="sidebar-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-calendar-range" viewBox="0 0 16 16">
+                            <path d="M9 7a1 1 0 0 1 1-1h5v2h-5a1 1 0 0 1-1-1M1 9h4a1 1 0 0 1 0 2H1z" />
+                            <path
+                                d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
+                        </svg>
+                        <span style="margin-left: 8px;">Schedule</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="college.php" class="sidebar-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-mortarboard" viewBox="0 0 16 16">
+                            <path
+                                d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.916l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.916zM8 8.46 1.758 5.965 8 3.052l6.242 2.913z" />
+                            <path
+                                d="M4.166 9.032a.5.5 0 0 0-.656.327l-.5 1.7a.5.5 0 0 0 .294.605l4.5 1.8a.5.5 0 0 0 .372 0l4.5-1.8a.5.5 0 0 0 .294-.605l-.5-1.7a.5.5 0 0 0-.656-.327L8 10.466zm-.068 1.873.22-.748 3.496 1.311a.5.5 0 0 0 .352 0l3.496-1.311.22.748L8 12.46z" />
+                        </svg>
+                        <span style="margin-left: 8px;">College</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="orientation.php" class="sidebar-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-chat-square-text" viewBox="0 0 16 16">
+                            <path
+                                d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-2.5a2 2 0 0 0-1.6.8L8 14.333 6.1 11.8a2 2 0 0 0-1.6-.8H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
+                            <path
+                                d="M3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3 6a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 6m0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5" />
+                        </svg>
+                        <span style="margin-left: 8px;">Orientation</span>
+                    </a>
+                </li>
+                <li class="sidebar-item mt-3">
+                    <a href="admin_assessment.php" class="sidebar-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-list-check" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0" />
+                        </svg>
+                        <span style="margin-left: 8px;">Assessment</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="udas_assessment.php" class="sidebar-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-clipboard2-check" viewBox="0 0 16 16">
+                            <path
+                                d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5.5.5 0 0 1 .5.5V2a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 5 2v-.5a.5.5 0 0 1 .5-.5.5.5 0 0 0 .5-.5.5.5 0 0 1 .5-.5z" />
+                            <path
+                                d="M3 2.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 0 0-1h-.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1H12a.5.5 0 0 0 0 1h.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5z" />
+                            <path
+                                d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z" />
+                        </svg>
+                        <span style="margin-left: 8px;">UDAS Assessment</span>
+                    </a>
+                </li>
+                <li class="sidebar-item mt-3">
+                    <a href="registration.php" class="sidebar-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-people" viewBox="0 0 16 16">
+                            <path
+                                d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.716 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
+                        </svg>
+                        <span style="margin-left: 8px;">Register Verification</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="reports.php" class="sidebar-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-bar-chart-line" viewBox="0 0 16 16">
+                            <path
+                                d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1zm1 12h2V2h-2zm-3 0V7H7v7zm-5 0v-3H2v3z" />
+                        </svg>
+                        <span style="margin-left: 8px;">Reports</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="sidebar-footer p-1">
+                <a href="login.php" class="sidebar-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-box-arrow-left" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z" />
+                        <path fill-rule="evenodd"
+                            d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z" />
+                    </svg>
+                    <span style="margin-left: 8px;">Logout</span>
+                </a>
+            </div>
+        </aside>
 
-        <div class="container">
-            <div class="header">
-                <div class="headerLeft">
-                    <div class=USePData>
-                        <img class="USeP" src="images/USePLogo.png" height="36">
-                        <div style="height: 0px; width: 16px;"></div>
-                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
-                        <div style="height: 0px; width: 16px;"></div>
-                        <div class="headerLeftText">
-                            <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
-                                <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
-                                    <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
-                                </h>
+        <!-- Main Content -->
+        <div class="main">
+            <div class="row top-bar"></div>
+                <div class="row header mb-3">
+                    <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
+                        <img src="images/USePLogo.png" alt="USeP Logo">
+                    </div>
+                    <div class="col-6 col-md-4 d-flex align-items-start">
+                        <div class="vertical-line"></div>
+                        <div class="divider"></div>
+                        <div class="text">
+                            <span class="one">One</span>
+                            <span class="datausep">Data.</span>
+                            <span class="one">One</span>
+                            <span class="datausep">USeP.</span><br>
+                            <span>Quality Assurance Division</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-none d-md-flex align-items-center justify-content-end">
+                    </div>
+                    <div class="col-md-2 d-none d-md-flex align-items-center justify-content-start">
+                </div>
+            </div>
+
+            <div class="container text-center mt-4">
+                <h1 class="mt-5 mb-5">PENDING REGISTRATIONS</h1>
+                <div class="row m-1 mt-3">
+                    <div class="col-12 border rounded-2" style="background: white;">
+                        <div class="row no-gutters py-2">
+                            <div class="col-6">
+                                <button id="collegesBtn" class="pobtn border btn w-100 py-2"
+                                    onclick="showTable('collegeTable', 'collegesBtn')">INTERNAL</button>
                             </div>
-                            <h>Accreditor Portal</h>
+                            <div class="col-6">
+                                <button id="sucBtn" class="nebtn border btn w-100 py-2"
+                                    onclick="showTable('sucTable', 'sucBtn')">EXTERNAL</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="table-responsive col-12">
+                        <div class="tab-container">
+                            <div class="admin-content">
+                                <div class="tab-content active" id="internal">
+                                    <?php displayRegistrations($conn, 'internal_users', 'Internal Pending Registrations'); ?>
+                                </div>
+                                <div class="tab-content" id="external">
+                                    <?php displayRegistrations($conn, 'external_users', 'External Pending Registrations'); ?>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
-    </div>
-    <div class="tab-container">
-        <div class="admin-content">
-            <h1 class="tabheader">Pending Registrations</h1>
-            <div class="tabs">
-                <div class="tab active" data-tab="internal">Internal</div>
-                <div class="tab" data-tab="external">External</div>
-            </div>
-            <div class="tab-content active" id="internal">
-                <?php displayRegistrations($conn, 'internal_users', 'Internal Pending Registrations'); ?>
-            </div>
-            <div class="tab-content" id="external">
-                <?php displayRegistrations($conn, 'external_users', 'External Pending Registrations'); ?>
+
+        <!-- Approve Modal -->
+        <div id="approveModal" class="modal">
+            <div class="modal-content">
+                <h4>Are you sure you want to approve this registration?</h4>
+                <form id="approveForm" action="registration_approval.php" method="post">
+                    <input type="hidden" name="id" id="approveUserId">
+                    <input type="hidden" name="action" value="approve">
+                    <div class="modal-buttons">
+                        <button type="button" class="no-btn" onclick="closeApproveModal()">CANCEL</button>
+                        <button type="submit" class="yes-btn">CONFIRM</button>
+                    </div>
+                </form>
             </div>
         </div>
-    <div>
-        <button class="back-button" onclick="window.location.href='admin.php'">Back to Admin Panel</button>
-    </div>
-    </div>
 
-    <!-- Approve Modal -->
-    <div id="approveModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeApproveModal()">&times;</span>
-            <h2>Are you sure you want to approve this registration?</h2>
-            <form id="approveForm" action="registration_approval.php" method="post">
-                <input type="hidden" name="id" id="approveUserId">
-                <input type="hidden" name="action" value="approve">
-                <div class="modal-buttons">
-                    <button type="submit" class="yes-btn">Yes</button>
-                    <button type="button" class="no-btn" onclick="window.location.href='registration.php'">No</button>
-                </div>
-            </form>
+        <!-- Reject Modal -->
+        <div id="rejectModal" class="modal">
+            <div class="modal-content">
+                <h4>Are you sure you want to reject this registration?</h4>
+                <form id="rejectForm" action="registration_approval.php" method="post">
+                    <input type="hidden" name="id" id="rejectUserId">
+                    <input type="hidden" name="action" value="reject">
+                    <textarea rows="3" cols="52" id="rejectReason" name="reason" placeholder="Enter reason for rejection"></textarea>
+                    <div class="modal-buttons">
+                        <button type="button" class="no-btn" onclick="closeRejectModal()">CANCEL</button>
+                        <button type="submit" class="yes-btn">CONFIRM</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- Reject Modal -->
-    <div id="rejectModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeRejectModal()">&times;</span>
-            <h2>Are you sure you want to reject this registration?</h2>
-            <form id="rejectForm" action="registration_approval.php" method="post">
-                <input type="hidden" name="id" id="rejectUserId">
-                <input type="hidden" name="action" value="reject">
-                <textarea rows="3" cols="52" id="rejectReason" name="reason" placeholder="Enter reason for rejection"></textarea>
-                <div class="modal-buttons">
-                    <button type="submit" class="yes-btn">Yes</button>
-                    <button type="button" class="no-btn" onclick="window.location.href='registration.php'">No</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
     <script>
+        const hamBurger = document.querySelector(".toggle-btn");
+
+        hamBurger.addEventListener("click", function () {
+            document.querySelector("#sidebar").classList.toggle("expand");
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             const tabs = document.querySelectorAll('.tab');
             const tabContents = document.querySelectorAll('.tab-content');
@@ -521,6 +357,27 @@ function displayRegistrations($conn, $tableName, $title)
                 e.preventDefault();
             }
         });
+
+        function showTable(tableId, buttonId) {
+            const tables = document.querySelectorAll('.table');
+            tables.forEach(table => {
+                if (table.id === tableId) {
+                    table.classList.remove('hidden');
+                } else {
+                    table.classList.add('hidden');
+                }
+            });
+
+            const buttons = document.querySelectorAll('.pobtn, .nebtn');
+            buttons.forEach(button => {
+                button.classList.remove('pobtn');
+                button.classList.add('nebtn');
+            });
+
+            const activeButton = document.getElementById(buttonId);
+            activeButton.classList.remove('nebtn');
+            activeButton.classList.add('pobtn');
+        }
     </script>
 </body>
 
