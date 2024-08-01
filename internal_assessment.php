@@ -128,6 +128,28 @@ while ($stmt_team_members->fetch()) {
     ];
 }
 $stmt_team_members->close();
+
+// Initialize notification count
+$notification_count = 0;
+
+// Fetch notifications and count
+$sql_notifications = "
+    SELECT s.id AS schedule_id, p.program_name, t.role, c.college_name, s.schedule_status, s.schedule_date, s.schedule_time
+    FROM team t
+    JOIN schedule s ON t.schedule_id = s.id
+    JOIN program p ON s.program_id = p.id
+    JOIN college c ON s.college_code = c.code
+    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status NOT IN ('cancelled', 'finished')
+";
+
+$stmt_notifications = $conn->prepare($sql_notifications);
+$stmt_notifications->bind_param("s", $user_id);
+$stmt_notifications->execute();
+$stmt_notifications->store_result();
+$stmt_notifications->bind_result($schedule_id, $program_name, $role, $college_name, $schedule_status, $schedule_date, $schedule_time);
+
+// Update notification count
+$notification_count = $stmt_notifications->num_rows; // Count the number of notifications
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -135,8 +157,8 @@ $stmt_team_members->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Internal Accreditor - Assessment</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="wrapper">
@@ -162,110 +184,132 @@ $stmt_team_members->close();
                 </div>
 
                 <div class="headerRight">
-                    <div class="SDMD">
+                    <div class="QAD">
                         <div class="headerRightText">
                             <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
                         </div>
                         <div style="height: 0px; width: 16px;"></div>
                         <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
                         <div style="height: 0px; width: 16px;"></div>
-                        <img class="USeP" src="images/SDMDLogo.png" height="36">
+                        <img class="USeP" src="images/QADLogo.png" height="36">
                     </div>
                 </div>
             </div>
         </div>
+
         <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
-    </div>
-    <header class="site-header">
-        <nav>
-            <ul class="nav-list">
-                <li class="btn"><a href="internal.php">Home</a></li>
-                <li class="btn"><a href="internal_notification.php">Notifications</a></li>
-                <li class="btn"><a href="internal_orientation.php">Orientation</a></li>
-                <li class="btn"><a href="internal_assessment.php">Assessment</a></li>
-                <li class="btn"><a href="logout.php">Log Out</a></li>
-            </ul>
-        </nav>
-    </header>
-    <div style="height: 30px; width: 0px;"></div>
-    <div class="container">
-        <div class="profile">
-            <img src="<?php echo $profile_picture; ?>" alt="Profile Picture" class="profile-picture">
-            <div class="profile-details">
-                <p class="profile-name"><?php echo $first_name . ' ' . $middle_initial . '. ' . $last_name; ?></p>
-                <p class="profile-type"><?php echo $user_college_name; ?> (<?php echo $accreditor_type; ?>)</p>
+        <div style="height: 10px; width: 0px;"></div>
+        <div class="container">
+            <div class="header1">
+                <div class="nav-list">
+                    <a href="internal.php" class="profile1">Profile <i class="fa-regular fa-user"></i></a>
+                    <a href="internal_orientation.php" class="orientation1">Orientation <i class="fa-regular fa-calendar"></i></a>
+                    <a href="internal_assessment.php" class="active assessment1">Assessment <i class="fa-solid fa-medal"></i></a>
+                </div>
+                <div class="notification-bell" onclick="toggleNotifications()">
+                    <i class="fa-regular fa-bell notifications"></i>
+                    <?php if ($notification_count > 0): ?>
+                        <span class="notification-count"><?php echo $notification_count; ?></span>
+                    <?php endif; ?>
+                    <div class="dropdown-content" id="notificationDropdown">
+                        <?php while ($stmt_notifications->fetch()): ?>
+                            <?php
+                            // Format the schedule date and time
+                            $date = new DateTime($schedule_date);
+                            $time = new DateTime($schedule_time);
+
+                            // Determine status color
+                            $status_color = '';
+                            if ($schedule_status === 'pending') {
+                                $status_color = '#E6A33E'; // Pending color
+                            } elseif ($schedule_status === 'approved') {
+                                $status_color = '#34C759'; // Approved color
+                            }
+                            ?>
+                            <a href="internal_notification.php" class="notification-item">
+                                <p><strong>COLLEGE</strong><br><span><?php echo htmlspecialchars($college_name); ?></span></p><br><br>
+                                <p><strong>PROGRAM</strong><br><span><?php echo htmlspecialchars($program_name); ?></span></p><br><br>
+                                <p><strong>ROLE</strong><span class="status"><?php echo htmlspecialchars($role); ?></span></p><br>
+                                <p><strong>DATE</strong><span class="status"><?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i a'); ?></span></p><br>
+                                <p><strong>STATUS</strong><span class="status" style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($schedule_status); ?></span></p>
+                            </a>
+                        <?php endwhile; ?>
+                        <div class="see-all">
+                            <a href="internal_notification.php">SEE ALL</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="assessments">
-        <h2>Assessment</h2>
-        <?php foreach ($schedules as $schedule): ?>
-            <div class="assessment">
-                <p><strong>College:</strong> <?php echo htmlspecialchars($schedule['college_name']); ?></p>
-                <p><strong>Program:</strong> <?php echo htmlspecialchars($schedule['program_name']); ?></p>
-                <p><strong>Level Applied:</strong> <?php echo htmlspecialchars($schedule['level_applied']); ?></p>
-                <p><strong>Schedule Date:</strong> <?php 
-                    $schedule_date = new DateTime($schedule['schedule_date']);
-                    echo $schedule_date->format('F j, Y'); 
-                ?></p>
-                <p><strong>Schedule Time:</strong> <?php 
-                    $schedule_time = new DateTime($schedule['schedule_time']);
-                    echo $schedule_time->format('g:i A'); 
-                ?></p>
-                <?php if ($schedule['role'] === 'team leader'): ?>
-                    <?php
-                        $team_member_count = 0;
-                        $submitted_count = 0;
-                        $approved_count = 0;
-                        foreach ($team_members[$schedule['schedule_id']] as $member) {
-                            if ($member['role'] !== 'team leader') {
-                                $team_member_count++;
-                                if ($member['assessment_file']) {
-                                    $submitted_count++;
+    <div class="container">
+        <div class="notifications1">
+            <?php foreach ($schedules as $schedule): ?>
+                <div class="notification-list">
+                    <div class="notification">
+                        <p><strong>College:</strong> <?php echo htmlspecialchars($schedule['college_name']); ?></p>
+                        <p><strong>Program:</strong> <?php echo htmlspecialchars($schedule['program_name']); ?></p>
+                        <p><strong>Level Applied:</strong> <?php echo htmlspecialchars($schedule['level_applied']); ?></p>
+                        <p><strong>Schedule Date:</strong> <?php 
+                            $schedule_date = new DateTime($schedule['schedule_date']);
+                            echo $schedule_date->format('F j, Y'); 
+                        ?></p>
+                        <p><strong>Schedule Time:</strong> <?php 
+                            $schedule_time = new DateTime($schedule['schedule_time']);
+                            echo $schedule_time->format('g:i A'); 
+                        ?></p>
+                        <?php if ($schedule['role'] === 'team leader'): ?>
+                            <?php
+                                $team_member_count = 0;
+                                $submitted_count = 0;
+                                $approved_count = 0;
+                                foreach ($team_members[$schedule['schedule_id']] as $member) {
+                                    if ($member['role'] !== 'team leader') {
+                                        $team_member_count++;
+                                        if ($member['assessment_file']) {
+                                            $submitted_count++;
+                                        }
+                                        if (in_array($member['assessment_id'], $approved_assessments)) {
+                                            $approved_count++;
+                                        }
+                                    }
                                 }
-                                if (in_array($member['assessment_id'], $approved_assessments)) {
-                                    $approved_count++;
-                                }
-                            }
-                        }
-                    ?>
-                    <p><?php echo $submitted_count; ?>/<?php echo $team_member_count; ?> team members have submitted assessments.</p>
-                    <?php if (in_array($schedule['team_id'], $existing_summaries)): ?>
-                        <p>You have already submitted a summary for this schedule.</p>
-                    <?php elseif ($submitted_count < $team_member_count): ?>
-                        <p>All team members must submit their assessments before you can submit a summary.</p>
-                    <?php elseif ($approved_count < $team_member_count): ?>
-                        <p>You must approve all team members' assessments before you can submit a summary.</p>
-                    <?php else: ?>
-                        <button onclick="SummaryopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">Summary</button>
-                    <?php endif; ?>
-                    <h3>Submitted Assessments:</h3>
-                    <ul>
-                    <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
-                        <?php if ($member['assessment_file'] && $member['role'] !== 'team leader'): ?>
-                            <li><?php echo htmlspecialchars($member['name']); ?>: <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>">Download Assessment</a>
-                                <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
-                                    <i class="fas fa-check"></i>
-                                <?php else: ?>
-                                    <button onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">Approve Assessment</button>
+                            ?>
+                            <p><?php echo $submitted_count; ?>/<?php echo $team_member_count; ?> team members have submitted assessments.</p>
+                            <?php if (in_array($schedule['team_id'], $existing_summaries)): ?>
+                                <p>You have already submitted a summary for this schedule.</p>
+                            <?php elseif ($submitted_count < $team_member_count): ?>
+                                <p>All team members must submit their assessments before you can submit a summary.</p>
+                            <?php elseif ($approved_count < $team_member_count): ?>
+                                <p>You must approve all team members' assessments before you can submit a summary.</p>
+                            <?php else: ?>
+                                <button onclick="SummaryopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">Summary</button>
+                            <?php endif; ?>
+                            <h3>Submitted Assessments:</h3>
+                            <ul>
+                            <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
+                                <?php if ($member['assessment_file'] && $member['role'] !== 'team leader'): ?>
+                                    <li><?php echo htmlspecialchars($member['name']); ?>: <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>">Download Assessment</a>
+                                        <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
+                                            <i class="fas fa-check"></i>
+                                        <?php else: ?>
+                                            <button onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">Approve Assessment</button>
+                                        <?php endif; ?>
+                                    </li>
                                 <?php endif; ?>
-                            </li>
+                            <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            <?php if ($schedule['area'] == ''): ?>
+                                <p>Your team leader should assign area first before you can assess.</p>
+                            <?php elseif (in_array($schedule['team_id'], $existing_assessments)): ?>
+                                <p>You have already submitted an assessment for this schedule.</p>
+                            <?php else: ?>
+                                <button onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">Assess</button>
+                            <?php endif; ?>
                         <?php endif; ?>
-                    <?php endforeach; ?>
-                    </ul>
-                <?php else: ?>
-                    <?php if ($schedule['area'] == ''): ?>
-                        <p>Your team leader should assign area first before you can assess.</p>
-                    <?php elseif (in_array($schedule['team_id'], $existing_assessments)): ?>
-                        <p>You have already submitted an assessment for this schedule.</p>
-                    <?php else: ?>
-                        <button onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">Assess</button>
-                    <?php endif; ?>
-                <?php endif; ?>
-            </div>
-        <?php endforeach; ?>
-        <div class="back-btn">
-            <a href="internal.php" class="btn">Back to Home</a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
 
@@ -360,6 +404,11 @@ $stmt_team_members->close();
     </div>
 
     <script>
+        function toggleNotifications() {
+            var dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('show');
+        }
+
         function openPopup(schedule) {
             document.getElementById('modal_schedule_id').value = schedule.schedule_id;
             document.getElementById('college').value = schedule.college_name;

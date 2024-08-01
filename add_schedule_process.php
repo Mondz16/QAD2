@@ -148,7 +148,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Insert team leader into team table
         $sql_insert_leader = "INSERT INTO team (schedule_id, internal_users_id, role, status)
-                              VALUES (?, ?, 'team leader', 'pending')";
+                              VALUES (?, ?, 'Team Leader', 'pending')";
         $stmt_insert_leader = $conn->prepare($sql_insert_leader);
         $stmt_insert_leader->bind_param("is", $schedule_id, $team_leader_id);
         $stmt_insert_leader->execute();
@@ -156,7 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Insert team members into team table
         $sql_insert_members = "INSERT INTO team (schedule_id, internal_users_id, role, status)
-                               VALUES (?, ?, 'team member', 'pending')";
+                               VALUES (?, ?, 'Team Member', 'pending')";
 
         foreach ($team_members_ids as $member_id) {
             $stmt_insert_members = $conn->prepare($sql_insert_members);

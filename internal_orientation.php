@@ -106,6 +106,28 @@ if (!empty($schedules)) {
     }
     $stmt_team->close();
 }
+
+// Initialize notification count
+$notification_count = 0;
+
+// Fetch notifications and count
+$sql_notifications = "
+    SELECT s.id AS schedule_id, p.program_name, t.role, c.college_name, s.schedule_status, s.schedule_date, s.schedule_time
+    FROM team t
+    JOIN schedule s ON t.schedule_id = s.id
+    JOIN program p ON s.program_id = p.id
+    JOIN college c ON s.college_code = c.code
+    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status NOT IN ('cancelled', 'finished')
+";
+
+$stmt_notifications = $conn->prepare($sql_notifications);
+$stmt_notifications->bind_param("s", $user_id);
+$stmt_notifications->execute();
+$stmt_notifications->store_result();
+$stmt_notifications->bind_result($schedule_id, $program_name, $role, $college_name, $schedule_status, $schedule_date, $schedule_time);
+
+// Update notification count
+$notification_count = $stmt_notifications->num_rows; // Count the number of notifications
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -113,8 +135,8 @@ if (!empty($schedules)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Internal Accreditor - Orientation Requests</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="wrapper">
@@ -140,103 +162,136 @@ if (!empty($schedules)) {
                 </div>
 
                 <div class="headerRight">
-                    <div class="SDMD">
+                    <div class="QAD">
                         <div class="headerRightText">
                             <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
                         </div>
                         <div style="height: 0px; width: 16px;"></div>
                         <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
                         <div style="height: 0px; width: 16px;"></div>
-                        <img class="USeP" src="images/SDMDLogo.png" height="36">
+                        <img class="USeP" src="images/QADLogo.png" height="36">
                     </div>
                 </div>
             </div>
         </div>
         <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
-    </div>
-    <header class="site-header">
-        <nav>
-            <ul class="nav-list">
-                <li class="btn"><a href="internal.php">Home</a></li>
-                <li class="btn"><a href="internal_notification.php">Notifications</a></li>
-                <li class="btn"><a href="internal_orientation.php">Orientation</a></li>
-                <li class="btn"><a href="internal_assessment.php">Assessment</a></li>
-                <li class="btn"><a href="logout.php">Log Out</a></li>
-            </ul>
-        </nav>
-    </header>
-    <div style="height: 30px; width: 0px;"></div>
-    <div class="container">
-        <div class="profile">
-            <img src="<?php echo $profile_picture; ?>" alt="Profile Picture" class="profile-picture">
-            <div class="profile-details">
-                <p class="profile-name"><?php echo $first_name . ' ' . $middle_initial . '. ' . $last_name; ?></p>
-                <p class="profile-type"><?php echo $college_name; ?> (<?php echo $accreditor_type; ?>)</p>
+        <div style="height: 10px; width: 0px;"></div>
+        <div class="container">
+            <div class="header1">
+                <div class="nav-list">
+                    <a href="internal.php" class="profile1">Profile <i class="fa-regular fa-user"></i></a>
+                    <a href="internal_orientation.php" class="active orientation1">Orientation <i class="fa-regular fa-calendar"></i></a>
+                    <a href="internal_assessment.php" class="assessment1">Assessment <i class="fa-solid fa-medal"></i></a>
+                </div>
+                <div class="notification-bell" onclick="toggleNotifications()">
+                    <i class="fa-regular fa-bell notifications"></i>
+                    <?php if ($notification_count > 0): ?>
+                        <span class="notification-count"><?php echo $notification_count; ?></span>
+                    <?php endif; ?>
+                    <div class="dropdown-content" id="notificationDropdown">
+                        <?php while ($stmt_notifications->fetch()): ?>
+                            <?php
+                            // Format the schedule date and time
+                            $date = new DateTime($schedule_date);
+                            $time = new DateTime($schedule_time);
+
+                            // Determine status color
+                            $status_color = '';
+                            if ($schedule_status === 'pending') {
+                                $status_color = '#E6A33E'; // Pending color
+                            } elseif ($schedule_status === 'approved') {
+                                $status_color = '#34C759'; // Approved color
+                            }
+                            ?>
+                            <a href="internal_notification.php" class="notification-item">
+                                <p><strong>COLLEGE</strong><br><span><?php echo htmlspecialchars($college_name); ?></span></p><br><br>
+                                <p><strong>PROGRAM</strong><br><span><?php echo htmlspecialchars($program_name); ?></span></p><br><br>
+                                <p><strong>ROLE</strong><span class="status"><?php echo htmlspecialchars($role); ?></span></p><br>
+                                <p><strong>DATE</strong><span class="status"><?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i a'); ?></span></p><br>
+                                <p><strong>STATUS</strong><span class="status" style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($schedule_status); ?></span></p>
+                            </a>
+                        <?php endwhile; ?>
+                        <div class="see-all">
+                            <a href="internal_notification.php">SEE ALL</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="schedules">
-        <h2>Orientation Requests</h2>
-        <?php if (!empty($schedules)): ?>
-            <?php foreach ($schedules as $schedule_id => $schedule): ?>
-                <div class="schedule">
-                    <p>College: <?php echo htmlspecialchars($schedule['college_name']); ?></p>
-                    <p><?php echo "Program: " . htmlspecialchars($schedule['program_name']) . "<br>Level Applied: " . htmlspecialchars($schedule['level_applied']); ?></p>
-                    <p><?php 
-                        $date = new DateTime($schedule['schedule_date']);
-                        echo "Date: " . $date->format('F j, Y'); 
-                    ?></p>
-                    <p><?php 
-                        $time = new DateTime($schedule['schedule_time']);
-                        echo "Time: " . $time->format('g:i A'); 
-                    ?></p>
-                    <p>Status: <?php echo htmlspecialchars($schedule['schedule_status']); ?></p><br>
-                    <?php 
-                    $team_leaders = array_filter($schedule['team'], fn($member) => $member['role'] === 'team leader');
-                    $team_members = array_filter($schedule['team'], fn($member) => $member['role'] !== 'team leader');
-                    ?>
-                    <p><strong>Team Leader:</strong></p>
-                    <ul>
-                        <?php if (!empty($team_leaders)): ?>
-                            <?php foreach ($team_leaders as $team_leader): ?>
-                                <li><?php echo htmlspecialchars($team_leader['name']); ?></li>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <li>No team leader assigned.</li>
-                        <?php endif; ?>
-                    </ul>
-                    <p><strong>Team Members:</strong></p>
-                    <ul>
-                        <?php if (!empty($team_members)): ?>
-                            <?php foreach ($team_members as $team_member): ?>
-                                <li><?php echo htmlspecialchars($team_member['name']); ?></li>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <li>No team members assigned.</li>
-                        <?php endif; ?>
-                    </ul>
-                    <?php if ($schedule['orientation_id']): ?>
-                        <?php if ($schedule['orientation_status'] === 'pending'): ?>
-                            <p>A request for orientation has been submitted. Please wait for the approval.</p>
-                            <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
-                        <?php elseif ($schedule['orientation_status'] === 'approved'): ?>
-                            <p>This orientation request has been approved.</p>
-                            <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
-                        <?php elseif ($schedule['orientation_status'] === 'denied'): ?>
-                            <p>This orientation request has been denied. Do you want to request again?</p>
-                            <button onclick="openModal(<?php echo $schedule_id; ?>)">Rerequest Orientation</button>
-                            <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
-                        <?php endif; ?>
-                    <?php else: ?>
-                        <button onclick="openModal(<?php echo $schedule_id; ?>)">Request Orientation</button>
-                    <?php endif; ?>
-                </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p>No schedules found.</p>
-        <?php endif; ?>
-    </div>
-
+    <div class="container">
+        <div class="notifications1">
+            <?php if (!empty($schedules)): ?>
+                <?php foreach ($schedules as $schedule_id => $schedule): ?>
+                    <div class="notification-list">
+                        <div class="notification">
+                            <?php
+                            $status_color = '';
+                            if ($schedule_status === 'pending') {
+                                $status_color = '#E6A33E'; // Pending color
+                            } elseif ($schedule_status === 'approved') {
+                                $status_color = '#34C759'; // Approved color
+                            }
+                            ?>
+                            <p>STATUS : <?php echo htmlspecialchars($schedule['schedule_status']); ?></p>
+                            <p>College: <?php echo htmlspecialchars($schedule['college_name']); ?></p>
+                            <p><?php echo "Program: " . htmlspecialchars($schedule['program_name']) . "<br>Level Applied: " . htmlspecialchars($schedule['level_applied']); ?></p>
+                            <p><?php 
+                                $date = new DateTime($schedule['schedule_date']);
+                                echo "Date: " . $date->format('F j, Y'); 
+                            ?></p>
+                            <p><?php 
+                                $time = new DateTime($schedule['schedule_time']);
+                                echo "Time: " . $time->format('g:i A'); 
+                            ?></p>
+                            <p>Status: <?php echo htmlspecialchars($schedule['schedule_status']); ?></p><br>
+                            <?php 
+                            $team_leaders = array_filter($schedule['team'], fn($member) => $member['role'] === 'team leader');
+                            $team_members = array_filter($schedule['team'], fn($member) => $member['role'] !== 'team leader');
+                            ?>
+                            <p><strong>Team Leader:</strong></p>
+                            <ul>
+                                <?php if (!empty($team_leaders)): ?>
+                                    <?php foreach ($team_leaders as $team_leader): ?>
+                                        <li><?php echo htmlspecialchars($team_leader['name']); ?></li>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <li>No team leader assigned.</li>
+                                <?php endif; ?>
+                            </ul>
+                            <p><strong>Team Members:</strong></p>
+                            <ul>
+                                <?php if (!empty($team_members)): ?>
+                                    <?php foreach ($team_members as $team_member): ?>
+                                        <li><?php echo htmlspecialchars($team_member['name']); ?></li>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <li>No team members assigned.</li>
+                                <?php endif; ?>
+                            </ul>
+                            <?php if ($schedule['orientation_id']): ?>
+                                <?php if ($schedule['orientation_status'] === 'pending'): ?>
+                                    <p>A request for orientation has been submitted. Please wait for the approval.</p>
+                                    <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
+                                <?php elseif ($schedule['orientation_status'] === 'approved'): ?>
+                                    <p>This orientation request has been approved.</p>
+                                    <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
+                                <?php elseif ($schedule['orientation_status'] === 'denied'): ?>
+                                    <p>This orientation request has been denied. Do you want to request again?</p>
+                                    <button onclick="openModal(<?php echo $schedule_id; ?>)">Rerequest Orientation</button>
+                                    <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <button onclick="openModal(<?php echo $schedule_id; ?>)">Request Orientation</button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>No schedules found.</p>
+            <?php endif; ?>
+        </div>
+    </div>  
     <!-- Modal -->
     <div id="orientationModal" class="modal">
         <div class="modal-content">
@@ -284,6 +339,10 @@ if (!empty($schedules)) {
     </div>
 
     <script>
+        function toggleNotifications() {
+            var dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('show');
+        }
         function openModal(scheduleId) {
             document.getElementById('modal_schedule_id').value = scheduleId;
             document.getElementById('orientationModal').style.display = 'block';

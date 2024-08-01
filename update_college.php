@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $middle_initial = $_POST['middle_initial'];
         $last_name = $_POST['last_name'];
         $email = $_POST['email'];
-        $new_college_code = $_POST['college_code'];
+        $new_college_code = $_POST['newCollege'];
 
         // Fetch the current user's details
         $sql_user = "SELECT college_code, password, profile_picture, prefix, gender, otp FROM internal_users WHERE user_id = ?";
@@ -125,8 +125,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Insert the new user record with status 'pending'
             $sql_insert = "INSERT INTO internal_users (user_id, college_code, first_name, middle_initial, last_name, email, password, profile_picture, prefix, gender, otp, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')";
-$stmt_insert = $conn->prepare($sql_insert);
-$stmt_insert->bind_param("sssssssssss", $new_user_id, $new_college_code, $first_name, $middle_initial, $last_name, $email, $password, $profile_picture, $prefix, $gender, $otp);
+            $stmt_insert = $conn->prepare($sql_insert);
+            $stmt_insert->bind_param("sssssssssss", $new_user_id, $new_college_code, $first_name, $middle_initial, $last_name, $email, $password, $profile_picture, $prefix, $gender, $otp);
 
             if ($stmt_insert->execute()) {
                 echo "College transfer request submitted successfully. <a href='internal.php'>Back to Profile</a>";

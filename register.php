@@ -157,7 +157,7 @@
                                 </div>
                             </div>
                             <div class="gender" style="width: 721px;">
-                                <div class="college-company-gender gender1">
+                                <div class="college-company-gender">
                                     <select class="prefix" name="gender" id="genderSelect">
                                         <option value="">Gender</option>
                                         <option value="Male">Male</option>

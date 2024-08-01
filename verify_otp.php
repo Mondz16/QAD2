@@ -95,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bind_param("s", $email);
         if ($stmt->execute()) {
             $verified = true;
-            $message = "Email verified successfully. Your account is now pending for approval. <a href='login.php'>Login</a>";
+            $message = "Email verified successfully.<br>Your account is now pending for approval.";
         } else {
             $message = "Error: " . $stmt->error;
         }
@@ -222,8 +222,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div style="height: 32px; width: 0px;"></div>
 
                 <?php if ($verified): ?>
-                    <p><?php echo $message; ?></p>
-                <?php else: ?>
+                    <div id="successPopup" class="popup">
+                        <div class="popup-content">
+                            <span class="close-btn" id="closeSuccessBtn">&times;</span>
+                            <div style="height: 50px; width: 0px;"></div>
+                            <img class="Success" src="images/Success.png" height="100">
+                            <div style="height: 20px; width: 0px;"></div>
+                            <div class="popup-text"><?php echo $message; ?></div>
+                            <div style="height: 50px; width: 0px;"></div>
+                            <a href="login.php" class="okay" id="closePopup">Okay</a>
+                            <div style="height: 100px; width: 0px;"></div>
+                            <div class="hairpop-up"></div>
+                        </div>
+                    </div>
+                    <script>
+                        document.getElementById('successPopup').style.display = 'block';
+
+                        document.getElementById('closeSuccessBtn').addEventListener('click', function() {
+                            document.getElementById('successPopup').style.display = 'none';
+                        });
+
+                        document.getElementById('closePopup').addEventListener('click', function() {
+                            document.getElementById('successPopup').style.display = 'none';
+                        });
+
+                        window.addEventListener('click', function(event) {
+                            if (event.target == document.getElementById('successPopup')) {
+                                document.getElementById('successPopup').style.display = 'none';
+                            }
+                        });
+                    </script>
+                <?php endif; ?>
+
                     <form method="post" action="verify_otp.php">
                         <div class="username" style="width: 455px;">
                             <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
@@ -253,15 +283,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     <p id="message"><?php echo $message; ?></p>
                     <div style="height: 20px; width: 0px;"></div>
-                <?php endif; ?>
                 <a href="login.php" style="color: rgb(87, 87, 87); font-weight: 500; text-decoration: underline;">Already have an account?</a>
                 <button type="button" class="resend disabled" id="resendOTP" onclick="resendOTP()" disabled>RESEND OTP IN <span id="time">03:00</span></button>
             </div>
 
             <div class="bodyRight">
-                    <div style="height: 200px; width: 0px;"></div>
-                    <img class="USeP" src="images/LoginCover.png" height="400">
-                </div>
+                <div style="height: 200px; width: 0px;"></div>
+                <img class="USeP" src="images/LoginCover.png" height="400">
+            </div>
         </div>
     </div>
 </body>
