@@ -25,7 +25,6 @@
         .custom-btn-group .btn-toggle {
             border-radius: 4px;
             padding: 10px 20px;
-            font-weight: bold;
             transition: background-color 0.3s ease;    
             width: 160px;
             height: 50px;
@@ -36,12 +35,14 @@
             background-color: #FF7A7A;
             color: white;
             border: none;
+            font-weight: bold;
         }
 
         .btn-company {
             background-color: #f8f9fa;
-            color: black;
+            color: #888;
             border: 1px solid #ced4da;
+            font-weight: lighter;
         }
 
         .btn-add-schedule {

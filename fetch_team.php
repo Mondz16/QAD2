@@ -13,20 +13,19 @@ $stmt->bind_param("i", $schedule_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-if ($result->num_rows > 0) {
+if ($result->num_rows > 0) {    
     echo '<table>';
-    echo '<tr><th>First Name</th><th>Middle Initial</th><th>Last Name</th><th>Role</th><th>Status</th><th>Actions</th></tr>';
+    echo '<tr><th>NAME</th><th>ROLE</th><th>STATUS</th><th>ACTIONS</th></tr>';
     while ($row = $result->fetch_assoc()) {
+        $full_name = $row['first_name'] . " " . $row['middle_initial'] . " " . $row["last_name"];
         echo '<tr>';
-        echo '<td>' . htmlspecialchars($row['first_name']) . '</td>';
-        echo '<td>' . htmlspecialchars($row['middle_initial']) . '</td>';
-        echo '<td>' . htmlspecialchars($row['last_name']) . '</td>';
+        echo '<td>' . htmlspecialchars($full_name) . '</td>';
         echo '<td>' . htmlspecialchars($row['role']) . '</td>';
         echo '<td>' . htmlspecialchars($row['status']) . '</td>';
         echo '<td>';
-        echo '<button onclick="viewUser(\'' . $row['internal_users_id'] . '\')">View User</button>';
+        echo '<button onclick="viewUser(\'' . $row['internal_users_id'] . '\')">View</button>';
         if ($row['status'] == 'declined') {
-            echo '<button onclick="changeUser(' . $row['team_id'] . ')">Change User</button>';
+            echo '<button onclick="changeUser(' . $row['team_id'] . ')">Change</button>';
         }
         echo '</td>';
         echo '</tr>';

@@ -14,7 +14,6 @@ $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
-    echo '<h2>User Details</h2>';
     echo '<p>First Name: ' . htmlspecialchars($row['first_name']) . '</p>';
     echo '<p>Middle Initial: ' . htmlspecialchars($row['middle_initial']) . '</p>';
     echo '<p>Last Name: ' . htmlspecialchars($row['last_name']) . '</p>';

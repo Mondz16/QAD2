@@ -146,18 +146,16 @@
             <!-- Cancel Modal -->
             <div id="cancelModal" class="modal">
                 <div class="modal-content">
-                    <span class="close" onclick="closeCancelModal()">&times;</span>
                     <form id="cancelForm" action="schedule_cancel_process.php" method="post">
                         <input type="hidden" name="schedule_id" id="cancel_schedule_id">
                         <input type="hidden" name="college" value="<?php echo htmlspecialchars($_GET['college']); ?>">
                         <h2>Are you sure you want to cancel this schedule?</h2>
                         <div class="form-group">
-                            <label for="cancel_reason">Reason:</label>
-                            <textarea id="cancel_reason" name="cancel_reason" rows="5" cols="52" required></textarea>
+                            <textarea id="cancel_reason" name="cancel_reason" rows="5" cols="52" placeholder="Enter reason for schedule cancellation" required></textarea>
                         </div>
                         <div class="modal-buttons">
-                            <button class="yes-btn" type="submit">Yes</button>
-                            <button class="no-btn" type="button" onclick="closeCancelModal()">No</button>
+                            <button class="no-btn" type="button" onclick="closeCancelModal()">CANCEL</button>
+                            <button class="yes-btn rejection" type="submit">CONFIRM</button>
                         </div>
                     </form>
                 </div>
@@ -166,11 +164,10 @@
             <!-- Approve Modal -->
             <div id="approveModal" class="modal">
                 <div class="modal-content">
-                    <span class="close" onclick="closeApproveModal()">&times;</span>
                     <h2>Are you sure you want to approve this schedule?</h2>
                     <div class="modal-buttons">
-                        <button class="yes-btn" id="confirmApproveBtn">Yes</button>
-                        <button class="no-btn" onclick="closeApproveModal()">No</button>
+                        <button class="no-btn" onclick="closeApproveModal()">CANCEL</button>
+                        <button class="yes-btn" id="confirmApproveBtn">CONFIRM</button>
                     </div>
                 </div>
             </div>
@@ -178,7 +175,6 @@
             <!-- Reschedule Modal -->
             <div id="rescheduleModal" class="modal">
                 <div class="modal-content">
-                    <span class="close" onclick="closeRescheduleModal()">&times;</span>
                     <form action="schedule_update_process.php" method="post">
                         <input type="hidden" name="schedule_id" id="schedule_id">
                         <input type="hidden" name="college" value="<?php echo htmlspecialchars($_GET['college']); ?>">
@@ -191,12 +187,11 @@
                             <input type="time" id="new_time" name="new_time" required>
                         </div>
                         <div class="form-group">
-                            <label for="reason">Reason:</label>
-                            <textarea id="reason" name="reason" rows="5" cols="52" required></textarea>
+                            <textarea id="reason" name="reason" rows="5" cols="52" placeholder="Enter reason for reschedule" required></textarea>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" onclick="closeRescheduleModal()">Cancel</button>
-                            <button type="submit">Save changes</button>
+                        <div class="modal-buttons">
+                            <button type="button" class="no-btn" onclick="closeRescheduleModal()">CANCEL</button>
+                            <button type="submit" class="yes-btn">SAVE CHANGES</button>
                         </div>
                     </form>
                 </div>
@@ -205,10 +200,11 @@
             <!-- Team Modal -->
             <div id="teamModal" class="modal">
                 <div class="modal-content">
-                    <span class="close" onclick="closeTeamModal()">&times;</span>
-                    <h2>Team</h2>
+                    <div class="header">
+                        <h2>Team</h2>
+                        <span class="close" onclick="closeTeamModal()">&times;</span>
+                    </div>
                     <div id="teamContent"></div>
-                    <div class="modal-footer">
                     </div>
                 </div>
             </div>
@@ -216,7 +212,10 @@
             <!-- View User Modal -->
             <div id="viewUserModal" class="modal">
                 <div class="modal-content">
-                    <span class="close" onclick="document.getElementById('viewUserModal').style.display='none'">&times;</span>
+                    <div class="view-header">
+                        <h2>User Details</h2>
+                        <span class="close" onclick="document.getElementById('viewUserModal').style.display='none'">&times;</span>
+                    </div>
                     <div id="viewUserContent"></div>
                 </div>
             </div>

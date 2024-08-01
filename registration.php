@@ -19,7 +19,7 @@ function displayRegistrations($conn, $tableName, $title)
         $sql = "SELECT i.user_id, i.first_name, i.middle_initial, i.last_name, i.email, c.college_name
                 FROM internal_users i
                 LEFT JOIN college c ON i.college_code = c.code
-                WHERE i.status = 'pending'";
+                WHERE i.status = 'pending' AND i.otp = 'verified'";
     } elseif ($tableName === 'external_users') {
         $sql = "SELECT e.user_id, e.first_name, e.middle_initial, e.last_name, e.email, c.company_name
                 FROM external_users e
@@ -33,14 +33,14 @@ function displayRegistrations($conn, $tableName, $title)
         echo "<table id='collegeTable' class='data-table table border rounded-2'>
             <tr>
                 <th>ID</th>
-                <th>First Name</th>
-                <th>Middle Initial</th>
-                <th>Last Name</th>
-                <th>Email</th>";
+                <th>FIRST NAME</th>
+                <th>MIDDLE INITIAL</th>
+                <th>LAST NAME</th>
+                <th>EMAIL</th>";
 
         // Additional columns based on table type
         if ($tableName === 'internal_users') {
-            echo "<th>College</th>";
+            echo "<th>COLLEGE</th>";
         } elseif ($tableName === 'external_users') {
             echo "<th>Company</th>";
         }

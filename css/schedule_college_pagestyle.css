@@ -179,7 +179,6 @@ body {
     border-radius: 10px;
     overflow: hidden;
     background-color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .table th,
@@ -187,71 +186,73 @@ body {
     padding: 1rem;
     text-align: left;
     font-size: 1rem;
+    border-bottom: 1px solid #AFAFAF;
+    vertical-align: middle;
 }
 
 .table th {
     background-color: #fff;
     font-weight: bold;
-    border-bottom: 1px solid #dee2e6;
 }
 
-.table tr {
-    background-color: #fff;
-}
 
-.table th:first-child {
-    border-top-left-radius: 10px;
-}
-
-.table th:last-child {
-    border-top-right-radius: 10px;
-}
-
-.table tr:last-child td:first-child {
-    border-bottom-left-radius: 10px;
-}
-
-.table tr:last-child td:last-child {
-    border-bottom-right-radius: 10px;
-}
-
-.table tr:hover {
-    background-color: #f1f1f1;
+.table tr td:last-child {
+    padding-right: 0px;
 }
 
 .button {
-    padding: 6px 6px;
+    padding: 6px 10px;
     border: none;
     border-radius: 5px;
-    font-weight: bold;
-    font-size: 9px;
+    font-size: 14px;
     text-transform: uppercase;
     cursor: pointer;
     transition: opacity 0.3s;
-}
-
-.button:hover {
-    opacity: 0.8;
+    margin: 0px 2px;
 }
 
 .view-team {
     background-color: #666;
     color: white;
+    transition: background-color 0.3s ease;
+}
+
+.view-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 15px;
+}
+
+.view-team:hover {
+    background-color: #4b4b4b;
 }
 
 .approve {
-    background-color: #5FE3A1;
+    background-color: #76FA97;
     color: white;
+    transition: background-color 0.3s ease;
+}
+
+.approve:hover {
+    background-color: rgb(49, 204, 85);
 }
 
 .reschedule {
     background-color: #FFB366;
     color: white;
+    transition: background-color 0.3s ease;
 }
-
+.reschedule:hover {
+    background-color: #e7a25e;
+}
 .cancel {
     background-color: #FF6666;
     color: white;
+    transition: background-color 0.3s ease;
+}
+.cancel:hover {
+    background-color: #eb5f5f;
 }
 
 .filter-container {
@@ -301,15 +302,90 @@ body {
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
+    width: max-content;
     border-radius: 10px;
+}
+
+.modal-content th, .modal-content td {
+    padding: 5px 10px;
+    width: 150px;
+}   
+
+#teamModal .modal-content td:first-child{
+    width: 250px;
+}
+
+#teamModal .modal-content td:last-child{
+    width: 190px;
+}
+
+.modal-content button{
+    background-color: transparent;
+    border: 1px solid #ced4da;
+    border-radius: 7px;
+    padding: 5px 15px;
+    color: black;
+    margin-right: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button{
+    background-color: transparent;
+    border: 1px solid #ced4da;
+    border-radius: 7px;
+    padding: 5px 15px;
+    color: black;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
+    background-color: #ced4da;
+}
+
+.modal-content textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    resize: none;
+}
+
+.modal-content input {
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.modal-content label {
+    margin-right: 5px;
 }
 
 .modal .close {
     color: #aaa;
-    float: right;
     font-size: 28px;
     font-weight: bold;
+}
+
+.modal .header {    
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 10px;
+    margin-bottom: 10px;
+}
+
+.modal h2{
+    font-size: 20px !important;
+    font-weight: bold;
+}
+
+#approveModal h2{
+    width: 380px;
+    font-size: 1.5rem !important;
+    font-weight: 500 !important;
+    text-align: center;
 }
 
 .modal .close:hover,
@@ -322,7 +398,7 @@ body {
 .modal-buttons,
 .modal-footer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     margin-top: 20px;
 }
 
@@ -335,13 +411,28 @@ body {
 }
 
 .modal-buttons .yes-btn {
-    background-color: #28a745;
+    background-color:  rgb(49, 204, 85);
     color: white;
 }
 
-.modal-buttons .no-btn {
-    background-color: #dc3545;
+.modal-buttons .yes-btn:hover {
+    background-color:  #28a745;
     color: white;
+}
+
+.modal-buttons .rejection{
+    background-color: #e74c3c !important; 
+}
+
+
+.modal-buttons .no-btn {
+    background-color: white;
+    color:#888;
+}
+
+.modal-buttons .no-btn:hover {
+    background-color: white;
+    text-decoration: underline;
 }
 
 .controls {
