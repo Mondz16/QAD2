@@ -7,7 +7,7 @@ use Google\Client;
 session_start();
 
 $client = new Client();
-$client->setAuthConfig('F:/xampp/htdocs/QAD2/secure/credentials.json'); // Path to your credentials.json file
+$client->setAuthConfig('C:/xampp/htdocs/QAD2/secure/credentials.json'); // Path to your credentials.json file
 $client->setRedirectUri('http://localhost/QAD2/oauth2callback.php'); // Your redirect URI
 $client->addScope(Google\Service\Calendar::CALENDAR);
 

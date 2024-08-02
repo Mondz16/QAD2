@@ -111,7 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 // Google Client for Calendar API
                 $client = new Client();
-                $client->setAuthConfig('F:/xampp/htdocs/QAD2/secure/credentials.json'); // Path to your credentials.json file
+                $client->setAuthConfig('C:/xampp/htdocs/QAD2/secure/credentials.json'); // Path to your credentials.json file
                 $client->addScope(Google\Service\Calendar::CALENDAR);
                 $accessToken = getToken(); // Retrieve the access token
                 $client->setAccessToken($accessToken);
@@ -128,13 +128,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $eventDetails = [
                     [
                         'summary' => "UDAS Assessment for {$schedule_details['program_name']} schedule",
-                        'start' => date('c', strtotime($schedule_details['schedule_date'] . ' 08:00:00')),
-                        'end' => date('c', strtotime($schedule_details['schedule_date'] . ' 17:00:00'))
+                        'start' => date('c', strtotime('-16 days', strtotime($schedule_details['schedule_date'] . ' 08:00:00'))),
+                        'end' => date('c', strtotime('-16 days', strtotime($schedule_details['schedule_date'] . ' 17:00:00')))
                     ],
                     [
                         'summary' => "UDAS Assessment for {$schedule_details['program_name']} schedule",
-                        'start' => date('c', strtotime('-2 days', strtotime($schedule_details['schedule_date'] . ' 08:00:00'))),
-                        'end' => date('c', strtotime('-2 days', strtotime($schedule_details['schedule_date'] . ' 17:00:00')))
+                        'start' => date('c', strtotime('-14 days', strtotime($schedule_details['schedule_date'] . ' 08:00:00'))),
+                        'end' => date('c', strtotime('-14 days', strtotime($schedule_details['schedule_date'] . ' 17:00:00')))
                     ]
                 ];
 
@@ -148,7 +148,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     // Log event details to a file
                     $logMessage = "Event created: " . $createdEvent->htmlLink . "\n";
-                    file_put_contents('F:/xampp/htdocs/QAD2/secure/calendar_event_log.txt', $logMessage, FILE_APPEND);
+                    file_put_contents('C:/xampp/htdocs/QAD2/secure/calendar_event_log.txt', $logMessage, FILE_APPEND);
                 }
 
                 $conn->commit();

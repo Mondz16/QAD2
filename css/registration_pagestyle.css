@@ -36,6 +36,7 @@ body {
 .form-check-label {
     margin-left: 5px;
 }
+
 .header .one,
 .header .datausep {
     font-weight: 600;
@@ -473,6 +474,16 @@ body {
 
 .modal-buttons .yes-btn {
     background-color: #e74c3c;
+    color: white;
+}
+
+.modal-buttons .positive{
+    background-color: rgb(49, 204, 85) !important;
+    color: white;
+}
+
+.modal-buttons .positive:hover{
+    background-color: rgb(40, 167, 69) !important;
     color: white;
 }
 
