@@ -334,7 +334,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <p>No schedules found.</p>
+                <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULE HAS BEEN ASSIGNED TO YOUR COLLEGE</strong></p>
             <?php endif; ?>
     </div>
     </div>  

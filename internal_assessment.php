@@ -250,7 +250,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                     <div class="orientation3">
                          <div class="container">
                             <div class="body4">
-                                <div class="bodyLeft2">
+                                <div class="bodyLeft2" style="margin-right: ;">
                         <p>College <br>
                                 <div style="height: 10px;"></div>
                                 <div class="orientationname">
@@ -348,12 +348,16 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                             <?php elseif ($submitted_count < $team_member_count): ?>
                                 <p>MEMBER SUBMISSION STATUS</p>
                             <?php elseif ($approved_count < $team_member_count): ?>
-                                <p>You must approve all team members' assessments before you can submit a summary.</p>
+                                <div style="height: 20px;"></div>
+                                <p>SUBMIT SUMMARY</p>
+                                <div style="height: 10px;"></div>
+                                <p class="pending-assessments">APPROVE ASSESSMENTS FIRST</p>
                             <?php else: ?>
-                                <button onclick="SummaryopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">Summary</button>
+                                <div style="height: 20px;"></div>
+                                <p>SUBMIT SUMMARY</p>
+                                <div style="height: 10px;"></div>
+                                <button class="assessment-button" onclick="SummaryopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START SUMMARY</button>
                             <?php endif; ?>
-                            <div style="height: 10px;"></div>
-                        <div style="height: 20px;"></div>
                         <?php else: ?>
                             <?php if ($schedule['area'] == ''): ?>
                                 <p>Your team leader should assign area first before you can assess.</p>
@@ -364,7 +368,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                             <?php else: ?>
                                 <p>ASSESSMENT</p>
                             <div style="height: 10px;"></div>
-                                <button class="assessment-button"onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
+                                <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
                             <?php endif; ?>
                         <?php endif; ?>
                     </div>
@@ -379,37 +383,87 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
     <!-- Popup Form for Team Member -->
     <div class="assessmentmodal" id="popup">
         <div class="assessmentmodal-content">
-            <span class="close" onclick="closePopup()">&times;</span>
-            <h2>Assessment Form</h2>
+            <h2>ASSESSMENT FORM</h2>
             <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
+                <div class="assessment-group">
                 <input type="hidden" name="schedule_id" id="modal_schedule_id">
-                <label for="college">College:</label>
-                <input type="text" id="college" name="college" readonly><br><br>
-                <label for="program">Program:</label>
-                <input type="text" id="program" name="program" readonly><br><br>
-                <label for="level">Level Applied:</label>
-                <input type="text" id="level" name="level" readonly><br><br>
-                <label for="date">Schedule Date:</label>
-                <input type="text" id="date" name="date" readonly><br><br>
-                <label for="result">Result:</label>
-                <select id="result" name="result" required>
-                    <option value="Ready">Ready</option>
-                    <option value="Needs Improvement">Needs Improvement</option>
-                    <option value="Revisit">Revisit</option>
-                </select><br><br>
-                <label for="area_evaluated">Area Evaluated:</label>
-                <input type="text" id="area_evaluated" name="area_evaluated" required><br><br>
-                <label for="findings">Findings:</label>
-                <textarea id="findings" name="findings" rows="4" required></textarea><br><br>
-                <label for="recommendations">Recommendations:</label>
-                <textarea id="recommendations" name="recommendations" rows="4" required></textarea><br><br>
-                <label for="evaluator">Evaluator:</label>
-                <input type="text" id="evaluator" name="evaluator" value="<?php echo $full_name; ?>" ><br><br>
-                <label for="evaluator_signature">Evaluator Signature (PNG format):</label>
-                <input type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required><br><br>
-                <div class="modal-footer">
-                    <button type="button" onclick="closePopup()">Close</button>
-                    <button type="submit">Submit Assessment</button>
+                <label for="college">COLLEGE</label>
+                <input class="assessment-group-college" type="text" id="college" name="college" readonly>
+                <label for="program">PROGRAM</label>
+                <input class="assessment-group-program" type="text" id="program" name="program" readonly>
+                </div>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="level"><strong>LEVEL APPLIED</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="date"><strong>DATE</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="time"><strong>TIME</strong></label>
+                    </div>
+                </div>
+                <div class="orientationname1">
+                    <div class="nameContainer orientationContainer1">
+                        <input class="level" type="text" id="level" name="level" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="level" type="text" id="date" name="date" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="time" type="text" id="time" name="time" readonly>
+                    </div>
+                </div>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="result"><strong>RESULT</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="area_evaluated"><strong>AREA EVALUATED</strong></label>
+                    </div>
+                </div>
+                <div class="orientationname1">
+                    <div class="nameContainer orientationContainer">
+                        <select style="cursor: pointer;" class="result" id="result" name="result" required>
+                            <option value="">SELECT RESULT</option>
+                            <option value="Ready">Ready</option>
+                            <option value="Needs Improvement">Needs Improvement</option>
+                            <option value="Revisit">Revisit</option>
+                        </select>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="area_evaluated" type="text" id="area_evaluated" name="area_evaluated" readonly>
+                    </div>
+                </div>
+                <div style="height: 20px;"></div>
+                <div class="assessment-group">
+                <label for="findings"><strong>FINDINGS</strong></label>
+                <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="findings" name="findings" rows="10" placeholder="Add a comment" required></textarea>
+                <div style="height: 20px;"></div>
+                <label for="recommendations"><strong>RECOMMENDATIONS</strong></label>
+                <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="recommendations" name="recommendations" rows="10" placeholder="Add a comment" required></textarea>
+            </div>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="evaluator"><strong>EVALUATOR</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="evaluator_signature"><strong>EVALUATOR E-SIGN</strong></label>
+                    </div>
+                </div>
+                <div class="orientationname1 upload">
+                    <div class="nameContainer orientationContainer">
+                        <input class="area_evaluated" type="text" id="evaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer uploadContainer">
+                        <span class="upload-text">UPLOAD</span>
+                        <img id="upload-icon-evaluator" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                        <input class="uploadInput" type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required>
+                    </div>
+                </div>
+                <div class="button-container">
+                    <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
+                    <button class="submit-button1" type="submit">SUBMIT</button>
                 </div>
             </form>
         </div>
@@ -423,19 +477,19 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
             <form action="internal_summary_assessment_process.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="schedule_id" id="Summarymodal_schedule_id">
                 <label for="college">College:</label>
-                <input type="text" id="Summarycollege" name="college" readonly><br><br>
+                <input type="text" id="Summarycollege" name="college" disabled><br><br>
                 <label for="program">Program:</label>
-                <input type="text" id="Summaryprogram" name="program" readonly><br><br>
+                <input type="text" id="Summaryprogram" name="program" disabled><br><br>
                 <label for="level">Level Applied:</label>
-                <input type="text" id="Summarylevel" name="level" readonly><br><br>
+                <input type="text" id="Summarylevel" name="level" disabled><br><br>
                 <label for="date">Schedule Date:</label>
-                <input type="text" id="Summarydate" name="date" readonly><br><br>
+                <input type="text" id="Summarydate" name="date" disabled><br><br>
                 <label for="areas">Areas Evaluated:</label>
-                <textarea id="areas" name="areas" rows="4" readonly></textarea><br><br>
+                <textarea id="areas" name="areas" rows="4" disabled></textarea><br><br>
                 <label for="results">Results:</label>
                 <textarea id="results" name="results" rows="4" required></textarea><br><br>
                 <label for="evaluator">Evaluator:</label>
-                <input type="text" id="Summaryevaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly><br><br>
+                <input type="text" id="Summaryevaluator" name="evaluator" value="<?php echo $full_name; ?>" disabled><br><br>
                 <label for="Summaryevaluator_signature">Team Leader Signature (PNG format):</label>
                 <input type="file" id="Summaryevaluator_signature" name="evaluator_signature" accept="image/png" required><br><br>
                 <div class="modal-footer">
@@ -450,26 +504,78 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
     <div class="approvalmodal" id="approveAssessmentPopup">
         <div class="approvalmodal-content">
             <span class="close" onclick="closeApproveAssessmentPopup()">&times;</span>
-            <h2>Approve Assessment</h2>
+            <h2>APPROVE ASSESSMENT</h2>
             <form action="approve_assessment_process.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="team_id" id="approve_team_id">
                 <input type="hidden" name="assessment_file" id="approve_assessment_file">
-                <label for="team_leader">Team Leader:</label>
-                <input type="text" id="team_leader" name="team_leader" value="<?php echo $full_name; ?>" readonly><br><br>
-                <label for="team_leader_signature">Team Leader Signature (PNG format):</label>
-                <input type="file" id="team_leader_signature" name="team_leader_signature" accept="image/png" required><br><br>
-                <div class="modal-footer">
-                    <button type="button" onclick="closeApproveAssessmentPopup()">Close</button>
-                    <button type="submit">Approve Assessment</button>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="team_leader"><strong>TEAM LEADER</strong></label>
+                    </div>
+                    <div class="titleContainer" style="padding-left: 100px;">
+                        <label for="team_leader_signature"><strong>TEAM LEADER E-SIGN</strong></label>
+                    </div>
+                </div>
+                <div class="orientationname1 upload">
+                    <div class="nameContainer orientationContainer" style="padding-right: 110px">
+                        <input class="area_evaluated" type="text" id="team_leader" name="team_leader" value="<?php echo $full_name; ?>" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer uploadContainer">
+                        <span class="upload-text">UPLOAD</span>
+                        <img id="upload-icon-leader" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                        <input class="uploadInput" type="file" id="team_leader_signature" name="team_leader_signature" accept="image/png" required>
+                    </div>
+                </div>
+                <div class="button-container">
+                    <button class="approve-cancel-button" type="button" onclick="closeApproveAssessmentPopup()">CANCEL</button>
+                    <button class="approve-assessment-button" type="submit">SUBMIT</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
+        function handleFileChange(inputElement, iconElement) {
+            inputElement.addEventListener('change', function () {
+                if (this.files && this.files.length > 0) {
+                    // Change icon to check mark if a file is selected
+                    iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
+                } else {
+                    // Change icon back to download if no file is selected
+                    iconElement.src = 'images/download-icon1.png';
+                }
+            });
+        }
+
+        // Handle file change for evaluator_signature
+        handleFileChange(document.getElementById('evaluator_signature'), document.getElementById('upload-icon-evaluator'));
+
+        // Handle file change for team_leader_signature
+        handleFileChange(document.getElementById('team_leader_signature'), document.getElementById('upload-icon-leader'));
+
         function toggleNotifications() {
             var dropdown = document.getElementById('notificationDropdown');
             dropdown.classList.toggle('show');
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            });
+        }
+
+        function formatTime(timeString) {
+            const [hours, minutes] = timeString.split(':');
+            const date = new Date();
+            date.setHours(hours, minutes);
+            return date.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true,
+            });
         }
 
         function openPopup(schedule) {
@@ -477,14 +583,13 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
             document.getElementById('college').value = schedule.college_name;
             document.getElementById('program').value = schedule.program_name;
             document.getElementById('level').value = schedule.level_applied;
-            document.getElementById('date').value = schedule.schedule_date;
+
+            // Format the date and time
+            document.getElementById('date').value = formatDate(schedule.schedule_date);
+            document.getElementById('time').value = formatTime(schedule.schedule_time);
             document.getElementById('area_evaluated').value = schedule.area;
 
             document.getElementById('popup').style.display = 'block';
-        }
-
-        function closePopup() {
-            document.getElementById('popup').style.display = 'none';
         }
 
         function SummaryopenPopup(schedule) {
@@ -492,7 +597,9 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
             document.getElementById('Summarycollege').value = schedule.college_name;
             document.getElementById('Summaryprogram').value = schedule.program_name;
             document.getElementById('Summarylevel').value = schedule.level_applied;
-            document.getElementById('Summarydate').value = schedule.schedule_date;
+            
+            // Format the date
+            document.getElementById('Summarydate').value = formatDate(schedule.schedule_date);
 
             // Fetch team members' areas
             var areasXhr = new XMLHttpRequest();
@@ -528,6 +635,10 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
             document.getElementById('Summarypopup').style.display = 'none';
         }
 
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
+
         function approveAssessmentPopup(member) {
             document.getElementById('approve_team_id').value = member.team_id;
             document.getElementById('approve_assessment_file').value = member.assessment_file;
@@ -537,6 +648,21 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
 
         function closeApproveAssessmentPopup() {
             document.getElementById('approveAssessmentPopup').style.display = 'none';
+        }
+
+        // Close modals when clicking outside of them
+        window.onclick = function(event) {
+            var modals = [
+                document.getElementById('popup'),
+                document.getElementById('Summarypopup'),
+                document.getElementById('approveAssessmentPopup')
+            ];
+
+            modals.forEach(function(modal) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            });
         }
     </script>
 </body>

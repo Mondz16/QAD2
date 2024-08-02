@@ -262,7 +262,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                 <h2>Edit Prefix</h2>
                 <div class="prefixContainer">
                     <select class="newPrefix" name="newPrefix">
-                        <option value="">PREFIX</option>
+                        <option value="<?php echo htmlspecialchars($prefix); ?>"><?php echo htmlspecialchars($prefix); ?></option>
                         <?php if ($prefix !== 'Mr.') { ?><option value="Mr.">Mr.</option><?php } ?>
                         <?php if ($prefix !== 'Ms.') { ?><option value="Ms.">Ms.</option><?php } ?>
                         <?php if ($prefix !== 'Mrs.') { ?><option value="Mrs.">Mrs.</option><?php } ?>
@@ -313,7 +313,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                 <h2>Edit Email</h2>
                 <div class="username" style="width: 455px">
                 <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                <input class="email" type="email" id="newEmail" name="newEmail" placeholder="EMAIL" required>
+                <input class="email" type="email" id="newEmail" name="newEmail" value="<?php echo htmlspecialchars($email); ?>" required>
             </div>
                 <input type="hidden" name="field" value="email">
                 </div>
@@ -332,6 +332,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                 <div class="gender">
                 <div class="edit-gender">
                 <select class="prefix"id="genderSelect" name="newGender" required>
+                    <option value="<?php echo htmlspecialchars($gender); ?>"><?php echo htmlspecialchars($gender); ?></option>
                     <?php if ($gender !== 'Male') { ?><option value="Male">Male</option><?php } ?>
                     <?php if ($gender !== 'Female') { ?><option value="Female">Female</option><?php } ?>
                     <?php if ($gender !== 'Prefer not to say') { ?><option value="Prefer not to say">Prefer not to say</option><?php } ?>

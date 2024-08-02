@@ -4,7 +4,7 @@ include 'connection.php';
 $schedule_id = intval($_GET['schedule_id']);
 
 $sql = "
-    SELECT t.id, iu.first_name, iu.last_name, t.role
+    SELECT t.id, iu.first_name, iu.middle_initial, iu.last_name, t.role
     FROM team t
     JOIN internal_users iu ON t.internal_users_id = iu.user_id
     WHERE t.schedule_id = ?
@@ -20,7 +20,7 @@ $team_members = [];
 while ($row = $result->fetch_assoc()) {
     $team_members[] = [
         'id' => $row['id'],
-        'name' => $row['first_name'] . ' ' . $row['last_name'],
+        'name' => $row['first_name'] . ' ' . $row['middle_initial'] . '. ' . $row['last_name'],
         'role' => $row['role']
     ];
 }

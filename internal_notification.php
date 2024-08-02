@@ -120,18 +120,20 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                             <p><strong>Role:</strong> <?php echo htmlspecialchars($role); ?><br><strong>Area:</strong> <?php echo htmlspecialchars($area); ?></p>
                             <div class="notification-actions">
                                 <?php if ($role === 'Team Leader'): ?>
-                                    <form action="internal_notification_process.php" method="POST" style="display:inline;">
+                                    <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
                                         <input type="hidden" name="team_id" value="<?php echo $team_id; ?>">
                                         <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
-                                        <button type="submit" class="decline-button" name="action" value="decline">DECLINE</button>
+                                        <input type="hidden" name="action" id="action-<?php echo $team_id; ?>" value="">
+                                        <button type="button" class="decline-button" onclick="confirmAction('<?php echo $team_id; ?>', 'decline')">DECLINE</button>
                                         <button type="button" class="accept-button" onclick="openModal(<?php echo $schedule_id; ?>, <?php echo $team_id; ?>)">ACCEPT</button>
                                     </form>
                                 <?php else: ?>
-                                    <form action="internal_notification_process.php" method="POST">
+                                    <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
                                         <input type="hidden" name="team_id" value="<?php echo $team_id; ?>">
                                         <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
-                                        <button type="submit" class="decline-button" name="action" value="decline">DECLINE</button>
-                                        <button type="submit" class="accept-button" name="action" value="accept">ACCEPT</button>
+                                        <input type="hidden" name="action" id="action-<?php echo $team_id; ?>" value="">
+                                        <button type="button" class="decline-button" onclick="confirmAction('<?php echo $team_id; ?>', 'decline')">DECLINE</button>
+                                        <button type="button" class="accept-button" onclick="confirmAction('<?php echo $team_id; ?>', 'accept')">ACCEPT</button>
                                     </form>
                                 <?php endif; ?>
                             </div>
@@ -146,19 +148,29 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
     <!-- Modal for team leader to assign areas -->
     <div id="assignModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Assign Areas</h2>
+            <h2>ASSIGN AREAS</h2>
             <form id="assignForm" action="assign_areas_process.php" method="POST">
                 <input type="hidden" name="schedule_id" id="modal_schedule_id">
                 <input type="hidden" name="team_id" id="modal_team_id">
                 <div id="teamMembers">
                     <!-- Team members' areas will be dynamically added here -->
                 </div>
-                <div class="modal-footer">
-                    <button type="button" onclick="closeModal()">Cancel</button>
-                    <button type="submit">Submit</button>
+                <div class="button-container">
+                    <button type="button" class="cancel-button1" onclick="closeModal()">CANCEL</button>
+                    <button type="submit" class="submit-button">SUBMIT</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <p id="confirmationMessage"></p>
+            <div class="button-container">
+                <button type="button" class="" id="backButton" onclick="closeConfirmationModal()">BACK</button>
+                <button type="button" class="" id="confirmButton">CONFIRM</button>
+            </div>
         </div>
     </div>
 
@@ -179,7 +191,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                     teamMembers.forEach(function(member) {
                         var div = document.createElement('div');
                         div.className = 'form-group';
-                        div.innerHTML = '<label>' + member.name + ' (' + member.role + ')</label><input type="text" name="areas[' + member.id + ']" placeholder="Assign area">';
+                        div.innerHTML = '<label>' + member.name + ' (' + member.role + ')</label><input type="text" name="areas[' + member.id + ']" placeholder="ASSIGN AREA" required>';
                         teamMembersContainer.appendChild(div);
                     });
 
@@ -191,6 +203,35 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
 
         function closeModal() {
             document.getElementById('assignModal').style.display = 'none';
+        }
+
+        function confirmAction(teamId, action) {
+            var confirmationMessage = "Are you sure you want to " + action + " this schedule?";
+            document.getElementById('confirmationMessage').innerText = confirmationMessage;
+
+            var confirmButton = document.getElementById('confirmButton');
+            var backButton = document.getElementById('backButton');
+
+            // Apply styles based on action
+            if (action === 'accept') {
+                confirmButton.className = 'accept-confirm-button';
+                backButton.className = 'accept-back-button';
+            } else if (action === 'decline') {
+                confirmButton.className = 'decline-confirm-button';
+                backButton.className = 'decline-back-button';
+            }
+
+            confirmButton.onclick = function() {
+                document.getElementById('action-' + teamId).value = action;
+                document.getElementById('actionForm-' + teamId).submit();
+            };
+
+            document.getElementById('confirmationModal').style.display = 'block';
+        }
+
+        function closeConfirmationModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+            window.location.href = 'internal_notification.php'; // Redirect to internal.php on BACK
         }
     </script>
 </body>
