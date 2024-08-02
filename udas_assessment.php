@@ -79,14 +79,26 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             height: 46px;
             width: 100%;
             margin: 10px 0;
-            background-color: #D4FFDF;
-            color: #006118;
+            background-color: white;
             font-weight: bold;
+            color: #006118;
             border: 1px solid #006118;
         }
 
         .assessment-udas .udas-button:hover{
-            background-color: #BEE5C8;
+            background-color: #D4FFDF;
+            border: 1px solid #006118;
+            color: #006118;
+        }
+
+        .assessment-udas .download-button{
+            height: 46px;
+            width: 100%;
+            margin: 10px 0;
+            background-color: #D4FFDF ;
+            color: #006118;
+            font-weight: bold;
+            border: 1px solid #006118;
         }
 
         .assessment-level-applied p{
@@ -321,7 +333,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                             echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
                             
                             if (!empty($schedule['udas_assessment_file'])) {
-                                echo "<p><strong>Note:</strong> You have already submitted UDAS Assessment for this schedule. <br> <strong>Assessment File:</strong> <a href='" . $schedule['udas_assessment_file'] . "' download>Download</a></p>";
+                                echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button href='" . $schedule['udas_assessment_file'] . "' download class='btn open-modal download-button' data-schedule='" . json_encode($schedule) . "'>DOWNLOAD</button></div> </div>";
                             } else {
                                 echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button class='btn open-modal udas-button' data-schedule='" . json_encode($schedule) . "'>START</button></div> </div>";
                             }

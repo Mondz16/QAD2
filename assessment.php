@@ -104,24 +104,36 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         .assessment-dateTime p {
             margin: 0;
         }
-
-        .assessment-udas {
+        
+        .assessment-udas{
             text-align: left;
             width: 200px;
         }
 
-        .assessment-udas .udas-button {
+        .assessment-udas .udas-button{
             height: 46px;
             width: 100%;
             margin: 10px 0;
-            background-color: #D4FFDF;
-            color: #006118;
+            background-color: white;
             font-weight: bold;
+            color: #006118;
             border: 1px solid #006118;
         }
 
-        .assessment-udas .udas-button:hover {
-            background-color: #BEE5C8;
+        .assessment-udas .udas-button:hover{
+            background-color: #D4FFDF;
+            border: 1px solid #006118;
+            color: #006118;
+        }
+
+        .assessment-udas .download-button{
+            height: 46px;
+            width: 100%;
+            margin: 10px 0;
+            background-color: #D4FFDF ;
+            color: #006118;
+            font-weight: bold;
+            border: 1px solid #006118;
         }
 
         .assessment-level-applied p {
@@ -348,8 +360,8 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                                         echo "<div class='assessment-holder-1'><div class='assessment-college'><p>College: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>Program:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> Level Applied: <br><h3>" . $schedule['level_applied'] . "</h3></div></p></div>";
                                         echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
 
-                                        if ($isApproved) {
-                                            echo "<i class='fas fa-check check-symbol'></i>";
+                                        if (!$isApproved) {
+                                            echo "<div class='assessment-udas'><p>Download Summary File:<br><button href='" . $summaryFile . "' class='btn approve-btn download-button'>DOWNLOAD</button></div> </div>";
                                         } else {
                                             echo "<div class='assessment-udas'><p>Summary File:<br><button class='btn approve-btn udas-button' data-summary-file='$summaryFile'>Approve Summary</button></div> </div>";
                                         }
