@@ -155,7 +155,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                 </div>
             </div>
         </div>
-
+        <div style="height: 24px; width: 0px;"></div>
         <div class="container1">
             <div class="profile-info">
                 <p class="personal">PERSONAL INFORMATION</p>

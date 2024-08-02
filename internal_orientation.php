@@ -220,11 +220,12 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
         </div>
     </div>
     <div class="container">
-        <div class="notifications1">
+        <div style="height: 32px;"></div>
+        <div class="orientation2">
             <?php if (!empty($schedules)): ?>
                 <?php foreach ($schedules as $schedule_id => $schedule): ?>
-                    <div class="notification-list">
-                        <div class="notification">
+                    <div class="notification-list1">
+                        <div class="orientation3">
                             <?php
                             $status_color = '';
                             if ($schedule_status === 'pending') {
@@ -233,42 +234,88 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                                 $status_color = '#34C759'; // Approved color
                             }
                             ?>
-                            <p>STATUS : <?php echo htmlspecialchars($schedule['schedule_status']); ?></p>
-                            <p>College: <?php echo htmlspecialchars($schedule['college_name']); ?></p>
-                            <p><?php echo "Program: " . htmlspecialchars($schedule['program_name']) . "<br>Level Applied: " . htmlspecialchars($schedule['level_applied']); ?></p>
-                            <p><?php 
-                                $date = new DateTime($schedule['schedule_date']);
-                                echo "Date: " . $date->format('F j, Y'); 
-                            ?></p>
-                            <p><?php 
-                                $time = new DateTime($schedule['schedule_time']);
-                                echo "Time: " . $time->format('g:i A'); 
-                            ?></p>
-                            <p>Status: <?php echo htmlspecialchars($schedule['schedule_status']); ?></p><br>
+                            <p class="status1">STATUS : <strong style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="orientation-button"onclick="openModal(<?php echo $schedule_id; ?>)">REQUEST ORIENTATION</button> </p>
+                            <div class="container">
+                                <div class="body3">
+                                <div class="bodyLeft2">
+                            <p>COLLEGE <br>
+                                <div style="height: 10px;"></div>
+                                <div class="orientationname">
+                                    <div class="nameContainer">
+                                        <?php echo htmlspecialchars($schedule['college_name']); ?>
+                                    </div>
+                                </div>
+                            </p>
+                            <div style="height: 20px;"></div>
+                            <p>PROGRAM <br>
+                                <div style="height: 10px;"></div>
+                                <div class="orientationname">
+                                    <div class="nameContainer">
+                                        <?php echo htmlspecialchars($schedule['program_name']); ?>
+                                    </div>
+                                </div>
+                            </p>
+                            <div class="orientationname">
+                                    <div class="titleContainer">
+                                        <p>LEVEL APPLIED</p>
+                                    </div>
+                                    <div class="titleContainer">
+                                        <p>DATE</p>
+                                    </div>
+                                <div class="titleContainer">
+                                            <p>TIME</p>
+                                </div>
+                            </div>
+                            <div class="orientationname">
+                                    <div class="nameContainer orientationContainer1">
+                                        <?php echo htmlspecialchars($schedule['level_applied']); ?>
+                                    </div>
+                                    <div class="nameContainer orientationContainer">
+                                        <?php 
+                                            $date = new DateTime($schedule['schedule_date']);
+                                            echo $date->format('F j, Y'); 
+                                        ?>
+                                    </div>
+                                <div class="nameContainer orientationContainer">
+                                            <?php 
+                                        $time = new DateTime($schedule['schedule_time']);
+                                        echo $time->format('g:i A'); 
+                                    ?>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bodyRight2">
                             <?php 
-                            $team_leaders = array_filter($schedule['team'], fn($member) => $member['role'] === 'team leader');
-                            $team_members = array_filter($schedule['team'], fn($member) => $member['role'] !== 'team leader');
+                            $team_leaders = array_filter($schedule['team'], fn($member) => $member['role'] === 'Team Leader');
+                            $team_members = array_filter($schedule['team'], fn($member) => $member['role'] !== 'Team Leader');
                             ?>
-                            <p><strong>Team Leader:</strong></p>
-                            <ul>
+                            <p>TEAM LEADER</p>
+                            <div style="height: 20px;"></div>
+                            <ul style="list-style-type: none; margin-left: 30px; font-size: 18px">
                                 <?php if (!empty($team_leaders)): ?>
                                     <?php foreach ($team_leaders as $team_leader): ?>
-                                        <li><?php echo htmlspecialchars($team_leader['name']); ?></li>
+                                        <li style="font-weight: bold"><?php echo htmlspecialchars($team_leader['name']); ?></li>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <li>No team leader assigned.</li>
                                 <?php endif; ?>
                             </ul>
-                            <p><strong>Team Members:</strong></p>
-                            <ul>
+                            <div style="height: 35px;"></div>
+                            <p>TEAM MEMBERS</p>
+                            <div style="height: 20px;"></div>
+                            <ul style="list-style-type: none; margin-left: 30px; font-size: 18px">
                                 <?php if (!empty($team_members)): ?>
                                     <?php foreach ($team_members as $team_member): ?>
-                                        <li><?php echo htmlspecialchars($team_member['name']); ?></li>
+                                        <li style="margin-bottom: 20px"><?php echo htmlspecialchars($team_member['name']); ?></li>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <li>No team members assigned.</li>
                                 <?php endif; ?>
                             </ul>
+                            
+                        </div>
+                    </div>
+                    </div>
                             <?php if ($schedule['orientation_id']): ?>
                                 <?php if ($schedule['orientation_status'] === 'pending'): ?>
                                     <p>A request for orientation has been submitted. Please wait for the approval.</p>
@@ -282,7 +329,6 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                                     <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
                                 <?php endif; ?>
                             <?php else: ?>
-                                <button onclick="openModal(<?php echo $schedule_id; ?>)">Request Orientation</button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -290,7 +336,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
             <?php else: ?>
                 <p>No schedules found.</p>
             <?php endif; ?>
-        </div>
+    </div>
     </div>  
     <!-- Modal -->
     <div id="orientationModal" class="modal">

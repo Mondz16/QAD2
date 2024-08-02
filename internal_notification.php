@@ -119,7 +119,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                         <div class="role-area">
                             <p><strong>Role:</strong> <?php echo htmlspecialchars($role); ?><br><strong>Area:</strong> <?php echo htmlspecialchars($area); ?></p>
                             <div class="notification-actions">
-                                <?php if ($role === 'team leader'): ?>
+                                <?php if ($role === 'Team Leader'): ?>
                                     <form action="internal_notification_process.php" method="POST" style="display:inline;">
                                         <input type="hidden" name="team_id" value="<?php echo $team_id; ?>">
                                         <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
