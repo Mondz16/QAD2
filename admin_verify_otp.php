@@ -1,10 +1,24 @@
 <?php
 session_start();
-require 'connection.php';
+require 'connection.php';  // Your database connection
 require 'vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+
+$email = ''; // Initialize email variable
+
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+
+    // Fetch admin email
+    $stmt = $conn->prepare("SELECT email FROM admin WHERE user_id = ?");
+    $stmt->bind_param("s", $user_id);
+    $stmt->execute();
+    $stmt->bind_result($email);
+    $stmt->fetch();
+    $stmt->close();
+}
 
 function sendOTPEmail($email, $otp) {
     $mail = new PHPMailer(true);
@@ -32,7 +46,7 @@ function sendOTPEmail($email, $otp) {
 
         $mail->isHTML(true);
         $mail->Subject = 'Email Verification OTP';
-        $mail->Body    = 'Your OTP for email verification is: <b>' . $otp . '</b>';
+        $mail->Body    = 'Your OTP for login is: <b>' . $otp . '</b>';
 
         $mail->send();
     } catch (Exception $e) {
@@ -43,29 +57,17 @@ function sendOTPEmail($email, $otp) {
 $verified = false;
 $message = '';
 $message1 = '';
-$otpExpired = false; // Track if OTP has expired
-
-$email = isset($_POST['email']) ? $_POST['email'] : (isset($_GET['email']) ? $_GET['email'] : '');
-$type = isset($_POST['type']) ? $_POST['type'] : (isset($_GET['type']) ? $_GET['type'] : '');
 
 if (isset($_GET['resend']) && $_GET['resend'] == '1') {
     $otp = rand(100000, 999999); // Generate a new OTP
     $hashed_otp = password_hash($otp, PASSWORD_DEFAULT); // Hash the new OTP
 
-    if ($type == 'internal') {
-        $table = "internal_users";
-    } elseif ($type == 'external') {
-        $table = "external_users";
-    } else {
-        echo "Invalid type.";
-        exit;
-    }
-
     // Update OTP and otp_created_at
-    $stmt = $conn->prepare("UPDATE $table SET otp = ?, otp_created_at = NOW() WHERE email = ?");
-    $stmt->bind_param("ss", $hashed_otp, $email);
+    $stmt = $conn->prepare("UPDATE admin SET otp = ?, otp_created_at = NOW() WHERE user_id = ?");
+    $stmt->bind_param("ss", $hashed_otp, $user_id);
     if ($stmt->execute()) {
-        sendOTPEmail($email, $otp); // Send the plain OTP to the user
+        // Use your function to send the OTP email
+        sendOTPEmail($email, $otp); // Make sure this function is defined
         $message1 = "OTP resent successfully.";
     } else {
         $message = "Error: " . $stmt->error;
@@ -77,55 +79,39 @@ if (isset($_GET['resend']) && $_GET['resend'] == '1') {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $otp = $_POST['otp'];
 
-    if ($type == 'internal') {
-        $table = "internal_users";
-    } elseif ($type == 'external') {
-        $table = "external_users";
-    } else {
-        echo "Invalid type.";
-        exit;
-    }
-
     // Fetch OTP and otp_created_at
-    $stmt = $conn->prepare("SELECT otp, otp_created_at FROM $table WHERE email = ?");
-    $stmt->bind_param("s", $email);
+    $stmt = $conn->prepare("SELECT otp, otp_created_at FROM admin WHERE user_id = ?");
+    $stmt->bind_param("s", $user_id);
     $stmt->execute();
     $stmt->bind_result($stored_otp, $otp_created_at);
     $stmt->fetch();
     $stmt->close();
 
     if ($stored_otp && $otp_created_at) {
-        $timezone = new DateTimeZone('Asia/Manila'); // e.g., 'America/New_York'
+        $timezone = new DateTimeZone('Asia/Manila');
         $current_time = new DateTime('now', $timezone);
         $otp_time = new DateTime($otp_created_at, $timezone);
-        
+
         // Calculate the difference in seconds
         $interval = $current_time->getTimestamp() - $otp_time->getTimestamp();
 
         // Check if OTP is expired (5 minutes = 300 seconds)
         if ($interval >= 300) {
-            $otpExpired = true; // Set expired flag
             $message1 = "OTP has expired. Please request a new one.";
         } else {
-            if (password_verify($otp, $stored_otp)) {  // Verify the hashed OTP
-                $stmt = $conn->prepare("UPDATE $table SET status = 'pending', otp = 'verified' WHERE email = ?");
-                $stmt->bind_param("s", $email);
-                if ($stmt->execute()) {
-                    $verified = true;
-                    $message = "Email verified successfully.<br>Your account is now pending for approval.";
-                } else {
-                    $message = "Error: " . $stmt->error;
-                }
-                $stmt->close();
+            if (password_verify($otp, $stored_otp)) {
+                $_SESSION['admin_verified'] = true;
+                $verified = true;
+                $message = "OTP verified successfully. You will be redirected shortly.";
+                header("refresh:5;url=admin.php");
+                exit;
             } else {
                 $message = "Invalid OTP.";
             }
         }
     } else {
-        $message = "No OTP found or OTP already verified.";
+        $message = "No OTP found.";
     }
-
-    $conn->close();
 }
 ?>
 
@@ -134,19 +120,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify OTP</title>
+    <title>Admin OTP Verification</title>
     <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
-    </style>
     <script>
         var timer;
 
         function startTimer(duration, display) {
             var timer = duration, minutes, seconds;
             var resendButton = document.getElementById('resendOTP');
-            resendButton.classList.add('disabled'); // Add disabled class initially
-            resendButton.disabled = true; // Disable button initially
-            
+            resendButton.classList.add('disabled');
+            resendButton.disabled = true;
+
             var interval = setInterval(function () {
                 minutes = parseInt(timer / 60, 10);
                 seconds = parseInt(timer % 60, 10);
@@ -158,31 +142,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 if (--timer < 0) {
                     clearInterval(interval);
-                    resendButton.disabled = false; // Enable button after timer ends
-                    resendButton.classList.remove('disabled'); // Remove disabled class
+                    resendButton.disabled = false;
+                    resendButton.classList.remove('disabled');
                 }
             }, 1000);
         }
 
         window.onload = function () {
-            var duration = 60; // 180 seconds timer
+            var duration = 60; // 60 seconds timer
             var display = document.querySelector('#time');
             startTimer(duration, display);
         };
 
         function resendOTP() {
             document.getElementById('resendOTP').disabled = true;
-            document.getElementById('resendOTP').classList.add('disabled'); // Add disabled class
-            var email = "<?php echo $email; ?>";
-            var type = "<?php echo $type; ?>";
+            document.getElementById('resendOTP').classList.add('disabled');
             var xhttp = new XMLHttpRequest();
-            xhttp.open("GET", "verify_otp.php?resend=1&email=" + email + "&type=" + type, true);
+            xhttp.open("GET", "admin_verify_otp.php?resend=1", true);
             xhttp.send();
 
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     document.getElementById('message').innerText = this.responseText;
-                    var duration = 60; // 180 seconds timer
+                    var duration = 60; // 60 seconds timer
                     var display = document.querySelector('#time');
                     startTimer(duration, display);
                 }
@@ -227,6 +209,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
+
     <div class="container">
         <div class="body1">
             <div class="bodyLeft">
@@ -238,7 +221,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div style="height: 8px; width: 0px;"></div>
 
                 <div class="bodyLeftText" style="color: rgb(87, 87, 87); font-weight: 300; font-size: 17px;">
-                    <h>A one time password has been sent to your email address.<br>Use this to verify your account.</h>
+                    <h>A one time password has been sent to your email address.<br>Use this to verify your identity as admin.</h>
                 </div>
 
                 <div style="height: 32px; width: 0px;"></div>
@@ -252,7 +235,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <div style="height: 20px; width: 0px;"></div>
                             <div class="popup-text"><?php echo $message; ?></div>
                             <div style="height: 50px; width: 0px;"></div>
-                            <a href="login.php" class="okay" id="closePopup">Okay</a>
+                            <a href="admin.php" class="okay" id="closePopup">Okay</a>
                             <div style="height: 100px; width: 0px;"></div>
                             <div class="hairpop-up"></div>
                         </div>
@@ -276,37 +259,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </script>
                 <?php endif; ?>
 
-                    <form method="post" action="verify_otp.php">
-                        <div class="username" style="width: 455px;">
-                            <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                                <input class="email" type="text" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
-                            </div>
+                <form method="post" action="admin_verify_otp.php">
+                    <div class="username" style="width: 455px;">
+                        <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
+                            <input class="email" type="text" id="otp" name="otp" placeholder="OTP" required>
                         </div>
-                        <div style="height: 10px; width: 0px;"></div>
+                    </div>
+                    <div style="height: 10px; width: 0px;"></div>
 
-                        <div class="username" style="width: 455px;">
-                            <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                                <input class="email" type="text" id="type" name="type" value="<?php echo htmlspecialchars($type); ?>" readonly>
-                            </div>
-                        </div>
-                        <div style="height: 10px; width: 0px;"></div>
+                    <button type="submit" class="verify">Verify</button>
 
-                        <div class="username" style="width: 455px;">
-                            <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                                <input class="email" type="text" id="otp" name="otp" placeholder="OTP" required>
-                            </div>
-                        </div>
-                        <div style="height: 10px; width: 0px;"></div>
+                    <div style="height: 10px; width: 0px;"></div>
+                </form>
 
-                        <button type="submit" class="verify">Verify</button>
-
-                        <div style="height: 10px; width: 0px;"></div>
-                    </form>
-
-                    <p id="message" style="color: red; font-weight: bold;"><?php echo $message1; ?></p>
-                    <div style="height: 20px; width: 0px;"></div>
-                <a href="login.php" style="color: rgb(87, 87, 87); font-weight: 500; text-decoration: underline;">Already have an account?</a>
-                <button type="button" class="resend disabled" id="resendOTP" onclick="resendOTP()" disabled>RESEND OTP IN <span id="time">01:00</span></button>
+                <p id="message" style="color: red; font-weight: bold;"><?php echo $message1; ?></p>
+                <div style="height: 20px; width: 0px;"></div>
+                <a href="login.php" style="color: rgb(87, 87, 87); font-weight: 500; text-decoration: underline;">Log in as user instead?</a>
+                <button type="button" class="resend disabled" style="margin-left: 55px;" id="resendOTP" onclick="resendOTP()" disabled>RESEND OTP IN <span id="time">01:00</span></button>
             </div>
 
             <div class="bodyRight">

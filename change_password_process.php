@@ -12,8 +12,23 @@ $current_password = $_POST['currentPassword'];
 $new_password = $_POST['newPassword'];
 $confirm_password = $_POST['confirmPassword'];
 
+// Determine user role and appropriate table
+if ($user_id === 'admin') {
+    $table = 'admin';
+} else {
+    $user_type_code = substr($user_id, 3, 2);
+    if ($user_type_code === '11') {
+        $table = 'internal_users';
+    } elseif ($user_type_code === '22') {
+        $table = 'external_users';
+    } else {
+        header("Location: login.php");
+        exit();
+    }
+}
+
 // Fetch current password from the database
-$sql = "SELECT password FROM internal_users WHERE user_id = ?";
+$sql = "SELECT password FROM $table WHERE user_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $user_id);
 $stmt->execute();
@@ -37,7 +52,7 @@ if ($new_password !== $confirm_password) {
 $new_password_hashed = password_hash($new_password, PASSWORD_DEFAULT);
 
 // Update the password in the database
-$sql_update = "UPDATE internal_users SET password = ? WHERE user_id = ?";
+$sql_update = "UPDATE $table SET password = ? WHERE user_id = ?";
 $stmt_update = $conn->prepare($sql_update);
 $stmt_update->bind_param("ss", $new_password_hashed, $user_id);
 

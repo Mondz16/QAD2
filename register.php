@@ -226,14 +226,17 @@ if (isset($_SESSION['user_id'])) {
             <div id="companyErrorMessage" style="display: none;">Company is Empty<br><br><span style="color: #7B7B7B;">Company is a required<br>field. Please fill it up to continue.</span></div>
             <div id="genderErrorMessage" style="display: none;">Gender is Empty<br><br><span style="color: #7B7B7B;">Gender is a required<br>field. Please fill it up to continue.</span></div>
             <div style="height: 50px; width: 0px;"></div>
-            <a href="register.php" class="okay">Okay</a>
+            <a href="javascript:void(0);" class="okay" id="closePopup">Okay</a>
             <div style="height: 100px; width: 0px;"></div>
             <div class="hairpop-up"></div>
         </div>
     </div>
 
     <script>
+        let tempFormData = {};
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Set initial state
             document.querySelector('input[name="type"][value="internal"]').checked = true;
             document.getElementById('college-field').style.display = 'block';
             document.getElementById('company-field').style.display = 'none';
@@ -252,98 +255,127 @@ if (isset($_SESSION['user_id'])) {
                 document.querySelector('select[name="company"]').required = true;
             });
 
-            document.querySelector('input[name="profile_picture"]').addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('profilePreviewImg').style.display = 'block';
-                        document.getElementById('profilePreviewImg').src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
+            document.getElementById('genderSelect').addEventListener('change', function() {
+                var genderSelect = document.getElementById('genderSelect');
+                var genderInput = document.getElementById('genderInput');
+                if (genderSelect.value === 'Others') {
+                    genderSelect.style.display = 'none';
+                    genderInput.style.display = 'block';
+                    genderInput.required = true;
+                    genderInput.focus();
+                } else {
+                    genderInput.style.display = 'none';
+                    genderInput.required = false;
                 }
             });
-        });
 
-        document.getElementById('genderSelect').addEventListener('change', function() {
-            var genderSelect = document.getElementById('genderSelect');
-            var genderInput = document.getElementById('genderInput');
-            if (genderSelect.value === 'Others') {
-                genderSelect.style.display = 'none';
-                genderInput.style.display = 'block';
-                genderInput.required = true;
-                genderInput.focus();
-            } else {
-                genderInput.style.display = 'none';
-                genderInput.required = false;
-            }
-        });
+            document.getElementById('genderInput').addEventListener('blur', function() {
+                var genderSelect = document.getElementById('genderSelect');
+                var genderInput = document.getElementById('genderInput');
+                if (genderInput.value === '') {
+                    genderInput.style.display = 'none';
+                    genderSelect.style.display = 'block';
+                }
+            });
 
-        document.getElementById('genderInput').addEventListener('blur', function() {
-            var genderSelect = document.getElementById('genderSelect');
-            var genderInput = document.getElementById('genderInput');
-            if (genderInput.value === '') {
-                genderInput.style.display = 'none';
-                genderSelect.style.display = 'block';
-            }
-        });
+            document.getElementById('registerForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                var typeInput = document.querySelector('input[name="type"]:checked');
+                var prefixInput = document.querySelector('select[name="prefix"]');
+                var firstNameInput = document.querySelector('input[name="first_name"]');
+                var middleInitialInput = document.querySelector('input[name="middle_initial"]');
+                var lastNameInput = document.querySelector('input[name="last_name"]');
+                var emailInput = document.querySelector('input[name="email"]');
+                var passwordInput = document.querySelector('input[name="password"]');
+                var confirmPasswordInput = document.querySelector('input[name="confirm_password"]');
+                var collegeSelect = document.querySelector('select[name="college"]');
+                var companySelect = document.querySelector('select[name="company"]');
+                var genderSelect = document.querySelector('select[name="gender"]');
+                var genderInput = document.querySelector('input[name="gender_others"]');
 
-        document.getElementById('registerForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            var typeInput = document.querySelector('input[name="type"]:checked');
-            var prefixInput = document.querySelector('select[name="prefix"]');
-            var firstNameInput = document.querySelector('input[name="first_name"]');
-            var middleInitialInput = document.querySelector('input[name="middle_initial"]');
-            var lastNameInput = document.querySelector('input[name="last_name"]');
-            var emailInput = document.querySelector('input[name="email"]');
-            var passwordInput = document.querySelector('input[name="password"]');
-            var confirmPasswordInput = document.querySelector('input[name="confirm_password"]');
-            var collegeSelect = document.querySelector('select[name="college"]');
-            var companySelect = document.querySelector('select[name="company"]');
-            var genderSelect = document.querySelector('select[name="gender"]');
-            var genderInput = document.querySelector('input[name="gender_others"]');
+                var errorMessage = '';
 
-            var errorMessage = '';
+                if (!typeInput) {
+                    errorMessage = document.getElementById('typeErrorMessage').innerHTML;
+                } else if (prefixInput.value === '') {
+                    errorMessage = document.getElementById('prefixErrorMessage').innerHTML;
+                } else if (!firstNameInput.value) {
+                    errorMessage = document.getElementById('firstNameErrorMessage').innerHTML;
+                } else if (!middleInitialInput.value) {
+                    errorMessage = document.getElementById('middleInitialErrorMessage').innerHTML;
+                } else if (!lastNameInput.value) {
+                    errorMessage = document.getElementById('lastNameErrorMessage').innerHTML;
+                } else if (!emailInput.value) {
+                    errorMessage = document.getElementById('emailErrorMessage').innerHTML;
+                } else if (!passwordInput.value) {
+                    errorMessage = document.getElementById('passwordErrorMessage').innerHTML;
+                } else if (!confirmPasswordInput.value) {
+                    errorMessage = document.getElementById('confirmPasswordErrorMessage').innerHTML;
+                } else if (document.querySelector('input[name="type"]:checked').value === 'internal' && !collegeSelect.value) {
+                    errorMessage = document.getElementById('collegeErrorMessage').innerHTML;
+                } else if (document.querySelector('input[name="type"]:checked').value === 'external' && !companySelect.value) {
+                    errorMessage = document.getElementById('companyErrorMessage').innerHTML;
+                } else if (genderSelect.value === '' && genderInput.style.display === 'none') {
+                    errorMessage = document.getElementById('genderErrorMessage').innerHTML;
+                }
 
-            if (!typeInput) {
-                errorMessage = document.getElementById('typeErrorMessage').innerHTML;
-            } else if (prefixInput.value === '') {
-                errorMessage = document.getElementById('prefixErrorMessage').innerHTML;
-            } else if (!firstNameInput.value) {
-                errorMessage = document.getElementById('firstNameErrorMessage').innerHTML;
-            } else if (!middleInitialInput.value) {
-                errorMessage = document.getElementById('middleInitialErrorMessage').innerHTML;
-            } else if (!lastNameInput.value) {
-                errorMessage = document.getElementById('lastNameErrorMessage').innerHTML;
-            } else if (!emailInput.value) {
-                errorMessage = document.getElementById('emailErrorMessage').innerHTML;
-            } else if (!passwordInput.value) {
-                errorMessage = document.getElementById('passwordErrorMessage').innerHTML;
-            } else if (!confirmPasswordInput.value) {
-                errorMessage = document.getElementById('confirmPasswordErrorMessage').innerHTML;
-            } else if (document.querySelector('input[name="type"]:checked').value === 'internal' && !collegeSelect.value) {
-                errorMessage = document.getElementById('collegeErrorMessage').innerHTML;
-            } else if (document.querySelector('input[name="type"]:checked').value === 'external' && !companySelect.value) {
-                errorMessage = document.getElementById('companyErrorMessage').innerHTML;
-            } else if (genderSelect.value === '' && genderInput.style.display === 'none') {
-                errorMessage = document.getElementById('genderErrorMessage').innerHTML;
-            }
+                if (errorMessage) {
+                    // Save form data to temporary object
+                    tempFormData = {
+                        type: typeInput ? typeInput.value : '',
+                        prefix: prefixInput.value,
+                        first_name: firstNameInput.value,
+                        middle_initial: middleInitialInput.value,
+                        last_name: lastNameInput.value,
+                        email: emailInput.value,
+                        password: passwordInput.value,
+                        confirm_password: confirmPasswordInput.value,
+                        college: collegeSelect.value,
+                        company: companySelect.value,
+                        gender: genderSelect.value,
+                        gender_others: genderInput.value
+                    };
 
-            if (errorMessage) {
-                document.getElementById('errorMessage').innerHTML = errorMessage;
-                document.getElementById('errorPopup').style.display = 'block';
-            } else {
-                event.target.submit();
-            }
-        });
+                    document.getElementById('errorMessage').innerHTML = errorMessage;
+                    document.getElementById('errorPopup').style.display = 'block';
+                } else {
+                    event.target.submit();
+                }
+            });
 
-        document.getElementById('closeErrorBtn').addEventListener('click', function() {
-            document.getElementById('errorPopup').style.display = 'none';
-        });
-
-        window.addEventListener('click', function(event) {
-            if (event.target == document.getElementById('errorPopup')) {
+            document.getElementById('closeErrorBtn').addEventListener('click', function() {
                 document.getElementById('errorPopup').style.display = 'none';
+                restoreFormData();
+            });
+
+            document.getElementById('closePopup').addEventListener('click', function() {
+                document.getElementById('errorPopup').style.display = 'none';
+                restoreFormData();
+            });
+
+            window.addEventListener('click', function(event) {
+                if (event.target == document.getElementById('errorPopup')) {
+                    document.getElementById('errorPopup').style.display = 'none';
+                    restoreFormData();
+                }
+            });
+
+            function restoreFormData() {
+                // Restore form data from temporary object
+                if (tempFormData) {
+                    document.querySelector(`input[name="type"][value="${tempFormData.type}"]`).checked = true;
+                    document.querySelector('select[name="prefix"]').value = tempFormData.prefix;
+                    document.querySelector('input[name="first_name"]').value = tempFormData.first_name;
+                    document.querySelector('input[name="middle_initial"]').value = tempFormData.middle_initial;
+                    document.querySelector('input[name="last_name"]').value = tempFormData.last_name;
+                    document.querySelector('input[name="email"]').value = tempFormData.email;
+                    document.querySelector('input[name="password"]').value = tempFormData.password;
+                    document.querySelector('input[name="confirm_password"]').value = tempFormData.confirm_password;
+                    document.querySelector('select[name="college"]').value = tempFormData.college;
+                    document.querySelector('select[name="company"]').value = tempFormData.company;
+                    document.querySelector('select[name="gender"]').value = tempFormData.gender;
+                    document.querySelector('input[name="gender_others"]').value = tempFormData.gender_others;
+                }
             }
         });
     </script>

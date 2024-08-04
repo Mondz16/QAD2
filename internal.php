@@ -2,6 +2,7 @@
 include 'connection.php';
 session_start();
 
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -10,18 +11,24 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Check user type and redirect accordingly
-if ($user_id === 'admin') {
-    header("Location: admin.php");
+if ($user_id === 'admin' && basename($_SERVER['PHP_SELF']) !== 'admin_sidebar.php') {
+    header("Location: admin_sidebar.php");
     exit();
 } else {
     $user_type_code = substr($user_id, 3, 2);
+
     if ($user_type_code === '11') {
         // Internal user
-        // Continue with internal user logic
+        if (basename($_SERVER['PHP_SELF']) !== 'internal.php') {
+            header("Location: internal.php");
+            exit();
+        }
     } elseif ($user_type_code === '22') {
         // External user
-        header("Location: external.php");
-        exit();
+        if (basename($_SERVER['PHP_SELF']) !== 'external.php') {
+            header("Location: external.php");
+            exit();
+        }
     } else {
         // Handle unexpected user type, redirect to login or error page
         header("Location: login.php");
@@ -210,6 +217,8 @@ $stmt_all_colleges->close();
             </div>
         </div>
     </div>
+
+    <div id="passwordMatchMessage"></div>
 
     <!-- Modals -->
     <div id="profilePictureModal" class="modal">

@@ -2,9 +2,41 @@
 include 'connection.php';
 session_start();
 
-if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] !== 'admin') {
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Check user type and redirect accordingly
+if ($user_id === 'admin') {
+    // If current page is not admin.php, redirect
+    if (basename($_SERVER['PHP_SELF']) !== 'admin_sidebar.php') {
+        header("Location: admin_sidebar.php");
+        exit();
+    }
+} else {
+    $user_type_code = substr($user_id, 3, 2);
+
+    if ($user_type_code === '11') {
+        // Internal user
+        if (basename($_SERVER['PHP_SELF']) !== 'internal.php') {
+            header("Location: internal.php");
+            exit();
+        }
+    } elseif ($user_type_code === '22') {
+        // External user
+        if (basename($_SERVER['PHP_SELF']) !== 'external.php') {
+            header("Location: external.php");
+            exit();
+        }
+    } else {
+        // Handle unexpected user type, redirect to login or error page
+        header("Location: login.php");
+        exit();
+    }
 }
 
 $user_id = $_SESSION['user_id'];
@@ -17,6 +49,9 @@ $stmt_admin->execute();
 $stmt_admin->bind_result($prefix, $first_name, $middle_initial, $last_name, $email, $gender, $profile_picture, $password, $otp);
 $stmt_admin->fetch();
 $stmt_admin->close();
+
+$accreditor_type = ($user_id === 'admin') ? 'admin' : '';
+
 ?>
 
 <!DOCTYPE html>
@@ -26,6 +61,7 @@ $stmt_admin->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schedule List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="stylesheet" href="css/sidebar.css">
@@ -261,7 +297,7 @@ $stmt_admin->close();
                 </li>
             </ul>
             <div class="sidebar-footer p-1">
-                <a href="login.php" class="sidebar-link">
+                <a href="logout.php" class="sidebar-link">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z" />
                         <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z" />
@@ -310,11 +346,13 @@ $stmt_admin->close();
             <div style="height: 24px; width: 0px;"></div>
 
             <div class="container1">
+                <h1>ADMIN PROFILE</h1>
                 <div class="profile-info">
                     <p class="personal">PERSONAL INFORMATION</p>
                     <div class="profile">
                         <div class="profile-details">
-                            <p class="profile-name"><?php echo $last_name . ',' . ' ' . $first_name . ' ' . $middle_initial . '.'; ?></p>
+                            <h class="profile-name"><?php echo $last_name . ',' . ' ' . $first_name . ' ' . $middle_initial . '.'; ?></h>
+                            <p class="profile-type"><?php echo $accreditor_type; ?></p>
                             <div class="button-group">
                                 <p class="user-id"><?php echo $user_id; ?></p>
                             </div>
@@ -328,10 +366,9 @@ $stmt_admin->close();
                     </div>
                 </div>
 
-                <div class="changepassword">
+                <div class="changepassword1">
                     <p class="personal">CHANGE PASSWORD</p>
                     <form action="change_password_process.php" method="post">
-                        <div style="height: 32px; width: 0px;"></div>
                         <div class="password">
                             <div class="passwordContainer">
                                 <input class="passwordText" type="password" id="currentPassword" name="currentPassword" placeholder="CURRENT PASSWORD" required>
@@ -386,15 +423,16 @@ $stmt_admin->close();
                 </div>
 
                 <div class="profile-info">
-                    <p><strong class="prefix">Prefix</strong><br><strong class="prefix1"><?php echo htmlspecialchars($prefix); ?></strong><button class="edit-link" onclick="openModal('prefixModal')">Edit</button></p><br>
-                    <p><strong class="prefix">Full Name:</strong><br><strong class="prefix1"><?php echo htmlspecialchars($first_name . ' ' . $middle_initial . '. ' . $last_name); ?></strong><button class="edit-link" onclick="openModal('fullNameModal')">Edit</button></p><br>
-                    <p><strong class="prefix">Email</strong><br><strong class="prefix1"><?php echo htmlspecialchars($email); ?></strong><button class="edit-link" onclick="openModal('emailModal')">Edit</button></p><br>
-                    <p><strong class="prefix">Gender</strong><br><strong class="prefix1"><?php echo htmlspecialchars($gender); ?></strong><button class="edit-link" onclick="openModal('genderModal')">Edit</button></p><br>
+                    <h><strong class="prefix">Prefix</strong><br><strong class="prefix1"><?php echo htmlspecialchars($prefix); ?></strong><button class="edit-link" onclick="openModal('prefixModal')">Edit</button></h><br><br>
+                    <h><strong class="prefix">Full Name:</strong><br><strong class="prefix1"><?php echo htmlspecialchars($first_name . ' ' . $middle_initial . '. ' . $last_name); ?></strong><button class="edit-link" onclick="openModal('fullNameModal')">Edit</button></h><br><br>
+                    <h><strong class="prefix">Email</strong><br><strong class="prefix1"><?php echo htmlspecialchars($email); ?></strong><button class="edit-link" onclick="openModal('emailModal')">Edit</button></h><br><br>
+                    <h><strong class="prefix">Gender</strong><br><strong class="prefix1"><?php echo htmlspecialchars($gender); ?></strong><button class="edit-link" onclick="openModal('genderModal')">Edit</button></h><br>
                 </div>
             </div>
         </div>
     </div>
 
+    <div id="passwordMatchMessage"></div>
     <!-- Modals -->
     <div id="profilePictureModal" class="modal">
         <div class="modal-content">

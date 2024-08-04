@@ -92,6 +92,7 @@ $sql = "CREATE TABLE IF NOT EXISTS admin (
     gender VARCHAR(50) NOT NULL,
     password VARCHAR(255) NOT NULL,
     otp VARCHAR(255) NOT NULL,
+    otp_created_at TIMESTAMP,
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
 
@@ -115,6 +116,7 @@ $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     gender VARCHAR(50) NOT NULL,
     status ENUM('pending', 'active', 'inactive', '') NOT NULL,
     otp VARCHAR(255) NOT NULL,
+    otp_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (college_code) REFERENCES college(code)
 )";
@@ -139,6 +141,7 @@ $sql = "CREATE TABLE IF NOT EXISTS external_users (
     gender VARCHAR(50) NOT NULL,
     status ENUM('pending', 'active', 'inactive', '') NOT NULL,
     otp VARCHAR(255) NOT NULL,
+    otp_created_at TIMESTAMP,
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_code) REFERENCES company(code)
 )";

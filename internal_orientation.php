@@ -2,6 +2,7 @@
 include 'connection.php';
 session_start();
 
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -11,17 +12,26 @@ $user_id = $_SESSION['user_id'];
 
 // Check user type and redirect accordingly
 if ($user_id === 'admin') {
-    header("Location: admin.php");
-    exit();
+    // If current page is not admin.php, redirect
+    if (basename($_SERVER['PHP_SELF']) !== 'admin.php') {
+        header("Location: admin.php");
+        exit();
+    }
 } else {
     $user_type_code = substr($user_id, 3, 2);
+
     if ($user_type_code === '11') {
         // Internal user
-        // Continue with internal user logic
+        if (basename($_SERVER['PHP_SELF']) !== 'internal_orientation.php') {
+            header("Location: internal.php");
+            exit();
+        }
     } elseif ($user_type_code === '22') {
         // External user
-        header("Location: external.php");
-        exit();
+        if (basename($_SERVER['PHP_SELF']) !== 'external.php') {
+            header("Location: external.php");
+            exit();
+        }
     } else {
         // Handle unexpected user type, redirect to login or error page
         header("Location: login.php");

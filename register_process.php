@@ -35,14 +35,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     function check_existing_user($conn, $first_name, $middle_initial, $last_name, $email) {
         $stmt = $conn->prepare("
-            SELECT status, otp 
-            FROM internal_users 
-            WHERE first_name = ? AND middle_initial = ? AND last_name = ? AND email = ?
-            UNION 
-            SELECT status, otp 
-            FROM external_users 
-            WHERE first_name = ? AND middle_initial = ? AND last_name = ? AND email = ?");
-        $stmt->bind_param("ssssssss", $first_name, $middle_initial, $last_name, $email, $first_name, $middle_initial, $last_name, $email);
+        SELECT status, otp 
+        FROM internal_users 
+        WHERE first_name = ? AND middle_initial = ? AND last_name = ? AND email = ?
+        UNION 
+        SELECT status, otp 
+        FROM external_users 
+        WHERE first_name = ? AND middle_initial = ? AND last_name = ? AND email = ?
+        UNION 
+        SELECT 'active' as status, otp 
+        FROM admin 
+        WHERE first_name = ? AND middle_initial = ? AND last_name = ? AND email = ?");
+
+        $stmt->bind_param("ssssssssssss",
+        $first_name, $middle_initial, $last_name, $email,
+        $first_name, $middle_initial, $last_name, $email,
+        $first_name, $middle_initial, $last_name, $email
+        );
         $stmt->execute();
         return $stmt->get_result();
     }
@@ -83,8 +92,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     
     function check_existing_email($conn, $email) {
-        $stmt = $conn->prepare("SELECT email FROM internal_users WHERE email = ? UNION SELECT email FROM external_users WHERE email = ?");
-        $stmt->bind_param("ss", $email, $email);
+        $stmt = $conn->prepare("SELECT email FROM internal_users WHERE email = ? UNION SELECT email FROM external_users WHERE email = ? UNION SELECT email FROM admin WHERE email = ?");
+        $stmt->bind_param("sss", $email, $email, $email);
         $stmt->execute();
         return $stmt->get_result();
     }

@@ -274,7 +274,7 @@
     border-color: #AFAFAF;
 }
 
-.profile-info, .changepassword {
+.profile-info, .changepassword, .changepassword1 {
     padding: 30px;
     border: 1px solid #AFAFAF;
     border-radius: 20px;
@@ -288,10 +288,17 @@
     grid-column: 1; /* First column */
 }
 
-.changepassword {
+.changepassword, .changepassword1 {
     grid-column: 2; /* Second column */
     grid-row: span 2; /* Span across two rows */
-    height: 664px; /* Automatic height adjustment */
+}
+
+.changepassword1 {
+    height: auto;
+}
+
+.changepassword {
+    height: 664px;
 }
 
 .checklist {

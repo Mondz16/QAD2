@@ -1,5 +1,44 @@
 <?php
 session_start();
+require 'vendor/autoload.php';  // Include PHPMailer
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// Function to send OTP email
+function sendOTPEmail($email, $otp) {
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'usepqad@gmail.com'; // Your email
+        $mail->Password = 'vmvf vnvq ileu tmev'; // Your email password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        // Bypass SSL certificate verification
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
+
+        $mail->setFrom('usepqad@gmail.com', 'USeP - Quality Assurance Division');
+        $mail->addAddress($email);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Admin Login OTP';
+        $mail->Body    = 'Your OTP for login is: <b>' . $otp . '</b>';
+
+        $mail->send();
+    } catch (Exception $e) {
+        echo 'Message could not be sent. Mailer Error: ', $mail->ErrorInfo;
+    }
+}
 
 function display_popup($message, $type, $redirect = 'login.php', $has_apply_cancel = false, $apply_redirect = '') {
     ?>
@@ -74,11 +113,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result_admin->num_rows == 1) {
         $admin = $result_admin->fetch_assoc();
+
         if (password_verify($password, $admin['password'])) {
-            $_SESSION['user_id'] = $admin['user_id'];
-            header("Location: admin.php");
-            exit;
+            // Check if email is a placeholder value
+            if ($admin['email'] === 'none') {
+                // Redirect directly if email is a placeholder
+                $_SESSION['user_id'] = $admin['user_id'];  // Set session variable to 'user_id'
+                header("Location: admin_sidebar.php");
+                exit;
+            }
+
+            $otp = rand(100000, 999999); // Generate OTP
+            $hashed_otp = password_hash($otp, PASSWORD_DEFAULT); // Hash OTP
+
+            // Update OTP in admin table
+            $stmt = $conn->prepare("UPDATE admin SET otp = ?, otp_created_at = NOW() WHERE user_id = ?");
+            $stmt->bind_param("ss", $hashed_otp, $user_id);
+            if ($stmt->execute()) {
+                // Send OTP to admin email
+                sendOTPEmail($admin['email'], $otp);
+
+                $_SESSION['user_id'] = $admin['user_id'];  // Set session variable to 'user_id'
+                header("Location: admin_verify_otp.php"); // Redirect to OTP verification page
+                exit;
+            } else {
+                echo "Failed to update OTP in database.";
+            }
         }
+    } else {
+        echo "No admin found with this user ID.";
     }
 
     // Function to check user in a specific table
@@ -110,11 +173,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: internal.php");
             exit;
         } elseif ($internal_user['status'] == 'inactive') {
-            $message = "This account is inactive.<br>Would you like to apply again?";
+            $message = "This account's status is inactive.<br>Would you like to apply again?";
             display_popup($message, "error", "login.php", true, "login_process_reactivation.php?type=internal&user_id=$user_id");
             exit;
         } else {
-            $message = "This user's status is pending.<br>Please wait for the admin to approve.";
+            $message = "This account's status is pending.<br>Please wait for the admin to approve.";
             display_popup($message, "error");
             exit;
         }
@@ -132,11 +195,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: external.php");
             exit;
         } elseif ($external_user['status'] == 'inactive') {
-            $message = "This account is inactive.<br>Would you like to apply again?";
+            $message = "This account's status is inactive.<br>Would you like to apply again?";
             display_popup($message, "error", "login.php", true, "login_process_reactivation.php?type=external&user_id=$user_id");
             exit;
         } else {
-            $message = "This user's status is pending.<br>Please wait for the admin to approve.";
+            $message = "This account's status is pending.<br>Please wait for the admin to approve.";
             display_popup($message, "error");
             exit;
         }

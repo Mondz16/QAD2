@@ -9,7 +9,24 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Check if the form was submitted and which field is being updated
+// Determine user role and appropriate table
+if ($user_id === 'admin') {
+    $table = 'admin';
+    $redirect_page = 'admin_sidebar.php';
+} else {
+    $user_type_code = substr($user_id, 3, 2);
+    if ($user_type_code === '11') {
+        $table = 'internal_users';
+        $redirect_page = 'internal.php';
+    } elseif ($user_type_code === '22') {
+        $table = 'external_users';
+        $redirect_page = 'external.php';
+    } else {
+        header("Location: login.php");
+        exit();
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['field'])) {
     $field = $_POST['field'];
 
@@ -22,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['field'])) {
                     $newPrefix = trim($_POST['newPrefix']);
 
                     // Update prefix
-                    $stmt = $conn->prepare("UPDATE internal_users SET prefix = ? WHERE user_id = ?");
+                    $stmt = $conn->prepare("UPDATE $table SET prefix = ? WHERE user_id = ?");
                     $stmt->bind_param("ss", $newPrefix, $user_id);
                     $stmt->execute();
                     $stmt->close();
@@ -39,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['field'])) {
                     $newLastName = trim($_POST['newLastName']);
 
                     // Update full name
-                    $stmt = $conn->prepare("UPDATE internal_users SET first_name = ?, middle_initial = ?, last_name = ? WHERE user_id = ?");
+                    $stmt = $conn->prepare("UPDATE $table SET first_name = ?, middle_initial = ?, last_name = ? WHERE user_id = ?");
                     $stmt->bind_param("ssss", $newFirstName, $newMiddleInitial, $newLastName, $user_id);
                     $stmt->execute();
                     $stmt->close();
@@ -54,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['field'])) {
                     $newEmail = trim($_POST['newEmail']);
 
                     // Update email
-                    $stmt = $conn->prepare("UPDATE internal_users SET email = ? WHERE user_id = ?");
+                    $stmt = $conn->prepare("UPDATE $table SET email = ? WHERE user_id = ?");
                     $stmt->bind_param("ss", $newEmail, $user_id);
                     $stmt->execute();
                     $stmt->close();
@@ -73,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['field'])) {
                     $newGender = $genderOthers;
                 }
                 if (!empty($newGender)) {
-                    $stmt = $conn->prepare("UPDATE internal_users SET gender = ? WHERE user_id = ?");
+                    $stmt = $conn->prepare("UPDATE $table SET gender = ? WHERE user_id = ?");
                     $stmt->bind_param("ss", $newGender, $user_id);
                     $stmt->execute();
                     $stmt->close();
@@ -98,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['field'])) {
                     // Move the uploaded file to the desired directory
                     if (move_uploaded_file($fileTmpPath, $filePath)) {
                         // Update profile picture path in the database
-                        $stmt = $conn->prepare("UPDATE internal_users SET profile_picture = ? WHERE user_id = ?");
+                        $stmt = $conn->prepare("UPDATE $table SET profile_picture = ? WHERE user_id = ?");
                         $stmt->bind_param("ss", $filePath, $user_id);
                         $stmt->execute();
                         $stmt->close();
@@ -125,8 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['field'])) {
     echo "Invalid request.";
 }
 
-// Redirect back to profile page
-header("Location: internal.php");
+// Redirect back to the appropriate profile page
+header("Location: $redirect_page");
 exit();
-
 ?>
