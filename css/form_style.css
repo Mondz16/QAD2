@@ -1,0 +1,308 @@
+.container{
+    padding-right: 40px;
+}
+
+.container h2{
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin: auto;
+}
+
+.container2 {
+    display: flex;
+    justify-content: center;
+}
+
+.form-container {
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #AFAFAF;
+    padding: 10px 20px 20px 30px;
+    max-width: 700px;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    margin-top: 10px;
+    display: block;
+    font-weight: 500;
+    color: #575757;
+}
+
+select,
+input[type="date"],
+input[type="time"],
+input[type="text"],
+input[type="email"] {
+    width: calc(100% - 10px);
+    padding: 10px;
+    border: 1px solid #AFAFAF;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+button{
+    width: 100%;
+    margin-right: 10px;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    font-weight: 600;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+button[type="submit"] {
+    background-color: #34C759;
+    color: #fff;
+}
+
+button[type="submit"]:hover{
+    background-color: #259b42;
+}
+
+button[type="remove"] {
+    background-color: #FFECEC;
+    border: 1px solid #A43939;
+    color: #A43939;
+}
+
+button[type="remove"]:hover{
+    background-color: #d57171;
+    color: #fff;
+}
+
+.team-member-input {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.team-member-input select {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.add-team-member-button {
+    width: -webkit-fill-available;
+    background-color: #D4FFDF;
+    border: 1px solid #34C759;
+    color: #006118;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px;
+    margin-right: 10px;
+    padding: 10px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.add-team-member-button:hover {
+    background-color: #34C759;
+}
+
+.remove-team-member-button{
+    background-color: #fff;
+    border: none;
+    padding-bottom: 5px;
+    color: #FF7B7A;
+}
+
+.cancel {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.cancel:hover {
+    background-color: #c82333;
+}
+
+.btn-back {
+    color: black;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.btn-back:hover {
+    text-decoration: underline;
+}
+
+.level-header{
+    display: flex;
+}
+
+.level-header .level-applied{
+    width: 22%;
+}
+
+.level-header label:first-child{
+    width: 50%;
+}
+
+.level-input-holder{
+    display: flex;
+}
+
+.level-input-holder .level-input{
+    width: 20%;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    padding: 0;
+    margin-right: 10px;
+}
+
+.level-input-holder .highlight{
+    background-color: #FFF1C0;
+    border-color: #E6A33E;
+}
+
+.level-input-holder .level-input:last-child{
+    width: 25%;
+    text-align: center;
+    font-size: 16px;
+    padding: 0;
+    margin-right: 10px;
+    font-weight: normal;
+}
+
+.level-holder{
+    width: 25%;
+    border-radius: 8px;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 20px;
+}
+
+.currentLevel span{
+    font-size: 14px;
+}
+
+.dateTime-holder{
+    display: flex;
+}
+
+.dateTime-holder .form-group{
+    flex: 1;
+}
+
+.bottom-button-holder{
+    display: flex;
+}
+
+.bottom-button-holder button{
+    flex: 1;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    font-weight: 600;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.bottom-button-holder .discard-button {
+    background-color: #FFECEC;
+    border: 1px solid #A43939;
+    color: #A43939;
+}
+
+.bottom-button-holder .discard-button:hover {
+    background-color: #d57171;
+    color: #fff;
+}
+
+.bottom-button-holder .submit-button {
+    background-color: #34C759;
+    color: #fff;
+    flex: 2;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.add-button {
+    background-color: #fff;
+    border: 1px solid #575757;
+    color: #292D32;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.add-button:hover{
+    background-color: #bdbdbd;
+}
+
+.remove-program-button{
+    background-color: #FF6262;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.remove-program-button:hover{
+    background-color: #cc4e4e;
+}
+
+.modal-header{
+    display: flex;
+    justify-content: center;
+}
+
+.modal-header h5{
+    font-weight: bolder;
+}
+
+.submit-modal-button{
+    background-color: #34C759;
+    color: #fff;
+}
+
+.submit-modal-button:hover{
+    background-color: #259b42;
+}
+
+.cancel-modal-button{
+    background-color: #fff;
+    border: 1px solid #CCCCCC;
+    color: #AFAFAF;
+}
+
+.cancel-modal-button:hover{
+    background-color: #bdbdbd;
+    color: #FFF;
+}
+
+.program-holder{    
+    margin: 10px 0px;
+    padding: 10px 15px;
+    border: 1px solid #E5E5E5;
+    border-radius: 8px;
+}
+
+.program-holder input{
+    border: none;
+    padding: 0px 5px;
+    font-weight: bold;
+}
+
+.modal-body{
+    padding-top: 0;
+}
+
+.program-entry{
+    display: flex;
+    padding: 10px 30px;
+    justify-content: space-between;
+}

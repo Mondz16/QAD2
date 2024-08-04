@@ -295,7 +295,10 @@ while ($row_company = $result_companies->fetch_assoc()) {
         <!-- Modal for showing programs -->
         <div id="programModal" class="modal">
             <div class="modal-content">
-                <span class="close">&times;</span>
+                <div class="modal-header-holder">
+                    <h2 id="college-name">College Name</h2>
+                    <span class="close">&times;</span>
+                </div>
                 <table id="modalTable">
                     <tr>
                         <th>Program</th>
@@ -383,8 +386,13 @@ while ($row_company = $result_companies->fetch_assoc()) {
         }
 
         function showPrograms(collegeId) {
+            var collegeName = document.getElementById('college-name');
             var collegePrograms = <?php echo json_encode($collegePrograms); ?>;
             programsData = collegePrograms[collegeId].programs;
+            console.log(collegePrograms[collegeId].college_name);
+            
+            collegeName.innerHTML = collegePrograms[collegeId].college_name; // Clear the program level display
+
             displayPrograms(programsData);
             programModal.style.display = "block";
         }

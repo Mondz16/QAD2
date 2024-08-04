@@ -291,6 +291,16 @@ tr:last-child td {
     margin-bottom: 20px;
 }
 
+.modal-header-holder {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header-holder h2{
+    margin-top: 0;
+}
+
 .modal-content .form-group {
     margin-bottom: 20px;
     text-align: left;

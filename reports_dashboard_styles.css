@@ -7,8 +7,7 @@ body {
 }
 
 .dashboard-container {
-    max-width: 1500px;
-    max-height: 1280px;
+    max-width: 1320px;
     margin: 0 auto;
     padding: 10px;
 }

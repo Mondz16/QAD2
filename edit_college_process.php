@@ -16,8 +16,10 @@ $removed_program_ids = isset($_POST['removed_program_ids']) ? explode(',', $_POS
 // Update college details
 $sql = "UPDATE college SET college_name = ?, college_email = ? WHERE code = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ssi", $college_name, $college_email, $college_code);
-$stmt->execute();
+$stmt->bind_param("sss", $college_name, $college_email, $college_code); // Corrected to "sss"
+if (!$stmt->execute()) {
+    die('Error updating college details: ' . htmlspecialchars($stmt->error));
+}
 
 // Update existing programs and their levels
 $sql_update_program = "UPDATE program SET program_name = ? WHERE id = ?";
@@ -42,6 +44,11 @@ for ($i = 0; $i < count($program_ids); $i++) {
     $stmt_check_program_level_id->store_result();
     $stmt_check_program_level_id->bind_result($program_level_id);
     $stmt_check_program_level_id->fetch();
+
+    // Ensure program_level is not NULL
+    if (is_null($levels[$i])) {
+        die('Error: program_level cannot be NULL');
+    }
 
     if ($stmt_check_program_level_id->num_rows > 0 && $program_level_id !== NULL) {
         // Update existing program_level_history
@@ -68,6 +75,11 @@ if (!empty($new_programs)) {
     $stmt_insert_program = $conn->prepare($sql_insert_program);
 
     for ($j = 0; $j < count($new_programs); $j++) {
+        // Ensure new_levels is not NULL
+        if (is_null($new_levels[$j])) {
+            die('Error: new program_level cannot be NULL');
+        }
+
         // Insert into program_level_history first to get the new ID
         $stmt_insert_program_level->bind_param("iss", $new_programs[$j], $new_levels[$j], $new_dates_received[$j]);
         $stmt_insert_program_level->execute();
