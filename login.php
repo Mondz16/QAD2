@@ -1,3 +1,25 @@
+<?php
+session_start();
+
+// Check if user is already logged in
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+
+    // Parse user_id to get role
+    if ($user_id === 'admin') {
+        header("Location: admin.php");
+    } else {
+        list($college_code, $role_code, $unique_number) = explode('-', $user_id);
+
+        if ($role_code === '11') {
+            header("Location: internal.php");
+        } elseif ($role_code === '22') {
+            header("Location: external.php");
+        }
+    }
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

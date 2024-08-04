@@ -1,27 +1,93 @@
 <?php
 session_start();
 include 'connection.php'; // Include your database connection file
+require 'vendor/autoload.php'; // Include PHPMailer via Composer autoload
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 function resetPassword($user_id, $email, $prefix, $gender, $gender_others) {
     global $conn;
     $new_password = password_hash($user_id, PASSWORD_DEFAULT);
     $tables = ['internal_users', 'external_users'];
+    $email_sent = false;
 
     foreach ($tables as $table) {
-        $query = "UPDATE $table SET password=? WHERE user_id=? AND email=? AND prefix=? AND gender=?";
+        // Fetch full name and email
+        $query = "SELECT prefix, first_name, middle_initial, last_name, email FROM $table WHERE user_id=? AND email=? AND prefix=? AND gender=?";
         $stmt = $conn->prepare($query);
         
         // Determine gender value for comparison
         $gender_value = ($gender === 'Others') ? $gender_others : $gender;
 
-        $stmt->bind_param('sssss', $new_password, $user_id, $email, $prefix, $gender_value);
+        $stmt->bind_param('ssss', $user_id, $email, $prefix, $gender_value);
         $stmt->execute();
+        $stmt->store_result();
+        $stmt->bind_result($db_prefix, $first_name, $middle_initial, $last_name, $db_email);
 
-        if ($stmt->affected_rows > 0) {
-            return true;
+        if ($stmt->num_rows > 0 && $stmt->fetch()) {
+            // Construct full name
+            $full_name = trim("$db_prefix $first_name $middle_initial $last_name");
+
+            // Attempt to send email
+            if (sendEmail($db_email, $user_id, $full_name)) {
+                // Update password only if email is sent successfully
+                $stmt->close();
+
+                $update_query = "UPDATE $table SET password=? WHERE user_id=? AND email=? AND prefix=? AND gender=?";
+                $update_stmt = $conn->prepare($update_query);
+                $update_stmt->bind_param('sssss', $new_password, $user_id, $email, $prefix, $gender_value);
+                $update_stmt->execute();
+                $email_sent = ($update_stmt->affected_rows > 0);
+                $update_stmt->close();
+                break;
+            } else {
+                $_SESSION['error'] = "Email could not be sent.";
+                return false;
+            }
         }
+        $stmt->close();
     }
-    return false;
+    return $email_sent;
+}
+
+function sendEmail($toEmail, $user_id, $full_name) {
+    $mail = new PHPMailer(true);
+
+    try {
+        //Server settings
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com'; // Set the SMTP server to send through
+        $mail->SMTPAuth = true;
+        $mail->Username = 'usepqad@gmail.com'; // SMTP username
+        $mail->Password = 'vmvf vnvq ileu tmev'; // SMTP password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        // Optional: Disable SSL certificate verification
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
+
+        //Recipients
+        $mail->setFrom('usepqad@gmail.com', 'USeP - Quality Assurance Division');
+        $mail->addAddress($toEmail);
+
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = 'Password Reset Notification';
+        $mail->Body = "Dear $full_name,<br><br>Your password has been reset. Your new password is your User ID: <strong>$user_id</strong>.<br>Please change your password after logging in.<br><br>Best regards,<br>USeP - Quality Assurance Division";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        $_SESSION['error'] = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        return false;
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -37,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (resetPassword($user_id, $email, $prefix, $gender, $gender_others)) {
             $_SESSION['success'] = "Password has been reset. Your new password is your User ID.";
         } else {
-            $_SESSION['error'] = "No matching user found.";
+            $_SESSION['error'] = "No matching user found or email could not be sent.";
         }
     }
 
@@ -45,6 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     exit;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

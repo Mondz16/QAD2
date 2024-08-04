@@ -128,28 +128,6 @@ while ($stmt_team_members->fetch()) {
     ];
 }
 $stmt_team_members->close();
-
-// Initialize notification count
-$notification_count = 0;
-
-// Fetch notifications and count
-$sql_notifications = "
-    SELECT s.id AS schedule_id, p.program_name, t.role, c.college_name, s.schedule_status, s.schedule_date, s.schedule_time
-    FROM team t
-    JOIN schedule s ON t.schedule_id = s.id
-    JOIN program p ON s.program_id = p.id
-    JOIN college c ON s.college_code = c.code
-    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status NOT IN ('cancelled', 'finished')
-";
-
-$stmt_notifications = $conn->prepare($sql_notifications);
-$stmt_notifications->bind_param("s", $user_id);
-$stmt_notifications->execute();
-$stmt_notifications->store_result();
-$stmt_notifications->bind_result($schedule_id, $program_name, $role, $college_name, $schedule_status, $schedule_date, $schedule_time);
-
-// Update notification count
-$notification_count = $stmt_notifications->num_rows; // Count the number of notifications
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -204,193 +182,171 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
             <div class="header1">
                 <div class="nav-list">
                     <a href="internal.php" class="profile1">Profile <i class="fa-regular fa-user"></i></a>
-                    <a href="internal_orientation.php" class="orientation1">Orientation <i class="fa-regular fa-calendar"></i></a>
-                    <a href="internal_assessment.php" class="active assessment1">Assessment <i class="fa-solid fa-medal"></i></a>
-                </div>
-                <div class="notification-bell" onclick="toggleNotifications()">
-                    <i class="fa-regular fa-bell notifications"></i>
-                    <?php if ($notification_count > 0): ?>
-                        <span class="notification-count"><?php echo $notification_count; ?></span>
-                    <?php endif; ?>
-                    <div class="dropdown-content" id="notificationDropdown">
-                        <?php while ($stmt_notifications->fetch()): ?>
-                            <?php
-                            // Format the schedule date and time
-                            $date = new DateTime($schedule_date);
-                            $time = new DateTime($schedule_time);
-
-                            // Determine status color
-                            $status_color = '';
-                            if ($schedule_status === 'pending') {
-                                $status_color = '#E6A33E'; // Pending color
-                            } elseif ($schedule_status === 'approved') {
-                                $status_color = '#34C759'; // Approved color
-                            }
-                            ?>
-                            <a href="internal_notification.php" class="notification-item">
-                                <p><strong>COLLEGE</strong><br><span><?php echo htmlspecialchars($college_name); ?></span></p><br><br>
-                                <p><strong>PROGRAM</strong><br><span><?php echo htmlspecialchars($program_name); ?></span></p><br><br>
-                                <p><strong>ROLE</strong><span class="status"><?php echo htmlspecialchars($role); ?></span></p><br>
-                                <p><strong>DATE</strong><span class="status"><?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i a'); ?></span></p><br>
-                                <p><strong>STATUS</strong><span class="status" style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($schedule_status); ?></span></p>
-                            </a>
-                        <?php endwhile; ?>
-                        <div class="see-all">
-                            <a href="internal_notification.php">SEE ALL</a>
-                        </div>
-                    </div>
+                    <a href="internal_notification.php" class="orientation1">NOTIFICATION<i class="fa-regular fa-bell"></i></i></a>
+                    <a href="internal_assessment.php" class="active assessment1">Assessment<i class="fa-solid fa-medal"></i></a>
+                    <a href="internal_orientation.php" class="orientation1">Orientation<i class="fa-regular fa-calendar"></i></a>
+                    <a href="logout.php" class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
                 </div>
             </div>
         </div>
     <div class="container">
         <div style="height: 32px;"></div>
         <div class="orientation2">
-            <?php foreach ($schedules as $schedule): ?>
-                <div class="notification-list1">
-                    <div class="orientation3">
-                         <div class="container">
-                            <div class="body4">
-                                <div class="bodyLeft2" style="margin-right: ;">
-                        <p>College <br>
+            <?php if (!empty($schedules)): ?>
+                <?php foreach ($schedules as $schedule): ?>
+                    <div class="notification-list1">
+                        <div class="orientation3">
+                             <div class="container">
+                                <div class="body4">
+                                    <div class="bodyLeft2" style="margin-right: ;">
+                            <p>College <br>
+                                    <div style="height: 10px;"></div>
+                                    <div class="orientationname">
+                                        <div class="nameContainer">
+                                            <?php echo htmlspecialchars($schedule['college_name']); ?>
+                                        </div>
+                                </div></p>
+                                <div style="height: 20px;"></div>
+                            <p>PROGRAM <br>
                                 <div style="height: 10px;"></div>
                                 <div class="orientationname">
                                     <div class="nameContainer">
-                                        <?php echo htmlspecialchars($schedule['college_name']); ?>
-                                    </div>
-                            </div></p>
-                            <div style="height: 20px;"></div>
-                        <p>PROGRAM <br>
-                            <div style="height: 10px;"></div>
-                            <div class="orientationname">
-                                <div class="nameContainer">
-                            <?php echo htmlspecialchars($schedule['program_name']); ?>
-                        </div>
-                        </div></p>
-                        <div class="orientationname">
-                                <div class="titleContainer">
-                                    <p>LEVEL APPLIED</p>
-                                </div>
-                                <div class="titleContainer">
-                                    <p>DATE</p>
-                                </div>
-                            <div class="titleContainer">
-                                        <p>TIME</p>
+                                <?php echo htmlspecialchars($schedule['program_name']); ?>
                             </div>
+                            </div></p>
+                            <div class="orientationname">
+                                    <div class="titleContainer">
+                                        <p>LEVEL APPLIED</p>
+                                    </div>
+                                    <div class="titleContainer">
+                                        <p>DATE</p>
+                                    </div>
+                                <div class="titleContainer">
+                                            <p>TIME</p>
+                                </div>
+                            </div>
+                            <div class="orientationname">
+                            <div class="nameContainer orientationContainer1">
+                                <?php echo htmlspecialchars($schedule['level_applied']); ?>
+                            </div>
+                            <div class="nameContainer orientationContainer"><?php 
+                                $schedule_date = new DateTime($schedule['schedule_date']);
+                                echo $schedule_date->format('F j, Y'); 
+                            ?>
                         </div>
-                        <div class="orientationname">
-                        <div class="nameContainer orientationContainer1">
-                            <?php echo htmlspecialchars($schedule['level_applied']); ?>
+                            <div class="nameContainer orientationContainer"><?php 
+                                $schedule_time = new DateTime($schedule['schedule_time']);
+                                echo $schedule_time->format('g:i A'); 
+                            ?>
                         </div>
-                        <div class="nameContainer orientationContainer"><?php 
-                            $schedule_date = new DateTime($schedule['schedule_date']);
-                            echo $schedule_date->format('F j, Y'); 
-                        ?>
-                    </div>
-                        <div class="nameContainer orientationContainer"><?php 
-                            $schedule_time = new DateTime($schedule['schedule_time']);
-                            echo $schedule_time->format('g:i A'); 
-                        ?>
-                    </div>
-                    </div>
-                    </div>
-                    <div class="bodyRight2">
-                        <?php if ($schedule['role'] === 'Team Leader'): ?>
-                            <?php
-                                $team_member_count = 0;
-                                $submitted_count = 0;
-                                $approved_count = 0;
-                                foreach ($team_members[$schedule['schedule_id']] as $member) {
-                                    if ($member['role'] !== 'Team Leader') {
-                                        $team_member_count++;
-                                        if ($member['assessment_file']) {
-                                            $submitted_count++;
-                                        }
-                                        if (in_array($member['assessment_id'], $approved_assessments)) {
-                                            $approved_count++;
+                        </div>
+                        </div>
+                        <div class="bodyRight2">
+                            <?php if ($schedule['role'] === 'Team Leader'): ?>
+                                <?php
+                                    $team_member_count = 0;
+                                    $submitted_count = 0;
+                                    $approved_count = 0;
+                                    foreach ($team_members[$schedule['schedule_id']] as $member) {
+                                        if ($member['role'] !== 'Team Leader') {
+                                            $team_member_count++;
+                                            if ($member['assessment_file']) {
+                                                $submitted_count++;
+                                            }
+                                            if (in_array($member['assessment_id'], $approved_assessments)) {
+                                                $approved_count++;
+                                            }
                                         }
                                     }
-                                }
-                            ?>
-                            <p>MEMBER SUBMITION STATUS</p>
-                            <div style="height: 10px;"></div>
-                            <div class="assessmentname2">
-                                    <div class="nameContainer">
-                            <p><?php echo $submitted_count; ?>/<?php echo $team_member_count; ?> SUBMITTED ASSESSMENTS</p>
-                        </div>
-                        </div>
-                        <div style="height: 20px;"></div>
-                        <p>TEAM MEMBERS ASSESSMENT</p>
-                        <div style="height: 10px;"></div>
-                            <ul style="list-style: none; font-size: 18px;">
-                            <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
-                                <?php if ($member['assessment_file'] && $member['role'] !== 'team leader'): ?>
-                                    <li>
-                                        <div class="assessmentname1">
-                                        <div class="titleContainer1">
-                                        <?php echo htmlspecialchars($member['name']); ?>
-                                    </div>
-                                    <div class="titleContainer2">
-                                    <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>"><i class="bi bi-file-earmark-arrow-down"></i></a>
-                                </div>
-                                <div class="titleContainer3">
-                                        <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
-                                            <i class="fas fa-check approve1"></i>
-                                        <?php else: ?>
-                                            <button class="approve" onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">APPROVE</button>
-                                        <?php endif; ?>
-                                        </div>
-                                    </li>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                            </ul>
-                            <?php if (in_array($schedule['team_id'], $existing_summaries)): ?>
-                                <p>You have already submitted a summary for this schedule.</p>
-                            <?php elseif ($submitted_count < $team_member_count): ?>
+                                ?>
                                 <p>MEMBER SUBMISSION STATUS</p>
-                            <?php elseif ($approved_count < $team_member_count): ?>
-                                <div style="height: 20px;"></div>
-                                <p>SUBMIT SUMMARY</p>
                                 <div style="height: 10px;"></div>
-                                <p class="pending-assessments">APPROVE ASSESSMENTS FIRST</p>
-                            <?php else: ?>
-                                <div style="height: 20px;"></div>
-                                <p>SUBMIT SUMMARY</p>
-                                <div style="height: 10px;"></div>
-                                <button class="assessment-button" onclick="SummaryopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START SUMMARY</button>
-                            <?php endif; ?>
-                        <?php else: ?>
-                            <?php if ($schedule['area'] == ''): ?>
-                                <p>Your team leader should assign area first before you can assess.</p>
-                            <?php elseif (in_array($schedule['team_id'], $existing_assessments)): ?>
-                                <p>ASSESSMENT</p>
+                                <div class="assessmentname2">
+                                    <div class="nameContainer">
+                                        <p><?php echo $submitted_count; ?>/<?php echo $team_member_count; ?> SUBMITTED ASSESSMENTS</p>
+                                    </div>
+                                </div>
+                            <div style="height: 20px;"></div>
+                            <p>TEAM MEMBERS ASSESSMENT</p>
                             <div style="height: 10px;"></div>
-                                <p class="assessment-button-done">ALREADY SUBMITTED</p>
+                                <ul style="list-style: none; font-size: 18px;">
+                                <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
+                                    <?php if ($member['assessment_file'] && $member['role'] !== 'team leader'): ?>
+                                        <li>
+                                            <div class="assessmentname1">
+                                            <div class="titleContainer1">
+                                            <?php echo htmlspecialchars($member['name']); ?>
+                                        </div>
+                                        <div class="titleContainer2">
+                                        <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>"><i class="bi bi-file-earmark-arrow-down"></i></a>
+                                    </div>
+                                    <div class="titleContainer3">
+                                            <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
+                                                <i class="fas fa-check approve1"></i>
+                                            <?php else: ?>
+                                                <button class="approve" onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">APPROVE</button>
+                                            <?php endif; ?>
+                                            </div>
+                                        </li>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                                </ul>
+                                <?php if (in_array($schedule['team_id'], $existing_summaries)): ?>
+                                    <div style="height: 20px;"></div>
+                                    <p>SUBMIT SUMMARY</p>
+                                    <div style="height: 10px;"></div>
+                                    <p class="assessment-button-done">ALREADY SUBMITTED</p>
+                                <?php elseif ($submitted_count < $team_member_count): ?>
+                                <?php elseif ($approved_count < $team_member_count): ?>
+                                    <div style="height: 20px;"></div>
+                                    <p>SUBMIT SUMMARY</p>
+                                    <div style="height: 10px;"></div>
+                                    <p class="pending-assessments">APPROVE ASSESSMENTS FIRST</p>
+                                <?php else: ?>
+                                    <div style="height: 20px;"></div>
+                                    <p>SUBMIT SUMMARY</p>
+                                    <div style="height: 10px;"></div>
+                                    <button class="assessment-button" onclick="SummaryopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START SUMMARY</button>
+                                <?php endif; ?>
                             <?php else: ?>
-                                <p>ASSESSMENT</p>
-                            <div style="height: 10px;"></div>
-                                <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
+                                <?php if ($schedule['area'] == ''): ?>
+                                    <p>ASSESSMENT</p>
+                                    <div style="height: 10px;"></div>
+                                    <p class="pending-assessments">YOUR TEAM LEADER SHOULD ASSIGN AREA FIRST</p>
+                                <?php elseif (in_array($schedule['team_id'], $existing_assessments)): ?>
+                                    <p>ASSESSMENT</p>
+                                    <div style="height: 10px;"></div>
+                                        <p class="assessment-button-done">ALREADY SUBMITTED</p>
+                                <?php else: ?>
+                                    <p>ASSESSMENT</p>
+                                    <div style="height: 10px;"></div>
+                                        <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
+                                <?php endif; ?>
                             <?php endif; ?>
-                        <?php endif; ?>
+                        </div>
+                        </div>
+                        </div>
+                        </div>
                     </div>
-                    </div>
-                    </div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ACCEPTED</strong></p>
+            <?php endif; ?>
         </div>
     </div>
 
     <!-- Popup Form for Team Member -->
     <div class="assessmentmodal" id="popup">
         <div class="assessmentmodal-content">
+            <span style="float: right; font-size: 40px; cursor: pointer;" class="Summaryclose" onclick="closePopup()">&times;</span>
             <h2>ASSESSMENT FORM</h2>
             <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
                 <div class="assessment-group">
-                <input type="hidden" name="schedule_id" id="modal_schedule_id">
-                <label for="college">COLLEGE</label>
-                <input class="assessment-group-college" type="text" id="college" name="college" readonly>
-                <label for="program">PROGRAM</label>
-                <input class="assessment-group-program" type="text" id="program" name="program" readonly>
+                    <input type="hidden" name="schedule_id" id="modal_schedule_id">
+                    <label for="college">COLLEGE</label>
+                    <input class="assessment-group-college" type="text" id="college" name="college" readonly>
+                    <label for="program">PROGRAM</label>
+                    <input class="assessment-group-program" type="text" id="program" name="program" readonly>
                 </div>
                 <div class="orientationname1">
                     <div class="titleContainer">
@@ -437,12 +393,12 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                 </div>
                 <div style="height: 20px;"></div>
                 <div class="assessment-group">
-                <label for="findings"><strong>FINDINGS</strong></label>
-                <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="findings" name="findings" rows="10" placeholder="Add a comment" required></textarea>
-                <div style="height: 20px;"></div>
-                <label for="recommendations"><strong>RECOMMENDATIONS</strong></label>
-                <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="recommendations" name="recommendations" rows="10" placeholder="Add a comment" required></textarea>
-            </div>
+                    <label for="findings"><strong>FINDINGS</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="findings" name="findings" rows="10" placeholder="Add a comment" required></textarea>
+                    <div style="height: 20px;"></div>
+                    <label for="recommendations"><strong>RECOMMENDATIONS</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="recommendations" name="recommendations" rows="10" placeholder="Add a comment" required></textarea>
+                </div>
                 <div class="orientationname1">
                     <div class="titleContainer">
                         <label for="evaluator"><strong>EVALUATOR</strong></label>
@@ -472,29 +428,68 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
     <!-- Popup Form for Team Leader -->
     <div class="Summarymodal" id="Summarypopup">
         <div class="Summarymodal-content">
-            <span class="Summaryclose" onclick="SummaryclosePopup()">&times;</span>
-            <h2>Summary Form</h2>
+            <span style="float: right; font-size: 40px; cursor: pointer;" class="Summaryclose" onclick="SummaryclosePopup()">&times;</span>
+            <h2>SUMMARY FORM</h2>
             <form action="internal_summary_assessment_process.php" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="schedule_id" id="Summarymodal_schedule_id">
-                <label for="college">College:</label>
-                <input type="text" id="Summarycollege" name="college" disabled><br><br>
-                <label for="program">Program:</label>
-                <input type="text" id="Summaryprogram" name="program" disabled><br><br>
-                <label for="level">Level Applied:</label>
-                <input type="text" id="Summarylevel" name="level" disabled><br><br>
-                <label for="date">Schedule Date:</label>
-                <input type="text" id="Summarydate" name="date" disabled><br><br>
-                <label for="areas">Areas Evaluated:</label>
-                <textarea id="areas" name="areas" rows="4" disabled></textarea><br><br>
-                <label for="results">Results:</label>
-                <textarea id="results" name="results" rows="4" required></textarea><br><br>
-                <label for="evaluator">Evaluator:</label>
-                <input type="text" id="Summaryevaluator" name="evaluator" value="<?php echo $full_name; ?>" disabled><br><br>
-                <label for="Summaryevaluator_signature">Team Leader Signature (PNG format):</label>
-                <input type="file" id="Summaryevaluator_signature" name="evaluator_signature" accept="image/png" required><br><br>
-                <div class="modal-footer">
-                    <button type="button" onclick="SummaryclosePopup()">Close</button>
-                    <button type="submit">Submit Summary</button>
+                <div class="assessment-group">
+                    <input type="hidden" name="schedule_id" id="Summarymodal_schedule_id">
+                    <label for="college">COLLEGE</label>
+                    <input type="text" id="Summarycollege" name="college" readonly>
+                    <div style="height: 20px;"></div>
+                    <label for="program">PROGRAM</label>
+                    <input type="text" id="Summaryprogram" name="program" readonly>
+                </div>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="level"><strong>LEVEL APPLIED</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="date"><strong>DATE</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="time"><strong>TIME</strong></label>
+                    </div>
+                </div>
+                <div class="orientationname1">
+                    <div class="nameContainer orientationContainer1">
+                        <input class="level" type="text" id="Summarylevel" name="level" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="level" type="text" id="Summarydate" name="date" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="time" type="text" id="Summarytime" name="time" readonly>
+                    </div>
+                </div>
+                <div style="height: 20px;"></div>
+                <div class="assessment-group">
+                    <label for="results"><strong>RESULTS</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px; font-size: 16px;" id="results" name="results" rows="10" readonly></textarea>
+                    <div style="height: 20px;"></div>
+                    <label for="areas"><strong>AREAS EVALUATED</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px; font-size: 16px;" id="areas" name="areas" rows="10" readonly></textarea>
+                </div>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="evaluator"><strong>EVALUATOR</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="Summaryevaluator_signature"><strong>TEAM LEADER E-SIGN</strong></label>
+                    </div>
+                </div>
+                <div class="orientationname1 upload">
+                    <div class="nameContainer orientationContainer">
+                        <input class="area_evaluated" type="text" id="Summaryevaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer uploadContainer">
+                        <span class="upload-text">UPLOAD</span>
+                        <img id="upload-icon-team-evaluator" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                        <input class="uploadInput" type="file" id="Summaryevaluator_signature" name="evaluator_signature" accept="image/png" required>
+                    </div>
+                </div>
+                <div class="button-container">
+                    <button class="cancel-button1" type="button" onclick="SummaryclosePopup()">Close</button>
+                    <button class="submit-button1" type="submit">Submit Summary</button>
                 </div>
             </form>
         </div>
@@ -503,7 +498,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
     <!-- Popup Form for Approving Assessment -->
     <div class="approvalmodal" id="approveAssessmentPopup">
         <div class="approvalmodal-content">
-            <span class="close" onclick="closeApproveAssessmentPopup()">&times;</span>
+            <span style="float: right; font-size: 40px; cursor: pointer;" class="close" onclick="closeApproveAssessmentPopup()">&times;</span>
             <h2>APPROVE ASSESSMENT</h2>
             <form action="approve_assessment_process.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="team_id" id="approve_team_id">
@@ -547,10 +542,9 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
             });
         }
 
-        // Handle file change for evaluator_signature
         handleFileChange(document.getElementById('evaluator_signature'), document.getElementById('upload-icon-evaluator'));
 
-        // Handle file change for team_leader_signature
+        handleFileChange(document.getElementById('Summaryevaluator_signature'), document.getElementById('upload-icon-team-evaluator'));
         handleFileChange(document.getElementById('team_leader_signature'), document.getElementById('upload-icon-leader'));
 
         function toggleNotifications() {
@@ -600,6 +594,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
             
             // Format the date
             document.getElementById('Summarydate').value = formatDate(schedule.schedule_date);
+            document.getElementById('Summarytime').value = formatTime(schedule.schedule_time);
 
             // Fetch team members' areas
             var areasXhr = new XMLHttpRequest();

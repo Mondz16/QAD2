@@ -1,0 +1,632 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Quicksand", sans-serif;
+}
+
+.hair {
+    height: 15px;
+    background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+}
+
+.container, .container1 {
+    max-width: 1280px;
+    padding-left: 24px;
+    padding-right: 24px;
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.container1 {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Two columns: left column takes twice the space */
+    gap: 20px; /* Gap between items */
+    align-items: start; /* Align items to start vertically */
+}
+
+.header, .header1 {
+    height: 58px;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    justify-content: space-between;
+    align-items: center;
+    align-content: unset;
+    overflow: unset;
+}
+
+.header1 {
+    margin-top: 50px;
+}
+
+.headerLeft {
+    order: unset;
+    flex: unset;
+    align-self: unset;
+}
+
+.USePData {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    place-content: unset;
+    align-items: center;
+    overflow: unset;
+}
+
+.headerLeftText {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: unset;
+    place-content: unset;
+    align-items: unset;
+    overflow: unset;
+    font-size: 18px;
+}
+
+.ondedata {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    place-content: unset;
+    align-items: unset;
+    overflow: unset;
+}
+
+.one, .datausep {
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.one {
+    color: rgb(229, 156, 36);
+}
+
+.datausep {
+    color: rgb(151, 57, 57);
+}
+
+.headerRight {
+    order: unset;
+    flex: unset;
+    align-self: unset;
+}
+
+.QAD {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    place-content: unset;
+    align-items: center;
+    overflow: unset;
+}
+
+.headerRightText {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: unset;
+    place-content: unset;
+    align-items: flex-end;
+    overflow: unset;
+    text-align: right;
+}
+
+.headerRightText h {
+    color: rgb(87, 87, 87);
+    font-weight: 600;
+    font-size: 16px;
+}
+.signup, .approve, .approve1, .okay, .resend, .apply, .cancel, .loginstead, .profile1, .orientation1, .assessment1, .logout {
+    color: black;
+    text-decoration: none;
+    white-space: unset;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: 1px solid;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.profile1, .orientation1, .assessment1 {
+    padding: 16px 20px;
+    width: 270.5px;
+    font-size: 14px;
+}
+
+.logout{
+    padding: 16px 20px;
+    width: 70px;
+    text-align: center;
+}
+
+.nav-list {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.nav-list a {
+    display: inline-block;
+    background-color: #f5f5f5;
+    border: 1px solid #AFAFAF;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.nav-list a.active {
+    background-color: #FF7A7A;
+    color: white;
+    border-color: #AFAFAF;
+}
+
+.nav-list a:hover {
+    background-color: #FF7A7A;
+    color: white;
+    border-color: #AFAFAF;
+}
+
+.profile-info, .changepassword {
+    padding: 30px;
+    border: 1px solid #AFAFAF;
+    border-radius: 20px;
+    background-color: #f9f9f9;
+    margin-top: 10px;
+    width: 100%; /* Full width of grid cell */
+    box-sizing: border-box;
+}
+
+.profile-info {
+    grid-column: 1; /* First column */
+}
+
+.changepassword {
+    grid-column: 2; /* Second column */
+    grid-row: span 2; /* Span across two rows */
+    height: 664px; /* Automatic height adjustmfent */
+}
+
+.profile-info strong {
+    display: inline-block;
+    width: 100px;
+}
+
+.personal, .prefix1{
+    font-size: 24px;
+    white-space: nowrap;
+}
+
+.prefix1 {
+    margin-left: 30px;
+}
+
+.profile {
+    display: flex;
+    max-width: 100%;
+    flex-basis: 100%;
+    justify-content: space-between; /* Aligns items to both sides */
+    align-items: center; /* Vertically centers items */
+}
+
+.profile-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.profile-name {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.profile-type {
+    font-size: 24px;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.user-id {
+    font-size: 25px;
+}
+
+.profile-picture-container {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin-right: 30px;
+}
+
+.profile-picture {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.edit-link {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    float: right;
+    margin-right: 20px;
+    display: inline;
+}
+
+.edit-link:hover {
+    opacity: 0.9;
+}
+
+.edit-icon {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: white;
+    border-radius: 50%;
+    padding: 5px;
+    cursor: pointer;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.edit-icon i {
+    font-size: 16px;
+    color: #333;
+}
+
+.edit-icon:hover {
+    border: 1px solid #AFAFAF;
+}
+
+.passwordContainer, .usernameContainer {
+    padding: 12px 20px;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 8px;
+}
+
+.username {
+    width: 438px;
+}
+
+.firstname,
+.passwordText,
+.prefix,
+.newPrefix,
+.middleinitial,
+.lastname,
+.email,
+.gender,
+.college,
+.company {
+    color: #575757;
+    width: 100%;
+    border: 0;
+    resize: none;
+    outline: 0;
+    padding: 0;
+    font-size: 16px;
+    background: transparent;
+    caret-color: #575757;
+}
+
+.checklist {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    width: 350px;
+    font-size: 20px;
+}
+
+.checklist ul {
+    list-style: none;
+    padding: 0;
+}
+
+.checklist li {
+    margin: 10px 0;
+    padding-left: 20px;
+    position: relative;
+}
+
+.checklist li::before {
+    content: '✗';
+    position: absolute;
+    left: 0;
+    color: red;
+    font-weight: bold;
+    transition: color 0.3s, content 0.3s;
+}
+
+.checklist li.valid::before {
+    content: '✓';
+    color: green;
+}
+
+.checklist li.invalid {
+    color: #b94a48;
+}
+
+.checklist li.valid {
+    color: #468847;
+}
+
+.showpasswordText {
+    margin-right: 86px;
+}
+
+.showpasswordContainer {
+    display: flex;
+    align-items: center;
+}
+
+.showpasswordContainer label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+#showPasswordCheckbox {
+    display: none; /* Hide the default checkbox */
+}
+
+/* Create a custom checkbox */
+#showPasswordCheckbox + .custom-checkbox {
+    margin-right: 10px;
+    height: 25px;
+    width: 25px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(170, 170, 170);
+    border-radius: 8px;
+    background: transparent;
+    transition: background-color 0.3s, border-color 0.3s;
+    position: relative;
+}
+
+/* Hover effect */
+#showPasswordCheckbox + .custom-checkbox:hover {
+    border-color: rgb(87, 87, 87);
+    background-color: rgba(87, 87, 87, 0.1);
+}
+
+/* Checked effect */
+#showPasswordCheckbox:checked + .custom-checkbox {
+    background-color: #FF7A7A;
+    border-color: rgb(87, 87, 87);
+}
+
+/* Checkmark */
+#showPasswordCheckbox:checked + .custom-checkbox::after {
+    content: '\2713';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+}
+
+.changepassword-button {
+    width: 350px;
+    padding: 10px 25px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.changepassword-button {
+    background-color: #34C759;
+    color: white;
+}
+
+.changepassword-button:hover {
+    opacity: 0.9;
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place even when scrolling */
+    z-index: 1; /* Sit on top */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%); /* Move it to the center */
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 600px; /* Ensure it doesn't get too wide */
+}
+
+.modal-content h2, .assessmentmodal-content h2, .Summarymodal-content h2, .approvalmodal-content h2 {
+    text-align: center;
+    margin: 20px;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #AFAFAF;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 500px;
+    bor
+}
+
+.prefixContainer {
+    flex: 0 0 18%; /* Adjust as needed */
+}
+
+.prefixContainer select {
+    width: 100%;
+    border: none;
+    outline: none;
+    background-color: transparent;
+    font-size: 1rem;
+    -webkit-appearance: none; /* Remove default dropdown arrow in WebKit browsers */
+    -moz-appearance: none; /* Remove default dropdown arrow in Firefox */
+    appearance: none; /* Remove default dropdown arrow */
+    background-color: transparent; /* Ensure background is transparent */
+    cursor: pointer; /* Change cursor to pointer */
+    padding: 12px 20px;
+}
+
+.prefixContainer, .profilenameContainer, .nameContainer {
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 8px;
+    flex: 1;
+}
+
+.profilenameContainer {
+    padding: 12px;
+}
+
+.middleinitialContainer {
+    flex: 0 0 10%;
+}
+
+.button-container {
+    display: flex;
+    justify-content: flex-end; /* Aligns the button to the right */
+    width: 100%; /* Ensure the container takes full width */
+    margin-top: 20px; /* Add some spacing from other elements */
+}
+
+.cancel-button, .accept-button1 {
+    padding: 10px 25px;
+    margin: 0 5px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.cancel-button {
+    color: #AFAFAF;
+    border: 1px solid #AFAFAF;
+}
+
+.cancel-button:hover, .accept-button1:hover {
+    opacity: 0.9;
+}
+
+.accept-button1 {
+    background-color: #34C759;
+    color: white;
+}
+
+.name1 {
+    display: flex;
+    gap: 10px;
+    width: 438px;
+}
+
+.edit-gender, .college1 {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.edit-gender select, .college1 select {
+    padding: 12px 20px;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #fff;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+}
+
+.edit-gender select, .college1 select {
+    width: 438px;
+}
+
+.edit-gender select:focus, .college1 select:focus {
+    border: 1px solid #aaa; /* Customize the border color on focus */
+    outline: none; /* Remove default outline */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+}
+
+.speecify-gender {
+    display:none;
+    width: 455px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+.fa-user, .fa-calendar, .fa-medal, .fa-bell {
+    float: right;
+}
+
+.lastnameContainer {
+    width: 200px;
+}
+
+.upload-text {
+    margin-left: auto;
+    font-weight: bold;
+    color: #575757;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.upload-icon {
+    width: 20px;
+    height: 20px;
+    margin-left: auto;
+    cursor: pointer;
+}
+
+.uploadInput {
+    position: absolute;
+    opacity: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.uploadContainer {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 12px 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.specify-gender {
+    display:none;
+    width: 455px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    background-color: #fff;
+}

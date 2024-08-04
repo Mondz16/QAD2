@@ -2,9 +2,31 @@
 include 'connection.php';
 session_start();
 
-if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11') {
+if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Check user type and redirect accordingly
+if ($user_id === 'admin') {
+    header("Location: admin.php");
+    exit();
+} else {
+    $user_type_code = substr($user_id, 3, 2);
+    if ($user_type_code === '11') {
+        // Internal user
+        // Continue with internal user logic
+    } elseif ($user_type_code === '22') {
+        // External user
+        header("Location: external.php");
+        exit();
+    } else {
+        // Handle unexpected user type, redirect to login or error page
+        header("Location: login.php");
+        exit();
+    }
 }
 
 $user_id = $_SESSION['user_id'];
@@ -106,28 +128,6 @@ if (!empty($schedules)) {
     }
     $stmt_team->close();
 }
-
-// Initialize notification count
-$notification_count = 0;
-
-// Fetch notifications and count
-$sql_notifications = "
-    SELECT s.id AS schedule_id, p.program_name, t.role, c.college_name, s.schedule_status, s.schedule_date, s.schedule_time
-    FROM team t
-    JOIN schedule s ON t.schedule_id = s.id
-    JOIN program p ON s.program_id = p.id
-    JOIN college c ON s.college_code = c.code
-    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status NOT IN ('cancelled', 'finished')
-";
-
-$stmt_notifications = $conn->prepare($sql_notifications);
-$stmt_notifications->bind_param("s", $user_id);
-$stmt_notifications->execute();
-$stmt_notifications->store_result();
-$stmt_notifications->bind_result($schedule_id, $program_name, $role, $college_name, $schedule_status, $schedule_date, $schedule_time);
-
-// Update notification count
-$notification_count = $stmt_notifications->num_rows; // Count the number of notifications
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -180,41 +180,10 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
             <div class="header1">
                 <div class="nav-list">
                     <a href="internal.php" class="profile1">Profile <i class="fa-regular fa-user"></i></a>
-                    <a href="internal_orientation.php" class="active orientation1">Orientation <i class="fa-regular fa-calendar"></i></a>
-                    <a href="internal_assessment.php" class="assessment1">Assessment <i class="fa-solid fa-medal"></i></a>
-                </div>
-                <div class="notification-bell" onclick="toggleNotifications()">
-                    <i class="fa-regular fa-bell notifications"></i>
-                    <?php if ($notification_count > 0): ?>
-                        <span class="notification-count"><?php echo $notification_count; ?></span>
-                    <?php endif; ?>
-                    <div class="dropdown-content" id="notificationDropdown">
-                        <?php while ($stmt_notifications->fetch()): ?>
-                            <?php
-                            // Format the schedule date and time
-                            $date = new DateTime($schedule_date);
-                            $time = new DateTime($schedule_time);
-
-                            // Determine status color
-                            $status_color = '';
-                            if ($schedule_status === 'pending') {
-                                $status_color = '#E6A33E'; // Pending color
-                            } elseif ($schedule_status === 'approved') {
-                                $status_color = '#34C759'; // Approved color
-                            }
-                            ?>
-                            <a href="internal_notification.php" class="notification-item">
-                                <p><strong>COLLEGE</strong><br><span><?php echo htmlspecialchars($college_name); ?></span></p><br><br>
-                                <p><strong>PROGRAM</strong><br><span><?php echo htmlspecialchars($program_name); ?></span></p><br><br>
-                                <p><strong>ROLE</strong><span class="status"><?php echo htmlspecialchars($role); ?></span></p><br>
-                                <p><strong>DATE</strong><span class="status"><?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i a'); ?></span></p><br>
-                                <p><strong>STATUS</strong><span class="status" style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($schedule_status); ?></span></p>
-                            </a>
-                        <?php endwhile; ?>
-                        <div class="see-all">
-                            <a href="internal_notification.php">SEE ALL</a>
-                        </div>
-                    </div>
+                    <a href="internal_notification.php" class="orientation1">NOTIFICATION<i class="fa-regular fa-bell"></i></i></a>
+                    <a href="internal_assessment.php" class="assessment1">Assessment<i class="fa-solid fa-medal"></i></a>
+                    <a href="internal_orientation.php" class="active orientation1">Orientation<i class="fa-regular fa-calendar"></i></a>
+                    <a href="logout.php" class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
                 </div>
             </div>
         </div>
@@ -297,7 +266,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                                         <li style="font-weight: bold"><?php echo htmlspecialchars($team_leader['name']); ?></li>
                                     <?php endforeach; ?>
                                 <?php else: ?>
-                                    <li>No team leader assigned.</li>
+                                    <li>NO TEAM LEADER ASSIGNED</li>
                                 <?php endif; ?>
                             </ul>
                             <div style="height: 35px;"></div>
@@ -309,7 +278,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                                         <li style="margin-bottom: 20px"><?php echo htmlspecialchars($team_member['name']); ?></li>
                                     <?php endforeach; ?>
                                 <?php else: ?>
-                                    <li>No team members assigned.</li>
+                                    <li>NO TEAM MEMBERS ASSIGNED</li>
                                 <?php endif; ?>
                             </ul>
                             
@@ -334,7 +303,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULE HAS BEEN ASSIGNED TO YOUR COLLEGE</strong></p>
+                <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ASSIGNED TO YOUR COLLEGE</strong></p>
             <?php endif; ?>
     </div>
     </div>  

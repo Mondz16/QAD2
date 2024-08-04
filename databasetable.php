@@ -83,7 +83,16 @@ if ($conn->query($sql) === TRUE) {
 // Create admin table
 $sql = "CREATE TABLE IF NOT EXISTS admin (
     user_id VARCHAR(255) PRIMARY KEY,
-    password VARCHAR(255) NOT NULL
+    prefix VARCHAR(50) NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    middle_initial VARCHAR(1) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    profile_picture VARCHAR(255) NOT NULL,
+    gender VARCHAR(50) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    otp VARCHAR(255) NOT NULL,
+    date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
 
 if ($conn->query($sql) === TRUE) {

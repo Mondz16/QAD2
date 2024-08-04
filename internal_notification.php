@@ -52,7 +52,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Internal Accreditor - Notifications</title>
     <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="wrapper">
@@ -91,55 +91,72 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
             </div>
         </div>
         <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
+        <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
+        <div style="height: 10px; width: 0px;"></div>
+        <div class="container">
+            <div class="header1">
+                <div class="nav-list">
+                    <a href="internal.php" class="profile1">Profile <i class="fa-regular fa-user"></i></a>
+                    <a href="internal_notification.php" class="active orientation1">NOTIFICATION<i class="fa-regular fa-bell"></i></i></a>
+                    <a href="internal_assessment.php" class="assessment1">Assessment<i class="fa-solid fa-medal"></i></a>
+                    <a href="internal_orientation.php" class="orientation1">Orientation<i class="fa-regular fa-calendar"></i></a>
+                    <a href="logout.php" class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                </div>
+            </div>
+        </div>
     </div>
-    <a href="internal.php" class="back-link">< BACK</a>
     <div class="container">
-        <div class="notifications1">
-            <h2>NOTIFICATIONS</h2>
+        <div style="height: 32px;"></div>
+        <div class="orientation2">
             <div class="notification-list">
-                <?php while ($stmt_notifications->fetch()): ?>
-                    <?php
-                    // Format the schedule date and time
-                    $date = new DateTime($schedule_date);
-                    $time = new DateTime($schedule_time);
+                <?php
+                if ($stmt_notifications->num_rows > 0):
+                    while ($stmt_notifications->fetch()): ?>
+                        <?php
+                        // Format the schedule date and time
+                        $date = new DateTime($schedule_date);
+                        $time = new DateTime($schedule_time);
 
-                    // Determine status color
-                    $status_color = '';
-                    if ($schedule_status === 'pending') {
-                        $status_color = '#E6A33E'; // Pending color
-                    } elseif ($schedule_status === 'approved') {
-                        $status_color = '#34C759'; // Approved color
-                    }
-                    ?>
-                    <div class="notification">
-                        <p><strong>College:</strong> <strong class="status" style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($schedule_status); ?></strong><br><?php echo htmlspecialchars($college_name); ?></p><br>
-                        <p><strong>Program:</strong><br><?php echo htmlspecialchars($program_name); ?></p><br>
-                        <p><strong>Level Applied:</strong> <?php echo htmlspecialchars($level_applied); ?></p><br>
-                        <p><strong>Date:</strong> <?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i A'); ?></p><br>
-                        <div class="role-area">
-                            <p><strong>Role:</strong> <?php echo htmlspecialchars($role); ?><br><strong>Area:</strong> <?php echo htmlspecialchars($area); ?></p>
-                            <div class="notification-actions">
-                                <?php if ($role === 'Team Leader'): ?>
-                                    <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
-                                        <input type="hidden" name="team_id" value="<?php echo $team_id; ?>">
-                                        <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
-                                        <input type="hidden" name="action" id="action-<?php echo $team_id; ?>" value="">
-                                        <button type="button" class="decline-button" onclick="confirmAction('<?php echo $team_id; ?>', 'decline')">DECLINE</button>
-                                        <button type="button" class="accept-button" onclick="openModal(<?php echo $schedule_id; ?>, <?php echo $team_id; ?>)">ACCEPT</button>
-                                    </form>
-                                <?php else: ?>
-                                    <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
-                                        <input type="hidden" name="team_id" value="<?php echo $team_id; ?>">
-                                        <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
-                                        <input type="hidden" name="action" id="action-<?php echo $team_id; ?>" value="">
-                                        <button type="button" class="decline-button" onclick="confirmAction('<?php echo $team_id; ?>', 'decline')">DECLINE</button>
-                                        <button type="button" class="accept-button" onclick="confirmAction('<?php echo $team_id; ?>', 'accept')">ACCEPT</button>
-                                    </form>
-                                <?php endif; ?>
+                        // Determine status color
+                        $status_color = '';
+                        if ($schedule_status === 'pending') {
+                            $status_color = '#E6A33E'; // Pending color
+                        } elseif ($schedule_status === 'approved') {
+                            $status_color = '#34C759'; // Approved color
+                        }
+                        ?>
+                        <div class="notification">
+                            <p><strong>College:</strong> <strong class="status" style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($schedule_status); ?></strong><br><?php echo htmlspecialchars($college_name); ?></p><br>
+                            <p><strong>Program:</strong><br><?php echo htmlspecialchars($program_name); ?></p><br>
+                            <p><strong>Level Applied:</strong> <?php echo htmlspecialchars($level_applied); ?></p><br>
+                            <p><strong>Date:</strong> <?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i A'); ?></p><br>
+                            <div class="role-area">
+                                <p><strong>Role:</strong> <?php echo htmlspecialchars($role); ?><br><strong>Area:</strong> <?php echo htmlspecialchars($area); ?></p>
+                                <div class="notification-actions">
+                                    <?php if ($role === 'Team Leader'): ?>
+                                        <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
+                                            <input type="hidden" name="team_id" value="<?php echo $team_id; ?>">
+                                            <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
+                                            <input type="hidden" name="action" id="action-<?php echo $team_id; ?>" value="">
+                                            <button type="button" class="decline-button" onclick="confirmAction('<?php echo $team_id; ?>', 'decline')">DECLINE</button>
+                                            <button type="button" class="accept-button" onclick="openModal(<?php echo $schedule_id; ?>, <?php echo $team_id; ?>)">ACCEPT</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
+                                            <input type="hidden" name="team_id" value="<?php echo $team_id; ?>">
+                                            <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
+                                            <input type="hidden" name="action" id="action-<?php echo $team_id; ?>" value="">
+                                            <button type="button" class="decline-button" onclick="confirmAction('<?php echo $team_id; ?>', 'decline')">DECLINE</button>
+                                            <button type="button" class="accept-button" onclick="confirmAction('<?php echo $team_id; ?>', 'accept')">ACCEPT</button>
+                                        </form>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                <?php endwhile; ?>
+                    <?php endwhile;
+                else: ?>
+                    <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ASSIGNED TO YOU</strong></p>
+                <?php endif; ?>
             </div>
             <?php $stmt_notifications->close(); ?>
         </div>

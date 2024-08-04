@@ -9,6 +9,28 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Check user type and redirect accordingly
+if ($user_id === 'admin') {
+    header("Location: admin.php");
+    exit();
+} else {
+    $user_type_code = substr($user_id, 3, 2);
+    if ($user_type_code === '11') {
+        // Internal user
+        // Continue with internal user logic
+    } elseif ($user_type_code === '22') {
+        // External user
+        header("Location: external.php");
+        exit();
+    } else {
+        // Handle unexpected user type, redirect to login or error page
+        header("Location: login.php");
+        exit();
+    }
+}
+
+$user_id = $_SESSION['user_id'];
+
 // Fetch user details
 $sql_user = "SELECT prefix, first_name, middle_initial, last_name, email, gender, college_code, profile_picture, password, otp FROM internal_users WHERE user_id = ?";
 $stmt_user = $conn->prepare($sql_user);
@@ -27,7 +49,7 @@ $stmt_college->bind_result($college_name1);
 $stmt_college->fetch();
 $stmt_college->close();
 
-$accreditor_type = (substr($user_id, 3, 2) == '11') ? 'Internal Accreditor' : 'External Accreditor';
+$accreditor_type = ($user_type_code === '11') ? 'Internal Accreditor' : 'External Accreditor';
 
 // Fetch all colleges except the current user's college
 $sql_all_colleges = "SELECT code, college_name FROM college WHERE code != ?";
@@ -41,29 +63,6 @@ while ($stmt_all_colleges->fetch()) {
     $colleges[] = ['code' => $college_code_option, 'name' => $college_name_option];
 }
 $stmt_all_colleges->close();
-
-// Initialize notification count
-$notification_count = 0;
-
-// Fetch notifications and count
-$sql_notifications = "
-    SELECT s.id AS schedule_id, p.program_name, t.role, c.college_name, s.schedule_status, s.schedule_date, s.schedule_time
-    FROM team t
-    JOIN schedule s ON t.schedule_id = s.id
-    JOIN program p ON s.program_id = p.id
-    JOIN college c ON s.college_code = c.code
-    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status NOT IN ('cancelled', 'finished')
-";
-
-$stmt_notifications = $conn->prepare($sql_notifications);
-$stmt_notifications->bind_param("s", $user_id);
-$stmt_notifications->execute();
-$stmt_notifications->store_result();
-$stmt_notifications->bind_result($schedule_id, $program_name, $role, $college_name, $schedule_status, $schedule_date, $schedule_time);
-
-// Update notification count
-$notification_count = $stmt_notifications->num_rows; // Count the number of notifications
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -77,7 +76,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
 
 <body>
     <div class="wrapper">
-        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+        <div class="hair"></div>
         <div class="container">
             <div class="header">
                 <div class="headerLeft">
@@ -87,11 +86,11 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                         <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
                         <div style="height: 0px; width: 16px;"></div>
                         <div class="headerLeftText">
-                            <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
-                                <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
-                                    <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span></h>
+                            <div class="onedata">
+                                <h><span class="one">One</span>
+                                    <span class="datausep">Data.</span>
+                                    <span class="one">One</span>
+                                    <span class="datausep">USeP.</span></h>
                             </div>
                             <h>Accreditor Portal</h>
                         </div>
@@ -101,7 +100,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                 <div class="headerRight">
                     <div class="QAD">
                         <div class="headerRightText">
-                            <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                            <h>Quality Assurance Division</h>
                         </div>
                         <div style="height: 0px; width: 16px;"></div>
                         <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
@@ -116,42 +115,11 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
         <div class="container">
             <div class="header1">
                 <div class="nav-list">
-                    <a href="internal.php" class="active profile1">Profile <i class="fa-regular fa-user"></i></a>
-                    <a href="internal_orientation.php" class="orientation1">Orientation <i class="fa-regular fa-calendar"></i></a>
-                    <a href="internal_assessment.php" class="assessment1">Assessment <i class="fa-solid fa-medal"></i></a>
-                </div>
-                <div class="notification-bell" onclick="toggleNotifications()">
-                    <i class="fa-regular fa-bell notifications"></i>
-                    <?php if ($notification_count > 0): ?>
-                        <span class="notification-count"><?php echo $notification_count; ?></span>
-                    <?php endif; ?>
-                    <div class="dropdown-content" id="notificationDropdown">
-                        <?php while ($stmt_notifications->fetch()): ?>
-                            <?php
-                            // Format the schedule date and time
-                            $date = new DateTime($schedule_date);
-                            $time = new DateTime($schedule_time);
-
-                            // Determine status color
-                            $status_color = '';
-                            if ($schedule_status === 'pending') {
-                                $status_color = '#E6A33E'; // Pending color
-                            } elseif ($schedule_status === 'approved') {
-                                $status_color = '#34C759'; // Approved color
-                            }
-                            ?>
-                            <a href="internal_notification.php" class="notification-item">
-                                <p><strong>COLLEGE</strong><br><span><?php echo htmlspecialchars($college_name); ?></span></p><br><br>
-                                <p><strong>PROGRAM</strong><br><span><?php echo htmlspecialchars($program_name); ?></span></p><br><br>
-                                <p><strong>ROLE</strong><span class="status"><?php echo htmlspecialchars($role); ?></span></p><br>
-                                <p><strong>DATE</strong><span class="status"><?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i a'); ?></span></p><br>
-                                <p><strong>STATUS</strong><span class="status" style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($schedule_status); ?></span></p>
-                            </a>
-                        <?php endwhile; ?>
-                        <div class="see-all">
-                            <a href="internal_notification.php">SEE ALL</a>
-                        </div>
-                    </div>
+                    <a href="internal.php" class="active profile1">PROFILE <i class="fa-regular fa-user"></i></a>
+                    <a href="internal_notification.php" class="orientation1">NOTIFICATION<i class="fa-regular fa-bell"></i></i></a>
+                    <a href="internal_assessment.php" class="assessment1">Assessment<i class="fa-solid fa-medal"></i></a>
+                    <a href="internal_orientation.php" class="orientation1">Orientation<i class="fa-regular fa-calendar"></i></a>
+                    <a href="logout.php" class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
                 </div>
             </div>
         </div>
@@ -181,7 +149,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                 <form action="change_password_process.php" method="post">
                     <div style="height: 32px; width: 0px;"></div>
                     <div class="password">
-                        <div class="passwordContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
+                        <div class="passwordContainer">
                             <input class="passwordText" type="password" id="currentPassword" name="currentPassword" placeholder="CURRENT PASSWORD" required>
                         </div>
                     </div>
@@ -200,7 +168,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                     <div style="height: 10px; width: 0px;"></div>
 
                     <div class="password">
-                        <div class="passwordContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
+                        <div class="passwordContainer">
                             <input class="passwordText" type="password" id="newPassword" name="newPassword" placeholder="NEW PASSWORD" required oninput="checkPasswordStandards()"><br>
                         </div>
                     </div>
@@ -208,7 +176,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                     <div style="height: 10px; width: 0px;"></div>
 
                     <div class="password">
-                        <div class="passwordContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
+                        <div class="passwordContainer">
                             <input class="passwordText" type="password" id="confirmPassword" name="confirmPassword" placeholder="CONFIRM PASSWORD" required oninput="checkPasswordMatch()"><br>
                         </div>
                     </div>
@@ -246,12 +214,18 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
     <!-- Modals -->
     <div id="profilePictureModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('profilePictureModal')">&times;</span>
             <form action="update_profile.php" method="post" enctype="multipart/form-data">
                 <h2>EDITT PROFILE PICTURE</h2>
-                <input type="file" name="profilePicture" accept="image/*" required><br><br>
-                <input type="hidden" name="field" value="profilePicture">
-                <button type="submit">Submit</button>
+                <div class="nameContainer orientationContainer uploadContainer">
+                        <span class="upload-text">UPLOAD</span>
+                        <img id="upload-icon-profile" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                        <input class="uploadInput" type="file" id="profilePicture" name="profilePicture" accept="image/*" required>
+                        <input type="hidden" name="field" value="profilePicture">
+                    </div>
+                    <div class="button-container">
+                    <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
+                    <button type="submit" class="accept-button1">CONFIRM</button>
+                </div>
             </form>
         </div>
     </div>
@@ -311,8 +285,8 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
         <div class="modal-content">
             <form action="update_profile.php" method="post">
                 <h2>Edit Email</h2>
-                <div class="username" style="width: 455px">
-                <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
+                <div class="username">
+                <div class="usernameContainer">
                 <input class="email" type="email" id="newEmail" name="newEmail" value="<?php echo htmlspecialchars($email); ?>" required>
             </div>
                 <input type="hidden" name="field" value="email">
@@ -338,7 +312,7 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
                     <?php if ($gender !== 'Prefer not to say') { ?><option value="Prefer not to say">Prefer not to say</option><?php } ?>
                     <?php if ($gender !== 'Others') { ?><option value="Others">Others</option><?php } ?>
                 </select>
-                <input type="text" id="genderInput" name="gender_others" style="display:none; width: 455px; padding: 12px 20px; border-radius: 8px; background-color: #fff;" placeholder="Specify Gender" value="<?php echo ($gender === 'Others') ? $gender : ''; ?>"><br><br>
+                <input class="specify-gender" type="text" id="genderInput" name="gender_others" placeholder="Specify Gender" value="<?php echo ($gender === 'Others') ? $gender : ''; ?>"><br><br>
                 <input type="hidden" name="field" value="gender">
             </div>
             </div>
@@ -379,6 +353,20 @@ $notification_count = $stmt_notifications->num_rows; // Count the number of noti
     </div>
 
     <script>
+        function handleFileChange(inputElement, iconElement) {
+            inputElement.addEventListener('change', function () {
+                if (this.files && this.files.length > 0) {
+                    // Change icon to check mark if a file is selected
+                    iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
+                } else {
+                    // Change icon back to download if no file is selected
+                    iconElement.src = 'images/download-icon1.png';
+                }
+            });
+        }
+
+        handleFileChange(document.getElementById('profilePicture'), document.getElementById('upload-icon-profile'));
+
         function togglePasswordVisibility() {
             const showPasswordCheckbox = document.getElementById('showPasswordCheckbox');
             const newPassword = document.getElementById('newPassword');

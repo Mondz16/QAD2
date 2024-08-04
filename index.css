@@ -6,6 +6,11 @@
     font-family: "Quicksand", sans-serif;
 }
 
+.hair {
+    height: 15px;
+    background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+}
+
 .container, .container1 {
     max-width: 1280px;
     padding-left: 24px;
@@ -23,6 +28,7 @@
     gap: 20px; /* Gap between items */
     align-items: start; /* Align items to start vertically */
 }
+
 .header, .header1 {
     height: 58px;
     width: 100%;
@@ -66,6 +72,29 @@
     font-size: 18px;
 }
 
+.ondedata {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    place-content: unset;
+    align-items: unset;
+    overflow: unset;
+}
+
+.one, .datausep {
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.one {
+    color: rgb(229, 156, 36);
+}
+
+.datausep {
+    color: rgb(151, 57, 57);
+}
+
 .headerRight {
     order: unset;
     flex: unset;
@@ -92,6 +121,12 @@
     align-items: flex-end;
     overflow: unset;
     text-align: right;
+}
+
+.headerRightText h {
+    color: rgb(87, 87, 87);
+    font-weight: 600;
+    font-size: 16px;
 }
 
 .body {
@@ -199,7 +234,7 @@
     background: #ff7070;
 }
 
-.signup, .approve, .approve1, .okay, .resend, .apply, .cancel, .loginstead, .profile1, .orientation1, .assessment1 {
+.signup, .approve, .approve1, .okay, .resend, .apply, .cancel, .loginstead, .profile1, .orientation1, .assessment1, .logout {
     color: black;
     text-decoration: none;
     white-space: unset;
@@ -354,11 +389,17 @@
 
 .profile1, .orientation1, .assessment1 {
     padding: 16px 20px;
-    width: 318px;
+    width: 270px;
     font-size: 14px;
 }
 
-.fa-user, .fa-calendar, .fa-medal {
+.logout{
+    padding: 16px 20px;
+    width: 70px;
+    text-align: center;
+}
+
+.fa-user, .fa-calendar, .fa-medal, .fa-bell {
     float: right;
 }
 
@@ -526,7 +567,7 @@
 .name1 {
     display: flex;
     gap: 10px;
-    width: 455px;
+    width: 438px;
 }
 .nameContainer, .prefixContainer, .profilenameContainer, .form-group input, .assessment-group input {
     border-color: rgb(170, 170, 170);
@@ -624,6 +665,7 @@
 .prefix,
 .newPrefix,
 .firstname,
+.username,
 .middleinitial,
 .lastname,
 .email,
@@ -639,6 +681,10 @@
     font-size: 16px;
     background: transparent;
     caret-color: #575757;
+}
+
+.username {
+    width: 438px;
 }
 
 .showpasswordText {
@@ -741,13 +787,27 @@ input[type="radio"] {
     width: 721px;
 }
 
-.gender1 select, .edit-gender select, .college1 select {
+.gender1 select {
     width: 455px;
 }
+
+.edit-gender select, .college1 select {
+    width: 438px;
+}
+
 .college-company-gender select:focus, .gender1 select:focus, .edit-gender select:focus, .college1 select:focus {
     border: 1px solid #aaa; /* Customize the border color on focus */
     outline: none; /* Remove default outline */
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow */
+}
+
+.specify-gender {
+    display:none;
+    width: 455px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    background-color: #fff;
+    border: 1px solid #aaa;
 }
 
 .gender1 input:focus {
@@ -810,6 +870,15 @@ input[type="radio"] {
 .edit-icon:hover {
     border: 1px solid #AFAFAF;
 }
+
+.passwordContainer, .usernameContainer {
+    padding: 12px 20px;
+    border-color: rgb(170, 170, 170);
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 8px;
+}
+
 .profile-details {
     display: flex;
     flex-direction: column;
@@ -864,7 +933,7 @@ input[type="radio"] {
     max-width: 600px; /* Ensure it doesn't get too wide */
 }
 
-.modal-content h2, .assessmentmodal-content h2 {
+.modal-content h2, .assessmentmodal-content h2, .Summarymodal-content h2, .approvalmodal-content h2 {
     text-align: center;
     margin: 20px;
 }
