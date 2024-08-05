@@ -17,13 +17,14 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UDAS Assessment</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/navbar.css">
     <link href="css/pagestyle.css" rel="stylesheet">
     <style>
         /* Additional CSS for numbered boxes */
@@ -35,14 +36,14 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             height: 350px;
             margin-bottom: 20px;
         }
-        
-        .assessment-box h2 {   
+
+        .assessment-box h2 {
             font-size: 18px;
             margin-bottom: 10px;
             text-align: end;
         }
-        
-        .assessment-college{
+
+        .assessment-college {
             text-align: left;
             font-size: 16px;
             width: 540px;
@@ -54,7 +55,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             justify-content: space-around;
         }
 
-        .assessment-holder-2{
+        .assessment-holder-2 {
             display: flex;
             justify-content: flex-start;
             margin-top: 10px;
@@ -66,16 +67,16 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             margin-right: 12px;
         }
 
-        .assessment-dateTime p{
+        .assessment-dateTime p {
             margin: 0;
         }
-        
-        .assessment-udas{
+
+        .assessment-udas {
             text-align: left;
             width: 200px;
         }
 
-        .assessment-udas .udas-button{
+        .assessment-udas .udas-button {
             height: 46px;
             width: 100%;
             margin: 10px 0;
@@ -85,28 +86,28 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             border: 1px solid #006118;
         }
 
-        .assessment-udas .udas-button:hover{
+        .assessment-udas .udas-button:hover {
             background-color: #D4FFDF;
             border: 1px solid #006118;
             color: #006118;
         }
 
-        .assessment-udas .download-button{
+        .assessment-udas .download-button {
             height: 46px;
             width: 100%;
             margin: 10px 0;
-            background-color: #D4FFDF ;
+            background-color: #D4FFDF;
             color: #006118;
             font-weight: bold;
             border: 1px solid #006118;
         }
 
-        .assessment-level-applied p{
+        .assessment-level-applied p {
             margin-bottom: 10px;
             text-align: left;
         }
 
-        .assessment-level-applied h3{    
+        .assessment-level-applied h3 {
             width: 200px;
             height: 140px;
             display: flex;
@@ -117,9 +118,10 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             font-size: 5rem;
             font-weight: bold;
             border: 1px solid #E6A33E;
+            color: #575757;
         }
 
-        .assessment-college p{
+        .assessment-college p {
             margin: 0px;
         }
 
@@ -144,25 +146,25 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
 
         /* Modal styles */
         .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1; 
-            padding-top: 60px; 
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 60px;
             left: 0;
             top: 0;
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background-color: rgb(0,0,0); 
-            background-color: rgba(0,0,0,0.4); 
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
         }
 
         .modal-content {
             background-color: #fefefe;
-            margin: 5% auto; 
+            margin: 5% auto;
             padding: 20px;
             border: 1px solid #888;
-            width: 80%; 
+            width: 80%;
             max-width: 600px;
         }
 
@@ -181,6 +183,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
         }
     </style>
 </head>
+
 <body>
     <div class="wrapper">
         <!-- Sidebar -->
@@ -200,7 +203,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                 <li class="sidebar-item">
                     <a href="dashboard.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/>
+                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07" />
                         </svg>
                         <span style="margin-left: 8px;">Dashboard</span>
                     </a>
@@ -269,7 +272,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                 <li class="sidebar-item">
                     <a href="college_transfer.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5" />
                         </svg>
                         <span style="margin-left: 8px;">College Transfer</span>
                     </a>
@@ -296,27 +299,42 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
 
         <!-- Main Content -->
         <div class="main">
-            <div class="row top-bar"></div>
-            <div class="row header">
-                <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
-                    <img src="images/USePLogo.png" alt="USeP Logo">
-                </div>
-                <div class="col-6 col-md-4 d-flex align-items-start">
-                    <div class="vertical-line"></div>
-                    <div class="divider"></div>
-                    <div class="text">
-                        <span class="one">One</span>
-                        <span class="datausep">Data.</span>
-                        <span class="one">One</span>
-                        <span class="datausep">USeP.</span><br>
-                        <span>Quality Assurance Division</span>
+            <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+            <div class="container">
+                <div class="header">
+                    <div class="headerLeft">
+                        <div class="USePData">
+                            <img class="USeP" src="images/USePLogo.png" height="36">
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div class="headerLeftText">
+                                <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                    <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                        <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                    </h>
+                                </div>
+                                <h>Accreditor Portal</h>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="headerRight">
+                        <div class="QAD">
+                            <div class="headerRightText">
+                                <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                            </div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <img class="USeP" src="images/QADLogo.png" height="36">
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4 d-none d-md-flex align-items-center justify-content-end">
-                </div>
-                <div class="col-md-2 d-none d-md-flex align-items-center justify-content-start">
-                </div>
             </div>
+            <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
             <div class="container text-center mt-4">
                 <h1 class="mt-5 mb-5">APPROVED SCHEDULES</h1>
                 <div class="scrollable-container">
@@ -331,7 +349,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                             echo "<div class='assessment-details'>";
                             echo "<div class='assessment-holder-1'><div class='assessment-college'><p>College: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>Program:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> Level Applied: <br><h3>" . $schedule['level_applied'] . "</h3></div></p></div>";
                             echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
-                            
+
                             if (!empty($schedule['udas_assessment_file'])) {
                                 echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button href='" . $schedule['udas_assessment_file'] . "' download class='btn open-modal download-button' data-schedule='" . json_encode($schedule) . "'>DOWNLOAD</button></div> </div>";
                             } else {
@@ -340,7 +358,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
 
                             echo "</div></div>";
                             echo "</div>";
-                            
+
                             $counter++; // Increment counter for next assessment
                         }
                     } else {
@@ -412,13 +430,11 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
         const hamBurger = document.querySelector(".toggle-btn");
 
-        hamBurger.addEventListener("click", function () {
+        hamBurger.addEventListener("click", function() {
             document.querySelector("#sidebar").classList.toggle("expand");
         });
 
@@ -439,8 +455,12 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                 document.getElementById('college').value = schedule.college_name;
                 document.getElementById('program').value = schedule.program_name;
                 document.getElementById('level_applied').value = schedule.level_applied;
-                document.getElementById('date').value = new Date(schedule.schedule_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                
+                document.getElementById('date').value = new Date(schedule.schedule_date).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+
                 // Fix the time parsing issue
                 var timeParts = schedule.schedule_time.split(':');
                 var hours = parseInt(timeParts[0]);
@@ -448,13 +468,20 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                 var ampm = hours >= 12 ? 'PM' : 'AM';
                 hours = hours % 12;
                 hours = hours ? hours : 12; // the hour '0' should be '12'
-                var formattedTime = hours + ':' + (minutes < 10 ? '0'+minutes : minutes) + ' ' + ampm;
-                
+                var formattedTime = hours + ':' + (minutes < 10 ? '0' + minutes : minutes) + ' ' + ampm;
+
                 document.getElementById('time').value = formattedTime;
 
                 // Set current date and time
                 var now = new Date();
-                var formattedNow = now.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
+                var formattedNow = now.toLocaleString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: true
+                });
                 document.getElementById('current_datetime').value = formattedNow;
 
                 modal.style.display = "block";
@@ -474,4 +501,5 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
         }
     </script>
 </body>
+
 </html>
