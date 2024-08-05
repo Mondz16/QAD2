@@ -18,27 +18,42 @@ session_start();
 
 <body>
     <div class="wrapper">
-        <div class="row top-bar"></div>
-        <div class="row header mb-3">
-            <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
-                <img src="images/USePLogo.png" alt="USeP Logo">
-            </div>
-            <div class="col-6 col-md-4 d-flex align-items-start">
-                <div class="vertical-line"></div>
-                <div class="divider"></div>
-                <div class="text">
-                    <span class="one">One</span>
-                    <span class="datausep">Data.</span>
-                    <span class="one">One</span>
-                    <span class="datausep">USeP.</span><br>
-                    <span>Quality Assurance Division</span>
+        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+        <div class="container">
+            <div class="header">
+                <div class="headerLeft">
+                    <div class="USePData">
+                        <img class="USeP" src="images/USePLogo.png" height="36">
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div class="headerLeftText">
+                            <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                    <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                </h>
+                            </div>
+                            <h>Accreditor Portal</h>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="headerRight">
+                    <div class="QAD">
+                        <div class="headerRightText">
+                            <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                        </div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <img class="USeP" src="images/QADLogo.png" height="36">
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4 d-none d-md-flex align-items-center justify-content-end">
-            </div>
-            <div class="col-md-2 d-none d-md-flex align-items-center justify-content-start">
-            </div>
         </div>
+        <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
         <div class="container d-flex align-items-center mt-4">
             <a class="btn-back" href="schedule.php">&lt; BACK</a>
             <h2 class="mt-4 mb-4">ADD SCHEDULE</h2>
@@ -108,7 +123,7 @@ session_start();
                             <select name="team_members[]" class="team-member-select" required onchange="updateDropdowns()">
                                 <option value="">Select Team Member</option>
                             </select>
-                            </div>
+                        </div>
                     </div>
                     <button type="button" class="add-team-member-button" onclick="addTeamMemberInput()">ADD MEMBER</button>
                 </div>
@@ -242,7 +257,7 @@ session_start();
                         $('#program-level').val(currentLevel);
                         $('#level').val(levelApplied);
                         $('#year_validity').val(3);
-                        if(dateReceived !== 'N/A')
+                        if (dateReceived !== 'N/A')
                             $('#level-acquired').html('AQUIRED IN ' + dateReceived); // Update the date received display
                     }
                 });

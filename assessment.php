@@ -15,9 +15,9 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assessment</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-        <link rel="stylesheet" href="css/sidebar.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/navbar.css">
     <link href="css/pagestyle.css" rel="stylesheet">
     <style>
         /* Modal styles */
@@ -104,13 +104,13 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         .assessment-dateTime p {
             margin: 0;
         }
-        
-        .assessment-udas{
+
+        .assessment-udas {
             text-align: left;
             width: 200px;
         }
 
-        .assessment-udas .udas-button{
+        .assessment-udas .udas-button {
             height: 46px;
             width: 100%;
             margin: 10px 0;
@@ -120,17 +120,17 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             border: 1px solid #006118;
         }
 
-        .assessment-udas .udas-button:hover{
+        .assessment-udas .udas-button:hover {
             background-color: #D4FFDF;
             border: 1px solid #006118;
             color: #006118;
         }
 
-        .assessment-udas .download-button{
+        .assessment-udas .download-button {
             height: 46px;
             width: 100%;
             margin: 10px 0;
-            background-color: #D4FFDF ;
+            background-color: #D4FFDF;
             color: #006118;
             font-weight: bold;
             border: 1px solid #006118;
@@ -196,7 +196,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                 <li class="sidebar-item">
                     <a href="dashboard.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/>
+                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07" />
                         </svg>
                         <span style="margin-left: 8px;">Dashboard</span>
                     </a>
@@ -265,7 +265,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                 <li class="sidebar-item">
                     <a href="college_transfer.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5" />
                         </svg>
                         <span style="margin-left: 8px;">College Transfer</span>
                     </a>
@@ -290,27 +290,42 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             </div>
         </aside>
         <div class="main">
-            <div class="row top-bar"></div>
-            <div class="row header">
-                <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
-                    <img src="images/USePLogo.png" alt="USeP Logo">
-                </div>
-                <div class="col-6 col-md-4 d-flex align-items-start">
-                    <div class="vertical-line"></div>
-                    <div class="divider"></div>
-                    <div class="text">
-                        <span class="one">One</span>
-                        <span class="datausep">Data.</span>
-                        <span class="one">One</span>
-                        <span class="datausep">USeP.</span><br>
-                        <span>Quality Assurance Division</span>
+            <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+            <div class="container">
+                <div class="header">
+                    <div class="headerLeft">
+                        <div class="USePData">
+                            <img class="USeP" src="images/USePLogo.png" height="36">
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div class="headerLeftText">
+                                <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                    <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                        <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                    </h>
+                                </div>
+                                <h>Accreditor Portal</h>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="headerRight">
+                        <div class="QAD">
+                            <div class="headerRightText">
+                                <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                            </div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <img class="USeP" src="images/QADLogo.png" height="36">
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4 d-none d-md-flex align-items-center justify-content-end">
-                </div>
-                <div class="col-md-2 d-none d-md-flex align-items-center justify-content-start">
-                </div>
             </div>
+            <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
             <div class="container text-center mt-4">
                 <h1 class="mt-5 mb-5">ASSESSMENTS</h1>
                 <div class="scrollable-container">
@@ -399,13 +414,11 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                 </form>
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-        crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
         <script>
             const hamBurger = document.querySelector(".toggle-btn");
 
-            hamBurger.addEventListener("click", function () {
+            hamBurger.addEventListener("click", function() {
                 document.querySelector("#sidebar").classList.toggle("expand");
             });
 
