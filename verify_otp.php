@@ -43,6 +43,7 @@ function sendOTPEmail($email, $otp) {
 $verified = false;
 $message = '';
 $message1 = '';
+$message2 = '';
 $otpExpired = false; // Track if OTP has expired
 
 $email = isset($_POST['email']) ? $_POST['email'] : (isset($_GET['email']) ? $_GET['email'] : '');
@@ -118,7 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 $stmt->close();
             } else {
-                $message = "Invalid OTP.";
+                $message2 = "Invalid OTP.";
             }
         }
     } else {
@@ -304,6 +305,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </form>
 
                     <p id="message" style="color: red; font-weight: bold;"><?php echo $message1; ?></p>
+                    <p id="message" style="color: red; font-weight: bold;"><?php echo $message2; ?></p>
                     <div style="height: 20px; width: 0px;"></div>
                 <a href="login.php" style="color: rgb(87, 87, 87); font-weight: 500; text-decoration: underline;">Already have an account?</a>
                 <button type="button" class="resend disabled" id="resendOTP" onclick="resendOTP()" disabled>RESEND OTP IN <span id="time">01:00</span></button>

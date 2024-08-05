@@ -677,6 +677,7 @@
 .lastname,
 .email,
 .college,
+.college-program,
 .company,
 .gender, .level, .time, .result, .area_evaluated {
     color: #575757;
@@ -688,6 +689,11 @@
     font-size: 16px;
     background: transparent;
     caret-color: #575757;
+}
+
+.college-program {
+    display: flex;
+    gap: 20px;
 }
 
 .username {
@@ -773,12 +779,13 @@ input[type="radio"] {
     color: white;
 }
 
-.college-company-gender, .gender1, .edit-gender, .college1 {
+.college-program-history, .college-company-gender, .gender1, .edit-gender, .college1 {
     position: relative;
     margin-bottom: 10px;
+    flex: 1;
 }
 
-.college-company-gender select, .gender1 select, .edit-gender select, .college1 select {
+.select-selected, .college-program-history select, .college-company-gender select, .gender1 select, .edit-gender select, .college1 select {
     padding: 12px 20px;
     border: 1px solid #aaa;
     border-radius: 8px;
@@ -790,8 +797,12 @@ input[type="radio"] {
     cursor: pointer;
 }
 
-.college-company-gender select {
+.college-company-gender select, .select-selected {
     width: 721px;
+}
+
+.college-program-history select, .select-selected {
+    width: 100%;
 }
 
 .gender1 select {
