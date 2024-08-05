@@ -164,6 +164,7 @@ button[type="remove"]:hover{
 .level-input-holder .highlight{
     background-color: #FFF1C0;
     border-color: #E6A33E;
+    color: #575757;
 }
 
 .level-input-holder .level-input:last-child{

@@ -152,6 +152,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             font-size: 5rem;
             font-weight: bold;
             border: 1px solid #E6A33E;
+            color: #575757;
         }
 
         .assessment-college p {
