@@ -55,12 +55,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $result = $stmt->get_result();
 
             if ($result->num_rows > 0) {
+                $programEvents = [];
                 while ($row = $result->fetch_assoc()) {
-                    $events[] = [
+                    $programEvents[] = [
                         'label' => $row['program_level'],
                         'date' => $row['date_received']
                     ];
                 }
+                $events[$program_name] = $programEvents; // Store events per program
             }
             $stmt->close();
         }
@@ -85,6 +87,7 @@ $conn->close();
     <script src="https://cdn.jsdelivr.net/npm/moment"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         .program-history {
             margin-bottom: 20px;
@@ -182,15 +185,14 @@ $conn->close();
                 <!-- Program level history will be displayed here -->
             </div>
             <div style="height: 32px;"></div>
-            <div class="orientation2">
-                <canvas id="timelineChart" style="height: 200px; width: 100%;"></canvas>
+            <div class="orientation2" id="chartContainer">
+                <!-- Dynamic chart canvases will be appended here -->
             </div>
+            <button id="exportPdfButton">Export to PDF</button>
         </div>
     </div>
 
     <script>
-        let chartInstance = null; // Store chart instance
-
         function loadPrograms(collegeCode) {
             if (collegeCode === "") {
                 document.querySelector('.select-items').innerHTML = "<div>Select programs</div>";
@@ -245,145 +247,156 @@ $conn->close();
         }
 
         function loadProgramHistories(selectedPrograms) {
-            if (selectedPrograms.length === 0) {
-                document.getElementById('programHistory').innerHTML = "";
-                document.getElementById('timelineChart').style.display = 'none';
-                return;
-            }
-
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "", true);  // Send POST request to the same page
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    try {
-                        const events = JSON.parse(xhr.responseText);
-                        renderTimelineChart(events);
-                    } catch (e) {
-                        console.error("Failed to parse JSON response", e);
-                        document.getElementById('programHistory').innerHTML = xhr.responseText;
-                    }
-                }
-            };
-            xhr.send("program_names=" + encodeURIComponent(JSON.stringify(selectedPrograms)));
-        }
-
-        function renderTimelineChart(events) {
-    if (events.length === 0) {
-        document.getElementById('timelineChart').style.display = 'none';
+    if (selectedPrograms.length === 0) {
+        document.getElementById('chartContainer').innerHTML = "";
         return;
     }
 
-    // Destroy existing chart instance if exists
-    if (chartInstance) {
-        chartInstance.destroy();
-    }
-
-    // Convert date strings to Date objects and adjust y position alternately
-    events.forEach((event, index) => {
-        event.x = new Date(event.date);
-        event.y = index % 2 === 0 ? 0 : -0.4;  // Alternate between -0.5 and 0.5 for zigzag
-        event.label = `${event.label}; ${new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-    });
-
-    // Determine the timeline range
-    const dates = events.map(event => event.x);
-    const minDate = new Date(Math.min.apply(null, dates));
-    const maxDate = new Date(Math.max.apply(null, dates));
-    minDate.setFullYear(minDate.getFullYear() - 1);
-    maxDate.setFullYear(maxDate.getFullYear() + 1);
-
-    // Prepare the dataset for Chart.js
-    const dataset = {
-        datasets: [{
-            label: 'Program Timeline',
-            data: events,
-            backgroundColor: 'blue',
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            showLine: false
-        }]
-    };
-
-    // Get the context of the canvas element
-    const ctx = document.getElementById('timelineChart').getContext('2d');
-
-    // Define a plugin to draw vertical lines
-    const verticalLinePlugin = {
-        id: 'verticalLinePlugin',
-        beforeDraw: chart => {
-            const { ctx, chartArea: { top, bottom }, scales: { x, y } } = chart;
-            ctx.save();
-            ctx.strokeStyle = 'black';  // Set line color to black
-            ctx.lineWidth = 2;  // Set line thickness
-
-            events.forEach(event => {
-                const xPosition = x.getPixelForValue(event.x);
-                const yPosition = y.getPixelForValue(event.y);
-
-                ctx.beginPath();
-                ctx.moveTo(xPosition, yPosition);
-                ctx.lineTo(xPosition, bottom);
-                ctx.stroke();
-            });
-            ctx.restore();
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "", true);  // Send POST request to the same page
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            try {
+                const allEvents = JSON.parse(xhr.responseText);
+                renderTimelineCharts(allEvents, selectedPrograms);
+            } catch (e) {
+                console.error("Failed to parse JSON response", e);
+                document.getElementById('programHistory').innerHTML = xhr.responseText;
+            }
         }
     };
-
-    // Render the chart
-    chartInstance = new Chart(ctx, {
-        type: 'scatter',
-        data: dataset,
-        options: {
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'year', // Set unit to year
-                        displayFormats: {
-                            year: 'YYYY' // Format the year
-                        }
-                    },
-                    min: minDate,
-                    max: maxDate,
-                    title: {
-                        display: true,
-                        text: 'Year'
-                    }
-                },
-                y: {
-                    display: false,
-                    min: -1,
-                    max: 1
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.raw.label;
-                        }
-                    }
-                },
-                datalabels: {
-                    align: 'top',
-                    anchor: 'end',
-                    formatter: function(value) {
-                        return value.label;
-                    }
-                }
-            }
-        },
-        plugins: [ChartDataLabels, verticalLinePlugin]
-    });
-
-    // Ensure the chart is displayed
-    document.getElementById('timelineChart').style.display = 'block';
+    xhr.send("program_names=" + encodeURIComponent(JSON.stringify(selectedPrograms)));
 }
 
+function renderTimelineCharts(eventsGroupedByProgram, selectedPrograms) {
+    const chartContainer = document.getElementById('chartContainer');
+    
+    // Clear previous charts
+    chartContainer.innerHTML = '';
+
+    Object.keys(eventsGroupedByProgram).forEach((programName, programIndex) => {
+        const events = eventsGroupedByProgram[programName];
+
+        // Create a label for each program
+        const programLabel = document.createElement('h3');
+        programLabel.textContent = `${programName}`;
+        chartContainer.appendChild(programLabel);
+
+        // Create a new canvas element for each program
+        const canvas = document.createElement('canvas');
+        canvas.id = `timelineChart${programIndex}`;
+        canvas.style.height = '200px';
+        canvas.style.width = '100%';
+        chartContainer.appendChild(canvas);
+
+        // Create a chart for each canvas
+        if (events.length === 0) {
+            return;
+        }
+
+        // Convert date strings to Date objects and adjust y position alternately
+        events.forEach((event, index) => {
+            event.x = new Date(event.date);
+            event.y = index % 2 === 0 ? 0 : -0.4;  // Alternate between -0.5 and 0.5 for zigzag
+            event.label = `${event.label}; ${new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+        });
+
+        // Determine the timeline range
+        const dates = events.map(event => event.x);
+        const minDate = new Date(Math.min.apply(null, dates));
+        const maxDate = new Date(Math.max.apply(null, dates));
+        minDate.setFullYear(minDate.getFullYear() - 1);
+        maxDate.setFullYear(maxDate.getFullYear() + 6);
+
+        // Prepare the dataset for Chart.js
+        const dataset = {
+            datasets: [{
+                label: 'Program Timeline',
+                data: events,
+                backgroundColor: 'blue',
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                showLine: false
+            }]
+        };
+
+        // Get the context of the new canvas element
+        const ctx = canvas.getContext('2d');
+
+        // Define a plugin to draw vertical lines
+        const verticalLinePlugin = {
+            id: 'verticalLinePlugin',
+            beforeDraw: chart => {
+                const { ctx, chartArea: { top, bottom }, scales: { x, y } } = chart;
+                ctx.save();
+                ctx.strokeStyle = 'black';  // Set line color to black
+                ctx.lineWidth = 2;  // Set line thickness
+
+                events.forEach(event => {
+                    const xPosition = x.getPixelForValue(event.x);
+                    const yPosition = y.getPixelForValue(event.y);
+
+                    ctx.beginPath();
+                    ctx.moveTo(xPosition, yPosition);
+                    ctx.lineTo(xPosition, bottom);
+                    ctx.stroke();
+                });
+                ctx.restore();
+            }
+        };
+
+        // Render the chart on the new canvas
+        new Chart(ctx, {
+            type: 'scatter',
+            data: dataset,
+            options: {
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'year', // Set unit to year
+                            displayFormats: {
+                                year: 'YYYY' // Format the year
+                            }
+                        },
+                        min: minDate,
+                        max: maxDate,
+                        title: {
+                            display: true,
+                            text: 'Year'
+                        }
+                    },
+                    y: {
+                        display: false,
+                        min: -1,
+                        max: 1
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.raw.label;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        align: 'top',
+                        anchor: 'end',
+                        formatter: function(value) {
+                            return value.label;
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels, verticalLinePlugin] // Add the vertical line plugin
+        });
+    });
+}
 
 
 
@@ -393,6 +406,55 @@ $conn->close();
         }
 
         document.addEventListener('click', closeAllSelect);
+
+        document.getElementById('exportPdfButton').addEventListener('click', function() {
+    const charts = document.querySelectorAll('canvas');
+    const programNames = document.querySelectorAll('#chartContainer h3');
+    
+    const images = [];
+    let count = 0;
+    
+    charts.forEach((chart, index) => {
+        html2canvas(chart).then(canvas => {
+            images.push({
+                name: programNames[index].innerText,
+                data: canvas.toDataURL('image/png')
+            });
+            count++;
+            if (count === charts.length) {
+                console.log('All charts captured, sending to server');
+                sendImagesToServer(images);
+            }
+        }).catch(err => console.error('Error capturing canvas:', err));
+    });
+});
+
+function sendImagesToServer(images) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'program_timeline_pdf.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+                console.log('PDF generated:', xhr.responseText);
+                downloadFile(xhr.responseText);
+            } else {
+                console.error('Failed to generate PDF:', xhr.statusText);
+            }
+        }
+    };
+    xhr.send(JSON.stringify(images));
+}
+
+function downloadFile(fileName) {
+    const link = document.createElement('a');
+    link.href = 'program_timeline_download.php?file=' + encodeURIComponent(fileName);
+    link.download = 'program_history.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
     </script>
 </body>
 </html>

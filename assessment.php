@@ -62,6 +62,17 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             margin-left: 10px;
         }
 
+        .assessment-button-done {
+            background-color: #76FA97;
+            color: #006118;
+            border: 1px solid #76FA97;
+            font-weight: bold;
+            height: 46px;
+            width: 100%;
+            margin: 10px 0;
+            border-radius: 8px;
+
+        }
         .assessment-box {
             border: 1px solid #ccc;
             border-radius: 8px;
@@ -108,9 +119,10 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         .assessment-udas {
             text-align: left;
             width: 200px;
+            margin-left: 12px;
         }
 
-        .assessment-udas .udas-button {
+        .assessment-udas .udas-button, .udas-button1 {
             height: 46px;
             width: 100%;
             margin: 10px 0;
@@ -120,13 +132,17 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             border: 1px solid #006118;
         }
 
-        .assessment-udas .udas-button:hover {
+        .udas-button1 {
+            padding-top: 9px;
+        }
+
+        .assessment-udas .udas-button:hover, .udas-button1:hover {
             background-color: #D4FFDF;
             border: 1px solid #006118;
             color: #006118;
         }
 
-        .assessment-udas .download-button {
+        .assessment-udas .download-button{
             height: 46px;
             width: 100%;
             margin: 10px 0;
@@ -363,27 +379,53 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                                     $schedule = $scheduleResult->fetch_assoc();
 
                                     if ($schedule) {
-                                        // Check if the summary has been approved
-                                        $approvedQuery = "SELECT id FROM approved_summary WHERE summary_id = '$summaryId'";
-                                        $approvedResult = $conn->query($approvedQuery);
-                                        $isApproved = $approvedResult->num_rows > 0;
-                                        $scheduleDate = date("F j, Y", strtotime($schedule['schedule_date']));
-                                        $scheduleTime = date("g:i A", strtotime($schedule['schedule_time']));
+    // Check if the summary has been approved
+    $approvedQuery = "SELECT id FROM approved_summary WHERE summary_id = '$summaryId'";
+    $approvedResult = $conn->query($approvedQuery);
+    $isApproved = $approvedResult->num_rows > 0;
+    $scheduleDate = date("F j, Y", strtotime($schedule['schedule_date']));
+    $scheduleTime = date("g:i A", strtotime($schedule['schedule_time']));
 
-                                        echo "<div class='assessment-box'>";
-                                        echo "<h2>#" . $counter . "</h2>";
-                                        echo "<div class='assessment-details'>";
-                                        echo "<div class='assessment-holder-1'><div class='assessment-college'><p>College: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>Program:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> Level Applied: <br><h3>" . $schedule['level_applied'] . "</h3></div></p></div>";
-                                        echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
+    echo "<div class='assessment-box'>";
+    echo "<h2>#" . $counter . "</h2>";
+    echo "<div class='assessment-details'>";
+    echo "<div class='assessment-holder-1'>
+            <div class='assessment-college'>
+                <p><strong>College:</strong> <br><div class='assessment-values'>" . $schedule['college_name'] . "</div></p>
+                <p><strong>Program:</strong> <br><div class='assessment-values'>" . $schedule['program_name'] . "</div></p>
+            </div>
+            <div class='assessment-level-applied'>
+                <p><strong>Level Applied:</strong> <br><h3>" . $schedule['level_applied'] . "</h3></p>
+            </div>
+          </div>";
 
-                                        if (!$isApproved) {
-                                            echo "<div class='assessment-udas'><p>Download Summary File:<br><button href='" . $summaryFile . "' class='btn approve-btn download-button'>DOWNLOAD</button></div> </div>";
-                                        } else {
-                                            echo "<div class='assessment-udas'><p>Summary File:<br><button class='btn approve-btn udas-button' data-summary-file='$summaryFile'>Approve Summary</button></div> </div>";
-                                        }
+    echo "<div class='assessment-holder-2'>
+            <div class='assessment-dateTime'>
+                <p><strong>Date:</strong> <br><div class='assessment-values'>" . $scheduleDate . "</div></p>
+            </div>
+            <div class='assessment-dateTime'>
+                <p><strong>Time:</strong> <br><div class='assessment-values'>" . $scheduleTime . "</div></p>
+            </div>
+            <div class='assessment-udas'>
+                <p><strong>Summary</strong> <br><a href='$summaryFile' class='btn udas-button1' download>SUMMARY</a></p>
+            </div>";
 
-                                        echo "</div></div>";
-                                        echo "</div>";
+    // Show approve button or check symbol based on approval status
+    if ($isApproved) {
+        // Add check symbol to assessment-holder-2 if approved
+        echo "<div class='assessment-udas'>
+                <p><strong>Approve</strong> <br><button class='assessment-button-done'>APPROVED</button></p>
+              </div>";
+    } else {
+        // Add approve button to assessment-holder-2 if not approved
+        echo "<div class='assessment-udas'>
+                <p><strong>Approve</strong> <br><button class='btn approve-btn udas-button' data-summary-file='$summaryFile'>APPROVE</button></p>
+              </div>";
+    }
+
+    echo "</div>"; // Close assessment-holder-2
+    echo "</div>"; // Close assessment-details
+    echo "</div>"; // Close assessment-box
 
                                         $counter++; // Increment counter for next assessment
                                     }
