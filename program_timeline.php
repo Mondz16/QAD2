@@ -105,6 +105,7 @@ $conn->close();
             right: 0;
             z-index: 99;
             border: 1px solid #ccc;
+            border-radius: 8px;
             max-height: 150px;
             overflow-y: auto;
             display: none;
@@ -112,13 +113,128 @@ $conn->close();
         .select-item {
             padding: 10px;
             cursor: pointer;
+            font-weight: bold;
         }
         .select-item:hover {
-            background-color: #e9e9e9;
+            background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+            color: white;
         }
         .same-as-selected {
-            background-color: #d1e0e0;
+            background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+            color: white;
         }
+
+        /* Styles for legends */
+        .legend-container {
+            display: flex;
+            justify-content: flex-end; /* Align items to the right */
+            align-items: center;
+            margin-bottom: 10px;
+            position: relative; /* Needed for positioning the tooltip */
+        }
+
+        .legend-lines {
+            display: flex;
+            gap: 5px; /* Space between lines */
+            margin-left: 10px; /* Space between legend text and lines */
+        }
+
+        .legend-line,
+        .legend-text,
+        .info-icon {
+            position: relative;
+            height: 20px; /* Height of the line, same as the LEGENDS text */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer;
+        }
+
+        .legend-line,
+        .legend-text {
+            width: 50px;
+        }
+        .legend-text {
+            width: auto;
+            margin-right: 5px;
+        }
+
+        .red-line {
+            background-color: #FF7B7A; /* Color for 'Not Accreditable' */
+        }
+
+        .green-line {
+            background-color: #76FA97; /* Color for 'Candidate' */
+        }
+
+        .grey-line {
+            background-color: #CCCCCC; /* Color for 'PSV' */
+        }
+
+        .yellow-line {
+            background-color: #FDC879; /* Color for Levels 1-4 */
+        }
+
+        .info-icon {
+            background: transparent;
+        }
+
+        .info-icon img {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Tooltip styles for entire legend */
+        .legend-tooltip {
+            visibility: hidden;
+            width: 350px;
+            color: #fff;
+            text-align: left;
+            border-radius: 20px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            top: 150%; /* Position above the element */
+            right: 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+            background-color: #FFFFFF;
+            border: 1px solid #575757;
+        }
+
+        /* Show tooltip on hover over the legend-container */
+        .legend-container:hover .legend-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Tooltip content lines */
+        .tooltip-line, .tooltip-line1 {
+            display: flex;
+            align-items: center;
+            color: black;
+            padding: 10px;
+        }
+
+        .tooltip-line {
+            margin-bottom: 10px;
+        }
+
+        .tooltip-color {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 40px;
+            border-radius: 5px;
+            margin-right: 5px;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .red-tooltip { background-color: #FF7B7A; }
+        .green-tooltip { background-color: #76FA97; }
+        .grey-tooltip { background-color: #CCCCCC; }
+        .yellow-tooltip { background-color: #FDC879; }
+
     </style>
 </head>
 <body>
@@ -160,10 +276,12 @@ $conn->close();
         <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
         <div style="height: 10px; width: 0px;"></div>
         <div class="container">
+            <p style="text-align: center; font-size: 30px"><strong>PROGRAM LEVEL HISTORY TIMELINE</strong></p>
+            <div style="height: 30px;"></div>
             <div class="college-program">
                 <div class="college-program-history">
                     <select id="collegeSelect" onchange="loadPrograms(this.value)">
-                    <option value="">Select a college</option>
+                    <option value="">SELECT COLLEGE</option>
                     <?php
                     foreach ($colleges as $college) {
                         echo "<option value='" . $college['code'] . "'>" . htmlspecialchars($college['college_name']) . "</option>";
@@ -172,7 +290,7 @@ $conn->close();
                 </select>
                 </div>
                 <div class="college-program-history">
-                    <div class="select-selected">Select programs</div>
+                    <div class="select-selected">SELECT PROGRAM/S</div>
                     <div class="select-items">
                         <!-- Options will be populated based on selected college -->
                     </div>
@@ -180,12 +298,39 @@ $conn->close();
                     </div>
                 </div>
             </div>
-            <div style="height: 32px;"></div>
+            <div class="legend-container">
+                <div class="legend-text">
+                    <p><strong>LEGENDS</strong></p>
+                </div>
+                <div class="legend-lines">
+                    <div class="legend-line red-line"></div>
+                    <div class="legend-line green-line"></div>
+                    <div class="legend-line grey-line"></div>
+                    <div class="legend-line yellow-line"></div>
+                    <div class="info-icon">
+                        <img src="images/info-circle.png" alt="Info">
+                    </div>
+                </div>
+                <div class="legend-tooltip">
+                    <div class="tooltip-line">
+                        <div class="tooltip-color red-tooltip" style="margin-right: 30px;">NA</div><strong>NOT ACCREDITABLE</strong>
+                    </div>
+                    <div class="tooltip-line">
+                        <div class="tooltip-color green-tooltip" style="margin-right: 30px;">CAN</div><strong>CANDIDATE</strong>
+                    </div>
+                    <div class="tooltip-line">
+                        <div class="tooltip-color grey-tooltip" style="margin-right: 30px;">PSV</div><strong>PRE-SURVEY VISIT</strong>
+                    </div>
+                    <div class="tooltip-line1">
+                        <div class="tooltip-color yellow-tooltip" style="margin-right: 30px;">LVL 1-4</div><strong>LEVEL ACCREDITED</strong>
+                    </div>
+                </div>
+            </div>
             <div class="orientation5" id="chartContainer">
-                <!-- Dynamic chart canvases will be appended here -->
+                <p style="text-align: center; font-size: 20px"><strong>PLEASE SELECT COLLEGE AND PROGRAM/S</strong></p>
             </div>
         </div>
-        <button class="export-button" id="exportPdfButton">EXPORT <img src="images/export.png"></button>
+        <button class="export-button" id="exportPdfButton"><span style="font-weight: bold; color: #575757; font-size: 16px; cursor: pointer;">EXPORT</span><img style="margin-left: 5px;" src="images/export.png"></button>
     </div>
 
     <script>

@@ -781,8 +781,11 @@ input[type="radio"] {
 
 .college-program-history, .college-company-gender, .gender1, .edit-gender, .college1 {
     position: relative;
-    margin-bottom: 10px;
     flex: 1;
+}
+
+.college-company-gender, .gender1, .edit-gender, .college1 {
+    margin-bottom: 10px;
 }
 
 .select-selected, .college-program-history select, .college-company-gender select, .gender1 select, .edit-gender select, .college1 select {
@@ -1146,7 +1149,7 @@ input[type="radio"] {
 .orientation5 {
     max-width: 100%;
     overflow-y: auto;
-    height: 700px;
+    height: 650px;
 }
 
 canvas {
@@ -1290,8 +1293,13 @@ canvas {
 .export-button {
     width: 150px;
     position: absolute; /* This allows the button to be moved freely */
-    left: 1570px; /* Initial left position */
-    bottom: 72px;
+    left: 1590px; /* Initial left position */
+    bottom: 65px;
+    padding-bottom: 15px;
+}
+
+.export-button img {
+    height: 22px;
 }
 .submit-button {
     width: 150px;
