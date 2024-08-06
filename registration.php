@@ -73,7 +73,7 @@ function displayRegistrations($conn, $tableName, $title)
 
         echo "</table>";
     } else {
-        echo "<p>No pending registrations for $title.</p>";
+        echo "<div class='no-schedule-prompt'><p>NO PENDING REGISTRATIONS</p></div>";
     }
 }
 ?>
@@ -85,8 +85,7 @@ function displayRegistrations($conn, $tableName, $title)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pending Registrations</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link href="css/registration_pagestyle.css" rel="stylesheet">
@@ -110,7 +109,7 @@ function displayRegistrations($conn, $tableName, $title)
                 <li class="sidebar-item">
                     <a href="dashboard.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/>
+                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07" />
                         </svg>
                         <span style="margin-left: 8px;">Dashboard</span>
                     </a>
@@ -179,7 +178,7 @@ function displayRegistrations($conn, $tableName, $title)
                 <li class="sidebar-item">
                     <a href="college_transfer.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5" />
                         </svg>
                         <span style="margin-left: 8px;">College Transfer</span>
                     </a>
@@ -206,7 +205,7 @@ function displayRegistrations($conn, $tableName, $title)
 
         <!-- Main Content -->
         <div class="main">
-        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+            <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
             <div class="container">
                 <div class="header">
                     <div class="headerLeft">
@@ -249,12 +248,10 @@ function displayRegistrations($conn, $tableName, $title)
                     <div class="col-12 border rounded-2" style="background: white;">
                         <div class="row no-gutters py-2">
                             <div class="col-6">
-                                <button id="collegesBtn" class="pobtn border btn w-100 py-2"
-                                    onclick="showTable('collegeTable', 'collegesBtn')">INTERNAL</button>
+                                <button id="collegesBtn" class="pobtn border btn w-100 py-2" onclick="showTable('collegeTable', 'collegesBtn')">INTERNAL</button>
                             </div>
                             <div class="col-6">
-                                <button id="sucBtn" class="nebtn border btn w-100 py-2"
-                                    onclick="showTable('sucTable', 'sucBtn')">EXTERNAL</button>
+                                <button id="sucBtn" class="nebtn border btn w-100 py-2" onclick="showTable('sucTable', 'sucBtn')">EXTERNAL</button>
                             </div>
                         </div>
                     </div>
@@ -264,10 +261,10 @@ function displayRegistrations($conn, $tableName, $title)
                         <div class="tab-container">
                             <div class="admin-content">
                                 <div class="tab-content active" id="internal">
-                                    <?php displayRegistrations($conn, 'internal_users', 'Internal Pending Registrations'); ?>
+                                    <?php displayRegistrations($conn, 'internal_users', 'INTERNAL PENDING REGISTRATIONS'); ?>
                                 </div>
                                 <div class="tab-content" id="external">
-                                    <?php displayRegistrations($conn, 'external_users', 'External Pending Registrations'); ?>
+                                    <?php displayRegistrations($conn, 'external_users', 'EXTERNAL PENDING REGISTRATIONS'); ?>
                                 </div>
                             </div>
                         </div>
@@ -308,13 +305,11 @@ function displayRegistrations($conn, $tableName, $title)
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
         const hamBurger = document.querySelector(".toggle-btn");
 
-        hamBurger.addEventListener("click", function () {
+        hamBurger.addEventListener("click", function() {
             document.querySelector("#sidebar").classList.toggle("expand");
         });
 

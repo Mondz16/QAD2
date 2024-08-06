@@ -92,11 +92,13 @@ session_start();
                         <label for="level_validity">Years of Validity:</label>
                     </div>
                     <div class="level-input-holder">
-                        <input class="level-input" type="text" id="program-level" name="level" readonly>
+                        <input class="level-input" type="hidden" id="program-level" name="level" readonly>
+                        <input class="level-input" type="text" id="program-level-output" name="level-output" readonly>
                         <div class="level-holder">
                             <span id="level-acquired"></span>
                         </div>
-                        <input class="level-input highlight" type="text" id="level" name="level" readonly>
+                        <input class="level-input highlight" type="hidden" id="level" name="level" readonly>
+                        <input class="level-input highlight" type="text" id="level-output" name="level-output" readonly>
                         <input class="level-input" type="text" id="year_validity" name="level_validity" required>
                     </div>
                 </div>
@@ -176,8 +178,11 @@ session_start();
                     success: function(response) {
                         $('#program').html(response);
                         $('#program-level').html(''); // Clear the program level display
-                        $('#level').html(''); // Clear the program level display
-                        $('#level-acquired').html(''); // Clear the program level display
+                        $('#level').val(''); // Clear the program level display
+                        $('#level-acquired').val(''); // Clear the program level display
+                        $('#program-level-output').val('');
+                        $('#level-output').val('');
+                        $('#level-acquired').html(''); // Update the date received display
                     },
                     error: function(xhr, status, error) {
                         console.error('Error:', error);
@@ -188,7 +193,9 @@ session_start();
                 $('#program-level').html(''); // Clear the program level display
                 $('#level').html(''); // Clear the program level display
                 $('#level-acquired').html(''); // Clear the program level display
-
+                $('#program-level-output').val('');
+                $('#level-output').val('');
+                $('#level-acquired').html(''); // Update the date received display
             }
         }
 
@@ -239,26 +246,40 @@ session_start();
                         var data = JSON.parse(response);
                         var currentLevel = data.program_level.trim();
                         var dateReceived = data.date_received.trim();
-                        var levelApplied = 'N/A';
+                        var levelApplied = 'NA';
+                        var currentLevelTextOutput = currentLevel;
+                        var levelAppliedTextOutput = levelApplied;
 
-                        if (currentLevel === 'Not Accreditable') {
+                        if (currentLevel === 'Not Accreditable' || currentLevel === 'No Graduates Yet') {
+                            currentLevelTextOutput = 'NA';
                             levelApplied = 'Candidate';
+                            levelAppliedTextOutput = 'CAN';
                         } else if (currentLevel === 'Candidate') {
+                            currentLevelTextOutput = 'CAN';
                             levelApplied = 'PSV';
+                            levelAppliedTextOutput = levelApplied;
                         } else if (currentLevel === 'PSV') {
                             levelApplied = 1;
+                            levelAppliedTextOutput = levelApplied;
                         } else if (currentLevel < 4) {
                             levelApplied = parseInt(currentLevel) + 1;
+                            levelAppliedTextOutput = levelApplied;
                         } else {
                             levelApplied = currentLevel;
+                            levelAppliedTextOutput = levelApplied;
                         }
 
                         // Update the readonly level input field
                         $('#program-level').val(currentLevel);
                         $('#level').val(levelApplied);
+
+                        $('#program-level-output').val(currentLevelTextOutput);
+                        $('#level-output').val(levelAppliedTextOutput);
+
                         $('#year_validity').val(3);
-                        if (dateReceived !== 'N/A')
+                        if (dateReceived !== 'N/A' && currentLevelTextOutput !== 'NA') {
                             $('#level-acquired').html('AQUIRED IN ' + dateReceived); // Update the date received display
+                        }
                     }
                 });
             } else {
@@ -266,6 +287,9 @@ session_start();
                 $('#program-level').val(''); // Clear the program level display
                 $('#level').val(''); // Clear the program level display
                 $('#level-acquired').html(''); // Clear the date received display
+                $('#program-level-output').val('');
+                $('#level-output').val('');
+                $('#level-acquired').html(''); // Update the date received display
             }
         }
 

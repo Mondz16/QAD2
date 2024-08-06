@@ -70,7 +70,7 @@ function displayOrientationDetails($conn, $orientationType, $title)
 
         echo "</table>";
     } else {
-        echo "<p>No pending request for $title.</p>";
+        echo "<div class='no-schedule-prompt'><p>NO PENDING REQUEST FOR $title.</p></div>";
     }
 }
 
@@ -251,10 +251,10 @@ function displayOrientationDetails($conn, $orientationType, $title)
                         </div>
                     </div>
                     <div class="tab-content active" id="online">
-                        <?php displayOrientationDetails($conn, 'online', 'online orientations'); ?>
+                        <?php displayOrientationDetails($conn, 'online', 'ONLINE ORIENTATIONS'); ?>
                     </div>
                     <div class="tab-content" id="face_to_face">
-                        <?php displayOrientationDetails($conn, 'face_to_face', 'face to face orientations'); ?>
+                        <?php displayOrientationDetails($conn, 'face_to_face', 'FACE TO FACE ORIENTATIONS'); ?>
                     </div>
                 </div>
             </div>

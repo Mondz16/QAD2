@@ -34,7 +34,7 @@ $transfer_requests = array_filter($users, function ($group) {
     <link rel="stylesheet" href="college_style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="stylesheet" href="css/sidebar.css">
-    <link rel="stylesheet" href="/navbar.css">
+    <link rel="stylesheet" href="css/navbar.css">
     <link href="css/registration_pagestyle.css" rel="stylesheet">
     <style>
         .college-transfer-table th {
@@ -164,39 +164,39 @@ $transfer_requests = array_filter($users, function ($group) {
         <!-- Main Content -->
         <div class="main">
             <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
-            <div class="container">
-                <div class="header">
-                    <div class="headerLeft">
-                        <div class="USePData">
-                            <img class="USeP" src="images/USePLogo.png" height="36">
-                            <div style="height: 0px; width: 16px;"></div>
-                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
-                            <div style="height: 0px; width: 16px;"></div>
-                            <div class="headerLeftText">
-                                <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
-                                    <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
-                                        <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
-                                    </h>
+                <div class="container">
+                    <div class="header">
+                        <div class="headerLeft">
+                            <div class="USePData">
+                                <img class="USeP" src="images/USePLogo.png" height="36">
+                                <div style="height: 0px; width: 16px;"></div>
+                                <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                                <div style="height: 0px; width: 16px;"></div>
+                                <div class="headerLeftText">
+                                    <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                        <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                            <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                            <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                            <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                        </h>
+                                    </div>
+                                    <h>Accreditor Portal</h>
                                 </div>
-                                <h>Accreditor Portal</h>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="headerRight">
-                        <div class="QAD">
-                            <div class="headerRightText">
-                                <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                        <div class="headerRight">
+                            <div class="QAD">
+                                <div class="headerRightText">
+                                    <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                                </div>
+                                <div style="height: 0px; width: 16px;"></div>
+                                <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                                <div style="height: 0px; width: 16px;"></div>
+                                <img class="USeP" src="images/QADLogo.png" height="36">
                             </div>
-                            <div style="height: 0px; width: 16px;"></div>
-                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
-                            <div style="height: 0px; width: 16px;"></div>
-                            <img class="USeP" src="images/QADLogo.png" height="36">
                         </div>
                     </div>
-                </div>
             </div>
             <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
 

@@ -87,6 +87,10 @@ $result = $conn->query($sql);
         justify-content: space-between;
         border: 2px solid !important;
         border-color: #AFAFAF !important;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: left;
     }
 
     .level-applied-holder {
@@ -121,6 +125,20 @@ $result = $conn->query($sql);
         height: fit-content;
         border-radius: 5px;
         font-weight: bold;
+    }
+
+    .schedule-wrapper {
+        width: 400px;
+        padding: 20px;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        margin: 0px 5px;
+    }
+
+    .schedule-wrapper h3{
+        font-size: 1.25rem;
+        margin-bottom: 10px;
     }
 
     .hidden-status-holder {
@@ -189,7 +207,7 @@ $result = $conn->query($sql);
                 <li class="sidebar-item">
                     <a href="assessment.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-check" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0" />
+                            <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0" />
                         </svg>
                         <span style="margin-left: 8px;">Assessment</span>
                     </a>
@@ -308,48 +326,132 @@ $result = $conn->query($sql);
                                 </select>
                             </form>
                         </div>
-                        <div class="row d-flex justify-content-center">
-                        <?php
-                            if ($result->num_rows > 0) {
-                                while ($row = $result->fetch_assoc()) {
-                                    $schedule_date = date("F d, Y", strtotime($row['schedule_date']));
-                                    $schedule_time = date("h:i A", strtotime($row['schedule_time']));
-                                    $status_class = ($row['schedule_status'] == 'finished') ? 'finished-schedule' : '';
-                                    $approved_class = ($row['schedule_status'] == 'approved') ? 'status-holder' : 'hidden-status-holder';
-                                    echo "<div class='schedule-modal-container col-md-3 col-12 m-3 border rounded-2 text-start p-3 $status_class'>
-                                            <div>
-                                                <div>{$row['college_name']}</div>
+                        <div class="row row justify-content-center mt-3">
+                            <div class="schedule-wrapper col-md-4">
+                                <h3>UPCOMING</h3>
+                                <?php
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        if ($row['schedule_status'] == 'approved') {
+                                            $approved_class = ($row['schedule_status'] == 'approved') ? 'status-holder' : 'hidden-status-holder';
+                                            echo "<div class='schedule-modal-container'>
                                                     <div>
-                                                        <h5 class='fw-bold'>{$row['program_name']}</h5>
+                                                        <div>{$row['college_name']}</div>
+                                                        <div>
+                                                            <h5 class='fw-bold'>{$row['program_name']}</h5>
+                                                        </div>
                                                     </div>
-                                            </div>
-                                            <div>
-                                                <div class='level-status-holder'>
-                                                    <div class='level-applied-holder'>
-                                                        <label>Level Applied:</label> 
-                                                        {$row['level_applied']}
+                                                    <div>
+                                                        <div class='level-status-holder'>
+                                                            <div class='level-applied-holder'>
+                                                                <label>Level Applied:</label> 
+                                                                {$row['level_applied']}
+                                                            </div>
+                                                            <div class='$approved_class'>
+                                                                <label>UPCOMING</label> 
+                                                            </div>
+                                                        </div>
+                                                        <div class='schedule-holder'>
+                                                            <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-calendar-week' viewBox='0 0 16 16'>
+                                                                <path d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z'/>
+                                                                <path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z'/>
+                                                                </svg> {$row['schedule_date']}</div>
+                                                            <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-clock' viewBox='0 0 16 16'>
+                                                                <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z'/>
+                                                                <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/>
+                                                                </svg> {$row['schedule_time']}</div>
+                                                        </div>
                                                     </div>
-                                                    <div class='$approved_class'>
-                                                        <label>UPCOMING</label> 
-                                                    </div>
-                                                </div>
-                                                <div class='schedule-holder'>
-                                                    <div ><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-calendar-week' viewBox='0 0 16 16'>
-                                                        <path d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z'/>
-                                                        <path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z'/>
-                                                        </svg> {$schedule_date}</div>
-                                                    <div ><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-clock' viewBox='0 0 16 16'>
-                                                        <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z'/>
-                                                        <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/>
-                                                        </svg> {$schedule_time}</div>
-                                                </div>
-                                            </div>
-                                        </div>";
+                                                </div>";
+                                        }
+                                    }
+                                } else {
+                                    echo "<p class='no-schedule-prompt'>NO UPCOMING SCHEDULE</p>";
                                 }
-                            } else {
-                                echo "<div class='no-schedule-prompt'><p>NO INTERNAL ACCREDITATION SCHEDULE</p></div>";
-                            }
-                            ?>
+                                ?>
+                            </div>
+                            <div class="schedule-wrapper col-md-4">
+                                <h3>FINISHED</h3>
+                                <?php
+                                if ($result->num_rows > 0) {
+                                    $result->data_seek(0); // Reset result pointer to the beginning
+                                    while ($row = $result->fetch_assoc()) {
+                                        if ($row['schedule_status'] == 'finished') {
+                                            echo "<div class='schedule-modal-container finished-schedule'>
+                                                    <div>
+                                                        <div>{$row['college_name']}</div>
+                                                        <div>
+                                                            <h5 class='fw-bold'>{$row['program_name']}</h5>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div class='level-status-holder'>
+                                                            <div class='level-applied-holder'>
+                                                                <label>Level Applied:</label> 
+                                                                {$row['level_applied']}
+                                                            </div>
+                                                        </div>
+                                                        <div class='schedule-holder'>
+                                                            <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-calendar-week' viewBox='0 0 16 16'>
+                                                                <path d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z'/>
+                                                                <path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z'/>
+                                                                </svg> {$row['schedule_date']}</div>
+                                                            <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-clock' viewBox='0 0 16 16'>
+                                                                <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z'/>
+                                                                <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/>
+                                                                </svg> {$row['schedule_time']}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>";
+                                        }
+                                    }
+                                } else {
+                                    echo "<p class='no-schedule-prompt'>NO FINISHED SCHEDULE</p>";
+                                }
+                                ?>
+                            </div>
+                            <div class="schedule-wrapper col-md-4">
+                                <h3>RESULT</h3>
+                                <!-- Add your result content here -->
+                                <?php
+                                if ($result->num_rows > 0) {
+                                    $result->data_seek(0); // Reset result pointer to the beginning
+                                    while ($row = $result->fetch_assoc()) {
+                                        // Assuming result schedules have a different condition to identify
+                                        if ($row['schedule_status'] == 'retain' || $row['schedule_status'] == 'passed') {
+                                            echo "<div class='schedule-modal-container'>
+                                                    <div>
+                                                        <div>{$row['college_name']}</div>
+                                                        <div>
+                                                            <h5 class='fw-bold'>{$row['program_name']}</h5>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div class='level-status-holder'>
+                                                            <div class='level-applied-holder'>
+                                                                <label>Level Applied:</label> 
+                                                                {$row['level_applied']}
+                                                            </div>
+                                                        </div>
+                                                        <div class='schedule-holder'>
+                                                            <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-calendar-week' viewBox='0 0 16 16'>
+                                                                <path d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z'/>
+                                                                <path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z'/>
+                                                                </svg> {$row['schedule_date']}</div>
+                                                            <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-clock' viewBox='0 0 16 16'>
+                                                                <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z'/>
+                                                                <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/>
+                                                                </svg> {$row['schedule_time']}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>";
+                                        }
+                                    }
+                                } else {
+                                    echo "<p class='no-schedule-prompt'>NO RESULT SCHEDULE</p>";
+                                }
+                                ?>
+                            </div>
                         </div>
                     </div>
                 </div>

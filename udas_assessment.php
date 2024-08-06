@@ -133,15 +133,23 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             font-weight: bold;
         }
 
-        /* Scrollable container for assessments */
+        
         .scrollable-container {
-            max-height: 500px;
+            max-height: 650px;
             max-width: 1200px;
             overflow-y: auto;
             overflow-x: hidden;
-            display: flex;
-            justify-content: center;
-            margin-left: 55px;
+            display: inline-block;
+            margin-left: 30px;
+        }
+
+        .scrollable-container-holder{
+            display: inline-block;
+            width: fit-content;
+            padding: 20px 20px 20px 0px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: #f9f9f9;
         }
 
         /* Modal styles */
@@ -336,35 +344,35 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             </div>
             <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
             <div class="container text-center mt-4">
-                <h1 class="mt-5 mb-5">APPROVED SCHEDULES</h1>
-                <div class="scrollable-container">
-                    <?php
-                    if (count($approvedSchedules) > 0) {
-                        $counter = 1; // Counter for numbering assessments
-                        foreach ($approvedSchedules as $schedule) {
-                            $scheduleDate = date("F j, Y", strtotime($schedule['schedule_date']));
-                            $scheduleTime = date("g:i A", strtotime($schedule['schedule_time']));
-                            echo "<div class='assessment-box'>";
-                            echo "<h2>#" . $counter . "</h2>";
-                            echo "<div class='assessment-details'>";
-                            echo "<div class='assessment-holder-1'><div class='assessment-college'><p>College: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>Program:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> Level Applied: <br><h3>" . $schedule['level_applied'] . "</h3></div></p></div>";
-                            echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
+                <h1 class="mt-5 mb-5">UDAS ASSESSMENTS</h1>
+                <div class="scrollable-container-holder">
+                    <div class="scrollable-container">
+                        <?php
+                        if (count($approvedSchedules) > 0) {
+                            $counter = 1; // Counter for numbering assessments
+                            foreach ($approvedSchedules as $schedule) {
+                                $scheduleDate = date("F j, Y", strtotime($schedule['schedule_date']));
+                                $scheduleTime = date("g:i A", strtotime($schedule['schedule_time']));
+                                echo "<div class='assessment-box'>";
+                                echo "<h2>#" . $counter . "</h2>";
+                                echo "<div class='assessment-details'>";
+                                echo "<div class='assessment-holder-1'><div class='assessment-college'><p>College: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>Program:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> Level Applied: <br><h3>" . $schedule['level_applied'] . "</h3></div></p></div>";
+                                echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
 
-                            if (!empty($schedule['udas_assessment_file'])) {
-                                echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button href='" . $schedule['udas_assessment_file'] . "' download class='btn open-modal download-button' data-schedule='" . json_encode($schedule) . "'>DOWNLOAD</button></div> </div>";
-                            } else {
-                                echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button class='btn open-modal udas-button' data-schedule='" . json_encode($schedule) . "'>START</button></div> </div>";
+                                if (!empty($schedule['udas_assessment_file'])) {
+                                    echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button href='" . $schedule['udas_assessment_file'] . "' download class='btn open-modal download-button' data-schedule='" . json_encode($schedule) . "'>DOWNLOAD</button></div> </div>";
+                                } else {
+                                    echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button class='btn open-modal udas-button' data-schedule='" . json_encode($schedule) . "'>START</button></div> </div>";
+                                }
+
+                                echo "</div></div>";
+                                $counter++; // Increment counter for next assessment
                             }
-
-                            echo "</div></div>";
-                            echo "</div>";
-
-                            $counter++; // Increment counter for next assessment
+                        } else {
+                            echo "<div class='no-schedule-prompt'><p>NO APPROVED SCHEDULES FOUND.</p></div>";
                         }
-                    } else {
-                        echo "<p>No approved schedules found.</p>";
-                    }
-                    ?>
+                        ?>
+                    </div>
                 </div>
             </div>
         </div>

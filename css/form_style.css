@@ -90,8 +90,15 @@ button[type="remove"]:hover{
 
 .team-member-input select {
     flex: 1;
+    flex-grow: 10;
     margin-right: 10px;
 }
+
+.team-member-input button {
+    flex: 1;
+    padding-bottom: 10px;
+}
+
 
 .add-team-member-button {
     width: -webkit-fill-available;
