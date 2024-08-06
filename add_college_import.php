@@ -70,6 +70,7 @@ if (isset($_FILES['excel_file']['name'])) {
             $program_level = $sheet->getCellByColumnAndRow(5, $row)->getValue();
             $date_received = $sheet->getCellByColumnAndRow(6, $row)->getValue();
             $date_received = excelDateToDate($date_received); // Convert date to YYYY-MM-DD format
+            $year_of_validity = $sheet->getCellByColumnAndRow(7, $row)->getValue();
 
             // Set program_level to 'N/A' if it is blank
             if (empty($program_level)) {
@@ -77,16 +78,16 @@ if (isset($_FILES['excel_file']['name'])) {
             }
 
             // Check if the college already exists
-            $sql_check = "SELECT code FROM college WHERE college_name = ?";
-            $stmt_check = $conn->prepare($sql_check);
-            $stmt_check->bind_param("s", $college_name);
-            $stmt_check->execute();
-            $result_check = $stmt_check->get_result();
+            $sql_check_college = "SELECT code FROM college WHERE college_name = ?";
+            $stmt_check_college = $conn->prepare($sql_check_college);
+            $stmt_check_college->bind_param("s", $college_name);
+            $stmt_check_college->execute();
+            $result_check_college = $stmt_check_college->get_result();
 
-            if ($result_check->num_rows > 0) {
+            if ($result_check_college->num_rows > 0) {
                 // College name exists, use its college_code
-                $row_check = $result_check->fetch_assoc();
-                $college_code = $row_check['code'];
+                $row_check_college = $result_check_college->fetch_assoc();
+                $college_code = $row_check_college['code'];
             } else {
                 // College name does not exist, insert it into the table
                 $college_code = getNextCollegeCode($conn);
@@ -96,29 +97,70 @@ if (isset($_FILES['excel_file']['name'])) {
                 $stmt_insert_college->bind_param("ssss", $college_code, $college_name, $college_campus, $college_email);
                 $stmt_insert_college->execute();
             }
-            // Insert Program into the program table
-            $sql_insert_program = "INSERT INTO program (college_code, program_name) VALUES (?, ?)";
-            $stmt_insert_program = $conn->prepare($sql_insert_program);
-            $stmt_insert_program->bind_param("ss", $college_code, $program_name);
-            $stmt_insert_program->execute();
 
-            // Get the last inserted program ID
-            $program_id = $conn->insert_id;
+            // Check if the program already exists for the college
+            $sql_check_program = "SELECT id, program_level_id FROM program WHERE college_code = ? AND program_name = ?";
+            $stmt_check_program = $conn->prepare($sql_check_program);
+            $stmt_check_program->bind_param("ss", $college_code, $program_name);
+            $stmt_check_program->execute();
+            $result_check_program = $stmt_check_program->get_result();
 
-            // Insert Program Level History into the program_level_history table
-            $sql_insert_program_level_history = "INSERT INTO program_level_history (program_id, program_level, date_received, year_of_validity) VALUES (?, ?, ?, ?)";
-            $stmt_insert_program_level_history = $conn->prepare($sql_insert_program_level_history);
-            $stmt_insert_program_level_history->bind_param("isss", $program_id, $program_level, $date_received, $year_of_validity);
-            $stmt_insert_program_level_history->execute();
+            if ($result_check_program->num_rows > 0) {
+                // Program already exists, use its ID
+                $row_check_program = $result_check_program->fetch_assoc();
+                $program_id = $row_check_program['id'];
+                
+                // Check if the program level is different
+                $sql_check_program_level = "SELECT program_level FROM program_level_history WHERE id = ?";
+                $stmt_check_program_level = $conn->prepare($sql_check_program_level);
+                $stmt_check_program_level->bind_param("i", $row_check_program['program_level_id']);
+                $stmt_check_program_level->execute();
+                $result_check_program_level = $stmt_check_program_level->get_result();
 
-            // Get the last inserted program level history ID
-            $program_level_id = $conn->insert_id;
+                if ($result_check_program_level->num_rows > 0) {
+                    $row_check_program_level = $result_check_program_level->fetch_assoc();
+                    $existing_program_level = $row_check_program_level['program_level'];
 
-            // Update the program table with the program_level_id
-            $sql_update_program = "UPDATE program SET program_level_id = ? WHERE id = ?";
-            $stmt_update_program = $conn->prepare($sql_update_program);
-            $stmt_update_program->bind_param("ii", $program_level_id, $program_id);
-            $stmt_update_program->execute();
+                    if ($existing_program_level !== $program_level) {
+                        // Insert new program level history
+                        $sql_insert_program_level_history = "INSERT INTO program_level_history (program_id, program_level, date_received, year_of_validity) VALUES (?, ?, ?, ?)";
+                        $stmt_insert_program_level_history = $conn->prepare($sql_insert_program_level_history);
+                        $stmt_insert_program_level_history->bind_param("isss", $program_id, $program_level, $date_received, $year_of_validity);
+                        $stmt_insert_program_level_history->execute();
+
+                        // Update the program with the new program level ID
+                        $program_level_id = $conn->insert_id;
+                        $sql_update_program = "UPDATE program SET program_level_id = ? WHERE id = ?";
+                        $stmt_update_program = $conn->prepare($sql_update_program);
+                        $stmt_update_program->bind_param("ii", $program_level_id, $program_id);
+                        $stmt_update_program->execute();
+                    }
+                }
+            } else {
+                // Insert new program
+                $sql_insert_program = "INSERT INTO program (college_code, program_name) VALUES (?, ?)";
+                $stmt_insert_program = $conn->prepare($sql_insert_program);
+                $stmt_insert_program->bind_param("ss", $college_code, $program_name);
+                $stmt_insert_program->execute();
+
+                // Get the last inserted program ID
+                $program_id = $conn->insert_id;
+
+                // Insert program level history
+                $sql_insert_program_level_history = "INSERT INTO program_level_history (program_id, program_level, date_received, year_of_validity) VALUES (?, ?, ?, ?)";
+                $stmt_insert_program_level_history = $conn->prepare($sql_insert_program_level_history);
+                $stmt_insert_program_level_history->bind_param("isss", $program_id, $program_level, $date_received, $year_of_validity);
+                $stmt_insert_program_level_history->execute();
+
+                // Get the last inserted program level history ID
+                $program_level_id = $conn->insert_id;
+
+                // Update the program table with the program_level_id
+                $sql_update_program = "UPDATE program SET program_level_id = ? WHERE id = ?";
+                $stmt_update_program = $conn->prepare($sql_update_program);
+                $stmt_update_program->bind_param("ii", $program_level_id, $program_id);
+                $stmt_update_program->execute();
+            }
         }
 
         $message = "Data imported successfully!";

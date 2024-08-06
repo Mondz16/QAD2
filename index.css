@@ -805,6 +805,21 @@ input[type="radio"] {
     width: 100%;
 }
 
+.select-selected {
+    width: 606px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.orientation4 h3 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 90%; /* Adjust the width to fit your layout */
+    margin: 0 auto; /* Center the text */
+}
+
+
 .gender1 select {
     width: 455px;
 }
@@ -1087,7 +1102,7 @@ input[type="radio"] {
     max-width: 100%;
 }
 
-.notification, .orientation, .orientation3 {
+.notification, .orientation, .orientation3, .orientation4, .orientation5 {
     border: 1px solid #ddd;
     border-radius: 20px;
     width: 100%;
@@ -1099,13 +1114,14 @@ input[type="radio"] {
     padding: 40px;
 }
 
-.orientation3 {
+.orientation3, .orientation4, .orientation5 {
     padding: 20px 20px;
     border: 1px solid #AFAFAF;
 }
 
 .orientation, .orientation3 {
-    max-width: 95%;}
+    max-width: 95%;
+}
 
 .orientation2 {
     max-width: 100%;
@@ -1116,6 +1132,27 @@ input[type="radio"] {
     max-height: 664px; /* Adjust the max-height value as needed */
     overflow-y: auto;  /* Enables vertical scrolling */
 }
+
+.orientation4 h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.orientation4 {
+    max-width: 100%;
+    margin-bottom: 20px;
+}
+
+.orientation5 {
+    max-width: 100%;
+    overflow-y: auto;
+    height: 700px;
+}
+
+canvas {
+    margin-bottom: 40px; /* Adjust the value to increase or decrease the space */
+}
+
 .notification {
     max-width: 700px;
 }
@@ -1155,7 +1192,7 @@ input[type="radio"] {
 }
 
 
-.pending-assessments, .accept-button, .decline-button, .accept-button1, .submit-button, .accept-confirm-button, .decline-confirm-button, .submit-button1, .approve-assessment-button, .cancel-button, .cancel-button1, .approve-cancel-button, .orientation-button, .assessment-button, .assessment-button-done {
+.export-button, .pending-assessments, .accept-button, .decline-button, .accept-button1, .submit-button, .accept-confirm-button, .decline-confirm-button, .submit-button1, .approve-assessment-button, .cancel-button, .cancel-button1, .approve-cancel-button, .orientation-button, .assessment-button, .assessment-button-done {
     padding: 10px 25px;
     margin: 0 5px;
     cursor: pointer;
@@ -1214,7 +1251,7 @@ input[type="radio"] {
     color: white;
 }
 
-.submit-button, .submit-button1 {
+.submit-button, .submit-button1, .export-button {
     color: #006118;
     border: 1px solid #006118;
     background-color: #D4FFDF;
@@ -1249,11 +1286,18 @@ input[type="radio"] {
 .submit-button1 {
     width: 228px;
 }
+
+.export-button {
+    width: 150px;
+    position: absolute; /* This allows the button to be moved freely */
+    left: 1570px; /* Initial left position */
+    bottom: 72px;
+}
 .submit-button {
     width: 150px;
 }
 
-.submit-button:hover, .submit-button1:hover {
+.submit-button:hover, .submit-button1:hover, .export-button:hover {
     background-color: #76FA97;
     border: 1px solid #76FA97;
     font-weight: bold;

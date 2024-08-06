@@ -181,15 +181,11 @@ $conn->close();
                 </div>
             </div>
             <div style="height: 32px;"></div>
-            <div class="orientation2" id="programHistory">
-                <!-- Program level history will be displayed here -->
-            </div>
-            <div style="height: 32px;"></div>
-            <div class="orientation2" id="chartContainer">
+            <div class="orientation5" id="chartContainer">
                 <!-- Dynamic chart canvases will be appended here -->
             </div>
-            <button id="exportPdfButton">Export to PDF</button>
         </div>
+        <button class="export-button" id="exportPdfButton">EXPORT <img src="images/export.png"></button>
     </div>
 
     <script>
@@ -213,38 +209,48 @@ $conn->close();
         }
 
         function setupCustomSelect() {
-            var selectItems = document.querySelector('.select-items');
-            var selectedDiv = document.querySelector('.select-selected');
-            var items = selectItems.getElementsByClassName('select-item');
+    const selectItems = document.querySelector('.select-items');
+    const selectedDiv = document.querySelector('.select-selected');
+    const items = selectItems.getElementsByClassName('select-item');
+    const maxSelection = 5; // Maximum number of selectable programs
 
-            Array.from(items).forEach(function(item) {
-                item.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    item.classList.toggle('same-as-selected');
+    Array.from(items).forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            e.stopPropagation();
+            item.classList.toggle('same-as-selected');
 
-                    // Get selected values
-                    var selectedValues = Array.from(selectItems.getElementsByClassName('same-as-selected')).map(function(selectedItem) {
-                        return selectedItem.dataset.value;
-                    });
-
-                    // Update display
-                    if (selectedValues.length > 0) {
-                        selectedDiv.textContent = selectedValues[0] + (selectedValues.length > 1 ? ', ...' : '');
-                    } else {
-                        selectedDiv.textContent = 'Select programs';
-                    }
-
-                    loadProgramHistories(selectedValues);
-                });
+            // Get selected values
+            let selectedValues = Array.from(selectItems.getElementsByClassName('same-as-selected')).map(function(selectedItem) {
+                return selectedItem.dataset.value;
             });
 
-            // Toggle dropdown
-            selectedDiv.addEventListener('click', function(e) {
-                e.stopPropagation();
-                closeAllSelect();
-                selectItems.style.display = selectItems.style.display === 'block' ? 'none' : 'block';
-            });
-        }
+            // Limit selection to maxSelection
+            if (selectedValues.length > maxSelection) {
+                alert(`You can only select up to ${maxSelection} programs.`);
+                item.classList.remove('same-as-selected');
+                return;
+            }
+
+            // Update display
+            if (selectedValues.length > 0) {
+                const displayedText = selectedValues.length > 1 ? `${selectedValues[0]} and ${selectedValues.length - 1} more` : selectedValues[0];
+                selectedDiv.textContent = displayedText;
+            } else {
+                selectedDiv.textContent = 'Select programs';
+            }
+
+            loadProgramHistories(selectedValues);
+        });
+    });
+
+    // Toggle dropdown
+    selectedDiv.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeAllSelect();
+        selectItems.style.display = selectItems.style.display === 'block' ? 'none' : 'block';
+    });
+}
+
 
         function loadProgramHistories(selectedPrograms) {
     if (selectedPrograms.length === 0) {
@@ -278,27 +284,34 @@ function renderTimelineCharts(eventsGroupedByProgram, selectedPrograms) {
     Object.keys(eventsGroupedByProgram).forEach((programName, programIndex) => {
         const events = eventsGroupedByProgram[programName];
 
+        // Create a container div for each program
+        const programContainer = document.createElement('div');
+        programContainer.classList.add('orientation4');
+        
         // Create a label for each program
         const programLabel = document.createElement('h3');
         programLabel.textContent = `${programName}`;
-        chartContainer.appendChild(programLabel);
+        programContainer.appendChild(programLabel);
 
         // Create a new canvas element for each program
         const canvas = document.createElement('canvas');
         canvas.id = `timelineChart${programIndex}`;
         canvas.style.height = '200px';
         canvas.style.width = '100%';
-        chartContainer.appendChild(canvas);
+        programContainer.appendChild(canvas);
+
+        // Append the program container to the chart container
+        chartContainer.appendChild(programContainer);
 
         // Create a chart for each canvas
         if (events.length === 0) {
             return;
         }
 
-        // Convert date strings to Date objects and adjust y position alternately
-        events.forEach((event, index) => {
+        // Convert date strings to Date objects
+        events.forEach(event => {
             event.x = new Date(event.date);
-            event.y = index % 2 === 0 ? 0 : -0.4;  // Alternate between -0.5 and 0.5 for zigzag
+            event.y = 0;
             event.label = `${event.label}; ${new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
         });
 
@@ -315,8 +328,8 @@ function renderTimelineCharts(eventsGroupedByProgram, selectedPrograms) {
                 label: 'Program Timeline',
                 data: events,
                 backgroundColor: 'blue',
-                pointRadius: 5,
-                pointHoverRadius: 7,
+                pointRadius: 0, // Hide the scatter points
+                pointHoverRadius: 0,
                 showLine: false
             }]
         };
@@ -324,24 +337,103 @@ function renderTimelineCharts(eventsGroupedByProgram, selectedPrograms) {
         // Get the context of the new canvas element
         const ctx = canvas.getContext('2d');
 
-        // Define a plugin to draw vertical lines
+        // Define colors for each level
+        const levelColors = {
+            'Not Accreditable': '#FF7B7A',  // Red
+            'Candidate': '#76FA97',        // Green
+            'PSV': '#CCCCCC',              // Grey
+            '1': '#FDC879',                // Yellow
+            '2': '#FDC879',                // Yellow
+            '3': '#FDC879',                // Yellow
+            '4': '#FDC879'                 // Yellow
+        };
+
+        // Define abbreviations for each level
+        const levelAbbreviations = {
+            'Not Accreditable': 'NA',
+            'Candidate': 'CAN',
+            'PSV': 'PSV',
+            '1': 'LVL 1',
+            '2': 'LVL 2',
+            '3': 'LVL 3',
+            '4': 'LVL 4'
+        };
+
+        // Function to draw rounded rectangles with border
+        function drawRoundedRectWithBorder(ctx, x, y, width, height, radius, borderColor) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+
+            // Fill the rectangle
+            ctx.fill();
+
+            // Draw the border
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // Define a plugin to draw vertical lines with labels and borders
         const verticalLinePlugin = {
             id: 'verticalLinePlugin',
             beforeDraw: chart => {
                 const { ctx, chartArea: { top, bottom }, scales: { x, y } } = chart;
                 ctx.save();
-                ctx.strokeStyle = 'black';  // Set line color to black
-                ctx.lineWidth = 2;  // Set line thickness
 
                 events.forEach(event => {
-                    const xPosition = x.getPixelForValue(event.x);
-                    const yPosition = y.getPixelForValue(event.y);
+                    const level = event.label.split(';')[0];  // Extract the level from the label
+                    ctx.fillStyle = levelColors[level] || 'black';  // Use black as default color if not found
 
-                    ctx.beginPath();
-                    ctx.moveTo(xPosition, yPosition);
-                    ctx.lineTo(xPosition, bottom);
-                    ctx.stroke();
+                    const xPosition = x.getPixelForValue(event.x);
+                    const lineWidth = 60;
+                    const lineHeight = bottom - y.getPixelForValue(0);
+                    const lineTop = y.getPixelForValue(0);
+
+                    // Define margins
+                    const marginBetweenLines = 10; // Space between the first and second vertical lines
+                    const marginBelowSecondLine = 5; // Space below the second vertical line
+
+                    // Calculate the offset for the first rectangle
+                    const offset = lineHeight / 2 + marginBetweenLines; // Increase offset to move the first rectangle up
+
+                    // Draw the first rectangle for the level, adjusted upward, with border
+                    ctx.fillStyle = levelColors[level] || 'black';
+                    drawRoundedRectWithBorder(ctx, xPosition - lineWidth / 2, lineTop - offset, lineWidth, 70, 5, '#AFAFAF');
+
+                    // Draw the level abbreviation inside the first rectangle
+                    ctx.fillStyle = 'black';  // Text color
+                    ctx.font = 'bold 16px Arial';  // Bold font style
+                    ctx.textAlign = 'center'; // Center the text
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(levelAbbreviations[level] || '', xPosition, lineTop - offset + 35); // Centered at 35 pixels
+
+                    const secondRectOffset = -5; // Increase or decrease this value to move the rectangle
+
+                    // Draw the second rectangle for the date with margin below, with border
+                    const dateHeight = lineHeight * 0.6; // Increase the height of the second vertical line
+                    ctx.fillStyle = '#FFFFFF';  // White background
+                    drawRoundedRectWithBorder(ctx, xPosition - lineWidth / 2, lineTop + lineHeight / 2 - marginBelowSecondLine + secondRectOffset, lineWidth, dateHeight - marginBelowSecondLine, 5, '#AFAFAF');
+
+                    // Draw the date inside the second rectangle, centered vertically
+                    ctx.fillStyle = 'black';  // Text color
+                    ctx.font = 'bold 14px Arial';  // Bold font style for date
+                    ctx.textBaseline = 'middle'; // Center the text vertically
+                    ctx.fillText(
+                        new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), 
+                        xPosition, 
+                        lineTop + lineHeight / 2 - marginBelowSecondLine + secondRectOffset + (dateHeight - marginBelowSecondLine) / 2
+                    );
                 });
+
                 ctx.restore();
             }
         };
@@ -378,25 +470,22 @@ function renderTimelineCharts(eventsGroupedByProgram, selectedPrograms) {
                         display: false
                     },
                     tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.raw.label;
-                            }
-                        }
+                        enabled: false // Disable default tooltips
                     },
                     datalabels: {
-                        align: 'top',
-                        anchor: 'end',
-                        formatter: function(value) {
-                            return value.label;
-                        }
+                        display: false // Hide default data labels
                     }
                 }
             },
-            plugins: [ChartDataLabels, verticalLinePlugin] // Add the vertical line plugin
+            plugins: [verticalLinePlugin] // Add the vertical line plugin
         });
     });
 }
+
+
+
+
+
 
 
 

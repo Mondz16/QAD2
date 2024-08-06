@@ -46,8 +46,10 @@ foreach ($data as $item) {
     $pdf->SetX($x);  // Set the X position for centered text
     $pdf->MultiCell($titleWidth, $lineHeight, $item['name'], 0, 'C');  // Wrap text and center it
 
+    $pdf->Ln(5);
+
     // Calculate width to maintain aspect ratio
-    $imgWidth = 130;
+    $imgWidth = 180;
     $x = ($pdf->GetPageWidth() - $imgWidth) / 2;  // Center the image
 
     // Calculate the image height dynamically based on your aspect ratio
