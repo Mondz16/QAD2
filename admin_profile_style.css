@@ -24,9 +24,11 @@
 
 .container1 {
     display: grid;
-    grid-template-columns: 2fr 1fr; /* Two columns: left column takes twice the space */
-    gap: 20px; /* Gap between items */
-    align-items: start; /* Align items to start vertically */
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    align-items: start;
+    width: 1320px;
+    padding: 50px;
 }
 
 .header, .header1 {

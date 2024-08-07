@@ -106,10 +106,40 @@ a.sidebar-link {
     width: 60px; /* Initial width */
 }
 
+a.sidebar-link-active {
+    padding: .625rem 1.625rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    border: 1px solid #AFAFAF;
+    background-color: #FF7B7A;
+    border-radius: 10px;
+    transition: all .25s ease-in-out;
+    position: relative;
+    overflow: hidden; /* Hide overflow */
+    width: 60px; /* Initial width */
+}
+
 a.sidebar-link span {
     margin-left: 8px;
     display: none;
     transition: display 0.25s ease-in-out;
+}
+
+a.sidebar-link-active span {
+    margin-left: 8px;
+    display: none;
+    transition: display 0.25s ease-in-out;
+}
+
+#sidebar:not(.expand) a.sidebar-link-active {
+    justify-content: center;
+}
+
+#sidebar:not(.expand) .sidebar-link-active {
+    padding: .625rem;
 }
 
 #sidebar.expand a.sidebar-link {
