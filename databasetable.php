@@ -329,6 +329,35 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+$sql = "CREATE TABLE IF NOT EXISTS NDA (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    team_id INT(6) UNSIGNED,
+    date_added DATE NOT NULL,
+    internal_accreditor VARCHAR(255) NOT NULL,
+    internal_accreditor_signature VARCHAR(255) NOT NULL,
+    NDA_file VARCHAR(255) NOT NULL,
+    FOREIGN KEY (team_id) REFERENCES team(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table NDA created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+$sql = "CREATE TABLE IF NOT EXISTS NDA_compilation (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    team_id INT(6) UNSIGNED,
+    NDA_compilation_file VARCHAR(255) NOT NULL,
+    FOREIGN KEY (team_id) REFERENCES team(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table NDA_compilation created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
 // Create admin account if it doesn't exist
 $sql_check_admin = "SELECT * FROM admin WHERE user_id = 'admin'";
 $result_check_admin = $conn->query($sql_check_admin);

@@ -340,8 +340,8 @@ while ($row_company = $result_companies->fetch_assoc()) {
                         <input type="file" id="excel_file" name="excel_file" accept=".xlsx, .xls" required>
                     </div>
                     <div class="form-buttons">
-                        <button type="button" class="btn-cancel" onclick="closeImportModal()">Cancel</button>
-                        <button type="submit" class="btn-add-program">Add Program</button>
+                        <button type="button" class="btn-cancel" onclick="closeImportModal()">CANCEL</button>
+                        <button type="submit" class="btn-add-program">IMPORT</button>
                     </div>
                 </form>
             </div>

@@ -111,7 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 // Google Client for Calendar API
                 $client = new Client();
-                $client->setAuthConfig('C:/xampp/htdocs/QAD2/secure/credentials.json'); // Path to your credentials.json file
+                $client->setAuthConfig('./secure/credentials.json'); // Path to your credentials.json file
                 $client->addScope(Google\Service\Calendar::CALENDAR);
                 $accessToken = getToken(); // Retrieve the access token
                 $client->setAccessToken($accessToken);

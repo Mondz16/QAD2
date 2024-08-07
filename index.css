@@ -28,7 +28,6 @@
     gap: 20px;
     align-items: start;
     width: 1320px;
-    padding: 50px;
 }
 
 .header, .header1 {
@@ -971,7 +970,7 @@ input[type="radio"] {
     max-width: 600px; /* Ensure it doesn't get too wide */
 }
 
-.modal-content h2, .assessmentmodal-content h2, .Summarymodal-content h2, .approvalmodal-content h2 {
+.modal-content h2, .assessmentmodal-content h2, .Summarymodal-content h2, .approvalmodal-content h2, .ndamodal-content h2 {
     text-align: center;
     margin: 20px;
 }
@@ -1384,7 +1383,7 @@ canvas {
     border-radius: 10px;
 }
 
-.approvalmodal {
+.approvalmodal, .ndamodal {
     display: none;
     position: fixed;
     z-index: 1;
@@ -1395,7 +1394,7 @@ canvas {
     border-radius: 10px;
 }
 
-.approvalmodal-content {
+.approvalmodal-content, .ndamodal-content {
     background-color: #fefefe;
     margin: 5% auto;
     padding: 20px;

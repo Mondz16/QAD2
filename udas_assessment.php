@@ -356,7 +356,24 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                                 echo "<div class='assessment-box'>";
                                 echo "<h2>#" . $counter . "</h2>";
                                 echo "<div class='assessment-details'>";
-                                echo "<div class='assessment-holder-1'><div class='assessment-college'><p>College: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>Program:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> Level Applied: <br><h3>" . $schedule['level_applied'] . "</h3></div></p></div>";
+                                echo "<div class='assessment-holder-1'><div class='assessment-college'><p>College: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>Program:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> Level Applied: <br><h3>";
+
+                                            // Display level applied with abbreviations
+                                            switch ($schedule['level_applied']) {
+                                                case "Not Accreditable":
+                                                    echo "NA";
+                                                    break;
+                                                case "Candidate":
+                                                    echo "CAN";
+                                                    break;
+                                                default:
+                                                    echo $schedule['level_applied'];
+                                                    break;
+                                            }
+
+                                            echo "</h3></p>
+            </div>
+          </div>";
                                 echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
 
                                 if (!empty($schedule['udas_assessment_file'])) {

@@ -2,6 +2,9 @@
 include 'connection.php';
 session_start();
 
+date_default_timezone_set('Asia/Manila');
+$current_date = date('F j, Y'); // Format: "Month Day, Year"
+
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -157,6 +160,18 @@ while ($stmt_team_members->fetch()) {
     ];
 }
 $stmt_team_members->close();
+
+// Check NDA status for each schedule
+$nda_signed_status = [];
+foreach ($schedules as $schedule) {
+    $sql_nda = "SELECT id FROM NDA WHERE team_id = ?";
+    $stmt_nda = $conn->prepare($sql_nda);
+    $stmt_nda->bind_param("i", $schedule['team_id']);
+    $stmt_nda->execute();
+    $stmt_nda->store_result();
+    $nda_signed_status[$schedule['schedule_id']] = $stmt_nda->num_rows > 0;
+    $stmt_nda->close();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -272,73 +287,83 @@ $stmt_team_members->close();
                         </div>
                         <div class="bodyRight2">
                             <?php if ($schedule['role'] === 'Team Leader'): ?>
-                                <?php
-                                    $team_member_count = 0;
-                                    $submitted_count = 0;
-                                    $approved_count = 0;
-                                    foreach ($team_members[$schedule['schedule_id']] as $member) {
-                                        if ($member['role'] !== 'Team Leader') {
-                                            $team_member_count++;
-                                            if ($member['assessment_file']) {
-                                                $submitted_count++;
-                                            }
-                                            if (in_array($member['assessment_id'], $approved_assessments)) {
-                                                $approved_count++;
+                                <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
+                                    <p>NON-DISCLOSURE AGREEMENT</p>
+                                    <div style="height: 10px;"></div>
+                                    <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
+                                <?php else: ?>
+                                    <?php
+                                        $team_member_count = 0;
+                                        $submitted_count = 0;
+                                        $approved_count = 0;
+                                        foreach ($team_members[$schedule['schedule_id']] as $member) {
+                                            if ($member['role'] !== 'Team Leader') {
+                                                $team_member_count++;
+                                                if ($member['assessment_file']) {
+                                                    $submitted_count++;
+                                                }
+                                                if (in_array($member['assessment_id'], $approved_assessments)) {
+                                                    $approved_count++;
+                                                }
                                             }
                                         }
-                                    }
-                                ?>
-                                <p>MEMBER SUBMISSION STATUS</p>
-                                <div style="height: 10px;"></div>
-                                <div class="assessmentname2">
-                                    <div class="nameContainer">
-                                        <p><?php echo $submitted_count; ?>/<?php echo $team_member_count; ?> SUBMITTED ASSESSMENTS</p>
-                                    </div>
-                                </div>
-                            <div style="height: 20px;"></div>
-                            <p>TEAM MEMBERS ASSESSMENT</p>
-                            <div style="height: 10px;"></div>
-                                <ul style="list-style: none; font-size: 18px;">
-                                <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
-                                    <?php if ($member['assessment_file'] && $member['role'] !== 'team leader'): ?>
-                                        <li>
-                                            <div class="assessmentname1">
-                                            <div class="titleContainer1">
-                                            <?php echo htmlspecialchars($member['name']); ?>
+                                    ?>
+                                    <p>MEMBER SUBMISSION STATUS</p>
+                                    <div style="height: 10px;"></div>
+                                    <div class="assessmentname2">
+                                        <div class="nameContainer">
+                                            <p><?php echo $submitted_count; ?>/<?php echo $team_member_count; ?> SUBMITTED ASSESSMENTS</p>
                                         </div>
-                                        <div class="titleContainer2">
-                                        <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>"><i class="bi bi-file-earmark-arrow-down"></i></a>
                                     </div>
-                                    <div class="titleContainer3">
-                                            <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
-                                                <i class="fas fa-check approve1"></i>
-                                            <?php else: ?>
-                                                <button class="approve" onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">APPROVE</button>
-                                            <?php endif; ?>
+                                    <div style="height: 20px;"></div>
+                                    <p>TEAM MEMBERS ASSESSMENT</p>
+                                    <div style="height: 10px;"></div>
+                                    <ul style="list-style: none; font-size: 18px;">
+                                    <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
+                                        <?php if ($member['assessment_file'] && $member['role'] !== 'team leader'): ?>
+                                            <li>
+                                                <div class="assessmentname1">
+                                                <div class="titleContainer1">
+                                                <?php echo htmlspecialchars($member['name']); ?>
                                             </div>
-                                        </li>
+                                            <div class="titleContainer2">
+                                            <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>"><i class="bi bi-file-earmark-arrow-down"></i></a>
+                                        </div>
+                                        <div class="titleContainer3">
+                                                <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
+                                                    <i class="fas fa-check approve1"></i>
+                                                <?php else: ?>
+                                                    <button class="approve" onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">APPROVE</button>
+                                                <?php endif; ?>
+                                                </div>
+                                            </li>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                    </ul>
+                                    <?php if (in_array($schedule['team_id'], $existing_summaries)): ?>
+                                        <div style="height: 20px;"></div>
+                                        <p>SUBMIT SUMMARY</p>
+                                        <div style="height: 10px;"></div>
+                                        <p class="assessment-button-done">ALREADY SUBMITTED</p>
+                                    <?php elseif ($submitted_count < $team_member_count): ?>
+                                    <?php elseif ($approved_count < $team_member_count): ?>
+                                        <div style="height: 20px;"></div>
+                                        <p>SUBMIT SUMMARY</p>
+                                        <div style="height: 10px;"></div>
+                                        <p class="pending-assessments">APPROVE ASSESSMENTS FIRST</p>
+                                    <?php else: ?>
+                                        <div style="height: 20px;"></div>
+                                        <p>SUBMIT SUMMARY</p>
+                                        <div style="height: 10px;"></div>
+                                        <button class="assessment-button" onclick="SummaryopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START SUMMARY</button>
                                     <?php endif; ?>
-                                <?php endforeach; ?>
-                                </ul>
-                                <?php if (in_array($schedule['team_id'], $existing_summaries)): ?>
-                                    <div style="height: 20px;"></div>
-                                    <p>SUBMIT SUMMARY</p>
-                                    <div style="height: 10px;"></div>
-                                    <p class="assessment-button-done">ALREADY SUBMITTED</p>
-                                <?php elseif ($submitted_count < $team_member_count): ?>
-                                <?php elseif ($approved_count < $team_member_count): ?>
-                                    <div style="height: 20px;"></div>
-                                    <p>SUBMIT SUMMARY</p>
-                                    <div style="height: 10px;"></div>
-                                    <p class="pending-assessments">APPROVE ASSESSMENTS FIRST</p>
-                                <?php else: ?>
-                                    <div style="height: 20px;"></div>
-                                    <p>SUBMIT SUMMARY</p>
-                                    <div style="height: 10px;"></div>
-                                    <button class="assessment-button" onclick="SummaryopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START SUMMARY</button>
                                 <?php endif; ?>
                             <?php else: ?>
-                                <?php if ($schedule['area'] == ''): ?>
+                                <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
+                                    <p>NON-DISCLOSURE AGREEMENT</p>
+                                    <div style="height: 10px;"></div>
+                                    <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
+                                <?php elseif ($schedule['area'] == ''): ?>
                                     <p>ASSESSMENT</p>
                                     <div style="height: 10px;"></div>
                                     <p class="pending-assessments">YOUR TEAM LEADER SHOULD ASSIGN AREA FIRST</p>
@@ -361,6 +386,131 @@ $stmt_team_members->close();
             <?php else: ?>
                 <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ACCEPTED</strong></p>
             <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- NDA Signing Popup -->
+    <div class="ndamodal" id="ndaPopup" style="display: none;">
+        <div class="ndamodal-content">
+            <span style="float: right; font-size: 40px; cursor: pointer;" class="close" onclick="closeNdaPopup()">&times;</span>
+            <h2>SIGN NDA</h2>
+            <form action="internal_nda_process.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="team_id" id="nda_team_id">
+                <input type="hidden" name="internal_accreditor" id="nda_internal_accreditor">
+                <input type="hidden" name="date_added" id="date_added" value="<?php echo date('Y-m-d'); ?>">
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="internal_accreditor"><strong>INTERNAL ACCREDITOR</strong></label>
+                    </div>
+                    <div class="titleContainer" style="padding-left: 100px;">
+                        <label for="internal_accreditor_signature"><strong>E-SIGNATURE</strong></label>
+                    </div>
+                </div>
+                <div class="orientationname1 upload">
+                    <div class="nameContainer orientationContainer" style="padding-right: 110px">
+                        <input class="area_evaluated" type="text" id="internal_accreditor" name="internal_accreditor" value="<?php echo $full_name; ?>" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer uploadContainer">
+                        <span class="upload-text">UPLOAD</span>
+                        <img id="upload-icon-nda" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                        <input class="uploadInput" type="file" id="internal_accreditor_signature" name="internal_accreditor_signature" accept="image/png" required>
+                    </div>
+                </div>
+                <div class="button-container">
+                    <button class="cancel-button" type="button" onclick="closeNdaPopup()">CANCEL</button>
+                    <button class="submit-button" type="submit">SUBMIT</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Popup Form for Team Member -->
+    <div class="assessmentmodal" id="popup">
+        <div class="assessmentmodal-content">
+            <span style="float: right; font-size: 40px; cursor: pointer;" class="Summaryclose" onclick="closePopup()">&times;</span>
+            <h2>ASSESSMENT FORM</h2>
+            <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
+                <div class="assessment-group">
+                    <input type="hidden" name="schedule_id" id="modal_schedule_id">
+                    <label for="college">COLLEGE</label>
+                    <input class="assessment-group-college" type="text" id="college" name="college" readonly>
+                    <label for="program">PROGRAM</label>
+                    <input class="assessment-group-program" type="text" id="program" name="program" readonly>
+                </div>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="level"><strong>LEVEL APPLIED</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="date"><strong>DATE</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="time"><strong>TIME</strong></label>
+                    </div>
+                </div>
+                <div class="orientationname1">
+                    <div class="nameContainer orientationContainer1">
+                        <input class="level" type="text" id="level" name="level" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="level" type="text" id="date" name="date" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="time" type="text" id="time" name="time" readonly>
+                    </div>
+                </div>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="result"><strong>RESULT</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="area_evaluated"><strong>AREA EVALUATED</strong></label>
+                    </div>
+                </div>
+                <div class="orientationname1">
+                    <div class="nameContainer orientationContainer">
+                        <select style="cursor: pointer;" class="result" id="result" name="result" required>
+                            <option value="">SELECT RESULT</option>
+                            <option value="Ready">Ready</option>
+                            <option value="Needs Improvement">Needs Improvement</option>
+                            <option value="Revisit">Revisit</option>
+                        </select>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="area_evaluated" type="text" id="area_evaluated" name="area_evaluated" readonly>
+                    </div>
+                </div>
+                <div style="height: 20px;"></div>
+                <div class="assessment-group">
+                    <label for="findings"><strong>FINDINGS</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="findings" name="findings" rows="10" placeholder="Add a comment" required></textarea>
+                    <div style="height: 20px;"></div>
+                    <label for="recommendations"><strong>RECOMMENDATIONS</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="recommendations" name="recommendations" rows="10" placeholder="Add a comment" required></textarea>
+                </div>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="evaluator"><strong>EVALUATOR</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="evaluator_signature"><strong>EVALUATOR E-SIGN</strong></label>
+                    </div>
+                </div>
+                <div class="orientationname1 upload">
+                    <div class="nameContainer orientationContainer">
+                        <input class="area_evaluated" type="text" id="evaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer uploadContainer">
+                        <span class="upload-text">UPLOAD</span>
+                        <img id="upload-icon-evaluator" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                        <input class="uploadInput" type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required>
+                    </div>
+                </div>
+                <div class="button-container">
+                    <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
+                    <button class="submit-button1" type="submit">SUBMIT</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -571,6 +721,7 @@ $stmt_team_members->close();
             });
         }
 
+        handleFileChange(document.getElementById('internal_accreditor_signature'), document.getElementById('upload-icon-nda'));
         handleFileChange(document.getElementById('evaluator_signature'), document.getElementById('upload-icon-evaluator'));
 
         handleFileChange(document.getElementById('Summaryevaluator_signature'), document.getElementById('upload-icon-team-evaluator'));
@@ -663,6 +814,16 @@ $stmt_team_members->close();
             document.getElementById('popup').style.display = 'none';
         }
 
+        function openNdaPopup(fullName, teamId) {
+            document.getElementById('nda_internal_accreditor').value = fullName;
+            document.getElementById('nda_team_id').value = teamId;
+            document.getElementById('ndaPopup').style.display = 'block';
+        }
+
+        function closeNdaPopup() {
+            document.getElementById('ndaPopup').style.display = 'none';
+        }
+
         function approveAssessmentPopup(member) {
             document.getElementById('approve_team_id').value = member.team_id;
             document.getElementById('approve_assessment_file').value = member.assessment_file;
@@ -679,7 +840,8 @@ $stmt_team_members->close();
             var modals = [
                 document.getElementById('popup'),
                 document.getElementById('Summarypopup'),
-                document.getElementById('approveAssessmentPopup')
+                document.getElementById('approveAssessmentPopup'),
+                document.getElementById('ndaPopup')
             ];
 
             modals.forEach(function(modal) {
