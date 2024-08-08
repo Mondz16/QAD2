@@ -151,6 +151,15 @@ a.sidebar-link-active span {
     display: inline; /* Show span in expanded state */
 }
 
+#sidebar.expand a.sidebar-link-active {
+    justify-content: flex-start;
+    width: 100%; /* Full width in expanded state */
+}
+
+#sidebar.expand a.sidebar-link-active span {
+    display: inline; /* Show span in expanded state */
+}
+
 #sidebar:not(.expand) a.sidebar-link {
     justify-content: center;
 }
