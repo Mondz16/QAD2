@@ -1,3 +1,45 @@
+<?php
+include 'connection.php';
+session_start();
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Check user type and redirect accordingly
+if ($user_id === 'admin') {
+    // If current page is not admin.php, redirect
+    if (basename($_SERVER['PHP_SELF']) !== 'schedule.php') {
+        header("Location: schedule.php");
+        exit();
+    }
+} else {
+    $user_type_code = substr($user_id, 3, 2);
+
+    if ($user_type_code === '11') {
+        // Internal user
+        if (basename($_SERVER['PHP_SELF']) !== 'internal.php') {
+            header("Location: internal.php");
+            exit();
+        }
+    } elseif ($user_type_code === '22') {
+        // External user
+        if (basename($_SERVER['PHP_SELF']) !== 'external.php') {
+            header("Location: external.php");
+            exit();
+        }
+    } else {
+        // Handle unexpected user type, redirect to login or error page
+        header("Location: login.php");
+        exit();
+    }
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
