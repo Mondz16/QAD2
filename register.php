@@ -193,7 +193,7 @@ if (isset($_SESSION['user_id'])) {
                             </div>
                             <div style="height: 30px; width: 0px;"></div>
                             <a href="login.php" class="signup signupregister" style="margin-left: 265px;">Log in instead</a>
-                            <button type="submit" class="login loginregister">Register</button>
+                            <button type="submit" class="login loginregister" id="registerButton">Register</button>
                         </div>
                     </form>
                 </div>
@@ -214,6 +214,7 @@ if (isset($_SESSION['user_id'])) {
             <img class="Error" src="images/Error.png" height="100">
             <div style="height: 20px; width: 0px;"></div>
             <div class="popup-text" id="errorMessage">Error</div>
+            <!-- Error messages are hidden by default -->
             <div id="typeErrorMessage" style="display: none;">Account Type is Empty<br><br><span style="color: #7B7B7B;">Account Type is a required<br>field. Please fill it up to continue.</span></div>
             <div id="prefixErrorMessage" style="display: none;">Prefix is Empty<br><br><span style="color: #7B7B7B;">Prefix is a required<br>field. Please fill it up to continue.</span></div>
             <div id="firstNameErrorMessage" style="display: none;">First Name is Empty<br><br><span style="color: #7B7B7B;">First Name is a required<br>field. Please fill it up to continue.</span></div>
@@ -229,6 +230,40 @@ if (isset($_SESSION['user_id'])) {
             <a href="javascript:void(0);" class="okay" id="closePopup">Okay</a>
             <div style="height: 100px; width: 0px;"></div>
             <div class="hairpop-up"></div>
+        </div>
+    </div>
+    
+    <!-- Terms and Conditions Modal -->
+    <div id="termsModal" class="e-sign">
+        <div class="e-sign-modal">
+            <div style="height: 20px; width: 0px;"></div>
+            <div class="e-sign-text">
+                <h2>Electronic Signature<br>Usage Agreement</h2>
+                <p>By agreeing to this statement, you consent to the following terms and conditions regarding the use of your electronic signature:<br><br>
+
+1. You acknowledge and agree that your electronic signature will be used exclusively for internal accreditation purposes within our organization. This includes, but is not limited to, verifying and validating documents, authorizations, and other internal procedures.<br><br>
+
+2. You understand and agree that your electronic signature will be encrypted using AES-256-CBC encryption. This ensures that your electronic signature is secure and protected against unauthorized access, tampering, and breaches.<br><br>
+
+3. You consent to the secure storage of your electronic signature in our database, which is protected by advanced security measures. Access to this database is restricted to authorized personnel only, ensuring that your electronic signature is used appropriately and solely for the purposes outlined above.<br><br>
+
+4. You agree that your electronic signature will be kept confidential and will not be shared, disclosed, or used for any purposes other than those specified in this agreement without your explicit consent.<br><br>
+
+5. You acknowledge that it is your responsibility to ensure that your electronic signature is accurate and to safeguard any credentials or devices used to create your electronic signature.<br><br>
+
+6. You understand that we reserve the right to update or modify these terms and conditions at any time. Any changes will be communicated to you, and your continued use of your electronic signature for internal accreditation purposes will constitute your acceptance of the revised terms.<br><br>
+
+If you have any questions or concerns regarding the use of your electronic signature or these terms and conditions, please contact us at usepqad@gmail.com.<br><br>
+
+By clicking "Agree," you consent to the use of your electronic signature as described above and agree to the security measures implemented for its protection.</p><br><br>
+                <label>
+                    <input type="checkbox" id="agreeTermsCheckbox"> I agree to the terms and conditions
+                </label><br><br>
+                <div class="e-sign-container">
+                    <button class="cancel-button1" id="closeTermsBtn" type="button">CLOSE</button>
+                    <button class="approve-assessment-button" id="acceptTerms" disabled>SUBMIT</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -278,7 +313,7 @@ if (isset($_SESSION['user_id'])) {
                 }
             });
 
-            document.getElementById('registerForm').addEventListener('submit', function(event) {
+            document.getElementById('registerButton').addEventListener('click', function(event) {
                 event.preventDefault();
                 var typeInput = document.querySelector('input[name="type"]:checked');
                 var prefixInput = document.querySelector('select[name="prefix"]');
@@ -339,8 +374,25 @@ if (isset($_SESSION['user_id'])) {
                     document.getElementById('errorMessage').innerHTML = errorMessage;
                     document.getElementById('errorPopup').style.display = 'block';
                 } else {
-                    event.target.submit();
+                    document.getElementById('termsModal').style.display = 'block';
                 }
+            });
+
+            document.getElementById('agreeTermsCheckbox').addEventListener('change', function() {
+                var acceptButton = document.getElementById('acceptTerms');
+                if (this.checked) {
+                    acceptButton.disabled = false;
+                    acceptButton.classList.remove('disabled');
+                } else {
+                    acceptButton.disabled = true;
+                    acceptButton.classList.add('disabled');
+                }
+            });
+
+
+            document.getElementById('acceptTerms').addEventListener('click', function() {
+                document.getElementById('termsModal').style.display = 'none';
+                document.getElementById('registerForm').submit();
             });
 
             document.getElementById('closeErrorBtn').addEventListener('click', function() {
@@ -353,10 +405,16 @@ if (isset($_SESSION['user_id'])) {
                 restoreFormData();
             });
 
+            document.getElementById('closeTermsBtn').addEventListener('click', function() {
+                document.getElementById('termsModal').style.display = 'none';
+            });
+
             window.addEventListener('click', function(event) {
                 if (event.target == document.getElementById('errorPopup')) {
                     document.getElementById('errorPopup').style.display = 'none';
                     restoreFormData();
+                } else if (event.target == document.getElementById('termsModal')) {
+                    document.getElementById('termsModal').style.display = 'none';
                 }
             });
 

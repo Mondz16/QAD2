@@ -499,6 +499,18 @@
     font-weight: 500;
 }
 
+.e-sign-text {
+    margin: 20px 30px;
+    font-size: 17px;
+    font-weight: 500;
+    text-align: justify;
+}
+
+.e-sign-text h2 {
+    text-align: center;
+    margin: 10px;
+}
+
 .close-btn {
     color: #aaa;
     float: right;
@@ -1276,6 +1288,12 @@ canvas {
     color: black;
 }
 
+.approve-assessment-button:disabled, .approve-assessment-button.disabled {
+    background-color: #ccc; /* Disabled button color */
+    cursor: not-allowed; /* Disabled cursor */
+    pointer-events: none; /* Disable hover effect */
+}
+
 .decline-confirm-button {
     background-color: #FF6262;
     color: #FFFFFF;
@@ -1356,28 +1374,50 @@ canvas {
     border: 1px solid #A43939;
 }
 
-.button-container {
+.button-container, .e-sign-container {
     display: flex;
-    justify-content: flex-end; /* Aligns the button to the right */
     width: 100%; /* Ensure the container takes full width */
     margin-top: 20px; /* Add some spacing from other elements */
 }
 
-.assessmentmodal, .Summarymodal {
+.button-container {
+    justify-content: flex-end;
+}
+
+.e-sign-container {
+    justify-content: center;
+}
+.assessmentmodal, .Summarymodal, .e-sign {
     display: none;
     position: fixed;
     z-index: 1;
-    left: 50%;
-    top: 5%;
     transform: translate(-50%, 0);
     width: 100%;
     max-width: 535px;
-    height: 850px;
     overflow: auto;
     border: 1px solid #AFAFAF;
     border-radius: 10px;
+    background-color: #fefefe;
+}
+
+.assessmentmodal, .Summarymodal {
+    height: 850px;
+    left: 50%;
+    top: 5%;
+}
+
+.e-sign {
+    height: 600px;
+    left: 50%;
+    top: 18%;
 }
 .assessmentmodal-content, .Summarymodal-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.e-sign-modal {
     background-color: #fefefe;
     padding: 20px;
     border-radius: 10px;

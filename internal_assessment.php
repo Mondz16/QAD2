@@ -393,7 +393,7 @@ foreach ($schedules as $schedule) {
     <div class="ndamodal" id="ndaPopup" style="display: none;">
         <div class="ndamodal-content">
             <span style="float: right; font-size: 40px; cursor: pointer;" class="close" onclick="closeNdaPopup()">&times;</span>
-            <h2>SIGN NDA</h2>
+            <h2>NON-DISCLOSURE AGREEMENT</h2>
             <form action="internal_nda_process.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="team_id" id="nda_team_id">
                 <input type="hidden" name="internal_accreditor" id="nda_internal_accreditor">

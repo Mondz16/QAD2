@@ -115,6 +115,7 @@ $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     profile_picture VARCHAR(255) NOT NULL,
     gender VARCHAR(50) NOT NULL,
     status ENUM('pending', 'active', 'inactive', '') NOT NULL,
+    e_sign_agreement VARCHAR(50) NOT NULL,
     otp VARCHAR(255) NOT NULL,
     otp_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

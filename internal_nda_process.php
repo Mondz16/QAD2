@@ -39,71 +39,81 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $day = $date->format('j') . getOrdinalSuffix($date->format('j'));
     $year = $date->format('Y');
 
-    // Upload internal accreditor signature
-    $signature_path = 'signatures/' . basename($internal_accreditor_signature['name']);
-    if (!move_uploaded_file($internal_accreditor_signature['tmp_name'], $signature_path)) {
-        $message = "Failed to upload signature.";
+    // Read the image file into binary data
+    $signature_data = file_get_contents($internal_accreditor_signature['tmp_name']);
+
+    // Encrypt the binary data
+    $encryption_key = 'your-encryption-key-here'; // Use a secure method to generate and store the encryption key
+    $encrypted_signature_data = openssl_encrypt($signature_data, 'AES-256-CBC', $encryption_key, 0, '1234567890123456'); // Use a secure IV
+
+    // Store the encrypted data in a file
+    $encrypted_signature_path = 'signatures/' . basename($internal_accreditor_signature['name']) . '.enc';
+    file_put_contents($encrypted_signature_path, $encrypted_signature_data);
+
+    // Load NDA PDF template
+    $pdf = new FPDI();
+    $pdf->AddPage();
+    $pdf->setSourceFile('NDA/NDA.pdf');
+    $tplIdx = $pdf->importPage(1);
+    $pdf->useTemplate($tplIdx);
+
+    // Add the Century Gothic font
+    $pdf->AddFont('CenturyGothic','','CenturyGothic.php');
+
+    // Set font
+    $pdf->SetFont('CenturyGothic', '', 11);
+
+    // Add dynamic data to the PDF
+    $pdf->SetXY(30, 78); // Adjust position for internal accreditor's name
+    $pdf->Write(0, $internal_accreditor);
+
+    // Print the month, day, and year separately
+    $pdf->SetXY(117, 247); // Adjust position for month
+    $pdf->Write(0, $month);
+
+    $pdf->SetXY(92, 247); // Adjust position for day
+    $pdf->Write(0, $day);
+
+    $pdf->SetXY(137, 247); // Adjust position for year
+    $pdf->Write(0, $year);
+
+    // Decrypt the signature image before adding to PDF
+    $decrypted_signature_data = openssl_decrypt($encrypted_signature_data, 'AES-256-CBC', $encryption_key, 0, '1234567890123456');
+    $signature_image_path = 'signatures/temp_signature.png';
+    file_put_contents($signature_image_path, $decrypted_signature_data);
+
+    // Calculate the X and Y positions to center the image
+    $centerImageX = 110; // The center X coordinate where you want to center the image
+    $centerImageY = 261; // The center Y coordinate where you want to center the image
+    $imageWidth = 40; // The width of the signature image
+    $imageHeight = 15; // The height of the signature image (adjust based on actual image aspect ratio)
+    $imageXPosition = $centerImageX - ($imageWidth / 2);
+    $imageYPosition = $centerImageY - ($imageHeight / 2);
+
+    // Add internal accreditor signature
+    $pdf->Image($signature_image_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight); // Adjust positions as needed
+
+    // Save the filled NDA PDF
+    $output_path = 'NDA/' . $team_id . '_NDA.pdf';
+    $pdf->Output('F', $output_path);
+
+    // Insert NDA details into the database
+    $sql_insert = "INSERT INTO NDA (team_id, date_added, internal_accreditor, internal_accreditor_signature, NDA_file) VALUES (?, ?, ?, ?, ?)";
+    $stmt_insert = $conn->prepare($sql_insert);
+    $stmt_insert->bind_param("issss", $team_id, $date_added, $internal_accreditor, $encrypted_signature_path, $output_path);
+    if ($stmt_insert->execute()) {
+        $success = true;
+        $message = "Non-disclosure Agreement signed successfully.";
     } else {
-        // Load NDA PDF template
-        $pdf = new FPDI();
-        $pdf->AddPage();
-        $pdf->setSourceFile('NDA/NDA.pdf');
-        $tplIdx = $pdf->importPage(1);
-        $pdf->useTemplate($tplIdx);
-
-        // Add the Century Gothic font
-        $pdf->AddFont('CenturyGothic','','CenturyGothic.php');
-
-        // Set font
-        $pdf->SetFont('CenturyGothic', '', 11);
-
-        // Add dynamic data to the PDF
-        $pdf->SetXY(30, 78); // Adjust position for internal accreditor's name
-        $pdf->Write(0, $internal_accreditor);
-
-        // Print the month, day, and year separately
-        $pdf->SetXY(117, 247); // Adjust position for month
-        $pdf->Write(0, $month);
-
-        $pdf->SetXY(92, 247); // Adjust position for day
-        $pdf->Write(0, $day);
-
-        $pdf->SetXY(137, 247); // Adjust position for year
-        $pdf->Write(0, $year);
-
-        // Calculate the X and Y positions to center the image
-        $centerImageX = 110; // The center X coordinate where you want to center the image
-        $centerImageY = 261; // The center Y coordinate where you want to center the image
-        $imageWidth = 40; // The width of the signature image
-        $imageHeight = 15; // The height of the signature image (adjust based on actual image aspect ratio)
-        $imageXPosition = $centerImageX - ($imageWidth / 2);
-        $imageYPosition = $centerImageY - ($imageHeight / 2);
-
-        // Add internal accreditor signature
-        $pdf->Image($signature_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight); // Adjust positions as needed
-
-        // Save the filled NDA PDF
-        $output_path = 'NDA/' . $team_id . '_NDA.pdf';
-        $pdf->Output('F', $output_path);
-
-        // Insert NDA details into the database
-        $sql_insert = "INSERT INTO NDA (team_id, date_added, internal_accreditor, internal_accreditor_signature, NDA_file) VALUES (?, ?, ?, ?, ?)";
-        $stmt_insert = $conn->prepare($sql_insert);
-        $stmt_insert->bind_param("issss", $team_id, $date_added, $internal_accreditor, $signature_path, $output_path);
-        if ($stmt_insert->execute()) {
-            $success = true;
-            $message = "Non-disclosure Agreement signed successfully.";
-        } else {
-            $message = "Error: " . $stmt_insert->error;
-        }
-        $stmt_insert->close();
+        $message = "Error: " . $stmt_insert->error;
     }
+    $stmt_insert->close();
+    unlink($signature_image_path); // Remove the temporary decrypted image file
     $conn->close();
 } else {
     $message = "Invalid request method.";
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">

@@ -346,7 +346,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
 
             <div class="container1">
-                <h1>ADMIN PROFILE</h1>
+                <h1 style="text-align: center;" >ADMIN PROFILE</h1>
                 <div class="profile-info">
                     <p class="personal">PERSONAL INFORMATION</p>
                     <div class="profile">
