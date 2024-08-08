@@ -159,7 +159,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt_update_external->close();
                 }
                 $conn->commit();
-                $message = "User approved with ID: " . $id;
+                $message = "User approved with User ID: " . $id;
                 $message_class = "success";
             } else {
                 // Rollback the transaction if email fails
@@ -215,77 +215,40 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operation Result</title>
+    <title>Registration Approval</title>
+    <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Quicksand", sans-serif;
-        }
-
-        body {
-            background-color: #f9f9f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-
-        .container {
-            max-width: 750px;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        h2 {
-            font-size: 24px;
-            color: #973939;
-            margin-bottom: 20px;
-        }
-
-        .message {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-
-        .success {
-            color: green;
-        }
-
-        .error {
-            color: red;
-        }
-
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
-        }
-
-        .button-primary:hover {
-            background-color: #259b42;
-        }
-    </style>
 </head>
 
 <body>
-    <div class="container">
-        <h2>Operation Result</h2>
-        <div class="message <?php echo $message_class; ?>">
-            <?php echo $message; ?>
+    <div id="successPopup" class="popup">
+        <div class="popup-content">
+            <div style="height: 50px; width: 0px;"></div>
+            <img class="Success" src="images/Success.png" height="100">
+            <div style="height: 20px; width: 0px;"></div>
+            <div class="popup-text"><?php echo $message; ?></div>
+            <div style="height: 50px; width: 0px;"></div>
+            <a href="registration.php" class="okay" id="closePopup">Okay</a>
+            <div style="height: 100px; width: 0px;"></div>
+            <div class="hairpop-up"></div>
         </div>
-        <button class="button-primary" onclick="window.location.href='registration.php'">OK</button>
     </div>
+    <script>
+        document.getElementById('successPopup').style.display = 'block';
+
+        document.getElementById('closeSuccessBtn').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+        });
+
+        document.getElementById('closePopup').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('successPopup')) {
+                document.getElementById('successPopup').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

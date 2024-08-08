@@ -147,7 +147,6 @@ if (isset($_SESSION['user_id'])) {
 
     <div id="errorPopup" class="popup">
         <div class="popup-content">
-            <span class="close-btn" id="closeErrorBtn">&times;</span>
             <div style="height: 50px; width: 0px;"></div>
             <img class="Error" src="images/Error.png" height="100">
             <div style="height: 20px; width: 0px;"></div>

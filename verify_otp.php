@@ -247,7 +247,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php if ($verified): ?>
                     <div id="successPopup" class="popup">
                         <div class="popup-content">
-                            <span class="close-btn" id="closeSuccessBtn">&times;</span>
                             <div style="height: 50px; width: 0px;"></div>
                             <img class="Success" src="images/Success.png" height="100">
                             <div style="height: 20px; width: 0px;"></div>
@@ -286,8 +285,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div style="height: 10px; width: 0px;"></div>
 
                         <div class="username" style="width: 455px;">
-                            <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                                <input class="email" type="text" id="type" name="type" value="<?php echo htmlspecialchars($type); ?>" readonly>
+                            <div style="display: flex; align-items: center; padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
+                                <input class="email" type="text" id="type" name="type" value="<?php echo htmlspecialchars($type); ?>" readonly style="text-transform: uppercase; flex: 1;">
+                                <span style="margin-right: 233px;">ACCREDITOR</span>
                             </div>
                         </div>
                         <div style="height: 10px; width: 0px;"></div>

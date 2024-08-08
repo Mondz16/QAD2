@@ -191,7 +191,47 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt->execute();
                 $stmt->close();
 
-                echo "Summary approved successfully and email sent.";
+                // Display success message
+                echo "<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Operation Result</title>
+    <link rel='stylesheet' href='index.css'>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap'>
+</head>
+<body>
+    <div id='successPopup' class='popup'>
+        <div class='popup-content'>
+            <div style='height: 50px; width: 0px;'></div>
+            <img class='Success' src='images/Success.png' height='100'>
+            <div style='height: 20px; width: 0px;'></div>
+            <div class='popup-text'>Summary approved successfully.</div>
+            <div style='height: 50px; width: 0px;'></div>
+            <a href='assessment.php' class='okay' id='closePopup'>Okay</a>
+            <div style='height: 100px; width: 0px;'></div>
+            <div class='hairpop-up'></div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('successPopup').style.display = 'block';
+
+        document.getElementById('closePopup').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+            window.location.href = 'schedule.php';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('successPopup')) {
+                document.getElementById('successPopup').style.display = 'none';
+                window.location.href = 'schedule.php';
+            }
+        });
+    </script>
+</body>
+</html>";
+
             } catch (Exception $e) {
                 echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
             }

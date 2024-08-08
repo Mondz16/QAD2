@@ -53,7 +53,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS program (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     college_code VARCHAR(2),
-    program_name VARCHAR(255) NOT NULL,
+    program_name VARCHAR(300) NOT NULL,
     program_level_id INT(6) UNSIGNED,
     FOREIGN KEY (college_code) REFERENCES college(code)
 )";

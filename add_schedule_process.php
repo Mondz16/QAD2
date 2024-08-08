@@ -43,91 +43,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    // Check if the date already exists
-    $sql_check_status = "SELECT id FROM schedule WHERE schedule_date = ? AND schedule_status != 'cancelled'";
-    $stmt_check_date = $conn->prepare($sql_check_status);
-    $stmt_check_date->bind_param("s", $date);
-    $stmt_check_date->execute();
-    $stmt_check_date->store_result();
-
-    if ($stmt_check_date->num_rows > 0) {
-        echo "<!DOCTYPE html>
-<html lang=\"en\">
-<head>
-    <meta charset=\"UTF-8\">
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-    <title>Operation Result</title>
-    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: \"Quicksand\", sans-serif;
-        }
-        body {
-            background-color: #f9f9f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            max-width: 750px;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h2 {
-            font-size: 24px;
-            color: #973939;
-            margin-bottom: 20px;
-        }
-        .message {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        .success {
-            color: green;
-        }
-        .error {
-            color: red;
-        }
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
-        }
-        .button-primary:hover {
-            background-color: #259b42;
-        }
-    </style>
-</head>
-<body>
-    <div class=\"container\">
-        <h2>Operation Result</h2>
-        <div class=\"message\">
-            Error: Schedule already exists for the selected date.
-        </div>
-        <button class=\"button-primary\" onclick=\"window.location.href='add_schedule.php'\">OK</button>
-    </div>
-</body>
-</html>";
-        $stmt_check_date->close();
-        $conn->close();
-        exit();
-    }
-
-    $stmt_check_date->close();
-
     date_default_timezone_set('Asia/Manila');
     $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
     $result = $currentDateTime->format('Y-m-d H:i:s');
@@ -257,69 +172,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset=\"UTF-8\">
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-    <title>Operation Result</title>
+    <title>Add Schedule</title>
     <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: \"Quicksand\", sans-serif;
-        }
-        body {
-            background-color: #f9f9f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            max-width: 750px;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h2 {
-            font-size: 24px;
-            color: #973939;
-            margin-bottom: 20px;
-        }
-        .message {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        .success {
-            color: green;
-        }
-        .error {
-            color: red;
-        }
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
-        }
-        .button-primary:hover {
-            background-color: #259b42;
-        }
-    </style>
+    <link rel=\"stylesheet\" href=\"index.css\">
 </head>
 <body>
-    <div class=\"container\">
-        <h2>Operation Result</h2>
-        <div class=\"message\">
-            New schedule and team members added successfully
+    <div id=\"successPopup\" class=\"popup\">
+        <div class=\"popup-content\">
+            <div style=\"height: 50px; width: 0px;\"></div>
+            <img class=\"Success\" src=\"images/Success.png\" height=\"100\">
+            <div style=\"height: 20px; width: 0px;\"></div>
+            <div class=\"popup-text\">Schedule has been addedd successfully.</div>
+            <div style=\"height: 50px; width: 0px;\"></div>
+            <a href=\"add_schedule.php\" class=\"okay\" id=\"closePopup\">Okay</a>
+            <div style=\"height: 100px; width: 0px;\"></div>
+            <div class=\"hairpop-up\"></div>
         </div>
-        <button class=\"button-primary\" onclick=\"window.location.href='schedule.php'\">OK</button>
     </div>
+    <script>
+        document.getElementById('successPopup').style.display = 'block';
+
+        document.getElementById('closeSuccessBtn').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+        });
+
+        document.getElementById('closePopup').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('successPopup')) {
+                document.getElementById('successPopup').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>";
 
@@ -333,66 +219,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
     <title>Operation Result</title>
     <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: \"Quicksand\", sans-serif;
-        }
-        body {
-            background-color: #f9f9f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            max-width: 750px;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h2 {
-            font-size: 24px;
-            color: #973939;
-            margin-bottom: 20px;
-        }
-        .message {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        .success {
-            color: green;
-        }
-        .error {
-            color: red;
-        }
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
-        }
-        .button-primary:hover {
-            background-color: #259b42;
-        }
-    </style>
+    <link rel=\"stylesheet\" href=\"index.css\">
 </head>
 <body>
-    <div class=\"container\">
-        <h2>Operation Result</h2>
-        <div class=\"message error\">
-            Schedule could not be added because there's an internet problem. Please try again.
+    <div id=\"errorPopup\" class=\"popup\" style=\"display: none;\">
+        <div class=\"popup-content\">
+            <div style=\"height: 50px; width: 0px;\"></div>
+            <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+            <div style=\"height: 20px; width: 0px;\"></div>
+            <div class=\"popup-text\">Schedule could not be added because there's an internet problem. Please try again.</div>
+            <div style=\"height: 50px; width: 0px;\"></div>
+            <a href=\"add_schedule.php\" class="okay" id="closeErrorPopup">Okay</a>
+            <div style=\"height: 100px; width: 0px;\"></div>
+            <div class=\"hairpop-up\"></div>
         </div>
-        <button class=\"button-primary\" onclick=\"window.location.href='add_schedule.php'\">OK</button>
     </div>
 </body>
 </html>";
@@ -408,66 +248,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
     <title>Operation Result</title>
     <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: \"Quicksand\", sans-serif;
-        }
-        body {
-            background-color: #f9f9f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            max-width: 750px;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h2 {
-            font-size: 24px;
-            color: #973939;
-            margin-bottom: 20px;
-        }
-        .message {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        .success {
-            color: green;
-        }
-        .error {
-            color: red;
-        }
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
-        }
-        .button-primary:hover {
-            background-color: #259b42;
-        }
-    </style>
+    <link rel=\"stylesheet\" href=\"index.css\">
 </head>
 <body>
-    <div class=\"container\">
-        <h2>Operation Result</h2>
-        <div class=\"message error\">
-            Schedule could not be added because there's an internet problem. Please try again.
+    <div id=\"errorPopup\" class=\"popup\" style=\"display: none;\">
+        <div class=\"popup-content\">
+            <div style=\"height: 50px; width: 0px;\"></div>
+            <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+            <div style=\"height: 20px; width: 0px;\"></div>
+            <div class=\"popup-text\">Schedule could not be added because there's an internet problem. Please try again.</div>
+            <div style=\"height: 50px; width: 0px;\"></div>
+            <a href=\"add_schedule.php\" class="okay" id="closeErrorPopup">Okay</a>
+            <div style=\"height: 100px; width: 0px;\"></div>
+            <div class=\"hairpop-up\"></div>
         </div>
-        <button class=\"button-primary\" onclick=\"window.location.href='add_schedule.php'\">OK</button>
     </div>
 </body>
 </html>";

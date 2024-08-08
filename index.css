@@ -176,9 +176,13 @@
 
 .bodyLeft1 {
     max-width: 100%;
-    flex-basis: 70%;
+    flex-basis: 66%;
 }
 
+.bodyRight1 {
+    max-width: 100%;
+    flex-basis: 34%;
+}
 .bodyLeft, .bodyRight {
     padding-left: 100px;
 }
@@ -666,7 +670,7 @@
     flex: 0 0 10%;
 }
 
-.prefixContainer select {
+.prefixContainer select, .result {
     width: 100%;
     border: none;
     outline: none;
