@@ -12,7 +12,7 @@ $sql = "SELECT s.id, s.level_applied, s.schedule_date, s.schedule_time, s.schedu
         FROM schedule s 
         JOIN college c ON s.college_code = c.code
         JOIN program p ON s.program_id = p.id
-        WHERE s.schedule_status NOT IN ('pending', 'cancelled')";
+        WHERE s.schedule_status NOT IN ('pending')";
 $whereClauses = [];
 if ($year) {
     $whereClauses[] = "YEAR(s.schedule_date) = $year";
@@ -71,7 +71,7 @@ $result = $conn->query($sql);
         flex: 2;
     }
 
-    .no-schedule-prompt{
+    .no-schedule-prompt {
         display: flex;
         height: 600px;
         justify-content: center;
@@ -93,6 +93,19 @@ $result = $conn->query($sql);
         text-align: left;
     }
 
+    .result-schedule-modal-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 2px solid !important;
+        border-color: #AFAFAF !important;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: left;
+        opacity: 50%;
+    }
+
     .level-applied-holder {
         width: max-content;
         padding: 5px 15px;
@@ -102,20 +115,98 @@ $result = $conn->query($sql);
         margin-top: 10px;
         color: #575757;
     }
+    
+    .result-level-applied-holder {
+        width: max-content;
+        padding: 5px 15px;
+        border-radius: 5px;
+        font-weight: 500;
+        margin-top: 10px;
+        color: #575757;
+    }
 
-    .level-status-holder{
+    .result-passed-color{
+        background-color: #b5ffc8;
+    }
+
+    .result-failed-color{
+        background-color: #ffdee3;
+    }
+
+    .level-status-holder {
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
     }
 
+    .finished-buttons {
+        display: flex;
+        align-items: center;
+    }
+
     .finished-schedule {
+        border: 1px solid !important;
+        border-color: #AFAFAF !important;
+    }
+
+    .finished-buttons button {
+        padding: 5px 10px;
+        margin: 0 5px;
+        text-align: center;
+        height: fit-content;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+
+
+    #retain-button {
+        color: #FF7B7A;
+        border: 1px solid #FF7B7A;
+        transition: background-color .3s ease;
+    }
+
+    #retain-button:hover {
+        color: #fff;
+        background-color: #FF7B7A;
+        border: 1px solid #DC7171;
+    }
+
+    #pass-button {
+        color: #006118;
+        border: 1px solid #006118;
+        background-color: #D4FFDF;
+        transition: background-color .3s ease;
+    }
+
+    #pass-button:hover {
+        border: 1px solid #006118;
+        background-color: #76FA97;
+        color: #006118;
+    }
+
+    #retain-button-active {
+        color: #fff;
+        background-color: #FF7B7A;
+        border: 1px solid #DC7171;
+    }
+
+    #pass-button-active {
+        border: 1px solid #006118;
+        background-color: #76FA97;
+        color: #006118;
+    }
+
+    .hide-result{
+        display: none;
+    }
+
+    .result-schedule {
         border: 1px solid !important;
         opacity: 50%;
         border-color: #AFAFAF !important;
     }
 
-    .status-holder{    
+    .status-holder {
         display: inline-block;
         color: #FF7B7A;
         border: 1px solid #FF7B7A;
@@ -136,7 +227,7 @@ $result = $conn->query($sql);
         margin: 0px 5px;
     }
 
-    .schedule-wrapper h3{
+    .schedule-wrapper h3 {
         font-size: 1.25rem;
         margin-bottom: 10px;
     }
@@ -390,6 +481,10 @@ $result = $conn->query($sql);
                                                                 <label>Level Applied:</label> 
                                                                 {$row['level_applied']}
                                                             </div>
+                                                            <div class='finished-buttons'>
+                                                                <button type='button' id='retain-button'>RETAIN</button>
+                                                                <button type='button' id='pass-button'>PASS</button>
+                                                            </div>
                                                         </div>
                                                         <div class='schedule-holder'>
                                                             <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-calendar-week' viewBox='0 0 16 16'>
@@ -418,8 +513,16 @@ $result = $conn->query($sql);
                                     $result->data_seek(0); // Reset result pointer to the beginning
                                     while ($row = $result->fetch_assoc()) {
                                         // Assuming result schedules have a different condition to identify
-                                        if ($row['schedule_status'] == 'retain' || $row['schedule_status'] == 'passed') {
-                                            echo "<div class='schedule-modal-container'>
+                                        if ($row['schedule_status'] == 'failed' || $row['schedule_status'] == 'passed') {
+                                            $isPassed = true;
+                                            if($row['schedule_status'] == 'failed')
+                                                $isPassed = false;
+
+                                            $hideFail = $isPassed == false ? '' : 'hide-result';
+                                            $hidePass = $isPassed == true? '' : 'hide-result';
+                                            $color = $isPassed == true ? 'result-passed-color' : 'result-failed-color';
+
+                                            echo "<div class='result-schedule-modal-container  $color'>
                                                     <div>
                                                         <div>{$row['college_name']}</div>
                                                         <div>
@@ -428,9 +531,13 @@ $result = $conn->query($sql);
                                                     </div>
                                                     <div>
                                                         <div class='level-status-holder'>
-                                                            <div class='level-applied-holder'>
+                                                            <div class='result-level-applied-holder'>
                                                                 <label>Level Applied:</label> 
                                                                 {$row['level_applied']}
+                                                            </div>
+                                                            <div class='finished-buttons'>
+                                                                <button type='m' id='retain-button-active' class='$hideFail' readonly>FAILED</button>
+                                                                <button type='button' id='pass-button-active' class='$hidePass' readonly>PASSED</button>
                                                             </div>
                                                         </div>
                                                         <div class='schedule-holder'>
