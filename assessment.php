@@ -20,6 +20,85 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
     <link rel="stylesheet" href="css/navbar.css">
     <link href="css/pagestyle.css" rel="stylesheet">
     <style>
+
+        .button-container{
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .button-container button:first-child{
+            color: #AFAFAF;
+            border: 1px solid #AFAFAF;
+            padding: 10px 25px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .button-container button:last-child {
+            width: 150px;
+            color: #006118;
+            border: 1px solid #006118;
+            background-color: #D4FFDF;
+            padding: 10px 25px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: background-color .3s ease;
+        }
+
+        .button-container button:last-child:hover {
+            border: 1px solid #006118;
+            background-color: #76FA97;
+            color: #006118;
+        }
+
+        .nameContainer{
+            border-color: rgb(170, 170, 170);
+            border-style: solid;
+            border-width: 1px;
+            border-radius: 8px;
+            flex: 1;
+        }
+
+        .uploadContainer {
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding: 12px 20px;
+        }
+
+        .upload-text {
+            margin-left: auto;
+            font-weight: bold;
+            color: #575757;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            width: 20px;
+            height: 20px;
+            margin-left: auto;
+            cursor: pointer;
+        }
+
+        .uploadInput {
+            position: absolute;
+            opacity: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+        }
+
         /* Modal styles */
         .modal {
             display: none;
@@ -35,11 +114,60 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         }
 
         .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
+            display: block;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            top: 30%;
+            transform: translate(-50%, 0);
+            width: 700px;
             padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
+            border-radius: 10px;
+        }
+
+        .modal-content .label-holder{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .modal-content .input-holder{
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .modal-content .input-holder input{
+            padding: 12px 20px;
+            border-color: rgb(170, 170, 170);
+            border-style: solid;
+            border-width: 1px;
+            border-radius: 8px;
+        }
+
+        .modal-content .input-holder input:first-child{    
+            padding-right: 40px;
+            flex: 2;
+            margin-right: 15px;
+        }
+
+        .moda-content .input-holder input:last-child {
+            position: absolute;
+            opacity: 0;
+            right: 0;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+            flex: 1;
+        }
+
+        .modal-content .input-holder{
+            border: none;
+        }
+
+        .modal-content h2{
+            text-align: center;
+            margin: 20px 20px 40px 20px;
         }
 
         .close {
@@ -481,20 +609,45 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         <!-- Modal -->
         <div id="approvalModal" class="modal">
             <div class="modal-content">
-                <span class="close">&times;</span>
                 <h2>Approve Summary</h2>
                 <form id="approveForm" method="POST" action="approve_summary.php" enctype="multipart/form-data">
-                    <label for="qadOfficerName">QAD Officer Name:</label>
-                    <input type="text" id="qadOfficerName" name="qadOfficerName" required>
-                    <label for="qadOfficerSignature">QAD Officer Signature (PNG only):</label>
-                    <input type="file" id="qadOfficerSignature" name="qadOfficerSignature" accept="image/png" required>
+                    <div class="label-holder">
+                        <label for="qadOfficerName"><strong>QAD Officer Name:</strong></label>
+                        <label for="qadOfficerSignature"><strong>Officer Signature (PNG only):</strong></label>
+                    </div>
+                    <div class="input-holder">
+                        <input type="text" id="qadOfficerName" name="qadOfficerName" required>
+                        <div class="nameContainer orientationContainer uploadContainer">
+                            <span class="upload-text">UPLOAD</span>
+                            <img id="upload-icon-nda" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                            <input class="uploadInput" type="file" id="qadOfficerSignature" name="qadOfficerSignature" accept="image/png" required="">
+                        </div>
+                    </div>
                     <input type="hidden" id="summaryFile" name="summaryFile">
-                    <button type="submit">Submit</button>
+                    <div class="button-container">
+                        <button type="button" class="close">CANCEL</button>
+                        <button type="submit" >SUBMIT</button>
+                    </div>
                 </form>
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
         <script>
+            
+            function handleFileChange(inputElement, iconElement) {
+                inputElement.addEventListener('change', function () {
+                    if (this.files && this.files.length > 0) {
+                        // Change icon to check mark if a file is selected
+                        iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
+                    } else {
+                        // Change icon back to download if no file is selected
+                        iconElement.src = 'images/download-icon1.png';
+                    }
+                });
+            }
+
+            handleFileChange(document.getElementById('qadOfficerSignature'), document.getElementById('upload-icon-nda'));
+
             const hamBurger = document.querySelector(".toggle-btn");
 
             hamBurger.addEventListener("click", function() {
