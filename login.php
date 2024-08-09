@@ -1,6 +1,28 @@
 <?php
 session_start();
 
+// Check if the user just logged out
+if (isset($_GET['logged_out']) && $_GET['logged_out'] == 'true') {
+    // Allow access without referer check
+} else {
+    // Allowed referring pages
+    $allowed_referers = ['register.php', 'index.php', 'logout.php', 'verify_otp.php'];
+
+    // Check if the referer is set and validate it
+    if (isset($_SERVER['HTTP_REFERER'])) {
+        $referer = basename(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH));
+        if (!in_array($referer, $allowed_referers)) {
+            // Redirect to index.php if the referer is not allowed
+            header("Location: index.php");
+            exit();
+        }
+    } else {
+        // If no referer is set, redirect to index.php
+        header("Location: index.php");
+        exit();
+    }
+}
+
 // Check if user is already logged in
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
@@ -20,6 +42,20 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+</head>
+<body>
+    <!-- Your existing HTML code goes here -->
+</body>
+</html>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

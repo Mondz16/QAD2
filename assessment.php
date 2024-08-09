@@ -10,6 +10,15 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Retrieve full name of the logged-in user from the admin table without the prefix
+$sql = "SELECT CONCAT(first_name, ' ', middle_initial, '. ', last_name) AS full_name FROM admin WHERE user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $user_id);
+$stmt->execute();
+$stmt->bind_result($full_name);
+$stmt->fetch();
+$stmt->close();
+
 // Check user type and redirect accordingly
 if ($user_id === 'admin') {
     // If current page is not admin.php, redirect
@@ -288,8 +297,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             margin-left: 12px;
         }
 
-        .assessment-udas .udas-button,
-        .udas-button1 {
+        .assessment-udas .udas-button, .udas-button1 {
             height: 46px;
             width: 100%;
             margin: 10px 0;
@@ -297,6 +305,10 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             font-weight: bold;
             color: #006118;
             border: 1px solid #006118;
+        }
+
+        .udas-button1 {
+            background-color: #D4FFDF;
         }
 
         .udas-button1 {
@@ -644,7 +656,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
 
 
         <!-- Modal -->
-        <div id="approvalModal" class="modal">
+         <div id="approvalModal" class="modal">
             <div class="modal-content">
                 <h2>Approve Summary</h2>
                 <form id="approveForm" method="POST" action="approve_summary.php" enctype="multipart/form-data">
@@ -653,7 +665,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                         <label for="qadOfficerSignature"><strong>Officer Signature (PNG only):</strong></label>
                     </div>
                     <div class="input-holder">
-                        <input type="text" id="qadOfficerName" name="qadOfficerName" required>
+                        <input type="text" id="qadOfficerName" name="qadOfficerName" value="<?php echo $full_name; ?>" readonly>
                         <div class="nameContainer orientationContainer uploadContainer">
                             <span class="upload-text">UPLOAD</span>
                             <img id="upload-icon-nda" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">

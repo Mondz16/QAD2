@@ -47,7 +47,7 @@ function display_popup($message, $type, $redirect = 'login.php', $has_apply_canc
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Operation Result</title>
+        <title>Login</title>
         <link rel="stylesheet" href="index.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
     </head>
@@ -119,7 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($admin['email'] === '') {
                 // Redirect directly if email is a placeholder
                 $_SESSION['user_id'] = $admin['user_id'];  // Set session variable to 'user_id'
-                header("Location: admin_sidebar.php");
+                header("Location: dashboard.php");
                 exit;
             }
 

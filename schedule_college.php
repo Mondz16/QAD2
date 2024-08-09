@@ -8,6 +8,72 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link href="css/schedule_college_pagestyle.css" rel="stylesheet">
     <link rel="stylesheet" href="css/navbar.css">
+    <style>
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .popup-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .popup-image {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .popup-text {
+            margin: 20px 50px;
+            font-size: 17px;
+            font-weight: 500;
+        }
+
+        .hairpop-up {
+            height: 15px;
+            background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .okay {
+            color: black;
+            text-decoration: none;
+            white-space: unset;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: 1px solid;
+            border-radius: 10px;
+            cursor: pointer;
+            padding: 16px 55px;
+            min-width: 120px;
+        }
+
+        .okay:hover {
+            background-color: #EAEAEA;
+        }
+    </style>
 </head>
 
 <body>
@@ -167,6 +233,7 @@
                 <form id="cancelForm" action="schedule_cancel_process.php" method="post">
                     <input type="hidden" name="schedule_id" id="cancel_schedule_id">
                     <input type="hidden" name="college" value="<?php echo htmlspecialchars($_GET['college']); ?>">
+                    <input type="hidden" name="college_code" value="<?php echo htmlspecialchars($_GET['college_code']); ?>">
                     <h2>Are you sure you want to cancel this schedule?</h2>
                     <div class="form-group">
                         <textarea id="cancel_reason" name="cancel_reason" rows="5" cols="52" placeholder="Enter reason for schedule cancellation" required></textarea>
@@ -193,9 +260,10 @@
         <!-- Reschedule Modal -->
         <div id="rescheduleModal" class="modal">
             <div class="modal-content">
-                <form action="schedule_update_process.php" method="post">
+                <form id="rescheduleForm" action="schedule_update_process.php" method="post">
                     <input type="hidden" name="schedule_id" id="schedule_id">
                     <input type="hidden" name="college" value="<?php echo htmlspecialchars($_GET['college']); ?>">
+                    <input type="hidden" name="college_code" value="<?php echo htmlspecialchars($_GET['college_code']); ?>">
                     <div class="form-group">
                         <label for="new_date">New Date:</label>
                         <input type="date" id="new_date" name="new_date" required>
@@ -203,6 +271,10 @@
                     <div class="form-group">
                         <label for="new_time">New Time:</label>
                         <input type="time" id="new_time" name="new_time" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_zoom">New Zoom:</label>
+                        <input type="text" id="new_zoom" name="new_zoom">
                     </div>
                     <div class="form-group">
                         <textarea id="reason" name="reason" rows="5" cols="52" placeholder="Enter reason for reschedule" required></textarea>
@@ -249,11 +321,24 @@
     <form id="approveForm" action="schedule_approve_process.php" method="post" style="display: none;">
         <input type="hidden" name="schedule_id" id="approveScheduleId">
         <input type="hidden" name="college" value="<?php echo htmlspecialchars($_GET['college']); ?>">
+        <input type="hidden" name="college_code" value="<?php echo htmlspecialchars($_GET['college_code']); ?>">
     </form>
 
     </div>
     </div>
 
+    <div id="errorPopup" class="popup" style="display: none;">
+        <div class="popup-content">
+            <div style="height: 50px; width: 0px;"></div>
+            <img class="Error" src="images/Error.png" height="100">
+            <div style="height: 20px; width: 0px;"></div>
+            <div class="popup-text">A schedule for the selected date already exists.</div>
+            <div style="height: 50px; width: 0px;"></div>
+            <a href="#" class="okay" id="closeErrorPopup">Okay</a>
+            <div style="height: 100px; width: 0px;"></div>
+            <div class="hairpop-up"></div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous">
     </script>
     <script>
@@ -268,6 +353,65 @@
         function closeRescheduleModal() {
             document.getElementById('rescheduleModal').style.display = 'none';
         }
+
+        document.getElementById('new_date').addEventListener('change', function() {
+    var newDate = this.value;
+    var scheduleId = document.getElementById('schedule_id').value;
+
+    if (newDate) {
+        // Perform an AJAX request to check if the new date conflicts with an existing one
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'check_schedule.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+
+                if (response.status === 'exists') {
+                    // Show the error modal if a conflict is found
+                    document.getElementById('errorPopup').style.display = 'block';
+                }
+            }
+        };
+        xhr.send('date=' + encodeURIComponent(newDate) + '&exclude_schedule_id=' + encodeURIComponent(scheduleId));
+    }
+});
+
+document.getElementById('rescheduleForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the form from submitting immediately
+
+    var newDate = document.getElementById('new_date').value;
+    var newTime = document.getElementById('new_time').value;
+    var scheduleId = document.getElementById('schedule_id').value;
+
+    if (newDate && newTime) {
+        // Perform an AJAX request to check if the new date conflicts with an existing one
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'check_schedule.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+
+                if (response.status === 'exists') {
+                    // Show the error modal if a conflict is found
+                    document.getElementById('errorPopup').style.display = 'block';
+                } else {
+                    // No conflict, submit the form
+                    document.getElementById('rescheduleForm').submit();
+                }
+            }
+        };
+        xhr.send('date=' + encodeURIComponent(newDate) + '&exclude_schedule_id=' + encodeURIComponent(scheduleId));
+    }
+});
+
+// Event listener for closing the error popup
+document.getElementById('closeErrorPopup').addEventListener('click', function() {
+    document.getElementById('errorPopup').style.display = 'none';
+});
+
+
 
         function openTeamModal(scheduleId) {
             var xhr = new XMLHttpRequest();

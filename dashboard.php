@@ -461,37 +461,40 @@ $result = $conn->query($sql);
                                 <?php
                                 if ($result->num_rows > 0) {
                                     while ($row = $result->fetch_assoc()) {
-                                        if ($row['schedule_status'] == 'approved') {
-                                            $approved_class = ($row['schedule_status'] == 'approved') ? 'status-holder' : 'hidden-status-holder';
-                                            echo "<div class='schedule-modal-container'>
+                                    $schedule_date = date("F j, Y", strtotime($row['schedule_date'])); // Format the date as "Month Day, Year"
+                                    $schedule_time = date("g:i A", strtotime($row['schedule_time']));  // Format the time as "hour:minute AM/PM"
+
+                                    if ($row['schedule_status'] == 'approved') {
+                                        $approved_class = ($row['schedule_status'] == 'approved') ? 'status-holder' : 'hidden-status-holder';
+                                        echo "<div class='schedule-modal-container'>
+                                                <div>
+                                                    <div>{$row['college_name']}</div>
                                                     <div>
-                                                        <div>{$row['college_name']}</div>
-                                                        <div>
-                                                            <h5 class='fw-bold'>{$row['program_name']}</h5>
+                                                        <h5 class='fw-bold'>{$row['program_name']}</h5>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class='level-status-holder'>
+                                                        <div class='level-applied-holder'>
+                                                            <label>Level Applied:</label> 
+                                                            {$row['level_applied']}
+                                                        </div>
+                                                        <div class='$approved_class'>
+                                                            <label>UPCOMING</label> 
                                                         </div>
                                                     </div>
-                                                    <div>
-                                                        <div class='level-status-holder'>
-                                                            <div class='level-applied-holder'>
-                                                                <label>Level Applied:</label> 
-                                                                {$row['level_applied']}
-                                                            </div>
-                                                            <div class='$approved_class'>
-                                                                <label>UPCOMING</label> 
-                                                            </div>
-                                                        </div>
-                                                        <div class='schedule-holder'>
-                                                            <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-calendar-week' viewBox='0 0 16 16'>
-                                                                <path d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z'/>
-                                                                <path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z'/>
-                                                                </svg> {$row['schedule_date']}</div>
-                                                            <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-clock' viewBox='0 0 16 16'>
-                                                                <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z'/>
-                                                                <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/>
-                                                                </svg> {$row['schedule_time']}</div>
-                                                        </div>
+                                                    <div class='schedule-holder'>
+                                                        <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-calendar-week' viewBox='0 0 16 16'>
+                                                            <path d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z'/>
+                                                            <path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z'/>
+                                                            </svg> {$schedule_date}</div>
+                                                        <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-clock' viewBox='0 0 16 16'>
+                                                            <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z'/>
+                                                            <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/>
+                                                            </svg> {$schedule_time}</div>
                                                     </div>
-                                                </div>";
+                                                </div>
+                                            </div>";
                                         }
                                     }
                                 } else {
@@ -505,6 +508,9 @@ $result = $conn->query($sql);
                                 if ($result->num_rows > 0) {
                                     $result->data_seek(0); // Reset result pointer to the beginning
                                     while ($row = $result->fetch_assoc()) {
+                                        $schedule_date = date("F j, Y", strtotime($row['schedule_date'])); // Format the date as "Month Day, Year"
+                                        $schedule_time = date("g:i A", strtotime($row['schedule_time']));  // Format the time as "hour:minute AM/PM"
+
                                         if ($row['schedule_status'] == 'finished') {
                                             echo "<div class='schedule-modal-container finished-schedule'>
                                                     <div>
@@ -528,11 +534,11 @@ $result = $conn->query($sql);
                                                             <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-calendar-week' viewBox='0 0 16 16'>
                                                                 <path d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z'/>
                                                                 <path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z'/>
-                                                                </svg> {$row['schedule_date']}</div>
+                                                                </svg> {$schedule_date}</div>
                                                             <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-clock' viewBox='0 0 16 16'>
                                                                 <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z'/>
                                                                 <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/>
-                                                                </svg> {$row['schedule_time']}</div>
+                                                                </svg> {$schedule_time}</div>
                                                         </div>
                                                     </div>
                                                 </div>";
@@ -550,7 +556,9 @@ $result = $conn->query($sql);
                                 if ($result->num_rows > 0) {
                                     $result->data_seek(0); // Reset result pointer to the beginning
                                     while ($row = $result->fetch_assoc()) {
-                                        // Assuming result schedules have a different condition to identify
+                                        $schedule_date = date("F j, Y", strtotime($row['schedule_date'])); // Format the date as "Month Day, Year"
+                                        $schedule_time = date("g:i A", strtotime($row['schedule_time']));  // Format the time as "hour:minute AM/PM"
+                                        
                                         if ($row['schedule_status'] == 'failed' || $row['schedule_status'] == 'passed') {
                                             $isPassed = true;
                                             if($row['schedule_status'] == 'failed')
@@ -582,11 +590,11 @@ $result = $conn->query($sql);
                                                             <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-calendar-week' viewBox='0 0 16 16'>
                                                                 <path d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z'/>
                                                                 <path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z'/>
-                                                                </svg> {$row['schedule_date']}</div>
+                                                                </svg> {$schedule_date}</div>
                                                             <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-clock' viewBox='0 0 16 16'>
                                                                 <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z'/>
                                                                 <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/>
-                                                                </svg> {$row['schedule_time']}</div>
+                                                                </svg> {$schedule_time}</div>
                                                         </div>
                                                     </div>
                                                 </div>";

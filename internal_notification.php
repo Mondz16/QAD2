@@ -237,7 +237,21 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                     teamMembers.forEach(function(member) {
                         var div = document.createElement('div');
                         div.className = 'form-group';
-                        div.innerHTML = '<label>' + member.name + ' (' + member.role + ')</label><input type="text" name="areas[' + member.id + ']" placeholder="ASSIGN AREA" required>';
+                        
+                        // Check if the member is a team leader
+                        var isTeamLeader = member.role.toLowerCase() === 'team leader';
+
+                        // Create the input element
+                        var inputElement = '<input type="text" name="areas[' + member.id + ']" placeholder="ASSIGN AREA"';
+                        
+                        // If not a team leader, make the input required
+                        if (!isTeamLeader) {
+                            inputElement += ' required';
+                        }
+
+                        inputElement += '>';
+
+                        div.innerHTML = '<label>' + member.name + ' (' + member.role + ')</label>' + inputElement;
                         teamMembersContainer.appendChild(div);
                     });
 
@@ -246,6 +260,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
             };
             xhr.send();
         }
+
 
         function closeModal() {
             document.getElementById('assignModal').style.display = 'none';

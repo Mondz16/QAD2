@@ -9,14 +9,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
     $schedule_id = mysqli_real_escape_string($conn, $_POST['schedule_id']);
     $new_date = mysqli_real_escape_string($conn, $_POST['new_date']);
     $new_time = mysqli_real_escape_string($conn, $_POST['new_time']);
+    $new_zoom = mysqli_real_escape_string($conn, $_POST['new_zoom']); // Get the new Zoom link
     $reason = mysqli_real_escape_string($conn, $_POST['reason']); // Get the reason
+
+    // Capture college name and code from the form
+    $college_name = mysqli_real_escape_string($conn, $_POST['college']);
+    $college_code = mysqli_real_escape_string($conn, $_POST['college_code']);
 
     // Format the new date and time
     $formatted_new_date = date("F j, Y", strtotime($new_date));
     $formatted_new_time = date("g:i A", strtotime($new_time));
 
     // Fetch the old date and time before updating
-    $sql_get_old_schedule = "SELECT schedule_date, schedule_time FROM schedule WHERE id = ?";
+    $sql_get_old_schedule = "SELECT schedule_date, schedule_time, zoom FROM schedule WHERE id = ?";
     $stmt_get_old_schedule = $conn->prepare($sql_get_old_schedule);
     $stmt_get_old_schedule->bind_param("i", $schedule_id);
     $stmt_get_old_schedule->execute();
@@ -34,123 +39,130 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
         $sql_update_schedule = "UPDATE schedule SET schedule_date = ?, schedule_time = ? WHERE id = ?";
         $stmt_update_schedule = $conn->prepare($sql_update_schedule);
         $stmt_update_schedule->bind_param("ssi", $new_date, $new_time, $schedule_id);
+        $stmt_update_schedule->execute();
 
-        if ($stmt_update_schedule->execute()) {
-            $college_code = isset($_POST['college']) ? mysqli_real_escape_string($conn, $_POST['college']) : '';
+        // Update the Zoom link if provided
+        if (!empty($new_zoom)) {
+            $sql_update_zoom = "UPDATE schedule SET zoom = ? WHERE id = ?";
+            $stmt_update_zoom = $conn->prepare($sql_update_zoom);
+            $stmt_update_zoom->bind_param("si", $new_zoom, $schedule_id);
+            $stmt_update_zoom->execute();
+        }
 
-            // If schedule update is successful, update team status
-            $new_status = 'pending'; // or whatever logic you have for setting the new status
+        $college_code = isset($_POST['college']) ? mysqli_real_escape_string($conn, $_POST['college']) : '';
 
-            $sql_update_team_status = "UPDATE team SET status = ? WHERE schedule_id = ?";
-            $stmt_update_team_status = $conn->prepare($sql_update_team_status);
-            $stmt_update_team_status->bind_param("si", $new_status, $schedule_id);
+        // If schedule update is successful, update team status
+        $new_status = 'pending'; // or whatever logic you have for setting the new status
 
-            if ($stmt_update_team_status->execute()) {
-                // Fetch schedule details
-                $sql_get_schedule_details = "SELECT s.college_code, p.program_name, s.level_applied FROM schedule s JOIN program p ON s.program_id = p.id WHERE s.id = ?";
-                $stmt_get_schedule_details = $conn->prepare($sql_get_schedule_details);
-                $stmt_get_schedule_details->bind_param("i", $schedule_id);
-                $stmt_get_schedule_details->execute();
-                $schedule_result = $stmt_get_schedule_details->get_result();
-                $schedule_details = $schedule_result->fetch_assoc();
+        $sql_update_team_status = "UPDATE team SET status = ? WHERE schedule_id = ?";
+        $stmt_update_team_status = $conn->prepare($sql_update_team_status);
+        $stmt_update_team_status->bind_param("si", $new_status, $schedule_id);
 
-                // Fetch college name
-                $sql_get_college_name = "SELECT college_name FROM college WHERE code = ?";
-                $stmt_get_college_name = $conn->prepare($sql_get_college_name);
-                $stmt_get_college_name->bind_param("s", $schedule_details['college_code']);
-                $stmt_get_college_name->execute();
-                $college_result = $stmt_get_college_name->get_result();
-                $college_name_row = $college_result->fetch_assoc();
-                $college_name = $college_name_row['college_name'];
+        if ($stmt_update_team_status->execute()) {
+            // Fetch schedule details
+            $sql_get_schedule_details = "SELECT s.college_code, p.program_name, s.level_applied FROM schedule s JOIN program p ON s.program_id = p.id WHERE s.id = ?";
+            $stmt_get_schedule_details = $conn->prepare($sql_get_schedule_details);
+            $stmt_get_schedule_details->bind_param("i", $schedule_id);
+            $stmt_get_schedule_details->execute();
+            $schedule_result = $stmt_get_schedule_details->get_result();
+            $schedule_details = $schedule_result->fetch_assoc();
 
-                // Fetch college email
-                $sql_get_college_email = "SELECT college_email FROM college WHERE code = ?";
-                $stmt_get_college_email = $conn->prepare($sql_get_college_email);
-                $stmt_get_college_email->bind_param("s", $schedule_details['college_code']);
-                $stmt_get_college_email->execute();
-                $college_result = $stmt_get_college_email->get_result();
-                $college_email_row = $college_result->fetch_assoc();
-                $college_email = $college_email_row['college_email'];
+            // Fetch college name
+            $sql_get_college_name = "SELECT college_name FROM college WHERE code = ?";
+            $stmt_get_college_name = $conn->prepare($sql_get_college_name);
+            $stmt_get_college_name->bind_param("s", $schedule_details['college_code']);
+            $stmt_get_college_name->execute();
+            $college_result = $stmt_get_college_name->get_result();
+            $college_name_row = $college_result->fetch_assoc();
+            $college_name = $college_name_row['college_name'];
 
-                // Fetch team leader and team members' email addresses
-                $sql_get_emails = "SELECT iu.email FROM team t JOIN internal_users iu ON t.internal_users_id = iu.user_id WHERE t.schedule_id = ?";
-                $stmt_get_emails = $conn->prepare($sql_get_emails);
-                $stmt_get_emails->bind_param("i", $schedule_id);
-                $stmt_get_emails->execute();
-                $result = $stmt_get_emails->get_result();
+            // Fetch college email
+            $sql_get_college_email = "SELECT college_email FROM college WHERE code = ?";
+            $stmt_get_college_email = $conn->prepare($sql_get_college_email);
+            $stmt_get_college_email->bind_param("s", $schedule_details['college_code']);
+            $stmt_get_college_email->execute();
+            $college_result = $stmt_get_college_email->get_result();
+            $college_email_row = $college_result->fetch_assoc();
+            $college_email = $college_email_row['college_email'];
 
-                // Initialize PHPMailer
-                $mail = new PHPMailer(true);
-                $email_success = false;
-                $email_error = '';
+            // Fetch team leader and team members' email addresses
+            $sql_get_emails = "SELECT iu.email FROM team t JOIN internal_users iu ON t.internal_users_id = iu.user_id WHERE t.schedule_id = ?";
+            $stmt_get_emails = $conn->prepare($sql_get_emails);
+            $stmt_get_emails->bind_param("i", $schedule_id);
+            $stmt_get_emails->execute();
+            $result = $stmt_get_emails->get_result();
 
-                try {
-                    // Server settings
-                    $mail->isSMTP();
-                    $mail->Host = 'smtp.gmail.com'; // Set the SMTP server to send through
-                    $mail->SMTPAuth = true;
-                    $mail->Username = 'usepqad@gmail.com'; // SMTP username
-                    $mail->Password = 'vmvf vnvq ileu tmev'; // SMTP password (App Password if 2FA enabled)
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                    $mail->Port = 587;
+            // Initialize PHPMailer
+            $mail = new PHPMailer(true);
+            $email_success = false;
+            $email_error = '';
 
-                    // Optional: Disable SSL certificate verification
-                    $mail->SMTPOptions = array(
-                        'ssl' => array(
-                            'verify_peer' => false,
-                            'verify_peer_name' => false,
-                            'allow_self_signed' => true
-                        )
-                    );
+            try {
+                // Server settings
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com'; // Set the SMTP server to send through
+                $mail->SMTPAuth = true;
+                $mail->Username = 'usepqad@gmail.com'; // SMTP username
+                $mail->Password = 'vmvf vnvq ileu tmev'; // SMTP password (App Password if 2FA enabled)
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
 
-                    // Recipients
-                    $mail->setFrom('usepqad@gmail.com', 'USeP - Quality Assurance Division');
-                    $mail->addReplyTo('usepqad@gmail.com', 'Information');
+                // Optional: Disable SSL certificate verification
+                $mail->SMTPOptions = array(
+                    'ssl' => array(
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                        'allow_self_signed' => true
+                    )
+                );
 
-                    // Add college email
-                    $mail->addAddress($college_email);
+                // Recipients
+                $mail->setFrom('usepqad@gmail.com', 'USeP - Quality Assurance Division');
+                $mail->addReplyTo('usepqad@gmail.com', 'Information');
 
-                    // Add team members' emails
-                    while ($row = $result->fetch_assoc()) {
-                        $mail->addAddress($row['email']);
-                    }
+                // Add college email
+                $mail->addAddress($college_email);
 
-                    // Content
-                    $mail->isHTML(true);
-                    $mail->Subject = 'Schedule Rescheduled';
-                    $mail->Body = "
-                        Dear Team,<br><br>
-                        The schedule below has been rescheduled from <b style='color:red;'>{$formatted_old_date} at {$formatted_old_time}</b> to <b style='color:green;'>{$formatted_new_date} at {$formatted_new_time}</b> with the following details:<br>
-                        <b>College:</b> {$college_name}<br>
-                        <b>Program:</b> {$schedule_details['program_name']}<br>
-                        <b>Level Applied:</b> {$schedule_details['level_applied']}<br>
-                        <b>Reason:</b> $reason<br><br>
-                        Best regards,<br>
-                        USeP - Quality Assurance Division
-                    ";
-
-                    $mail->send();
-                    $conn->commit();
-                    $email_success = true;
-                } catch (Exception $e) {
-                    $conn->rollback();
-                    $email_error = "Schedule update and email notification failed due to internet problem.";
+                // Add team members' emails
+                while ($row = $result->fetch_assoc()) {
+                    $mail->addAddress($row['email']);
                 }
 
-                $stmt_get_emails->close();
-                $stmt_get_schedule_details->close();
-                $stmt_get_college_email->close();
-                $stmt_get_college_name->close();
-            } else {
+                // Prepare the Zoom link section for the email, if provided
+                $zoom_link_section = !empty($new_zoom) ? "<b>New Zoom Link:</b> {$new_zoom}<br>" : "";
+
+                // Content
+                $mail->isHTML(true);
+                $mail->Subject = 'Schedule Rescheduled';
+                $mail->Body = "
+                    Dear Team,<br><br>
+                    The schedule below has been rescheduled from <b style='color:red;'>{$formatted_old_date} at {$formatted_old_time}</b> to <b style='color:green;'>{$formatted_new_date} at {$formatted_new_time}</b> with the following details:<br>
+                    <b>College:</b> {$college_name}<br>
+                    <b>Program:</b> {$schedule_details['program_name']}<br>
+                    <b>Level Applied:</b> {$schedule_details['level_applied']}<br>
+                    {$zoom_link_section}
+                    <b>Reason:</b> $reason<br><br>
+                    Best regards,<br>
+                    USeP - Quality Assurance Division
+                ";
+
+                $mail->send();
+                $conn->commit();
+                $email_success = true;
+            } catch (Exception $e) {
                 $conn->rollback();
-                $error_message = "Error updating team status: " . $conn->error;
+                $email_error = "Schedule update and email notification failed due to internet problem.";
             }
-            $stmt_update_team_status->close();
+
+            $stmt_get_emails->close();
+            $stmt_get_schedule_details->close();
+            $stmt_get_college_email->close();
+            $stmt_get_college_name->close();
         } else {
             $conn->rollback();
-            $error_message = "Error updating schedule: " . $conn->error;
+            $error_message = "Error updating team status: " . $conn->error;
         }
-        $stmt_update_schedule->close();
+        $stmt_update_team_status->close();
     } catch (Exception $e) {
         $conn->rollback();
         $error_message = "Transaction failed: " . $e->getMessage();
@@ -170,74 +182,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Operation Result</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Quicksand", sans-serif;
-        }
-
-        body {
-            background-color: #f9f9f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-
-        .container {
-            max-width: 750px;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        h2 {
-            font-size: 24px;
-            color: #973939;
-            margin-bottom: 20px;
-        }
-
-        .message {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .button-primary:hover {
-            background-color: #259b42;
-        }
-    </style>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <div class="container">
-        <h2>Operation Result</h2>
-        <div class="message">
+    <div id="successPopup" class="popup">
+        <div class="popup-content">
             <?php if (isset($email_success) && $email_success): ?>
-                Schedule updated successfully. Email notifications have been sent.
+                <div style="height: 50px; width: 0px;"></div>
+                <img class="Success" src="images/Success.png" height="100">
+                <div style="height: 20px; width: 0px;"></div>
+                <div class="popup-text">Schedule updated successfully.</div>
+                <div style="height: 50px; width: 0px;"></div>
+                <a href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($college_code); ?>" class="okay" id="closePopup">Okay</a>
+                <div style="height: 100px; width: 0px;"></div>
+                <div class="hairpop-up"></div>
             <?php elseif (isset($email_error) && $email_error): ?>
-                <?php echo $email_error; ?>
+                <div style="height: 50px; width: 0px;"></div>
+                <img class="Success" src="images/Error.png" height="100">
+                <div style="height: 20px; width: 0px;"></div>
+                <div class="popup-text"><?php echo $email_error; ?></div>
+                <div style="height: 50px; width: 0px;"></div>
+                <a href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($college_code); ?>" class="okay" id="closePopup">Okay</a>
+                <div style="height: 100px; width: 0px;"></div>
+                <div class="hairpop-up"></div>
             <?php else: ?>
-                <?php echo isset($error_message) ? $error_message : 'Unknown error.'; ?>
+                <div style="height: 50px; width: 0px;"></div>
+                <img class="Success" src="images/Error.png" height="100">
+                <div style="height: 20px; width: 0px;"></div>
+                <div class="popup-text"><?php echo isset($error_message) ? $error_message : 'Unknown error.'; ?></div>
+                <div style="height: 50px; width: 0px;"></div>
+                <a href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($college_code); ?>" class="okay" id="closePopup">Okay</a>
+                <div style="height: 100px; width: 0px;"></div>
+                <div class="hairpop-up"></div>
             <?php endif; ?>
         </div>
-        <a class="button-primary" href="schedule_college.php?college=<?php echo urlencode($college_code); ?>#">OK</a>
     </div>
+    <script>
+        document.getElementById('successPopup').style.display = 'block';
+
+        document.getElementById('closeSuccessBtn').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+        });
+
+        document.getElementById('closePopup').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('successPopup')) {
+                document.getElementById('successPopup').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

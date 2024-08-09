@@ -514,96 +514,6 @@ foreach ($schedules as $schedule) {
         </div>
     </div>
 
-    <!-- Popup Form for Team Member -->
-    <div class="assessmentmodal" id="popup">
-        <div class="assessmentmodal-content">
-            <span style="float: right; font-size: 40px; cursor: pointer;" class="Summaryclose" onclick="closePopup()">&times;</span>
-            <h2>ASSESSMENT FORM</h2>
-            <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
-                <div class="assessment-group">
-                    <input type="hidden" name="schedule_id" id="modal_schedule_id">
-                    <label for="college">COLLEGE</label>
-                    <input class="assessment-group-college" type="text" id="college" name="college" readonly>
-                    <label for="program">PROGRAM</label>
-                    <input class="assessment-group-program" type="text" id="program" name="program" readonly>
-                </div>
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="level"><strong>LEVEL APPLIED</strong></label>
-                    </div>
-                    <div class="titleContainer">
-                        <label for="date"><strong>DATE</strong></label>
-                    </div>
-                    <div class="titleContainer">
-                        <label for="time"><strong>TIME</strong></label>
-                    </div>
-                </div>
-                <div class="orientationname1">
-                    <div class="nameContainer orientationContainer1">
-                        <input class="level" type="text" id="level" name="level" readonly>
-                    </div>
-                    <div class="nameContainer orientationContainer">
-                        <input class="level" type="text" id="date" name="date" readonly>
-                    </div>
-                    <div class="nameContainer orientationContainer">
-                        <input class="time" type="text" id="time" name="time" readonly>
-                    </div>
-                </div>
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="result"><strong>RESULT</strong></label>
-                    </div>
-                    <div class="titleContainer">
-                        <label for="area_evaluated"><strong>AREA EVALUATED</strong></label>
-                    </div>
-                </div>
-                <div class="orientationname1">
-                    <div class="nameContainer orientationContainer">
-                        <select style="cursor: pointer;" class="result" id="result" name="result" required>
-                            <option value="">SELECT RESULT</option>
-                            <option value="Ready">Ready</option>
-                            <option value="Needs Improvement">Needs Improvement</option>
-                            <option value="Revisit">Revisit</option>
-                        </select>
-                    </div>
-                    <div class="nameContainer orientationContainer">
-                        <input class="area_evaluated" type="text" id="area_evaluated" name="area_evaluated" readonly>
-                    </div>
-                </div>
-                <div style="height: 20px;"></div>
-                <div class="assessment-group">
-                    <label for="findings"><strong>FINDINGS</strong></label>
-                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="findings" name="findings" rows="10" placeholder="Add a comment" required></textarea>
-                    <div style="height: 20px;"></div>
-                    <label for="recommendations"><strong>RECOMMENDATIONS</strong></label>
-                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="recommendations" name="recommendations" rows="10" placeholder="Add a comment" required></textarea>
-                </div>
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="evaluator"><strong>EVALUATOR</strong></label>
-                    </div>
-                    <div class="titleContainer">
-                        <label for="evaluator_signature"><strong>EVALUATOR E-SIGN</strong></label>
-                    </div>
-                </div>
-                <div class="orientationname1 upload">
-                    <div class="nameContainer orientationContainer">
-                        <input class="area_evaluated" type="text" id="evaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly>
-                    </div>
-                    <div class="nameContainer orientationContainer uploadContainer">
-                        <span class="upload-text">UPLOAD</span>
-                        <img id="upload-icon-evaluator" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
-                        <input class="uploadInput" type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required>
-                    </div>
-                </div>
-                <div class="button-container">
-                    <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
-                    <button class="submit-button1" type="submit">SUBMIT</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Popup Form for Team Leader -->
     <div class="Summarymodal" id="Summarypopup">
         <div class="Summarymodal-content">
@@ -640,9 +550,22 @@ foreach ($schedules as $schedule) {
                         <input class="time" type="text" id="Summarytime" name="time" readonly>
                     </div>
                 </div>
+                <div id="result-section" style="display: none;">
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="result"><strong>RESULT (TEAM LEADER)</strong></label>
+                        </div>
+                    </div>
+                    <div class="orientationname1">
+                        <div class="nameContainer orientationContainer" id="result-container">
+                            <!-- Result dropdown will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+
                 <div style="height: 20px;"></div>
                 <div class="assessment-group">
-                    <label for="results"><strong>RESULTS</strong></label>
+                    <label for="results"><strong>RESULTS (TEAM MEMBERS)</strong></label>
                     <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px; font-size: 16px;" id="results" name="results" rows="10" readonly></textarea>
                     <div style="height: 20px;"></div>
                     <label for="areas"><strong>AREAS EVALUATED</strong></label>
@@ -767,44 +690,88 @@ foreach ($schedules as $schedule) {
         }
 
         function SummaryopenPopup(schedule) {
-            document.getElementById('Summarymodal_schedule_id').value = schedule.schedule_id;
-            document.getElementById('Summarycollege').value = schedule.college_name;
-            document.getElementById('Summaryprogram').value = schedule.program_name;
-            document.getElementById('Summarylevel').value = schedule.level_applied;
-            
-            // Format the date
-            document.getElementById('Summarydate').value = formatDate(schedule.schedule_date);
-            document.getElementById('Summarytime').value = formatTime(schedule.schedule_time);
+    document.getElementById('Summarymodal_schedule_id').value = schedule.schedule_id;
+    document.getElementById('Summarycollege').value = schedule.college_name;
+    document.getElementById('Summaryprogram').value = schedule.program_name;
+    document.getElementById('Summarylevel').value = schedule.level_applied;
 
-            // Fetch team members' areas
-            var areasXhr = new XMLHttpRequest();
-            areasXhr.open('GET', 'get_team_areas.php?schedule_id=' + schedule.schedule_id, true);
-            areasXhr.onreadystatechange = function() {
-                if (areasXhr.readyState == 4 && areasXhr.status == 200) {
-                    var areas = JSON.parse(areasXhr.responseText);
-                    document.getElementById('areas').value = areas.join('\n');
-                    document.getElementById('areas').readOnly = true;
-                } else {
-                    console.error('Failed to fetch team areas.');
-                }
-            };
-            areasXhr.send();
+    // Format the date and time
+    document.getElementById('Summarydate').value = formatDate(schedule.schedule_date);
+    document.getElementById('Summarytime').value = formatTime(schedule.schedule_time);
 
-            // Fetch team members' results
-            var resultsXhr = new XMLHttpRequest();
-            resultsXhr.open('GET', 'get_team_results.php?schedule_id=' + schedule.schedule_id, true);
-            resultsXhr.onreadystatechange = function() {
-                if (resultsXhr.readyState == 4 && resultsXhr.status == 200) {
-                    var results = JSON.parse(resultsXhr.responseText);
-                    document.getElementById('results').value = results.join('\n');
-                } else {
-                    console.error('Failed to fetch team results.');
-                }
-            };
-            resultsXhr.send();
-
-            document.getElementById('Summarypopup').style.display = 'block';
+    // Fetch team members' areas
+    var areasXhr = new XMLHttpRequest();
+    areasXhr.open('GET', 'get_team_areas.php?schedule_id=' + schedule.schedule_id, true);
+    areasXhr.onreadystatechange = function() {
+        if (areasXhr.readyState == 4 && areasXhr.status == 200) {
+            var areas = JSON.parse(areasXhr.responseText);
+            document.getElementById('areas').value = areas.join('\n');
+            document.getElementById('areas').readOnly = true;
+        } else {
+            console.error('Failed to fetch team areas.');
         }
+    };
+    areasXhr.send();
+
+    // Fetch team members' results
+    var resultsXhr = new XMLHttpRequest();
+    resultsXhr.open('GET', 'get_team_results.php?schedule_id=' + schedule.schedule_id, true);
+    resultsXhr.onreadystatechange = function() {
+        if (resultsXhr.readyState == 4 && resultsXhr.status == 200) {
+            var results = JSON.parse(resultsXhr.responseText);
+            document.getElementById('results').value = results.join('\n');
+        } else {
+            console.error('Failed to fetch team results.');
+        }
+    };
+    resultsXhr.send();
+
+    var resultSection = document.getElementById('result-section');
+    var resultContainer = document.getElementById('result-container');
+
+    // Remove any existing result dropdown
+    if (resultContainer.firstChild) {
+        resultContainer.removeChild(resultContainer.firstChild);
+    }
+
+    // Check if the team leader's area is blank
+    if (schedule.area && schedule.area.trim() !== '') {
+        // If the area is not blank, show the result section and add the dropdown
+        resultSection.style.display = 'block';
+
+        // Create and add the result dropdown
+        var resultDropdown = document.createElement('select');
+        resultDropdown.setAttribute('style', 'cursor: pointer;');
+        resultDropdown.setAttribute('class', 'result');
+        resultDropdown.setAttribute('id', 'result');
+        resultDropdown.setAttribute('name', 'result');
+        resultDropdown.setAttribute('required', 'true');
+
+        var options = [
+            { value: '', text: 'SELECT RESULT' },
+            { value: 'Ready', text: 'Ready' },
+            { value: 'Needs Improvement', text: 'Needs Improvement' },
+            { value: 'Revisit', text: 'Revisit' }
+        ];
+
+        options.forEach(function(optionData) {
+            var option = document.createElement('option');
+            option.value = optionData.value;
+            option.textContent = optionData.text;
+            resultDropdown.appendChild(option);
+        });
+
+        resultContainer.appendChild(resultDropdown);
+    } else {
+        // If the area is blank, hide the result section and do not add the dropdown
+        resultSection.style.display = 'none';
+    }
+
+    document.getElementById('Summarypopup').style.display = 'block';
+}
+
+
+
 
         function SummaryclosePopup() {
             document.getElementById('Summarypopup').style.display = 'none';

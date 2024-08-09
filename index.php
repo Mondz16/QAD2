@@ -26,7 +26,7 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Form</title>
+    <title>Quality Assurance Division</title>
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
 </head>
@@ -85,7 +85,11 @@ if (isset($_SESSION['user_id'])) {
 
                     <div style="height: 45px; width: 0px;"></div>
 
+                    <div class="index-button-container">
                     <button type="button" class="login" id="loginBtn">Log in</button>
+                    <span>OR</span>
+                    <button type="button" class="login" id="registerBtn">Register</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -101,6 +105,21 @@ if (isset($_SESSION['user_id'])) {
             <div class="popup-text" style="color: #7B7B7B">By continuing to browse this website, you agree to the University of Southeastern Philippines' Data Privacy Statement. The full text or statement can be accessed by clicking the image above.</div>
             <div style="height: 30px; width: 0px;"></div>
             <button type="button" class="continue">Continue</button>
+            <div style="height: 70px; width: 0px;"></div>
+            <div class="hairpop-up"></div>
+        </div>
+    </div>
+
+    <div id="registerPopup" class="popup1">
+        <div class="popup-content">
+            <span class="close-btn" id="closeBtn1">&times;</span>
+            <div style="height: 50px; width: 0px;"></div>
+            <a href="https://www.usep.edu.ph/usep-data-privacy-statement/" target="_blank">
+                <img class="USeP" src="images/USePLogo.png" alt="Popup Image" class="popup-image" height="140">
+            </a>
+            <div class="popup-text" style="color: #7B7B7B">By continuing to browse this website, you agree to the University of Southeastern Philippines' Data Privacy Statement. The full text or statement can be accessed by clicking the image above.</div>
+            <div style="height: 30px; width: 0px;"></div>
+            <button type="button" class="continue1">Continue</button>
             <div style="height: 70px; width: 0px;"></div>
             <div class="hairpop-up"></div>
         </div>
@@ -122,6 +141,24 @@ if (isset($_SESSION['user_id'])) {
         window.addEventListener('click', function(event) {
             if (event.target == document.getElementById('loginPopup')) {
                 document.getElementById('loginPopup').style.display = 'none';
+            }
+        });
+
+        document.getElementById('registerBtn').addEventListener('click', function() {
+            document.getElementById('registerPopup').style.display = 'block';
+        });
+
+        document.getElementById('closeBtn1').addEventListener('click', function() {
+            document.getElementById('registerPopup').style.display = 'none';
+        });
+
+        document.querySelector('.popup1 .continue1').addEventListener('click', function() {
+            window.location.href = 'register.php';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('registerPopup')) {
+                document.getElementById('registerPopup').style.display = 'none';
             }
         });
     </script>

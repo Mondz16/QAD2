@@ -14,12 +14,16 @@ $client->addScope(Google\Service\Calendar::CALENDAR);
 if (!isset($_GET['code'])) {
     $authUrl = $client->createAuthUrl();
     header('Location: ' . filter_var($authUrl, FILTER_SANITIZE_URL));
+    exit();
 } else {
     $client->authenticate($_GET['code']);
     $accessToken = $client->getAccessToken();
     storeToken($accessToken); // Store the token
     $_SESSION['access_token'] = $accessToken; // Store it in the session as well
-    $redirectUri = 'http://localhost/QAD2/'; // Redirect to your main application page
-    header('Location: ' . filter_var($redirectUri, FILTER_SANITIZE_URL));
+
+    // Redirect back to schedule_approve_process.php
+    header('Location: schedule_approve_process.php');
+    exit();
 }
+
 ?>

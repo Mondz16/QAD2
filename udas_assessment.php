@@ -10,6 +10,15 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Retrieve full name of the logged-in user from the admin table without the prefix
+$sql = "SELECT CONCAT(first_name, ' ', middle_initial, '. ', last_name) AS full_name FROM admin WHERE user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $user_id);
+$stmt->execute();
+$stmt->bind_result($full_name);
+$stmt->fetch();
+$stmt->close();
+
 // Check user type and redirect accordingly
 if ($user_id === 'admin') {
     // If current page is not admin.php, redirect
@@ -137,6 +146,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             color: #006118;
             font-weight: bold;
             border: 1px solid #006118;
+            padding-top: 9px;
         }
 
         .assessment-level-applied p {
@@ -194,37 +204,197 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             display: none;
             position: fixed;
             z-index: 1;
-            padding-top: 60px;
-            left: 0;
-            top: 0;
+            transform: translate(-50%, 0);
             width: 100%;
-            height: 100%;
+            max-width: 535px;
             overflow: auto;
-            background-color: rgb(0, 0, 0);
-            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid #AFAFAF;
+            border-radius: 10px;
+            background-color: #fefefe;
+            height: 850px;
+            left: 50%;
+            top: 5%;
         }
 
         .modal-content {
             background-color: #fefefe;
-            margin: 5% auto;
             padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
+            border-radius: 10px;
         }
 
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
+        .modal-content h2 {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .assessment-group input {
+            border-color: rgb(170, 170, 170);
+            border-style: solid;
+            border-width: 1px;
+            border-radius: 8px;
+            flex: 1;
+        }
+
+        .assessment-group input[type="text"], .assessment-group-college {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            text-align: left; /* Aligns the input text to the left */
+        }
+
+        .assessment-group-college, .assessment-group-program {
+            height: 48px;
+            font-size: 16px;
+        }
+
+        .assessment-group-college {
+            margin-bottom: 20px;
+        }
+
+        .assessment-group-college, .assessment-group-program {
+            height: 48px;
+            font-size: 16px;
+        }
+
+        .assessment-group label {
+            text-transform: uppercase;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .name, .orientationname, .orientationname1, .assessmentname, .assessmentname1, .assessmentname2 {
+            display: flex;
+            gap: 10px;
+        }
+
+        .orientationname1 {
+            width: 100%;
+        }
+
+        .nameContainer, .prefixContainer, .profilenameContainer, .form-group input, .assessment-group input {
+            border-color: rgb(170, 170, 170);
+            border-style: solid;
+            border-width: 1px;
+            border-radius: 8px;
+            flex: 1;
+        }
+
+        .nameContainer {
+            padding: 12px 20px;
+        }
+
+        .orientationContainer, .orientationContainer1 {
+            text-align: center;
+        }
+
+        .orientationContainer1 {
+            background-color: #FFEBA3;
+        }
+
+        .level, .time, .result, .area_evaluated {
+            color: #575757;
+            width: 100%;
+            border: 0;
+            resize: none;
+            outline: 0;
+            padding: 0;
+            font-size: 16px;
+            background: transparent;
+            caret-color: #575757;
+        }
+
+        .titleContainer {
+            flex: 1;
+            padding-top: 20px;
+            padding-bottom: 10px;
+        }
+
+        .upload {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .uploadContainer {
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding: 12px 20px;
+        }
+
+        .upload-text {
+            margin-left: auto;
+            font-weight: bold;
+            color: #575757;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            width: 20px;
+            height: 20px;
+            margin-left: auto;
+            cursor: pointer;
+        }
+
+        .uploadInput {
+            position: absolute;
+            opacity: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .submit-button1, .cancel-button1, .approve-cancel-button, .orientation-button, .assessment-button, .assessment-button-done {
+            padding: 10px 25px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .cancel-button, .cancel-button1 {
+            color: #AFAFAF;
+            border: 1px solid #AFAFAF;
+        }
+
+        .cancel-button1:hover {
+            background-color: #FF6262;
+            color: white;
+            font-weight: bold;
+        }
+        .cancel-button1 {
+            width: 150px;
+        }
+
+        .submit-button, .submit-button1, .export-button {
+            color: #006118;
+            border: 1px solid #006118;
+            background-color: #D4FFDF;
+        }
+
+        .submit-button1 {
+            width: 228px;
+        }
+
+        .submit-button:hover, .submit-button1:hover, .export-button:hover {
+            background-color: #76FA97;
+            border: 1px solid #76FA97;
             font-weight: bold;
         }
 
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
+        .button-container, .e-sign-container {
+            display: flex;
+            width: 100%; /* Ensure the container takes full width */
+            margin-top: 20px; /* Add some spacing from other elements */
+        }
+
+        .button-container {
+            justify-content: flex-end;
         }
     </style>
 </head>
@@ -414,7 +584,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                                 echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
 
                                 if (!empty($schedule['udas_assessment_file'])) {
-                                    echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button href='" . $schedule['udas_assessment_file'] . "' download class='btn open-modal download-button' data-schedule='" . json_encode($schedule) . "'>DOWNLOAD</button></div> </div>";
+                                    echo "<div class='assessment-udas'><p>UDAS Assessment:<br><a href='" . $schedule['udas_assessment_file'] . "' download class='btn download-button' data-schedule='" . json_encode($schedule) . "'>DOWNLOAD</a></div> </div>";
                                 } else {
                                     echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button class='btn open-modal udas-button' data-schedule='" . json_encode($schedule) . "'>START</button></div> </div>";
                                 }
@@ -435,59 +605,81 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
     <!-- The Modal -->
     <div id="udasModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
             <h2>UDAS Assessment</h2>
             <form action="udas_assessment_process.php" method="post" enctype="multipart/form-data">
                 <input type="hidden" id="schedule_id" name="schedule_id">
-                <div>
-                    <label for="college">College:</label>
-                    <input type="text" id="college" name="college" readonly>
+                <div class="assessment-group">
+                    <label for="college">COLLEGE</label>
+                    <input class="assessment-group-college" type="text" id="college" name="college" readonly>
+                    <label for="program">PROGRAM</label>
+                    <input class="assessment-group-program" type="text" id="program" name="program" readonly>
                 </div>
-                <div>
-                    <label for="program">Program:</label>
-                    <input type="text" id="program" name="program" readonly>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="level_applied"><strong>LEVEL APPLIED</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="date"><strong>DATE</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="time"><strong>TIME</strong></label>
+                    </div>
                 </div>
-                <div>
-                    <label for="level_applied">Level Applied:</label>
-                    <input type="text" id="level_applied" name="level_applied" readonly>
+                <div style="height: 10px;"></div>
+                <div class="orientationname1">
+                    <div class="nameContainer orientationContainer1">
+                        <input class="level" type="text" id="level_applied" name="level_applied" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="level" type="text" id="date" name="date" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="time" type="text" id="time" name="time" readonly>
+                    </div>
                 </div>
-                <div>
-                    <label for="area">Area:</label>
-                    <input type="text" id="area" name="area" required>
+                <div style="height: 20px;"></div>
+                <div class="assessment-group">
+                    <label for="area"><strong>AREA</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="area" name="area" rows="10" placeholder="Add area" required></textarea>
+                    <div style="height: 20px;"></div>
+                    <label for="comments"><strong>COMMENTS</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="comments" name="comments" rows="10" placeholder="Add comments" required></textarea>
+                    <div style="height: 20px;"></div>
+                    <label for="remarks"><strong>REMARKS</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="remarks" name="remarks" rows="10" placeholder="Add remarks" required></textarea>
                 </div>
-                <div>
-                    <label for="date">Date:</label>
-                    <input type="text" id="date" name="date" readonly>
+                <div style="height: 20px;"></div>
+                <div class="assessment-group">
+                    <label for="current_datetime">CURRENT DATE AND TIME</label>
+                    <input class="assessment-group-program" type="text" id="current_datetime" name="current_datetime" readonly>
                 </div>
-                <div>
-                    <label for="time">Time:</label>
-                    <input type="text" id="time" name="time" readonly>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="qad_officer"><strong>QAD OFFICER</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="qad_officer_signature"><strong>QAD Officer E-SIGN</strong></label>
+                    </div>
                 </div>
-                <div>
-                    <label for="comments">Comments:</label>
-                    <textarea id="comments" name="comments"></textarea>
+                <div class="orientationname1 upload">
+                    <div class="nameContainer orientationContainer">
+                        <input class="area_evaluated" type="text" id="qad_officer" name="qad_officer" value="<?php echo $full_name; ?>" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer uploadContainer">
+                        <span class="upload-text">UPLOAD</span>
+                        <img id="upload-icon-officer" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                        <input class="uploadInput" type="file" id="qad_officer_signature" name="qad_officer_signature" accept="image/png" required>
+                    </div>
                 </div>
-                <div>
-                    <label for="remarks">Remarks:</label>
-                    <textarea id="remarks" name="remarks"></textarea>
+                <div style="height: 20px;"></div>
+                <div class="assessment-group">
+                    <label for="qad_director">QAD DIRECTOR</label>
+                    <input class="assessment-group-program" type="text" id="qad_director" name="qad_director" required>
                 </div>
-                <div>
-                    <label for="current_datetime">Current Date and Time:</label>
-                    <input type="text" id="current_datetime" name="current_datetime" readonly>
+                <div class="button-container">
+                    <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
+                    <button class="submit-button1" type="submit">SUBMIT</button>
                 </div>
-                <div>
-                    <label for="qad_officer">QAD Officer:</label>
-                    <input type="text" id="qad_officer" name="qad_officer" required>
-                </div>
-                <div>
-                    <label for="qad_officer_signature">QAD Officer Signature (PNG format):</label>
-                    <input type="file" id="qad_officer_signature" name="qad_officer_signature" accept="image/png" required>
-                </div>
-                <div>
-                    <label for="qad_director">QAD Director:</label>
-                    <input type="text" id="qad_director" name="qad_director" required>
-                </div>
-                <button type="submit" class="btn">Submit</button>
             </form>
         </div>
     </div>
@@ -550,17 +742,30 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             }
         }
 
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-
         // When the user clicks anywhere outside of the modal, close it
         window.onclick = function(event) {
             if (event.target == modal) {
                 modal.style.display = "none";
             }
         }
+
+        function closePopup() {
+            document.getElementById('udasModal').style.display = 'none';
+        }
+
+        function handleFileChange(inputElement, iconElement) {
+            inputElement.addEventListener('change', function () {
+                if (this.files && this.files.length > 0) {
+                    // Change icon to check mark if a file is selected
+                    iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
+                } else {
+                    // Change icon back to download if no file is selected
+                    iconElement.src = 'images/download-icon1.png';
+                }
+            });
+        }
+
+        handleFileChange(document.getElementById('qad_officer_signature'), document.getElementById('upload-icon-officer'));
     </script>
 </body>
 

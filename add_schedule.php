@@ -177,12 +177,16 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
                 <div class="dateTime-holder">
                     <div class="form-group">
-                        <label for="date">Date:</label>
+                        <label for="date">DATE:</label>
                         <input type="date" id="date" name="date" required onchange="checkScheduleDate()">
                     </div>
                     <div class="form-group">
-                        <label for="time">Time:</label>
+                        <label for="time">TIME:</label>
                         <input type="time" id="time" name="time" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="time">ZOOM:</label>
+                        <input type="text" id="zoom" name="zoom" placeholder="OPTIONAL">
                     </div>
                 </div>
                 <div class="form-group">

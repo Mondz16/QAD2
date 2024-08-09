@@ -196,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         // Recipients
-        $mail->setFrom('usepqad@example.com', 'USeP - Quality Assurance Division');
+        $mail->setFrom('usepqad@gmail.com', 'USeP - Quality Assurance Division');
         $mail->addAddress($college_email, $college_name);
 
         // Attachments
@@ -229,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Set session variable to indicate successful submission
         $_SESSION['udas_assessment_submitted'] = true;
 
-        $message = "UDAS Assessment submitted successfully. Email notifications sent.";
+        $message = "UDAS Assessment submitted successfully";
     } catch (Exception $e) {
         $message = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
     }
@@ -243,74 +243,32 @@ function displayResult($message, $team_leader, $team_members) {
     $team_members_list = implode(', ', $team_members);
 
     echo "<!DOCTYPE html>
-<html lang=\"en\">
+<html lang='en'>
 <head>
-    <meta charset=\"UTF-8\">
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>Operation Result</title>
-    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: \"Quicksand\", sans-serif;
-        }
-        body {
-            background-color: #f9f9f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            max-width: 750px;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        h2 {
-            font-size: 24px;
-            color: #973939;
-            margin-bottom: 20px;
-        }
-        .message {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        .success {
-            color: green;
-        }
-        .error {
-            color: red;
-        }
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
-        }
-        .button-primary:hover {
-            background-color: #259b42;
-        }
-    </style>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap'>
+    <link rel='stylesheet' href='index.css'>
 </head>
 <body>
-    <div class=\"container\">
-        <h2>Operation Result</h2>
-        <div class=\"message " . (strpos($message, 'successfully') !== false ? 'success' : 'error') . "\">
-            $message
+    <div id='successPopup' class='popup'>
+        <div class='popup-content'>
+            <div style='height: 50px; width: 0px;'></div>
+            <img class='Success' src='images/Success.png' height='100'>
+            <div style='height: 20px; width: 0px;'></div>
+            <div class='popup-text'>$message</div>
+            <div style='height: 50px; width: 0px;'></div>
+            <a href='udas_assessment.php' class='okay' id='closePopup'>Okay</a>
+            <div style='height: 100px; width: 0px;'></div>
+            <div class='hairpop-up'></div>
         </div>
-        <button class=\"button-primary\" onclick=\"window.location.href='udas_assessment.php'\">OK</button>
     </div>
+    <script>
+        document.getElementById('successPopup').style.display = 'block';
+    </script>
 </body>
 </html>";
 }
+
 ?>

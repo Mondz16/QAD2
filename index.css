@@ -468,7 +468,7 @@
     cursor: not-allowed;
 }
 
-.popup {
+.popup, .popup1 {
     display: none;
     position: fixed;
     z-index: 1;
@@ -529,7 +529,7 @@
     cursor: pointer;
 }
 
-.continue {
+.continue, .continue1 {
     min-width: 120px;
     white-space: unset;
     padding: 10px 20px;
@@ -543,7 +543,7 @@
     cursor: pointer;
 }
 
-.continue:hover {
+.continue:hover, .continue1:hover {
     background-color: #EAEAEA;
 }
 
@@ -1378,6 +1378,20 @@ canvas {
     border: 1px solid #A43939;
 }
 
+.index-button-container {
+    display: flex;
+    width: 100%; /* Ensure the container takes full width */
+}
+
+.index-button-container {
+    justify-content: center;
+    align-items: center;
+}
+
+.index-button-container span {
+    margin: 0px 30px;
+    font-weight: bold;
+}
 .button-container, .e-sign-container {
     display: flex;
     width: 100%; /* Ensure the container takes full width */
