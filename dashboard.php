@@ -153,7 +153,7 @@ $result = $conn->query($sql);
         margin-top: 10px;
         color: #575757;
     }
-    
+
     .result-level-applied-holder {
         width: max-content;
         padding: 5px 15px;
@@ -163,11 +163,11 @@ $result = $conn->query($sql);
         color: #575757;
     }
 
-    .result-passed-color{
+    .result-passed-color {
         background-color: #b5ffc8;
     }
 
-    .result-failed-color{
+    .result-failed-color {
         background-color: #ffdee3;
     }
 
@@ -234,7 +234,7 @@ $result = $conn->query($sql);
         color: #006118;
     }
 
-    .hide-result{
+    .hide-result {
         display: none;
     }
 
@@ -272,6 +272,73 @@ $result = $conn->query($sql);
 
     .hidden-status-holder {
         display: none;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 400px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .modal-buttons {
+        display: flex;
+        justify-content: end;
+        margin-top: 20px;
+    }
+
+    .modal-buttons button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color .3s ease;
+    }
+
+    .modal-buttons .yes-btn {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .modal-buttons .positive {
+        background-color: rgb(49, 204, 85) !important;
+        color: white;
+    }
+
+    .modal-buttons .positive:hover {
+        background-color: rgb(40, 167, 69) !important;
+        color: white;
+    }
+
+    .modal-buttons .no-btn {
+        color: #575757;
+        background-color: white;
+    }
+
+    .modal-buttons .yes-btn:hover {
+        background-color: #c9302c;
+    }
+
+    .modal-buttons .no-btn:hover {
+        background-color: white;
+        text-decoration: underline;
     }
 </style>
 
@@ -461,12 +528,12 @@ $result = $conn->query($sql);
                                 <?php
                                 if ($result->num_rows > 0) {
                                     while ($row = $result->fetch_assoc()) {
-                                    $schedule_date = date("F j, Y", strtotime($row['schedule_date'])); // Format the date as "Month Day, Year"
-                                    $schedule_time = date("g:i A", strtotime($row['schedule_time']));  // Format the time as "hour:minute AM/PM"
+                                        $schedule_date = date("F j, Y", strtotime($row['schedule_date'])); // Format the date as "Month Day, Year"
+                                        $schedule_time = date("g:i A", strtotime($row['schedule_time']));  // Format the time as "hour:minute AM/PM"
 
-                                    if ($row['schedule_status'] == 'approved') {
-                                        $approved_class = ($row['schedule_status'] == 'approved') ? 'status-holder' : 'hidden-status-holder';
-                                        echo "<div class='schedule-modal-container'>
+                                        if ($row['schedule_status'] == 'approved') {
+                                            $approved_class = ($row['schedule_status'] == 'approved') ? 'status-holder' : 'hidden-status-holder';
+                                            echo "<div class='schedule-modal-container'>
                                                 <div>
                                                     <div>{$row['college_name']}</div>
                                                     <div>
@@ -512,7 +579,7 @@ $result = $conn->query($sql);
                                         $schedule_time = date("g:i A", strtotime($row['schedule_time']));  // Format the time as "hour:minute AM/PM"
 
                                         if ($row['schedule_status'] == 'finished') {
-                                            echo "<div class='schedule-modal-container finished-schedule'>
+                                            echo "<div class='schedule-modal-container finished-schedule' data-schedule-id='{$row['id']}'>
                                                     <div>
                                                         <div>{$row['college_name']}</div>
                                                         <div>
@@ -526,7 +593,7 @@ $result = $conn->query($sql);
                                                                 {$row['level_applied']}
                                                             </div>
                                                             <div class='finished-buttons'>
-                                                                <button type='button' id='retain-button'>RETAIN</button>
+                                                                <button type='button' id='retain-button'>FAIL</button>
                                                                 <button type='button' id='pass-button'>PASS</button>
                                                             </div>
                                                         </div>
@@ -558,14 +625,14 @@ $result = $conn->query($sql);
                                     while ($row = $result->fetch_assoc()) {
                                         $schedule_date = date("F j, Y", strtotime($row['schedule_date'])); // Format the date as "Month Day, Year"
                                         $schedule_time = date("g:i A", strtotime($row['schedule_time']));  // Format the time as "hour:minute AM/PM"
-                                        
+
                                         if ($row['schedule_status'] == 'failed' || $row['schedule_status'] == 'passed') {
                                             $isPassed = true;
-                                            if($row['schedule_status'] == 'failed')
+                                            if ($row['schedule_status'] == 'failed')
                                                 $isPassed = false;
 
                                             $hideFail = $isPassed == false ? '' : 'hide-result';
-                                            $hidePass = $isPassed == true? '' : 'hide-result';
+                                            $hidePass = $isPassed == true ? '' : 'hide-result';
                                             $color = $isPassed == true ? 'result-passed-color' : 'result-failed-color';
 
                                             echo "<div class='result-schedule-modal-container  $color'>
@@ -582,8 +649,8 @@ $result = $conn->query($sql);
                                                                 {$row['level_applied']}
                                                             </div>
                                                             <div class='finished-buttons'>
-                                                                <button type='m' id='retain-button-active' class='$hideFail' readonly>FAILED</button>
-                                                                <button type='button' id='pass-button-active' class='$hidePass' readonly>PASSED</button>
+                                                                <button type='none' id='retain-button-active' class='$hideFail' disabled='disabled'>FAILED</button>
+                                                                <button type='none' id='pass-button-active' class='$hidePass' disabled='disabled'>PASSED</button>
                                                             </div>
                                                         </div>
                                                         <div class='schedule-holder'>
@@ -609,15 +676,59 @@ $result = $conn->query($sql);
                     </div>
                 </div>
             </div>
+            <!-- Approve Modal -->
+            <div id="approveModal" class="modal">
+                <div class="modal-content">
+                    <h4 id="modalText">Are you sure you want to approve this registration?</h4>
+                    <form id="approveForm" action="dashboard_update_schedule_status.php" method="post">
+                        <input type="hidden" name="id" id="approveScheduleId">
+                        <input type="hidden" name="status" id="approveStatus">
+                        <div class="modal-buttons">
+                            <button type="button" class="no-btn" onclick="closeApproveModal()">CANCEL</button>
+                            <button type="submit" class="yes-btn positive">CONFIRM</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-            <script>
-                const hamBurger = document.querySelector(".toggle-btn");
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+        <script>
+            const hamBurger = document.querySelector(".toggle-btn");
 
-                hamBurger.addEventListener("click", function() {
-                    document.querySelector("#sidebar").classList.toggle("expand");
+            hamBurger.addEventListener("click", function() {
+                document.querySelector("#sidebar").classList.toggle("expand");
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.finished-buttons button').forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        const scheduleContainer = this.closest('.schedule-modal-container');
+                        if (scheduleContainer) {
+                            const scheduleId = scheduleContainer.dataset.scheduleId;
+                            const status = this.id === 'retain-button' ? 'failed' : 'passed';
+                            const actionText = status === 'failed' ? 'fail' : 'pass';
+
+                            // Set modal text and form data
+                            document.getElementById('modalText').textContent = `Are you sure you want to ${actionText} this program?`;
+                            document.getElementById('approveScheduleId').value = scheduleId;
+                            document.getElementById('approveStatus').value = status;
+
+                            // Open the modal
+                            document.getElementById('approveModal').style.display = 'block';
+                        } else {
+                            console.error('Schedule container not found');
+                        }
+                    });
                 });
-            </script>
+            });
+
+            function closeApproveModal() {
+                document.getElementById('approveModal').style.display = 'none';
+            }
+        </script>
+
 </body>
 
 </html>

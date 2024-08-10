@@ -163,7 +163,7 @@ $sql = "CREATE TABLE IF NOT EXISTS schedule (
     schedule_date DATE NOT NULL,
     schedule_time TIME NOT NULL,
     zoom VARCHAR(255),
-    schedule_status ENUM('pending', 'approved', 'cancelled', 'finished') NOT NULL DEFAULT 'pending',
+    schedule_status ENUM('pending', 'approved', 'cancelled', 'finished', 'failed', 'passed') NOT NULL DEFAULT 'pending',
     status_date DATETIME NOT NULL,
     FOREIGN KEY (college_code) REFERENCES college(code),
     FOREIGN KEY (program_id) REFERENCES program(id)
