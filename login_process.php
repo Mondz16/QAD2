@@ -54,7 +54,6 @@ function display_popup($message, $type, $redirect = 'login.php', $has_apply_canc
     <body>
         <div id="errorPopup" class="popup" style="display: block;">
             <div class="popup-content">
-                <span class="close-btn" id="closeErrorBtn">&times;</span>
                 <div style="height: 50px; width: 0px;"></div>
                 <img class="Error" src="images/Error.png" height="100">
                 <div style="height: 20px; width: 0px;"></div>
@@ -141,7 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     } else {
-        echo "No admin found with this user ID.";
+        $message = "No admin found with this user ID.";
     }
 
     // Function to check user in a specific table

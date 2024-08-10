@@ -602,7 +602,7 @@ foreach ($schedules as $schedule) {
         <div class="approvalmodal-content">
             <span style="float: right; font-size: 40px; cursor: pointer;" class="close" onclick="closeApproveAssessmentPopup()">&times;</span>
             <h2>APPROVE ASSESSMENT</h2>
-            <form action="approve_assessment_process.php" method="POST" enctype="multipart/form-data">
+            <form action="internal_approve_assessment_process.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="team_id" id="approve_team_id">
                 <input type="hidden" name="assessment_file" id="approve_assessment_file">
                 <div class="orientationname1">

@@ -6,7 +6,7 @@ if (isset($_GET['logged_out']) && $_GET['logged_out'] == 'true') {
     // Allow access without referer check
 } else {
     // Allowed referring pages
-    $allowed_referers = ['register.php', 'index.php', 'logout.php', 'verify_otp.php'];
+    $allowed_referers = ['register.php', 'index.php', 'logout.php', 'verify_otp.php', 'login_process.php', 'forgot_password.php'];
 
     // Check if the referer is set and validate it
     if (isset($_SERVER['HTTP_REFERER'])) {
@@ -199,6 +199,18 @@ if (isset($_SESSION['user_id'])) {
     <script>
         let tempUserId = '';
 
+        document.getElementById('user_id').addEventListener('input', function(e) {
+            let userIdInput = e.target.value;
+
+            // Limit to 10 characters
+            if (userIdInput.length > 10) {
+                userIdInput = userIdInput.slice(0, 10);
+            }
+
+            // Set the cleaned value back to the input
+            e.target.value = userIdInput;
+        });
+
         document.getElementById('showPasswordCheckbox').addEventListener('change', function() {
             var passwordInput = document.querySelector('.passwordText');
             if (this.checked) {
@@ -226,11 +238,6 @@ if (isset($_SESSION['user_id'])) {
                 document.getElementById('errorMessage').innerHTML = errorMessage;
                 document.getElementById('errorPopup').style.display = 'block';
             }
-        });
-
-        document.getElementById('closeErrorBtn').addEventListener('click', function() {
-            document.getElementById('errorPopup').style.display = 'none';
-            document.getElementById('user_id').value = tempUserId;
         });
 
         document.getElementById('closePopup').addEventListener('click', function() {

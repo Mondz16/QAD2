@@ -60,8 +60,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Encrypt the signature image
             $signature_data = file_get_contents($fileTmpPath);
-            $encryption_key = 'your-encryption-key-here'; // Use a secure method to generate and store the encryption key
-            $encrypted_signature_data = encryptData($signature_data, $encryption_key);
+             $encryption_key = bin2hex(openssl_random_pseudo_bytes(32)); // Use a secure method to generate and store the encryption key
+            $iv = openssl_random_pseudo_bytes(16);
+            $encrypted_signature_data = openssl_encrypt($signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
             $encrypted_signature_path = $uploadFileDir . basename($fileName) . '.enc';
             file_put_contents($encrypted_signature_path, $encrypted_signature_data);
 
@@ -91,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $pdf->Write(0, $qadOfficerName);
 
             // Decrypt the signature image before adding to PDF
-            $decrypted_signature_data = decryptData($encrypted_signature_data, $encryption_key);
+            $decrypted_signature_data = openssl_decrypt($encrypted_signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
             $temp_signature_path = tempnam(sys_get_temp_dir(), 'sig') . '.png';
             file_put_contents($temp_signature_path, $decrypted_signature_data);
 
