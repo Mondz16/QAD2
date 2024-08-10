@@ -314,3 +314,10 @@ button[type="remove"]:hover{
     padding: 10px 30px;
     justify-content: space-between;
 }
+
+#programs {
+    height: 300px;
+    overflow-y: scroll;
+    margin: 0px 0px 10px 0px;
+    padding: 0;
+}
