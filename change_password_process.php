@@ -38,30 +38,101 @@ $stmt->close();
 
 // Verify current password
 if (!password_verify($current_password, $db_password)) {
-    echo "Current password is incorrect.";
-    exit();
-}
-
-// Verify new password and confirm password match
-if ($new_password !== $confirm_password) {
-    echo "New password and confirm password do not match.";
-    exit();
-}
-
-// Hash the new password
-$new_password_hashed = password_hash($new_password, PASSWORD_DEFAULT);
-
-// Update the password in the database
-$sql_update = "UPDATE $table SET password = ? WHERE user_id = ?";
-$stmt_update = $conn->prepare($sql_update);
-$stmt_update->bind_param("ss", $new_password_hashed, $user_id);
-
-if ($stmt_update->execute()) {
-    echo "Password updated successfully.";
+    $message = "Current password is incorrect.";
+    $status = "error";
+} elseif ($new_password !== $confirm_password) {
+    $message = "New password and confirm password do not match.";
+    $status = "error";
 } else {
-    echo "Error updating password.";
+    // Hash the new password
+    $new_password_hashed = password_hash($new_password, PASSWORD_DEFAULT);
+
+    // Update the password in the database
+    $sql_update = "UPDATE $table SET password = ? WHERE user_id = ?";
+    $stmt_update = $conn->prepare($sql_update);
+    $stmt_update->bind_param("ss", $new_password_hashed, $user_id);
+
+    if ($stmt_update->execute()) {
+        $message = "Password updated successfully.";
+        $status = "success";
+    } else {
+        $message = "Error updating password.";
+        $status = "error";
+    }
+
+    $stmt_update->close();
 }
 
-$stmt_update->close();
 $conn->close();
+
+// HTML template
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation Result</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="index.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Quicksand", sans-serif;
+        }
+        body {
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h2 {
+            font-size: 24px;
+            color: #292D32;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .btn-hover:hover {
+            background-color: #AFAFAF;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-content">
+        <div style='height: 50px; width: 0px;'></div>
+        <img src="images/<?php echo ucfirst($status); ?>.png" height="100" alt="<?php echo ucfirst($status); ?>">
+        <div style="height: 25px; width: 0px;"></div>
+        <div class="message <?php echo $status; ?>">
+            <?php echo $message; ?>
+        </div>
+        <div style="height: 50px; width: 0px;"></div>
+        <a href="internal.php" class="btn-hover">OKAY</a>
+        <div style='height: 100px; width: 0px;'></div>
+        <div class='hairpop-up'></div>
+    </div>
+</body>
+</html>

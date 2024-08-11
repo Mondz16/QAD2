@@ -58,6 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
     <title>Operation Result</title>
     <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+    <link rel=\"stylesheet\" href=\"index.css\">
     <style>
         * {
             margin: 0;
@@ -73,16 +74,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             height: 100vh;
         }
         .container {
-            max-width: 750px;
+            max-width: 600px;
             padding: 24px;
             background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            border: 2px solid #AFAFAF;
             text-align: center;
         }
         h2 {
             font-size: 24px;
-            color: #973939;
+            color: #292D32;
             margin-bottom: 20px;
         }
         .message {
@@ -95,29 +96,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .error {
             color: red;
         }
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
         }
-        .button-primary:hover {
-            background-color: #259b42;
+        .btn-hover:hover {
+            background-color: #AFAFAF;
         }
     </style>
 </head>
 <body>
-    <div class=\"container\">
-        <h2>Operation Result</h2>
+    <div class=\"popup-content\">
+        <div style=\"height: 50px; width: 0px;\"></div>
+        <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+        <div style=\"height: 25px; width: 0px;\"></div>
         <div class=\"message\">
             Error: Schedule already exists for the selected date.
         </div>
-        <button class=\"button-primary\" onclick=\"window.location.href='add_schedule.php'\">OK</button>
+        <div style=\"height: 50px; width: 0px;\"></div>
+            <a href=\"college.php\" class=\"btn-hover\">OKAY</a>
+            <div style=\"height: 100px; width: 0px;\"></div>
+            <div class=\"hairpop-up\"></div>
     </div>
 </body>
 </html>";
@@ -259,6 +264,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
     <title>Operation Result</title>
     <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+    <link rel=\"stylesheet\" href=\"index.css\">
     <style>
         * {
             margin: 0;
@@ -266,6 +272,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-sizing: border-box;
             font-family: \"Quicksand\", sans-serif;
         }
+
         body {
             background-color: #f9f9f9;
             display: flex;
@@ -274,16 +281,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             height: 100vh;
         }
         .container {
-            max-width: 750px;
+            max-width: 600px;
             padding: 24px;
             background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            border: 2px solid #AFAFAF;
             text-align: center;
         }
         h2 {
             font-size: 24px;
-            color: #973939;
+            color: #292D32;
             margin-bottom: 20px;
         }
         .message {
@@ -296,29 +303,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .error {
             color: red;
         }
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
         }
-        .button-primary:hover {
-            background-color: #259b42;
+        .btn-hover:hover {
+            background-color: #AFAFAF;
         }
     </style>
 </head>
 <body>
-    <div class=\"container\">
-        <h2>Operation Result</h2>
+    <div class=\"popup-content\">
+        <div style=\"height: 50px; width: 0px;\"></div>
+        <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+        <div style=\"height: 25px; width: 0px;\"></div>
         <div class=\"message\">
             New schedule and team members added successfully
         </div>
-        <button class=\"button-primary\" onclick=\"window.location.href='schedule.php'\">OK</button>
+        <div style=\"height: 50px; width: 0px;\"></div>
+            <a href=\"college.php\" class=\"btn-hover\">OKAY</a>
+            <div style=\"height: 100px; width: 0px;\"></div>
+            <div class=\"hairpop-up\"></div>
     </div>
 </body>
 </html>";
@@ -333,6 +344,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
     <title>Operation Result</title>
     <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+    <link rel=\"stylesheet\" href=\"index.css\">
     <style>
         * {
             margin: 0;
@@ -340,6 +352,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-sizing: border-box;
             font-family: \"Quicksand\", sans-serif;
         }
+
         body {
             background-color: #f9f9f9;
             display: flex;
@@ -348,16 +361,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             height: 100vh;
         }
         .container {
-            max-width: 750px;
+            max-width: 600px;
             padding: 24px;
             background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            border: 2px solid #AFAFAF;
             text-align: center;
         }
         h2 {
             font-size: 24px;
-            color: #973939;
+            color: #292D32;
             margin-bottom: 20px;
         }
         .message {
@@ -370,29 +383,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .error {
             color: red;
         }
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
         }
-        .button-primary:hover {
-            background-color: #259b42;
+        .btn-hover:hover {
+            background-color: #AFAFAF;
         }
     </style>
 </head>
 <body>
     <div class=\"container\">
-        <h2>Operation Result</h2>
+        <img src=\"images/Error.png\" height=\"100\" alt=\"Error\">
+        <div style=\"height: 25px; width: 0px;\"></div>
         <div class=\"message error\">
             Schedule could not be added because there's an internet problem. Please try again.
         </div>
-        <button class=\"button-primary\" onclick=\"window.location.href='add_schedule.php'\">OK</button>
+        <div style=\"height: 50px; width: 0px;\"></div>
+            <a href=\"college.php\" class=\"btn-hover\">OKAY</a>
+            <div style=\"height: 100px; width: 0px;\"></div>
+            <div class=\"hairpop-up\"></div>
     </div>
 </body>
 </html>";
@@ -408,6 +424,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
     <title>Operation Result</title>
     <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+    <link rel=\"stylesheet\" href=\"index.css\">
     <style>
         * {
             margin: 0;
@@ -415,6 +432,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-sizing: border-box;
             font-family: \"Quicksand\", sans-serif;
         }
+
         body {
             background-color: #f9f9f9;
             display: flex;
@@ -423,16 +441,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             height: 100vh;
         }
         .container {
-            max-width: 750px;
+            max-width: 600px;
             padding: 24px;
             background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            border: 2px solid #AFAFAF;
             text-align: center;
         }
         h2 {
             font-size: 24px;
-            color: #973939;
+            color: #292D32;
             margin-bottom: 20px;
         }
         .message {
@@ -445,29 +463,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .error {
             color: red;
         }
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
         }
-        .button-primary:hover {
-            background-color: #259b42;
+        .btn-hover:hover {
+            background-color: #AFAFAF;
         }
     </style>
 </head>
 <body>
-    <div class=\"container\">
-        <h2>Operation Result</h2>
+    <div class=\"popup-content\">
+        <div style=\"height: 50px; width: 0px;\"></div>
+        <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+        <div style=\"height: 25px; width: 0px;\"></div>
         <div class=\"message error\">
             Schedule could not be added because there's an internet problem. Please try again.
-        </div>
-        <button class=\"button-primary\" onclick=\"window.location.href='add_schedule.php'\">OK</button>
+        <div style=\"height: 50px; width: 0px;\"></div>
+            <a href=\"college.php\" class=\"btn-hover\">OKAY</a>
+            <div style=\"height: 100px; width: 0px;\"></div>
+            <div class=\"hairpop-up\"></div>
     </div>
 </body>
 </html>";

@@ -81,7 +81,6 @@
     align-items: unset;
     overflow: unset;
 }
-
 .one, .datausep {
     font-weight: 600;
     font-size: 18px;
@@ -1215,7 +1214,7 @@ input[type="radio"] {
 
 .accept-confirm-button, .approve-assessment-button {
     background-color: #76FA97;
-    color: #black;
+    color: black;
     border: 1px solid #AFAFAF;
 }
 

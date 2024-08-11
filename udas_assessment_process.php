@@ -210,8 +210,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 displayResult($message, $team_leader, $team_members);
 
-function displayResult($message, $team_leader, $team_members) {
-    $team_members_list = implode(', ', $team_members);
+function displayResult($message) {
+    $is_success = strpos($message, 'successfully') !== false;
+    $message_class = $is_success ? 'success' : 'error';
+    $image_src = $is_success ? "images/Success.png" : "images/Error.png";
 
     echo "<!DOCTYPE html>
 <html lang=\"en\">
@@ -220,6 +222,7 @@ function displayResult($message, $team_leader, $team_members) {
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
     <title>Operation Result</title>
     <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+    <link rel=\"stylesheet\" href=\"index.css\">
     <style>
         * {
             margin: 0;
@@ -227,6 +230,7 @@ function displayResult($message, $team_leader, $team_members) {
             box-sizing: border-box;
             font-family: \"Quicksand\", sans-serif;
         }
+
         body {
             background-color: #f9f9f9;
             display: flex;
@@ -235,16 +239,16 @@ function displayResult($message, $team_leader, $team_members) {
             height: 100vh;
         }
         .container {
-            max-width: 750px;
+            max-width: 600px;
             padding: 24px;
             background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            border: 2px solid #AFAFAF;
             text-align: center;
         }
         h2 {
             font-size: 24px;
-            color: #973939;
+            color: #292D32;
             margin-bottom: 20px;
         }
         .message {
@@ -257,29 +261,33 @@ function displayResult($message, $team_leader, $team_members) {
         .error {
             color: red;
         }
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
         }
-        .button-primary:hover {
-            background-color: #259b42;
+        .btn-hover:hover {
+            background-color: #AFAFAF;
         }
     </style>
 </head>
 <body>
-    <div class=\"container\">
-        <h2>Operation Result</h2>
-        <div class=\"message " . (strpos($message, 'successfully') !== false ? 'success' : 'error') . "\">
-            $message
-        </div>
-        <button class=\"button-primary\" onclick=\"window.location.href='udas_assessment.php'\">OK</button>
+    <div class=\"popup-content\">
+        <div style=\"height: 50px; width: 0px;\"></div>
+            <img src=\"{$image_src}\" height=\"100\" alt=\"" . ucfirst($message_class) . "\">
+            <div style=\"height: 25px; width: 0px;\"></div>
+            <div class=\"message {$message_class}\">
+                {$message}
+            </div>
+            <div style=\"height: 25px; width: 0px;\"></div>
+            <a href=\"udas_assessment.php\" class=\"btn-hover\">OKAY</a>
+             <div style=\"height: 100px; width: 0px;\"></div>
+            <div class=\"hairpop-up\"></div>
     </div>
 </body>
 </html>";

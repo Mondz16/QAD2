@@ -45,6 +45,9 @@ function sendEmail($to, $subject, $message) {
     }
 }
 
+$message = "";
+$status = "";
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
     $new_user_id = $_POST['new_user_id'];
@@ -56,9 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $message = "Dear " . $_POST['new_user_name'] . ",\n\nYour request for college transfer has been accepted.\nYour new user ID is " . $new_user_id . ".\n\nBest regards,\nUSeP - Quality Assurance Division";
 
         if (sendEmail($to, $subject, $message)) {
-            // Email sent successfully, update database
             $conn->begin_transaction();
-
             try {
                 // Update the new user's status to 'active'
                 $sql_accept = "UPDATE internal_users SET status = 'active' WHERE user_id = ?";
@@ -76,13 +77,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 $conn->commit();
 
-                echo "Transfer request accepted. <a href='college_transfer.php'>Back to Transfer Requests</a>";
+                $message = "Transfer request accepted successfully.";
+                $status = "success";
             } catch (Exception $e) {
                 $conn->rollback();
-                echo "Error processing request. <a href='college_transfer.php'>Back to Transfer Requests</a>";
+                $message = "Error processing request.";
+                $status = "error";
             }
         } else {
-            echo "Failed to send email. Transfer request not processed. <a href='college_transfer.php'>Back to Transfer Requests</a>";
+            $message = "Failed to send email. Transfer request not processed.";
+            $status = "error";
         }
     } elseif ($action == 'reject') {
         $reject_reason = $_POST['reject_reason'];
@@ -97,12 +101,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $to = $email;
         $subject = "College Transfer Rejected";
-        $message = "Dear " . $name . ",\n\nYour request for college transfer has been rejected.\nReason:" . $reject_reason . "\n\nBest regards,\nUSeP - Quality Assurance Division";
+        $message = "Dear " . $name . ",\n\nYour request for college transfer has been rejected.\nReason: " . $reject_reason . "\n\nBest regards,\nUSeP - Quality Assurance Division";
 
         if (sendEmail($to, $subject, $message)) {
-            // Email sent successfully, update database
             $conn->begin_transaction();
-
             try {
                 // Update the new user's status to 'inactive'
                 $sql_reject = "UPDATE internal_users SET status = 'inactive' WHERE user_id = ?";
@@ -113,14 +115,86 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 $conn->commit();
 
-                echo "Transfer request rejected. <a href='college_transfer.php'>Back to Transfer Requests</a>";
+                $message = "Transfer request rejected successfully.";
+                $status = "success";
             } catch (Exception $e) {
                 $conn->rollback();
-                echo "Error processing request. <a href='college_transfer.php'>Back to Transfer Requests</a>";
+                $message = "Error processing request.";
+                $status = "error";
             }
         } else {
-            echo "Failed to send email. Transfer request not processed. <a href='college_transfer.php'>Back to Transfer Requests</a>";
+            $message = "Failed to send email. Transfer request not processed.";
+            $status = "error";
         }
     }
 }
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation Result</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="index.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Quicksand", sans-serif;
+        }
+        body {
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h2 {
+            font-size: 24px;
+            color: #292D32;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .btn-hover:hover {
+            background-color: #AFAFAF;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-content">
+        <div style='height: 50px; width: 0px;'></div>
+        <img src="images/<?php echo ucfirst($status); ?>.png" height="100" alt="<?php echo ucfirst($status); ?>">
+        <div style="height: 25px; width: 0px;"></div>
+        <div class="message <?php echo $status; ?>">
+            <?php echo $message; ?>
+        </div>
+        <div style="height: 50px; width: 0px;"></div>
+        <a href="college_transfer.php" class="btn-hover">OKAY</a>
+        <div style='height: 100px; width: 0px;'></div>
+        <div class='hairpop-up'></div>
+    </div>
+</body>
+</html>

@@ -9,6 +9,7 @@ session_start();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Operation Result</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="index.css">
     <style>
         * {
             margin: 0;
@@ -16,7 +17,6 @@ session_start();
             box-sizing: border-box;
             font-family: "Quicksand", sans-serif;
         }
-
         body {
             background-color: #f9f9f9;
             display: flex;
@@ -24,19 +24,9 @@ session_start();
             justify-content: center;
             height: 100vh;
         }
-
-        .container {
-            max-width: 750px;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
         h2 {
             font-size: 24px;
-            color: #973939;
+            color: #292D32;
             margin-bottom: 20px;
         }
 
@@ -44,7 +34,6 @@ session_start();
             margin-bottom: 20px;
             font-size: 18px;
         }
-
         .success {
             color: green;
         }
@@ -52,28 +41,22 @@ session_start();
         .error {
             color: red;
         }
-
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
         }
-
-        .button-primary:hover {
-            background-color: #259b42;
+        .btn-hover:hover {
+            background-color: #AFAFAF;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Operation Result</h2>
-        <div class="message">
             <?php
             if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $company_name = $_POST['company_name'];
@@ -87,8 +70,19 @@ session_start();
                 $result = $check_stmt->get_result();
 
                 if ($result->num_rows > 0) {
-                    echo "<p class='error'>Error: Company name already exists. <a href='add_company.php'>Try again</a></p>";
-                } else {
+                    echo "
+                    <div class='popup-content'>
+                        <div style='height: 50px; width: 0px;'></div>
+                        <img class='Error' src='images/Error.png' height='100'>
+                        <div style='height: 25px; width: 0px;'></div>
+                        <p class='error'>Error: Company name already exists. <a href='add_company.php'>Try again</a></p>
+                        <div style='height: 50px; width: 0px;'></div>
+                        <a href='college.php'class='btn-hover'>OKAY</a>
+                        <div style='height: 100px; width: 0px;'></div>
+                        <div class='hairpop-up'></div>
+                    </div>";
+                
+                    } else {
                     // Proceed with adding the company if no duplicate is found
                     $sql = "SELECT MAX(code) AS max_code FROM company";
                     $result = $conn->query($sql);
@@ -102,16 +96,45 @@ session_start();
                     }
 
                     if ($new_company_code > 35) {
-                        echo "<p class='error'>Error: Maximum number of companies reached. <a href='college.php'>Back to Colleges and Companies</a></p>";
+                    echo "
+                    <div class='popup-content'>
+                        <div style='height: 50px; width: 0px;'></div>
+                        <img class='Error' src='images/Error.png' height='100'>
+                        <div style='height: 25px; width: 0px;'></div>                        
+                        <p class='error'>Error: Maximum number of companies reached. <a href='college.php'>Back to Colleges and Companies</a></p>
+                        <div style='height: 50px; width: 0px;'></div>
+                        <a href='college.php'class='btn-hover'>OKAY</a>
+                        <div style='height: 100px; width: 0px;'></div>
+                        <div class='hairpop-up'></div>
+                    </div>";
                     } else {
                         $stmt = $conn->prepare("INSERT INTO company (code, company_name) VALUES (?, ?)");
                         $stmt->bind_param("is", $new_code, $company_name);
 
                         if ($stmt->execute()) {
-                            echo "<p class='success'>Company added successfully.</p>";
-                        } else {
-                            echo "<p class='error'>Error: " . $stmt->error . "</p>";
-                        }
+                            echo "
+                        <div class='popup-content'>
+                            <div style='height: 50px; width: 0px;'></div>
+                            <img class='Success' src='images/Success.png' height='100'>
+                            <div style='height: 25px; width: 0px;'></div>                        
+                            <p class='success'>Company added successfully.</p>
+                            <div style='height: 50px; width: 0px;'></div>
+                            <a href='college.php'class='btn-hover'>OKAY</a>
+                            <div style='height: 100px; width: 0px;'></div>
+                            <div class='hairpop-up'></div>
+                        </div>";                        
+                    } else {
+                            echo "
+                        <div class='popup-content'>
+                            <div style='height: 50px; width: 0px;'></div>
+                            <img class='Error' src='images/Error.png' height='100'>
+                            <div style='height: 25px; width: 0px;'></div>                        
+                            <p class='error'>Error: " . $stmt->error . "</p>
+                            <div style='height: 50px; width: 0px;'></div>
+                            <a href='college.php'class='btn-hover'>OKAY</a>
+                            <div style='height: 100px; width: 0px;'></div>
+                            <div class='hairpop-up'></div>
+                        </div>";                         }
 
                         $stmt->close();
                     }
@@ -121,8 +144,5 @@ session_start();
                 $conn->close();
             }
             ?>
-        </div>
-        <button class="button-primary" onclick="window.location.href='college.php'">OK</button>
-    </div>
 </body>
 </html>

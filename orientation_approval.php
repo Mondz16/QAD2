@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute();
     $stmt->bind_result($schedule_id, $orientation_date, $orientation_time, $orientation_type);
     $stmt->fetch();
-    $stmt->close(); // Close the statement after fetching the data
+    $stmt->close();
 
     // Format the date and time
     $formatted_orientation_date = date("F j, Y", strtotime($orientation_date));
@@ -87,7 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_result($schedule_date, $schedule_time, $level_applied, $schedule_status, 
                        $program_name, $college_name, $college_campus, $college_email, $college_code);
     $stmt->fetch();
-    $stmt->close(); // Close the statement after fetching the data
+    $stmt->close();
 
     // Format the date and time
     $formatted_schedule_date = date("F j, Y", strtotime($schedule_date));
@@ -104,12 +104,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     while ($row = $result->fetch_assoc()) {
         $recipients[] = $row['email'];
     }
-    $stmt->close(); // Close the statement after fetching the data
+    $stmt->close();
 
     // Prepare email body
     $subject = "Orientation Request " . ucfirst($action);
-    $body .= "<p>The orientation for the schedule detail below has been " . ($action == "approve" ? "approved." : "denied.") . "</p>";
-    $body = "<p>Schedule Details:</p>";
+    $body = "<p>The orientation for the schedule detail below has been " . ($action == "approve" ? "approved." : "denied.") . "</p>";
+    $body .= "<p>Schedule Details:</p>";
     $body .= "<p><strong>Program:</strong> " . htmlspecialchars($program_name) . "</p>";
     $body .= "<p><strong>College:</strong> " . htmlspecialchars($college_name) . " (" . htmlspecialchars($college_campus) . ")</p>";
     $body .= "<p><strong>Date:</strong> " . htmlspecialchars($formatted_schedule_date) . "</p>";
@@ -138,16 +138,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         if ($stmt->execute()) {
+            $status = "success";
             $message = "Orientation request has been successfully " . ($action == "approve" ? "approved." : "denied.") . " Email notifications sent.";
         } else {
+            $status = "error";
             $message = "Failed to update the orientation request.";
         }
-        $stmt->close(); // Close the statement after executing the update
+        $stmt->close();
     } else {
+        $status = "error";
         $message = "Orientation request could not be updated because the email notification could not be sent due to an internet problem. Please try again.";
     }
 
-    $conn->close(); // Close the connection after finishing
+    $conn->close();
 
     echo "<!DOCTYPE html>
 <html lang=\"en\">
@@ -156,6 +159,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
     <title>Operation Result</title>
     <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+    <link rel=\"stylesheet\" href=\"index.css\">
     <style>
         * {
             margin: 0;
@@ -170,17 +174,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             justify-content: center;
             height: 100vh;
         }
-        .container {
-            max-width: 750px;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
         h2 {
             font-size: 24px;
-            color: #973939;
+            color: #292D32;
             margin-bottom: 20px;
         }
         .message {
@@ -193,33 +189,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .error {
             color: red;
         }
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
         }
-        .button-primary:hover {
-            background-color: #259b42;
+        .btn-hover:hover {
+            background-color: #AFAFAF;
         }
     </style>
 </head>
 <body>
-    <div class=\"container\">
-        <h2>Operation Result</h2>
-        <div class=\"message " . (strpos($message, 'successfully') !== false ? 'success' : 'error') . "\">
-            $message
-        </div>
-        <button class=\"button-primary\" onclick=\"window.location.href='orientation.php'\">OK</button>
+    <div class=\"popup-content\">
+        <div style='height: 50px; width: 0px;'></div>
+        <img src=\"images/" . ucfirst($status) . ".png\" height=\"100\" alt=\"" . ucfirst($status) . "\">
+        <div style=\"height: 25px; width: 0px;\"></div>
+        <div class=\"message " . $status . "\">" . $message . "</div>
+        <div style=\"height: 50px; width: 0px;\"></div>
+        <a href=\"orientation.php\" class=\"btn-hover\">OKAY</a>
+        <div style='height: 100px; width: 0px;'></div>
+        <div class='hairpop-up'></div>
     </div>
 </body>
 </html>";
-
 } else {
     header("Location: orientation.php");
     exit();

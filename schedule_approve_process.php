@@ -184,6 +184,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Operation Result</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="index.css">
     <style>
         * {
             margin: 0;
@@ -191,7 +192,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-sizing: border-box;
             font-family: "Quicksand", sans-serif;
         }
-
         body {
             background-color: #f9f9f9;
             display: flex;
@@ -199,19 +199,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             justify-content: center;
             height: 100vh;
         }
-
-        .container {
-            max-width: 750px;
-            padding: 24px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
         h2 {
             font-size: 24px;
-            color: #973939;
+            color: #292D32;
             margin-bottom: 20px;
         }
 
@@ -219,39 +209,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-bottom: 20px;
             font-size: 18px;
         }
-
-        .button-primary {
-            background-color: #2cb84f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 10px;
-            color: white;
-            font-size: 16px;
-            text-decoration: none;
-            display: inline-block;
+        .success {
+            color: green;
         }
 
-        .button-primary:hover {
-            background-color: #259b42;
+        .error {
+            color: red;
+        }
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .btn-hover:hover {
+            background-color: #AFAFAF;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Operation Result</h2>
+<div class="popup-content">
+    <div style='height: 50px; width: 0px;'></div>
         <div class="message">
             <?php if (isset($email_success) && $email_success): ?>
+                <img src="images/Success.png" height="100" alt="Success">
                 Schedule approved successfully. Email notifications have been sent.
+                <div style="height: 25px; width: 0px;"></div>
             <?php elseif (isset($email_error) && $email_error): ?>
-                <?php echo $email_error; ?>
+                <img src="images/Error.png" height="100" alt="Error">
+                <div style="height: 25px; width: 0px;"></div>
+                <?php echo $email_error; ?>              
             <?php else: ?>
                 <?php echo isset($error_message) ? $error_message : 'Unknown error.'; ?>
+                <div style="height: 25px; width: 0px;"></div>
             <?php endif; ?>
         </div>
-        <a class="button-primary" href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($schedule_details['college_code']); ?>">OK</a>
+        <div style="height: 25px; width: 0px;"></div>
+        <a class="btn-hover" href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($schedule_details['college_code']); ?>">OKAY</a>
+        <div style='height: 100px; width: 0px;'></div>
+        <div class='hairpop-up'></div>
     </div>
 </body>
 </html>
