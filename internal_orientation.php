@@ -168,7 +168,6 @@ if (!empty($schedules)) {
 
         /* Modal overlay style */
         .orientationmodal {
-            display: none; /* Hidden by default */
             position: fixed; /* Stay in place even when scrolling */
             z-index: 9999; /* Sit on top */
             left: 0;
@@ -371,7 +370,7 @@ if (!empty($schedules)) {
             <?php endif; ?>
     </div>
     </div>
-    <div id="orientationModal" class="orientationmodal">
+    <div id="orientationModal" class="orientationmodal" style="display: none;">
         <div class="orientationmodal-content">
             <h2>REQUEST ORIENTATION</h2>
             <form id="orientationForm" action="internal_orientation_process.php" method="POST">
@@ -440,32 +439,23 @@ if (!empty($schedules)) {
             dropdown.classList.toggle('show');
         }
         function openModal(scheduleId) {
+    // Set the schedule ID for the form (if needed)
     document.getElementById('modal_schedule_id').value = scheduleId;
     
+    // Get the modal element
     const modal = document.getElementById('orientationModal');
     
-    // Ensure the modal is visible before centering it
+    // Make the modal visible by changing its display to 'flex'
     modal.style.display = 'flex';
-
-    // Reset the scroll position (if any)
-    modal.scrollTop = 0;
-
-    // Center the modal content
-    modal.style.alignItems = 'center';
-    modal.style.justifyContent = 'center';
 }
 
 function closeModal() {
+    // Get the modal element
     const modal = document.getElementById('orientationModal');
     
-    // Hide the modal
+    // Hide the modal by setting its display to 'none'
     modal.style.display = 'none';
 }
-
-
-        function closeModal() {
-            document.getElementById('orientationModal').style.display = 'none';
-        }
 
         function toggleMode(mode) {
             if (mode === 'online') {
