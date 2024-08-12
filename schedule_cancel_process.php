@@ -149,7 +149,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id']) && isse
             font-family: "Quicksand", sans-serif;
         }
         body {
-            background-color: #f9f9f9;
+            background-color: rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;

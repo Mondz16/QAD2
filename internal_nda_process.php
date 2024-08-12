@@ -125,6 +125,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>NDA Submission</title>
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <style>
+            body {
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+</style>
 </head>
 <body>
     <?php if ($success): ?>

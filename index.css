@@ -983,6 +983,7 @@ input[type="radio"] {
     transform: translate(-50%, -50%); /* Move it to the center */
     width: 80%; /* Could be more or less, depending on screen size */
     max-width: 600px; /* Ensure it doesn't get too wide */
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content h2, .assessmentmodal-content h2, .Summarymodal-content h2, .approvalmodal-content h2, .ndamodal-content h2 {
@@ -1500,4 +1501,7 @@ canvas {
 
 #confirmationMessage {
     text-align: center;
+}
+#grey-bg {
+    background-color: rgba(0, 0, 0, 0.5);;
 }
