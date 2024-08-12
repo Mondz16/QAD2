@@ -156,11 +156,13 @@
                     $college_name = urldecode($_GET['college']);
                     $college_code = htmlspecialchars($_GET['college_code']); // Added to get college_code
                     $sql = "SELECT s.id, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status
-                                FROM schedule s
-                                JOIN program p ON s.program_id = p.id
-                                JOIN college c ON s.college_code = c.code
-                                WHERE c.college_name = ?
-                                ORDER BY s.schedule_date, s.schedule_time";
+                            FROM schedule s
+                            JOIN program p ON s.program_id = p.id
+                            JOIN college c ON s.college_code = c.code
+                            WHERE c.college_name = ? 
+                            AND s.schedule_status NOT IN ('passed', 'failed')
+                            ORDER BY s.schedule_date, s.schedule_time";
+
 
                     $stmt = $conn->prepare($sql);
                     $stmt->bind_param("s", $college_name);
