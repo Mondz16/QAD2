@@ -147,6 +147,60 @@ if (!empty($schedules)) {
     <title>Internal Accreditor - Orientation Requests</title>
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .internal-external input[type="radio"]:checked+label {
+            background-color: #FF7A7A;
+            color: white;
+        }
+
+        .internal-external label {
+            position: relative;
+            color: black;
+            cursor: pointer;
+            font-size: 14px;
+            border: 1px solid #7B7B7B;
+            border-radius: 8px;
+            padding: 12px 20px;
+            display: inline-flex;
+            align-items: center;
+            width: 224px;
+        }
+
+        /* Modal overlay style */
+        .orientationmodal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place even when scrolling */
+            z-index: 9999; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            display: flex; /* Use flexbox to center content */
+            align-items: center; /* Center content vertically */
+            justify-content: center; /* Center content horizontally */
+            overflow: auto; /* Enable scrolling if content is too large */
+        }
+
+        /* Modal content style */
+        .orientationmodal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #AFAFAF;
+            width: 80%; /* Could be more or less, depending on screen size */
+            max-width: 500px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Optional: Adds a subtle shadow */
+            z-index: 10000; /* Ensures the content is above the overlay */
+        }
+
+        /* Centered heading inside modal */
+        .orientationmodal-content h2 {
+            text-align: center;
+            margin: 20px;
+        }
+
+    </style>
 </head>
 <body>
     <div class="wrapper">
@@ -207,13 +261,13 @@ if (!empty($schedules)) {
                         <div class="orientation3">
                             <?php
                             $status_color = '';
-                            if ($schedule_status === 'pending') {
+                            if ($schedule['schedule_status'] === 'pending') {
                                 $status_color = '#E6A33E'; // Pending color
-                            } elseif ($schedule_status === 'approved') {
+                            } elseif ($schedule['schedule_status'] === 'approved') {
                                 $status_color = '#34C759'; // Approved color
                             }
                             ?>
-                            <p class="status1">STATUS : <strong style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="orientation-button"onclick="openModal(<?php echo $schedule_id; ?>)">REQUEST ORIENTATION</button> </p>
+                            <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="orientation-button"onclick="openModal(<?php echo $schedule_id; ?>)">REQUEST ORIENTATION</button> </p>
                             <div class="container">
                                 <div class="body3">
                                 <div class="bodyLeft2">
@@ -316,28 +370,42 @@ if (!empty($schedules)) {
                 <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ASSIGNED TO YOUR COLLEGE</strong></p>
             <?php endif; ?>
     </div>
-    </div>  
-    <!-- Modal -->
-    <div id="orientationModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Request Orientation</h2>
+    </div>
+    <div id="orientationModal" class="orientationmodal">
+        <div class="orientationmodal-content">
+            <h2>REQUEST ORIENTATION</h2>
             <form id="orientationForm" action="internal_orientation_process.php" method="POST">
                 <input type="hidden" name="schedule_id" id="modal_schedule_id">
-                <div class="form-group">
-                    <label for="orientation_date">Orientation Date:</label>
-                    <input type="date" id="orientation_date" name="orientation_date" required>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="level"><strong>ORIENTATION DATE</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="time"><strong>TIME</strong></label>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="orientation_time">Orientation Time:</label>
-                    <input type="time" id="orientation_time" name="orientation_time" required>
+                <div class="orientationname1">
+                    <div class="nameContainer orientationContainer">
+                        <input class="level" type="date" id="orientation_date" name="orientation_date" required>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="time" type="time" id="orientation_time" name="orientation_time" required>
+                    </div>
                 </div>
-                <div class="form-group form-inline horizontal-radio-group">
-                    <input type="radio" id="online" name="mode" value="online" checked onclick="toggleMode('online')">
-                    <label for="online">Online</label>
-                    <input type="radio" id="f2f" name="mode" value="f2f" onclick="toggleMode('f2f')">
-                    <label for="f2f">Face to Face</label>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="level"><strong>MODE OF ORIENTATION</strong></label>
+                    </div>
                 </div>
+                <div class="internal-external">
+                    <div class="internal-externalSelect">
+                        <input type="radio" id="online" name="mode" value="online" checked onclick="toggleMode('online')">
+                        <label style="margin-right: 5px;" for="online"><strong>ONLINE</strong></label>
+                        <input type="radio" id="f2f" name="mode" value="f2f" onclick="toggleMode('f2f')">
+                        <label for="f2f"><strong>FACE TO FACE</strong></label>
+                    </div>
+                </div>
+                <div style="height: 20px;"></div>
                 <div id="onlineFields">
                     <div class="form-group">
                         <label for="orientation_link">Orientation Link:</label>
@@ -358,7 +426,10 @@ if (!empty($schedules)) {
                         <input type="text" id="room_number" name="room_number">
                     </div>
                 </div>
-                <button type="submit">Submit</button>
+                <div class="button-container">
+                    <button class="cancel-button1" type="button" onclick="closeModal()">CLOSE</button>
+                    <button class="submit-button1" type="submit">SUBMIT</button>
+                </div>
             </form>
         </div>
     </div>
@@ -369,9 +440,28 @@ if (!empty($schedules)) {
             dropdown.classList.toggle('show');
         }
         function openModal(scheduleId) {
-            document.getElementById('modal_schedule_id').value = scheduleId;
-            document.getElementById('orientationModal').style.display = 'block';
-        }
+    document.getElementById('modal_schedule_id').value = scheduleId;
+    
+    const modal = document.getElementById('orientationModal');
+    
+    // Ensure the modal is visible before centering it
+    modal.style.display = 'flex';
+
+    // Reset the scroll position (if any)
+    modal.scrollTop = 0;
+
+    // Center the modal content
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+}
+
+function closeModal() {
+    const modal = document.getElementById('orientationModal');
+    
+    // Hide the modal
+    modal.style.display = 'none';
+}
+
 
         function closeModal() {
             document.getElementById('orientationModal').style.display = 'none';

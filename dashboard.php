@@ -142,6 +142,11 @@ $result = $conn->query($sql);
         margin-bottom: 20px;
         text-align: left;
         opacity: 50%;
+        transition: all .3s ease;
+    }
+
+    .result-schedule-modal-container:hover{
+        opacity: 100%;
     }
 
     .level-applied-holder {

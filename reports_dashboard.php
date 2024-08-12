@@ -153,27 +153,42 @@ $conn->close();
     </aside>
     <!-- Main Content -->
     <div class="main">
-        <div class="row top-bar"></div>
-        <div class="row header mb-3">
-            <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
-                <img src="images/USePLogo.png" alt="USeP Logo">
-            </div>
-            <div class="col-6 col-md-4 d-flex align-items-start">
-                <div class="vertical-line"></div>
-                <div class="divider"></div>
-                <div class="text">
-                    <span class="one">One</span>
-                    <span class="datausep">Data.</span>
-                    <span class="one">One</span>
-                    <span class="datausep">USeP.</span><br>
-                    <span>Quality Assurance Division</span>
+        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+        <div class="container">
+            <div class="header">
+                <div class="headerLeft">
+                    <div class="USePData">
+                        <img class="USeP" src="images/USePLogo.png" height="36">
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div class="headerLeftText">
+                            <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                    <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                </h>
+                            </div>
+                            <h>Accreditor Portal</h>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="headerRight">
+                    <div class="QAD">
+                        <div class="headerRightText">
+                            <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                        </div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <img class="USeP" src="images/QADLogo.png" height="36">
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4 d-none d-md-flex align-items-center justify-content-end">
-            </div>
-            <div class="col-md-2 d-none d-md-flex align-items-center justify-content-start">
-            </div>
         </div>
+        <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
         <div class="dashboard-container">
             <div class="card-container">
                 <div class="card">
@@ -190,25 +205,30 @@ $conn->close();
                 </div>
             </div>
 
-            <div class="filter">
-                <select id="programLevel" onchange="updateCharts()">
-                    <option value="All">All Level</option>
-                    <option value="Not Accreditable">Not Accreditable</option>
-                    <option value="PSV">PSV</option>
-                    <option value="Candidate">Candidate</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                </select>
-                <select id="year" onchange="updateCharts()">
-                    <option value="All">All Years</option>
-                </select>
+            <div class="button-container">
+                <div class="filter">
+                    <select id="programLevel" onchange="updateCharts()">
+                        <option value="All">All Level</option>
+                        <option value="Not Accreditable">Not Accreditable</option>
+                        <option value="PSV">PSV</option>
+                        <option value="Candidate">Candidate</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                    <select id="year" onchange="updateCharts()">
+                        <option value="All">All Years</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="button">EXPORT <img style="margin-left: 5px;" src="images/export.png"></button>
+                </div>
             </div>
 
             <div class="charts-container">
                 <div class="chart-wrapper large">
-                    <canvas id="collegeChart" height="650"></canvas>
+                    <canvas id="collegeChart" height="550"></canvas>
                 </div>
                 <div class="chart-wrapper-right">
                     <div class="chart-wrapper-pie-chart">
@@ -227,9 +247,6 @@ $conn->close();
                         </table>
                     </div>
                 </div>
-            </div>
-            <div id="program-level-history-container">
-                <canvas id="programLevelHistoryCanvas"></canvas>
             </div>
         </div>
     </div>
