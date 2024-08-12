@@ -12,6 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $level_validity = mysqli_real_escape_string($conn, $_POST['level_validity']);
     $date = mysqli_real_escape_string($conn, $_POST['date']);
     $time = mysqli_real_escape_string($conn, $_POST['time']);
+    $zoom = mysqli_real_escape_string($conn, $_POST['zoom']); // Capture Zoom input
     $team_leader_id = mysqli_real_escape_string($conn, $_POST['team_leader']);
     $team_members_ids = $_POST['team_members'];
 
@@ -142,11 +143,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     try {
         // Insert into schedule table
-        $sql_schedule = "INSERT INTO schedule (college_code, program_id, level_applied, level_validity, schedule_date, schedule_time, status_date)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $sql_schedule = "INSERT INTO schedule (college_code, program_id, level_applied, level_validity, schedule_date, schedule_time, zoom, status_date)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt_schedule = $conn->prepare($sql_schedule);
-        $stmt_schedule->bind_param("sisssss", $collegeId, $programId, $level, $level_validity, $date, $time, $result);
+        $stmt_schedule->bind_param("sissssss", $collegeId, $programId, $level, $level_validity, $date, $time, $zoom, $result);
         $stmt_schedule->execute();
 
         $schedule_id = $stmt_schedule->insert_id;
@@ -239,6 +240,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $formatted_date = date("F j, Y", strtotime($date));
             $formatted_time = date("g:i A", strtotime($time));
 
+            // Prepare the Zoom link section for the email, if provided
+            $zoom_link_section = !empty($zoom) ? "<strong>Zoom Link:</strong> $zoom<br>" : "";
+
             // Content
             $mail->isHTML(true);
             $mail->Subject = 'New Schedule Notification';
@@ -247,7 +251,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                               Program: $program_name<br>
                               Level Applied: $level<br>
                               Date: $formatted_date<br>
-                              Time: $formatted_time<br><br>
+                              Time: $formatted_time<br>
+                              $zoom_link_section<br>
                               <strong>Team Leader:</strong> $team_leader_name<br>
                               <strong>Team Members:</strong><br><ul>$team_members_list</ul><br>
                               Best regards,<br>USeP - Quality Assurance Division";
@@ -262,7 +267,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset=\"UTF-8\">
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-    <title>Operation Result</title>
+    <title>Add Schedule</title>
     <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
     <link rel=\"stylesheet\" href=\"index.css\">
     <style>
@@ -331,6 +336,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div style=\"height: 100px; width: 0px;\"></div>
             <div class=\"hairpop-up\"></div>
     </div>
+    <script>
+        document.getElementById('successPopup').style.display = 'block';
+
+        document.getElementById('closeSuccessBtn').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+        });
+
+        document.getElementById('closePopup').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('successPopup')) {
+                document.getElementById('successPopup').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>";
 

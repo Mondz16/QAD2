@@ -24,9 +24,10 @@
 
 .container1 {
     display: grid;
-    grid-template-columns: 2fr 1fr; /* Two columns: left column takes twice the space */
-    gap: 20px; /* Gap between items */
-    align-items: start; /* Align items to start vertically */
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    align-items: start;
+    width: 1320px;
 }
 
 .header, .header1 {
@@ -174,9 +175,13 @@
 
 .bodyLeft1 {
     max-width: 100%;
-    flex-basis: 70%;
+    flex-basis: 66%;
 }
 
+.bodyRight1 {
+    max-width: 100%;
+    flex-basis: 34%;
+}
 .bodyLeft, .bodyRight {
     padding-left: 100px;
 }
@@ -462,7 +467,7 @@
     cursor: not-allowed;
 }
 
-.popup {
+.popup, .popup1 {
     display: none;
     position: fixed;
     z-index: 1;
@@ -497,6 +502,18 @@
     font-weight: 500;
 }
 
+.e-sign-text {
+    margin: 20px 30px;
+    font-size: 17px;
+    font-weight: 500;
+    text-align: justify;
+}
+
+.e-sign-text h2 {
+    text-align: center;
+    margin: 10px;
+}
+
 .close-btn {
     color: #aaa;
     float: right;
@@ -511,7 +528,7 @@
     cursor: pointer;
 }
 
-.continue {
+.continue, .continue1 {
     min-width: 120px;
     white-space: unset;
     padding: 10px 20px;
@@ -525,7 +542,7 @@
     cursor: pointer;
 }
 
-.continue:hover {
+.continue:hover, .continue1:hover {
     background-color: #EAEAEA;
 }
 
@@ -652,7 +669,7 @@
     flex: 0 0 10%;
 }
 
-.prefixContainer select {
+.prefixContainer select, .result {
     width: 100%;
     border: none;
     outline: none;
@@ -676,6 +693,7 @@
 .lastname,
 .email,
 .college,
+.college-program,
 .company,
 .gender, .level, .time, .result, .area_evaluated {
     color: #575757;
@@ -687,6 +705,11 @@
     font-size: 16px;
     background: transparent;
     caret-color: #575757;
+}
+
+.college-program {
+    display: flex;
+    gap: 20px;
 }
 
 .username {
@@ -772,12 +795,16 @@ input[type="radio"] {
     color: white;
 }
 
-.college-company-gender, .gender1, .edit-gender, .college1 {
+.college-program-history, .college-company-gender, .gender1, .edit-gender, .college1 {
     position: relative;
+    flex: 1;
+}
+
+.college-company-gender, .gender1, .edit-gender, .college1 {
     margin-bottom: 10px;
 }
 
-.college-company-gender select, .gender1 select, .edit-gender select, .college1 select {
+.select-selected, .college-program-history select, .college-company-gender select, .gender1 select, .edit-gender select, .college1 select {
     padding: 12px 20px;
     border: 1px solid #aaa;
     border-radius: 8px;
@@ -789,9 +816,28 @@ input[type="radio"] {
     cursor: pointer;
 }
 
-.college-company-gender select {
+.college-company-gender select, .select-selected {
     width: 721px;
 }
+
+.college-program-history select, .select-selected {
+    width: 100%;
+}
+
+.select-selected {
+    width: 606px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.orientation4 h3 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 90%; /* Adjust the width to fit your layout */
+    margin: 0 auto; /* Center the text */
+}
+
 
 .gender1 select {
     width: 455px;
@@ -939,7 +985,7 @@ input[type="radio"] {
     max-width: 600px; /* Ensure it doesn't get too wide */
 }
 
-.modal-content h2, .assessmentmodal-content h2, .Summarymodal-content h2, .approvalmodal-content h2 {
+.modal-content h2, .assessmentmodal-content h2, .Summarymodal-content h2, .approvalmodal-content h2, .ndamodal-content h2 {
     text-align: center;
     margin: 20px;
 }
@@ -1075,7 +1121,7 @@ input[type="radio"] {
     max-width: 100%;
 }
 
-.notification, .orientation, .orientation3 {
+.notification, .orientation, .orientation3, .orientation4, .orientation5 {
     border: 1px solid #ddd;
     border-radius: 20px;
     width: 100%;
@@ -1087,13 +1133,14 @@ input[type="radio"] {
     padding: 40px;
 }
 
-.orientation3 {
+.orientation3, .orientation4, .orientation5 {
     padding: 20px 20px;
     border: 1px solid #AFAFAF;
 }
 
 .orientation, .orientation3 {
-    max-width: 95%;}
+    max-width: 95%;
+}
 
 .orientation2 {
     max-width: 100%;
@@ -1104,6 +1151,27 @@ input[type="radio"] {
     max-height: 664px; /* Adjust the max-height value as needed */
     overflow-y: auto;  /* Enables vertical scrolling */
 }
+
+.orientation4 h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.orientation4 {
+    max-width: 100%;
+    margin-bottom: 20px;
+}
+
+.orientation5 {
+    max-width: 100%;
+    overflow-y: auto;
+    height: 650px;
+}
+
+canvas {
+    margin-bottom: 40px; /* Adjust the value to increase or decrease the space */
+}
+
 .notification {
     max-width: 700px;
 }
@@ -1143,7 +1211,7 @@ input[type="radio"] {
 }
 
 
-.pending-assessments, .accept-button, .decline-button, .accept-button1, .submit-button, .accept-confirm-button, .decline-confirm-button, .submit-button1, .approve-assessment-button, .cancel-button, .cancel-button1, .approve-cancel-button, .orientation-button, .assessment-button, .assessment-button-done {
+.export-button, .pending-assessments, .accept-button, .decline-button, .accept-button1, .submit-button, .accept-confirm-button, .decline-confirm-button, .submit-button1, .approve-assessment-button, .cancel-button, .cancel-button1, .approve-cancel-button, .orientation-button, .assessment-button, .assessment-button-done {
     padding: 10px 25px;
     margin: 0 5px;
     cursor: pointer;
@@ -1202,7 +1270,7 @@ input[type="radio"] {
     color: white;
 }
 
-.submit-button, .submit-button1 {
+.submit-button, .submit-button1, .export-button {
     color: #006118;
     border: 1px solid #006118;
     background-color: #D4FFDF;
@@ -1223,6 +1291,12 @@ input[type="radio"] {
     color: black;
 }
 
+.approve-assessment-button:disabled, .approve-assessment-button.disabled {
+    background-color: #ccc; /* Disabled button color */
+    cursor: not-allowed; /* Disabled cursor */
+    pointer-events: none; /* Disable hover effect */
+}
+
 .decline-confirm-button {
     background-color: #FF6262;
     color: #FFFFFF;
@@ -1237,11 +1311,23 @@ input[type="radio"] {
 .submit-button1 {
     width: 228px;
 }
+
+.export-button {
+    width: 150px;
+    position: absolute; /* This allows the button to be moved freely */
+    left: 1590px; /* Initial left position */
+    bottom: 65px;
+    padding-bottom: 15px;
+}
+
+.export-button img {
+    height: 22px;
+}
 .submit-button {
     width: 150px;
 }
 
-.submit-button:hover, .submit-button1:hover {
+.submit-button:hover, .submit-button1:hover, .export-button:hover {
     background-color: #76FA97;
     border: 1px solid #76FA97;
     font-weight: bold;
@@ -1291,26 +1377,56 @@ input[type="radio"] {
     border: 1px solid #A43939;
 }
 
-.button-container {
+.index-button-container {
     display: flex;
-    justify-content: flex-end; /* Aligns the button to the right */
+    width: 100%; /* Ensure the container takes full width */
+}
+
+.index-button-container {
+    justify-content: center;
+    align-items: center;
+}
+
+.index-button-container span {
+    margin: 0px 30px;
+    font-weight: bold;
+}
+.button-container, .e-sign-container {
+    display: flex;
     width: 100%; /* Ensure the container takes full width */
     margin-top: 20px; /* Add some spacing from other elements */
 }
 
-.assessmentmodal, .Summarymodal {
+.button-container {
+    justify-content: flex-end;
+}
+
+.e-sign-container {
+    justify-content: center;
+}
+.assessmentmodal, .Summarymodal, .e-sign {
     display: none;
     position: fixed;
     z-index: 1;
-    left: 50%;
-    top: 5%;
     transform: translate(-50%, 0);
     width: 100%;
     max-width: 535px;
-    height: 850px;
     overflow: auto;
     border: 1px solid #AFAFAF;
     border-radius: 10px;
+    background-color: #fefefe;
+}
+
+.assessmentmodal, .Summarymodal {
+    height: 850px;
+    left: 50%;
+    top: 5%;
+}
+
+.e-sign {
+    height: 600px;
+    left: 50%;
+    top: 18%;
 }
 .assessmentmodal-content, .Summarymodal-content {
     background-color: #fefefe;
@@ -1318,7 +1434,13 @@ input[type="radio"] {
     border-radius: 10px;
 }
 
-.approvalmodal {
+.e-sign-modal {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.approvalmodal, .ndamodal {
     display: none;
     position: fixed;
     z-index: 1;
@@ -1329,7 +1451,7 @@ input[type="radio"] {
     border-radius: 10px;
 }
 
-.approvalmodal-content {
+.approvalmodal-content, .ndamodal-content {
     background-color: #fefefe;
     margin: 5% auto;
     padding: 20px;

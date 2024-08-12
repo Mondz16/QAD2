@@ -1,6 +1,52 @@
 <?php
+include 'connection.php';
 session_start();
-require 'connection.php'; // Include your database connection file
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Retrieve full name of the logged-in user from the admin table without the prefix
+$sql = "SELECT CONCAT(first_name, ' ', middle_initial, '. ', last_name) AS full_name FROM admin WHERE user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $user_id);
+$stmt->execute();
+$stmt->bind_result($full_name);
+$stmt->fetch();
+$stmt->close();
+
+// Check user type and redirect accordingly
+if ($user_id === 'admin') {
+    // If current page is not admin.php, redirect
+    if (basename($_SERVER['PHP_SELF']) !== 'assessment.php') {
+        header("Location: assessment.php");
+        exit();
+    }
+} else {
+    $user_type_code = substr($user_id, 3, 2);
+
+    if ($user_type_code === '11') {
+        // Internal user
+        if (basename($_SERVER['PHP_SELF']) !== 'internal.php') {
+            header("Location: internal.php");
+            exit();
+        }
+    } elseif ($user_type_code === '22') {
+        // External user
+        if (basename($_SERVER['PHP_SELF']) !== 'external.php') {
+            header("Location: external.php");
+            exit();
+        }
+    } else {
+        // Handle unexpected user type, redirect to login or error page
+        header("Location: login.php");
+        exit();
+    }
+}
 
 // Fetch team leaders
 $teamLeadersQuery = "SELECT id FROM team WHERE role = 'team leader'";
@@ -15,11 +61,90 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assessment</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-        <link rel="stylesheet" href="css/sidebar.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/navbar.css">
     <link href="css/pagestyle.css" rel="stylesheet">
     <style>
+
+        .button-container{
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .button-container button:first-child{
+            color: #AFAFAF;
+            border: 1px solid #AFAFAF;
+            padding: 10px 25px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .button-container button:last-child {
+            width: 150px;
+            color: #006118;
+            border: 1px solid #006118;
+            background-color: #D4FFDF;
+            padding: 10px 25px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: background-color .3s ease;
+        }
+
+        .button-container button:last-child:hover {
+            border: 1px solid #006118;
+            background-color: #76FA97;
+            color: #006118;
+        }
+
+        .nameContainer{
+            border-color: rgb(170, 170, 170);
+            border-style: solid;
+            border-width: 1px;
+            border-radius: 8px;
+            flex: 1;
+        }
+
+        .uploadContainer {
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding: 12px 20px;
+        }
+
+        .upload-text {
+            margin-left: auto;
+            font-weight: bold;
+            color: #575757;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            width: 20px;
+            height: 20px;
+            margin-left: auto;
+            cursor: pointer;
+        }
+
+        .uploadInput {
+            position: absolute;
+            opacity: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+        }
+
         /* Modal styles */
         .modal {
             display: none;
@@ -35,11 +160,60 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         }
 
         .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
+            display: block;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            top: 30%;
+            transform: translate(-50%, 0);
+            width: 700px;
             padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
+            border-radius: 10px;
+        }
+
+        .modal-content .label-holder{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .modal-content .input-holder{
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .modal-content .input-holder input{
+            padding: 12px 20px;
+            border-color: rgb(170, 170, 170);
+            border-style: solid;
+            border-width: 1px;
+            border-radius: 8px;
+        }
+
+        .modal-content .input-holder input:first-child{    
+            padding-right: 40px;
+            flex: 2;
+            margin-right: 15px;
+        }
+
+        .moda-content .input-holder input:last-child {
+            position: absolute;
+            opacity: 0;
+            right: 0;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+            flex: 1;
+        }
+
+        .modal-content .input-holder{
+            border: none;
+        }
+
+        .modal-content h2{
+            text-align: center;
+            margin: 20px 20px 40px 20px;
         }
 
         .close {
@@ -62,13 +236,25 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             margin-left: 10px;
         }
 
+        .assessment-button-done {
+            background-color: #76FA97;
+            color: #006118;
+            border: 1px solid #76FA97;
+            font-weight: bold;
+            height: 46px;
+            width: 100%;
+            margin: 10px 0;
+            border-radius: 8px;
+
+        }
+
         .assessment-box {
             border: 1px solid #ccc;
             border-radius: 8px;
             padding: 20px;
             width: 800px;
             height: 350px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         .assessment-box h2 {
@@ -104,13 +290,14 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         .assessment-dateTime p {
             margin: 0;
         }
-        
-        .assessment-udas{
+
+        .assessment-udas {
             text-align: left;
             width: 200px;
+            margin-left: 12px;
         }
 
-        .assessment-udas .udas-button{
+        .assessment-udas .udas-button, .udas-button1 {
             height: 46px;
             width: 100%;
             margin: 10px 0;
@@ -120,17 +307,26 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             border: 1px solid #006118;
         }
 
-        .assessment-udas .udas-button:hover{
+        .udas-button1 {
+            background-color: #D4FFDF;
+        }
+
+        .udas-button1 {
+            padding-top: 9px;
+        }
+
+        .assessment-udas .udas-button:hover,
+        .udas-button1:hover {
             background-color: #D4FFDF;
             border: 1px solid #006118;
             color: #006118;
         }
 
-        .assessment-udas .download-button{
+        .assessment-udas .download-button {
             height: 46px;
             width: 100%;
             margin: 10px 0;
-            background-color: #D4FFDF ;
+            background-color: #D4FFDF;
             color: #006118;
             font-weight: bold;
             border: 1px solid #006118;
@@ -152,6 +348,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             font-size: 5rem;
             font-weight: bold;
             border: 1px solid #E6A33E;
+            color: #575757;
         }
 
         .assessment-college p {
@@ -167,13 +364,21 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         }
 
         .scrollable-container {
-            max-height: 500px;
+            max-height: 650px;
             max-width: 1200px;
             overflow-y: auto;
             overflow-x: hidden;
-            display: flex;
-            justify-content: center;
-            margin-left: 55px;
+            display: inline-block;
+            margin-left: 30px;
+        }
+
+        .scrollable-container-holder{
+            display: inline-block;
+            width: fit-content;
+            padding: 20px 20px 20px 0px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: #f9f9f9;
         }
     </style>
 </head>
@@ -196,7 +401,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                 <li class="sidebar-item">
                     <a href="dashboard.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/>
+                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07" />
                         </svg>
                         <span style="margin-left: 8px;">Dashboard</span>
                     </a>
@@ -237,9 +442,9 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="assessment.php" class="sidebar-link">
+                    <a href="#" class="sidebar-link-active">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-check" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0" />
+                            <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0" />
                         </svg>
                         <span style="margin-left: 8px;">Assessment</span>
                     </a>
@@ -265,7 +470,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                 <li class="sidebar-item">
                     <a href="college_transfer.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 1 1 .708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5" />
                         </svg>
                         <span style="margin-left: 8px;">College Transfer</span>
                     </a>
@@ -290,50 +495,66 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             </div>
         </aside>
         <div class="main">
-            <div class="row top-bar"></div>
-            <div class="row header">
-                <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
-                    <img src="images/USePLogo.png" alt="USeP Logo">
-                </div>
-                <div class="col-6 col-md-4 d-flex align-items-start">
-                    <div class="vertical-line"></div>
-                    <div class="divider"></div>
-                    <div class="text">
-                        <span class="one">One</span>
-                        <span class="datausep">Data.</span>
-                        <span class="one">One</span>
-                        <span class="datausep">USeP.</span><br>
-                        <span>Quality Assurance Division</span>
+            <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+            <div class="container">
+                <div class="header">
+                    <div class="headerLeft">
+                        <div class="USePData">
+                            <img class="USeP" src="images/USePLogo.png" height="36">
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div class="headerLeftText">
+                                <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                    <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                        <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                    </h>
+                                </div>
+                                <h>Accreditor Portal</h>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="headerRight">
+                        <div class="QAD">
+                            <div class="headerRightText">
+                                <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                            </div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <img class="USeP" src="images/QADLogo.png" height="36">
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4 d-none d-md-flex align-items-center justify-content-end">
-                </div>
-                <div class="col-md-2 d-none d-md-flex align-items-center justify-content-start">
-                </div>
             </div>
+            <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
             <div class="container text-center mt-4">
                 <h1 class="mt-5 mb-5">ASSESSMENTS</h1>
-                <div class="scrollable-container">
+                <div class="scrollable-container-holder">
+                    <div class="scrollable-container">
 
-                    <?php
-                    if (count($teamLeaders) > 0) {
-                        $counter = 1; // Counter for numbering assessments
-                        foreach ($teamLeaders as $leader) {
-                            $teamLeaderId = $leader['id'];
+                        <?php
+                        if (count($teamLeaders) > 0) {
+                            $counter = 1; // Counter for numbering assessments
+                            foreach ($teamLeaders as $leader) {
+                                $teamLeaderId = $leader['id'];
 
-                            // Fetch summaries for the team leader
-                            $summariesQuery = "SELECT id, summary_file, team_id FROM summary WHERE team_id = '$teamLeaderId'";
-                            $summariesResult = $conn->query($summariesQuery);
-                            $summaries = $summariesResult->fetch_all(MYSQLI_ASSOC);
+                                // Fetch summaries for the team leader
+                                $summariesQuery = "SELECT id, summary_file, team_id FROM summary WHERE team_id = '$teamLeaderId'";
+                                $summariesResult = $conn->query($summariesQuery);
+                                $summaries = $summariesResult->fetch_all(MYSQLI_ASSOC);
 
-                            if (count($summaries) > 0) {
-                                foreach ($summaries as $summary) {
-                                    $teamId = $summary['team_id'];
-                                    $summaryFile = $summary['summary_file'];
-                                    $summaryId = $summary['id'];
+                                if (count($summaries) > 0) {
+                                    foreach ($summaries as $summary) {
+                                        $teamId = $summary['team_id'];
+                                        $summaryFile = $summary['summary_file'];
+                                        $summaryId = $summary['id'];
 
-                                    // Fetch schedule details for the team
-                                    $scheduleQuery = "
+                                        // Fetch schedule details for the team
+                                        $scheduleQuery = "
                                 SELECT s.id, s.level_applied, s.schedule_date, s.schedule_time, 
                                        c.college_name, p.program_name
                                 FROM schedule s
@@ -343,69 +564,142 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                                     SELECT schedule_id FROM team WHERE id = '$teamId'
                                 )
                             ";
-                                    $scheduleResult = $conn->query($scheduleQuery);
-                                    $schedule = $scheduleResult->fetch_assoc();
+                                        $scheduleResult = $conn->query($scheduleQuery);
+                                        $schedule = $scheduleResult->fetch_assoc();
 
-                                    if ($schedule) {
-                                        // Check if the summary has been approved
-                                        $approvedQuery = "SELECT id FROM approved_summary WHERE summary_id = '$summaryId'";
-                                        $approvedResult = $conn->query($approvedQuery);
-                                        $isApproved = $approvedResult->num_rows > 0;
-                                        $scheduleDate = date("F j, Y", strtotime($schedule['schedule_date']));
-                                        $scheduleTime = date("g:i A", strtotime($schedule['schedule_time']));
+                                        if ($schedule) {
+                                            // Check if the summary has been approved
+                                            $approvedQuery = "SELECT id FROM approved_summary WHERE summary_id = '$summaryId'";
+                                            $approvedResult = $conn->query($approvedQuery);
+                                            $isApproved = $approvedResult->num_rows > 0;
+                                            $scheduleDate = date("F j, Y", strtotime($schedule['schedule_date']));
+                                            $scheduleTime = date("g:i A", strtotime($schedule['schedule_time']));
 
-                                        echo "<div class='assessment-box'>";
-                                        echo "<h2>#" . $counter . "</h2>";
-                                        echo "<div class='assessment-details'>";
-                                        echo "<div class='assessment-holder-1'><div class='assessment-college'><p>College: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>Program:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> Level Applied: <br><h3>" . $schedule['level_applied'] . "</h3></div></p></div>";
-                                        echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
+                                            // Fetch NDA Compilation
+                                            $ndaQuery = "SELECT NDA_compilation_file FROM NDA_compilation WHERE team_id = '$teamId'";
+                                            $ndaResult = $conn->query($ndaQuery);
+                                            $ndaFile = $ndaResult->fetch_assoc()['NDA_compilation_file'];
 
-                                        if (!$isApproved) {
-                                            echo "<div class='assessment-udas'><p>Download Summary File:<br><button href='" . $summaryFile . "' class='btn approve-btn download-button'>DOWNLOAD</button></div> </div>";
-                                        } else {
-                                            echo "<div class='assessment-udas'><p>Summary File:<br><button class='btn approve-btn udas-button' data-summary-file='$summaryFile'>Approve Summary</button></div> </div>";
+                                            echo "<div class='assessment-box'>";
+                                            echo "<h2>#" . $counter . "</h2>";
+                                            echo "<div class='assessment-details'>";
+                                            echo "<div class='assessment-holder-1'>
+            <div class='assessment-college'>
+                <p> College:  <br><div class='assessment-values'>" . $schedule['college_name'] . "</div></p>
+                <p> Program:  <br><div class='assessment-values'>" . $schedule['program_name'] . "</div></p>
+            </div>
+            <div class='assessment-level-applied'>
+                <p> Level Applied:  <br><h3>";
+
+                                            // Display level applied with abbreviations
+                                            switch ($schedule['level_applied']) {
+                                                case "Not Accreditable":
+                                                    echo "NA";
+                                                    break;
+                                                case "Candidate":
+                                                    echo "CAN";
+                                                    break;
+                                                default:
+                                                    echo $schedule['level_applied'];
+                                                    break;
+                                            }
+
+                                            echo "</h3></p>
+            </div>
+          </div>";
+
+                                            echo "<div class='assessment-holder-2'>
+            <div class='assessment-dateTime'>
+                <p> Date:  <br><div class='assessment-values'>" . $scheduleDate . "</div></p>
+            </div>
+            <div class='assessment-dateTime'>
+                <p> Time:  <br><div class='assessment-values'>" . $scheduleTime . "</div></p>
+            </div>
+            <div class='assessment-udas'>
+                <p> Summary  <br><a href='$summaryFile' class='btn udas-button1' download>SUMMARY</a></p>
+            </div>
+            <div class='assessment-udas'>
+                <p> NDA  <br><a href='$ndaFile' class='btn udas-button1' download>NDA</a></p>
+            </div>";
+
+                                            // Show approve button or check symbol based on approval status
+                                            if ($isApproved) {
+                                                // Add check symbol to assessment-holder-2 if approved
+                                                echo "<div class='assessment-udas'>
+                <p> Approve  <br><button class='assessment-button-done'>APPROVED</button></p>
+              </div>";
+                                            } else {
+                                                // Add approve button to assessment-holder-2 if not approved
+                                                echo "<div class='assessment-udas'>
+                <p> Approve  <br><button class='btn approve-btn udas-button' data-summary-file='$summaryFile'>APPROVE</button></p>
+              </div>";
+                                            }
+
+                                            echo "</div>"; // Close assessment-holder-2
+                                            echo "</div>"; // Close assessment-details
+                                            echo "</div>"; // Close assessment-box
+
+                                            $counter++; // Increment counter for next assessment
                                         }
-
-                                        echo "</div></div>";
-                                        echo "</div>";
-
-                                        $counter++; // Increment counter for next assessment
                                     }
                                 }
                             }
+                        } else {
+                            echo "<div class='no-schedule-prompt'><p>NO TEAM LEADERS FOUND</p></div>";
                         }
-                    } else {
-                        echo "<p>No team leaders found.</p>";
-                    }
-                    ?>
+                        ?>
 
+                    </div>
                 </div>
             </div>
         </div>
 
 
         <!-- Modal -->
-        <div id="approvalModal" class="modal">
+         <div id="approvalModal" class="modal">
             <div class="modal-content">
-                <span class="close">&times;</span>
                 <h2>Approve Summary</h2>
                 <form id="approveForm" method="POST" action="approve_summary.php" enctype="multipart/form-data">
-                    <label for="qadOfficerName">QAD Officer Name:</label>
-                    <input type="text" id="qadOfficerName" name="qadOfficerName" required>
-                    <label for="qadOfficerSignature">QAD Officer Signature (PNG only):</label>
-                    <input type="file" id="qadOfficerSignature" name="qadOfficerSignature" accept="image/png" required>
+                    <div class="label-holder">
+                        <label for="qadOfficerName"><strong>QAD Officer Name:</strong></label>
+                        <label for="qadOfficerSignature"><strong>Officer Signature (PNG only):</strong></label>
+                    </div>
+                    <div class="input-holder">
+                        <input type="text" id="qadOfficerName" name="qadOfficerName" value="<?php echo $full_name; ?>" readonly>
+                        <div class="nameContainer orientationContainer uploadContainer">
+                            <span class="upload-text">UPLOAD</span>
+                            <img id="upload-icon-nda" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                            <input class="uploadInput" type="file" id="qadOfficerSignature" name="qadOfficerSignature" accept="image/png" required="">
+                        </div>
+                    </div>
                     <input type="hidden" id="summaryFile" name="summaryFile">
-                    <button type="submit">Submit</button>
+                    <div class="button-container">
+                        <button type="button" class="close">CANCEL</button>
+                        <button type="submit" >SUBMIT</button>
+                    </div>
                 </form>
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-        crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
         <script>
+            
+            function handleFileChange(inputElement, iconElement) {
+                inputElement.addEventListener('change', function () {
+                    if (this.files && this.files.length > 0) {
+                        // Change icon to check mark if a file is selected
+                        iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
+                    } else {
+                        // Change icon back to download if no file is selected
+                        iconElement.src = 'images/download-icon1.png';
+                    }
+                });
+            }
+
+            handleFileChange(document.getElementById('qadOfficerSignature'), document.getElementById('upload-icon-nda'));
+
             const hamBurger = document.querySelector(".toggle-btn");
 
-            hamBurger.addEventListener("click", function () {
+            hamBurger.addEventListener("click", function() {
                 document.querySelector("#sidebar").classList.toggle("expand");
             });
 
@@ -442,5 +736,4 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             }
         </script>
 </body>
-
 </html>

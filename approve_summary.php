@@ -7,6 +7,21 @@ use setasign\Fpdi\Fpdi;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+// Function to encrypt data
+function encryptData($data, $key) {
+    $iv = openssl_random_pseudo_bytes(16);
+    $encryptedData = openssl_encrypt($data, 'AES-256-CBC', $key, 0, $iv);
+    return base64_encode($iv . $encryptedData);
+}
+
+// Function to decrypt data
+function decryptData($data, $key) {
+    $data = base64_decode($data);
+    $iv = substr($data, 0, 16);
+    $encryptedData = substr($data, 16);
+    return openssl_decrypt($encryptedData, 'AES-256-CBC', $key, 0, $iv);
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $qadOfficerName = $_POST['qadOfficerName'];
     $summaryFile = $_POST['summaryFile'];
@@ -33,142 +48,193 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_FILES['qadOfficerSignature']) && $_FILES['qadOfficerSignature']['error'] === UPLOAD_ERR_OK) {
         $fileTmpPath = $_FILES['qadOfficerSignature']['tmp_name'];
         $fileName = $_FILES['qadOfficerSignature']['name'];
-        $fileSize = $_FILES['qadOfficerSignature']['size'];
-        $fileType = $_FILES['qadOfficerSignature']['type'];
         $fileNameCmps = explode(".", $fileName);
         $fileExtension = strtolower(end($fileNameCmps));
 
         $allowedfileExtensions = array('png');
         if (in_array($fileExtension, $allowedfileExtensions)) {
             $uploadFileDir = './Signatures/';
-            $signaturePath = $uploadFileDir . $fileName;
-
             if (!is_dir($uploadFileDir)) {
                 mkdir($uploadFileDir, 0777, true);
             }
 
-            if (move_uploaded_file($fileTmpPath, $signaturePath)) {
-                // Load the existing summary PDF
-                $pdf = new FPDI();
-                $pageCount = $pdf->setSourceFile($summaryFile);
-                for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-                    $templateId = $pdf->importPage($pageNo);
-                    $pdf->addPage();
-                    $pdf->useTemplate($templateId);
-                }
+            // Encrypt the signature image
+            $signature_data = file_get_contents($fileTmpPath);
+             $encryption_key = bin2hex(openssl_random_pseudo_bytes(32)); // Use a secure method to generate and store the encryption key
+            $iv = openssl_random_pseudo_bytes(16);
+            $encrypted_signature_data = openssl_encrypt($signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
+            $encrypted_signature_path = $uploadFileDir . basename($fileName) . '.enc';
+            file_put_contents($encrypted_signature_path, $encrypted_signature_data);
 
-                // Set font and calculate the position to center the text around a specific X coordinate
-                $pdf->SetFont('Arial', '', 12);
-                $centerTextX = 158; // The center X coordinate where you want to center the text
-                $textYPosition = 258; // The Y coordinate where you want to place the text
-                $textWidth = $pdf->GetStringWidth($qadOfficerName);
+            // Remove the plain image file
+            unlink($fileTmpPath);
 
-                // Calculate the X position to center the text
-                $textXPosition = $centerTextX - ($textWidth / 2);
+            // Load the existing summary PDF
+            $pdf = new FPDI();
+            $pageCount = $pdf->setSourceFile($summaryFile);
+            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+                $templateId = $pdf->importPage($pageNo);
+                $pdf->addPage();
+                $pdf->useTemplate($templateId);
+            }
 
-                // Print the QAD Officer's name centered at the specified centerTextX
-                $pdf->SetXY($textXPosition, $textYPosition);
-                $pdf->Write(0, $qadOfficerName);
+            // Set font and calculate the position to center the text around a specific X coordinate
+            $pdf->SetFont('Arial', '', 12);
+            $centerTextX = 158; // The center X coordinate where you want to center the text
+            $textYPosition = 258; // The Y coordinate where you want to place the text
+            $textWidth = $pdf->GetStringWidth($qadOfficerName);
 
-                // Calculate the X and Y positions to center the image
-                $centerImageX = 161; // The center X coordinate where you want to center the image
-                $centerImageY = 252; // The center Y coordinate where you want to center the image
-                $imageWidth = 40; // The width of the signature image
-                $imageHeight = 15; // The height of the signature image (adjust based on actual image aspect ratio)
-                $imageXPosition = $centerImageX - ($imageWidth / 2);
-                $imageYPosition = $centerImageY - ($imageHeight / 2);
+            // Calculate the X position to center the text
+            $textXPosition = $centerTextX - ($textWidth / 2);
 
-                // Add QAD Officer Signature
-                $pdf->Image($signaturePath, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight); // Adjust positions as needed
+            // Print the QAD Officer's name centered at the specified centerTextX
+            $pdf->SetXY($textXPosition, $textYPosition);
+            $pdf->Write(0, $qadOfficerName);
 
-                // Create the directory if it does not exist
-                $approvedSummaryDir = './Approved Summaries/';
-                if (!is_dir($approvedSummaryDir)) {
-                    mkdir($approvedSummaryDir, 0777, true);
-                }
+            // Decrypt the signature image before adding to PDF
+            $decrypted_signature_data = openssl_decrypt($encrypted_signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
+            $temp_signature_path = tempnam(sys_get_temp_dir(), 'sig') . '.png';
+            file_put_contents($temp_signature_path, $decrypted_signature_data);
 
-                // Save the modified PDF in the Approved Summary folder
-                $modifiedSummaryPath = $approvedSummaryDir . basename($summaryFile);
-                $pdf->Output($modifiedSummaryPath, 'F');
+            // Calculate the X and Y positions to center the image
+            $centerImageX = 161; // The center X coordinate where you want to center the image
+            $centerImageY = 252; // The center Y coordinate where you want to center the image
+            $imageWidth = 40; // The width of the signature image
+            $imageHeight = 15; // The height of the signature image (adjust based on actual image aspect ratio)
+            $imageXPosition = $centerImageX - ($imageWidth / 2);
+            $imageYPosition = $centerImageY - ($imageHeight / 2);
 
-                // Fetch email of the college associated with the summary
-                $stmt = $conn->prepare("
-                    SELECT c.college_name, c.college_email, p.program_name 
-                    FROM summary s 
-                    JOIN team t ON s.team_id = t.id 
-                    JOIN schedule sch ON t.schedule_id = sch.id 
-                    JOIN college c ON sch.college_code = c.code 
-                    JOIN program p ON sch.program_id = p.id 
-                    WHERE s.id = ?");
-                $stmt->bind_param("i", $summaryId);
+            // Add QAD Officer Signature
+            $pdf->Image($temp_signature_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight); // Adjust positions as needed
+
+            // Remove the temporary decrypted signature file
+            unlink($temp_signature_path);
+
+            // Create the directory if it does not exist
+            $approvedSummaryDir = './Approved Summaries/';
+            if (!is_dir($approvedSummaryDir)) {
+                mkdir($approvedSummaryDir, 0777, true);
+            }
+
+            // Save the modified PDF in the Approved Summary folder
+            $modifiedSummaryPath = $approvedSummaryDir . basename($summaryFile);
+            $pdf->Output($modifiedSummaryPath, 'F');
+
+            // Fetch email of the college associated with the summary
+            $stmt = $conn->prepare("
+                SELECT c.college_name, c.college_email, p.program_name 
+                FROM summary s 
+                JOIN team t ON s.team_id = t.id 
+                JOIN schedule sch ON t.schedule_id = sch.id 
+                JOIN college c ON sch.college_code = c.code 
+                JOIN program p ON sch.program_id = p.id 
+                WHERE s.id = ?");
+            $stmt->bind_param("i", $summaryId);
+            $stmt->execute();
+            $stmt->bind_result($college_name, $college_email, $program_name);
+            $stmt->fetch();
+            $stmt->close();
+
+            // Prepare and send email
+            $mail = new PHPMailer(true);
+            try {
+                // Server settings
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = 'usepqad@gmail.com';
+                $mail->Password = 'vmvf vnvq ileu tmev';
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
+
+                // Bypass SSL certificate verification
+                $mail->SMTPOptions = array(
+                    'ssl' => array(
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                        'allow_self_signed' => true
+                    )
+                );
+                
+                //Recipients
+                $mail->setFrom('usepqad@example.com', 'USeP - Quality Assurance Division');
+                $mail->addAddress($college_email); // Add a recipient
+                $mail->addReplyTo('usepqad@example.com', 'Information');
+
+                // Attachments
+                $mail->addAttachment($modifiedSummaryPath);
+
+                // Content
+                $mail->isHTML(true);
+                $mail->Subject = 'Approved Summary Assessment';
+                $mail->Body    = "Dear $college_name,<br><br>
+                                  The summary assessment of $program_name's schedule has been approved by the Quality Assurance Division. Please find the approved summary assessment attached.<br><br>
+                                  Best Regards,<br>
+                                  USeP - Quality Assurance Division";
+
+                // Send the email
+                $mail->send();
+
+                // Insert the approved summary details into the approved_summary table only if email is sent successfully
+                $stmt = $conn->prepare("INSERT INTO approved_summary (summary_id, qad, qad_signature, approved_summary_file) VALUES (?, ?, ?, ?)");
+                $stmt->bind_param("isss", $summaryId, $qadOfficerName, $encrypted_signature_path, $modifiedSummaryPath);
                 $stmt->execute();
-                $stmt->bind_result($college_name, $college_email, $program_name);
-                $stmt->fetch();
                 $stmt->close();
 
-                // Prepare and send email
-                $mail = new PHPMailer(true);
-                try {
-                    // Server settings
-                    $mail->isSMTP();
-                    $mail->Host = 'smtp.gmail.com';
-                    $mail->SMTPAuth = true;
-                    $mail->Username = 'usepqad@gmail.com';
-                    $mail->Password = 'vmvf vnvq ileu tmev';
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                    $mail->Port = 587;
+                // Update the status of all team members and the schedule to 'finished'
+                $stmt = $conn->prepare("UPDATE team SET status = 'finished' WHERE schedule_id = ?");
+                $stmt->bind_param("i", $scheduleId);
+                $stmt->execute();
+                $stmt->close();
 
-                    // Bypass SSL certificate verification
-                    $mail->SMTPOptions = array(
-                        'ssl' => array(
-                            'verify_peer' => false,
-                            'verify_peer_name' => false,
-                            'allow_self_signed' => true
-                        )
-                    );
-                    
-                    //Recipients
-                    $mail->setFrom('usepqad@example.com', 'USeP - Quality Assurance Division');
-                    $mail->addAddress($college_email); // Add a recipient
-                    $mail->addReplyTo('usepqad@example.com', 'Information');
+                $stmt = $conn->prepare("UPDATE schedule SET schedule_status = 'finished' WHERE id = ?");
+                $stmt->bind_param("i", $scheduleId);
+                $stmt->execute();
+                $stmt->close();
 
-                    // Attachments
-                    $mail->addAttachment($modifiedSummaryPath);
+                // Display success message
+                echo "<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Operation Result</title>
+    <link rel='stylesheet' href='index.css'>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap'>
+</head>
+<body>
+    <div id='successPopup' class='popup'>
+        <div class='popup-content'>
+            <div style='height: 50px; width: 0px;'></div>
+            <img class='Success' src='images/Success.png' height='100'>
+            <div style='height: 20px; width: 0px;'></div>
+            <div class='popup-text'>Summary approved successfully.</div>
+            <div style='height: 50px; width: 0px;'></div>
+            <a href='assessment.php' class='okay' id='closePopup'>Okay</a>
+            <div style='height: 100px; width: 0px;'></div>
+            <div class='hairpop-up'></div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('successPopup').style.display = 'block';
 
-                    // Content
-                    $mail->isHTML(true);
-                    $mail->Subject = 'Approved Summary Assessment';
-                    $mail->Body    = "Dear $college_name,<br><br>
-                                      The summary assessment of $program_name's schedule has been approved by the Quality Assurance Division. Please find the approved summary assessment attached.<br><br>
-                                      Best Regards,<br>
-                                      USeP - Quality Assurance Division";
+        document.getElementById('closePopup').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+            window.location.href = 'schedule.php';
+        });
 
-                    // Send the email
-                    $mail->send();
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('successPopup')) {
+                document.getElementById('successPopup').style.display = 'none';
+                window.location.href = 'schedule.php';
+            }
+        });
+    </script>
+</body>
+</html>";
 
-                    // Insert the approved summary details into the approved_summary table only if email is sent successfully
-                    $stmt = $conn->prepare("INSERT INTO approved_summary (summary_id, qad, qad_signature, approved_summary_file) VALUES (?, ?, ?, ?)");
-                    $stmt->bind_param("isss", $summaryId, $qadOfficerName, $signaturePath, $modifiedSummaryPath);
-                    $stmt->execute();
-                    $stmt->close();
-
-                    // Update the status of all team members and the schedule to 'finished'
-                    $stmt = $conn->prepare("UPDATE team SET status = 'finished' WHERE schedule_id = ?");
-                    $stmt->bind_param("i", $scheduleId);
-                    $stmt->execute();
-                    $stmt->close();
-
-                    $stmt = $conn->prepare("UPDATE schedule SET schedule_status = 'finished' WHERE id = ?");
-                    $stmt->bind_param("i", $scheduleId);
-                    $stmt->execute();
-                    $stmt->close();
-
-                    echo "Summary approved successfully and email sent.";
-                } catch (Exception $e) {
-                    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-                }
-            } else {
-                echo "Error moving the uploaded file.";
+            } catch (Exception $e) {
+                echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
             }
         } else {
             echo "Upload failed. Allowed file types: " . implode(',', $allowedfileExtensions);

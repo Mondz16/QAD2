@@ -1,6 +1,52 @@
 <?php
+include 'connection.php';
 session_start();
-require 'connection.php'; // Include your database connection file
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Retrieve full name of the logged-in user from the admin table without the prefix
+$sql = "SELECT CONCAT(first_name, ' ', middle_initial, '. ', last_name) AS full_name FROM admin WHERE user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $user_id);
+$stmt->execute();
+$stmt->bind_result($full_name);
+$stmt->fetch();
+$stmt->close();
+
+// Check user type and redirect accordingly
+if ($user_id === 'admin') {
+    // If current page is not admin.php, redirect
+    if (basename($_SERVER['PHP_SELF']) !== 'udas_assessment.php') {
+        header("Location: udas_assessment.php");
+        exit();
+    }
+} else {
+    $user_type_code = substr($user_id, 3, 2);
+
+    if ($user_type_code === '11') {
+        // Internal user
+        if (basename($_SERVER['PHP_SELF']) !== 'internal.php') {
+            header("Location: internal.php");
+            exit();
+        }
+    } elseif ($user_type_code === '22') {
+        // External user
+        if (basename($_SERVER['PHP_SELF']) !== 'external.php') {
+            header("Location: external.php");
+            exit();
+        }
+    } else {
+        // Handle unexpected user type, redirect to login or error page
+        header("Location: login.php");
+        exit();
+    }
+}
 
 // Fetch approved schedules
 $approvedSchedulesQuery = "
@@ -17,13 +63,14 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UDAS Assessment</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/navbar.css">
     <link href="css/pagestyle.css" rel="stylesheet">
     <style>
         /* Additional CSS for numbered boxes */
@@ -35,14 +82,14 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             height: 350px;
             margin-bottom: 20px;
         }
-        
-        .assessment-box h2 {   
+
+        .assessment-box h2 {
             font-size: 18px;
             margin-bottom: 10px;
             text-align: end;
         }
-        
-        .assessment-college{
+
+        .assessment-college {
             text-align: left;
             font-size: 16px;
             width: 540px;
@@ -54,7 +101,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             justify-content: space-around;
         }
 
-        .assessment-holder-2{
+        .assessment-holder-2 {
             display: flex;
             justify-content: flex-start;
             margin-top: 10px;
@@ -66,16 +113,16 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             margin-right: 12px;
         }
 
-        .assessment-dateTime p{
+        .assessment-dateTime p {
             margin: 0;
         }
-        
-        .assessment-udas{
+
+        .assessment-udas {
             text-align: left;
             width: 200px;
         }
 
-        .assessment-udas .udas-button{
+        .assessment-udas .udas-button {
             height: 46px;
             width: 100%;
             margin: 10px 0;
@@ -85,28 +132,29 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             border: 1px solid #006118;
         }
 
-        .assessment-udas .udas-button:hover{
+        .assessment-udas .udas-button:hover {
             background-color: #D4FFDF;
             border: 1px solid #006118;
             color: #006118;
         }
 
-        .assessment-udas .download-button{
+        .assessment-udas .download-button {
             height: 46px;
             width: 100%;
             margin: 10px 0;
-            background-color: #D4FFDF ;
+            background-color: #D4FFDF;
             color: #006118;
             font-weight: bold;
             border: 1px solid #006118;
+            padding-top: 9px;
         }
 
-        .assessment-level-applied p{
+        .assessment-level-applied p {
             margin-bottom: 10px;
             text-align: left;
         }
 
-        .assessment-level-applied h3{    
+        .assessment-level-applied h3 {
             width: 200px;
             height: 140px;
             display: flex;
@@ -117,9 +165,10 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             font-size: 5rem;
             font-weight: bold;
             border: 1px solid #E6A33E;
+            color: #575757;
         }
 
-        .assessment-college p{
+        .assessment-college p {
             margin: 0px;
         }
 
@@ -131,56 +180,225 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
             font-weight: bold;
         }
 
-        /* Scrollable container for assessments */
+        
         .scrollable-container {
-            max-height: 500px;
+            max-height: 650px;
             max-width: 1200px;
             overflow-y: auto;
             overflow-x: hidden;
-            display: flex;
-            justify-content: center;
-            margin-left: 55px;
+            display: inline-block;
+            margin-left: 30px;
+        }
+
+        .scrollable-container-holder{
+            display: inline-block;
+            width: fit-content;
+            padding: 20px 20px 20px 0px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: #f9f9f9;
         }
 
         /* Modal styles */
         .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1; 
-            padding-top: 60px; 
-            left: 0;
-            top: 0;
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background-color: rgb(0,0,0); 
-            background-color: rgba(0,0,0,0.4); 
+            display: none;
+            position: fixed;
+            z-index: 1;
+            transform: translate(-50%, 0);
+            width: 100%;
+            max-width: 535px;
+            overflow: auto;
+            border: 1px solid #AFAFAF;
+            border-radius: 10px;
+            background-color: #fefefe;
+            height: 850px;
+            left: 50%;
+            top: 5%;
         }
 
         .modal-content {
             background-color: #fefefe;
-            margin: 5% auto; 
             padding: 20px;
-            border: 1px solid #888;
-            width: 80%; 
-            max-width: 600px;
+            border-radius: 10px;
         }
 
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
+        .modal-content h2 {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .assessment-group input {
+            border-color: rgb(170, 170, 170);
+            border-style: solid;
+            border-width: 1px;
+            border-radius: 8px;
+            flex: 1;
+        }
+
+        .assessment-group input[type="text"], .assessment-group-college {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            text-align: left; /* Aligns the input text to the left */
+        }
+
+        .assessment-group-college, .assessment-group-program {
+            height: 48px;
+            font-size: 16px;
+        }
+
+        .assessment-group-college {
+            margin-bottom: 20px;
+        }
+
+        .assessment-group-college, .assessment-group-program {
+            height: 48px;
+            font-size: 16px;
+        }
+
+        .assessment-group label {
+            text-transform: uppercase;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .name, .orientationname, .orientationname1, .assessmentname, .assessmentname1, .assessmentname2 {
+            display: flex;
+            gap: 10px;
+        }
+
+        .orientationname1 {
+            width: 100%;
+        }
+
+        .nameContainer, .prefixContainer, .profilenameContainer, .form-group input, .assessment-group input {
+            border-color: rgb(170, 170, 170);
+            border-style: solid;
+            border-width: 1px;
+            border-radius: 8px;
+            flex: 1;
+        }
+
+        .nameContainer {
+            padding: 12px 20px;
+        }
+
+        .orientationContainer, .orientationContainer1 {
+            text-align: center;
+        }
+
+        .orientationContainer1 {
+            background-color: #FFEBA3;
+        }
+
+        .level, .time, .result, .area_evaluated {
+            color: #575757;
+            width: 100%;
+            border: 0;
+            resize: none;
+            outline: 0;
+            padding: 0;
+            font-size: 16px;
+            background: transparent;
+            caret-color: #575757;
+        }
+
+        .titleContainer {
+            flex: 1;
+            padding-top: 20px;
+            padding-bottom: 10px;
+        }
+
+        .upload {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .uploadContainer {
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding: 12px 20px;
+        }
+
+        .upload-text {
+            margin-left: auto;
+            font-weight: bold;
+            color: #575757;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            width: 20px;
+            height: 20px;
+            margin-left: auto;
+            cursor: pointer;
+        }
+
+        .uploadInput {
+            position: absolute;
+            opacity: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .submit-button1, .cancel-button1, .approve-cancel-button, .orientation-button, .assessment-button, .assessment-button-done {
+            padding: 10px 25px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .cancel-button, .cancel-button1 {
+            color: #AFAFAF;
+            border: 1px solid #AFAFAF;
+        }
+
+        .cancel-button1:hover {
+            background-color: #FF6262;
+            color: white;
+            font-weight: bold;
+        }
+        .cancel-button1 {
+            width: 150px;
+        }
+
+        .submit-button, .submit-button1, .export-button {
+            color: #006118;
+            border: 1px solid #006118;
+            background-color: #D4FFDF;
+        }
+
+        .submit-button1 {
+            width: 228px;
+        }
+
+        .submit-button:hover, .submit-button1:hover, .export-button:hover {
+            background-color: #76FA97;
+            border: 1px solid #76FA97;
             font-weight: bold;
         }
 
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
+        .button-container, .e-sign-container {
+            display: flex;
+            width: 100%; /* Ensure the container takes full width */
+            margin-top: 20px; /* Add some spacing from other elements */
+        }
+
+        .button-container {
+            justify-content: flex-end;
         }
     </style>
 </head>
+
 <body>
     <div class="wrapper">
         <!-- Sidebar -->
@@ -200,7 +418,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                 <li class="sidebar-item">
                     <a href="dashboard.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/>
+                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07" />
                         </svg>
                         <span style="margin-left: 8px;">Dashboard</span>
                     </a>
@@ -249,7 +467,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="udas_assessment.php" class="sidebar-link">
+                    <a href="#" class="sidebar-link-active">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard2-check" viewBox="0 0 16 16">
                             <path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5.5.5 0 0 1 .5.5V2a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 5 2v-.5a.5.5 0 0 1 .5-.5.5.5 0 0 0 .5-.5.5.5 0 0 1 .5-.5z" />
                             <path d="M3 2.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 0 0-1h-.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1H12a.5.5 0 0 0 0 1h.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5z" />
@@ -269,7 +487,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                 <li class="sidebar-item">
                     <a href="college_transfer.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5" />
                         </svg>
                         <span style="margin-left: 8px;">College Transfer</span>
                     </a>
@@ -296,57 +514,89 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
 
         <!-- Main Content -->
         <div class="main">
-            <div class="row top-bar"></div>
-            <div class="row header">
-                <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
-                    <img src="images/USePLogo.png" alt="USeP Logo">
-                </div>
-                <div class="col-6 col-md-4 d-flex align-items-start">
-                    <div class="vertical-line"></div>
-                    <div class="divider"></div>
-                    <div class="text">
-                        <span class="one">One</span>
-                        <span class="datausep">Data.</span>
-                        <span class="one">One</span>
-                        <span class="datausep">USeP.</span><br>
-                        <span>Quality Assurance Division</span>
+            <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+            <div class="container">
+                <div class="header">
+                    <div class="headerLeft">
+                        <div class="USePData">
+                            <img class="USeP" src="images/USePLogo.png" height="36">
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div class="headerLeftText">
+                                <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                    <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                        <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                    </h>
+                                </div>
+                                <h>Accreditor Portal</h>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="headerRight">
+                        <div class="QAD">
+                            <div class="headerRightText">
+                                <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                            </div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <img class="USeP" src="images/QADLogo.png" height="36">
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4 d-none d-md-flex align-items-center justify-content-end">
-                </div>
-                <div class="col-md-2 d-none d-md-flex align-items-center justify-content-start">
-                </div>
             </div>
+            <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
             <div class="container text-center mt-4">
-                <h1 class="mt-5 mb-5">APPROVED SCHEDULES</h1>
-                <div class="scrollable-container">
-                    <?php
-                    if (count($approvedSchedules) > 0) {
-                        $counter = 1; // Counter for numbering assessments
-                        foreach ($approvedSchedules as $schedule) {
-                            $scheduleDate = date("F j, Y", strtotime($schedule['schedule_date']));
-                            $scheduleTime = date("g:i A", strtotime($schedule['schedule_time']));
-                            echo "<div class='assessment-box'>";
-                            echo "<h2>#" . $counter . "</h2>";
-                            echo "<div class='assessment-details'>";
-                            echo "<div class='assessment-holder-1'><div class='assessment-college'><p>College: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>Program:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> Level Applied: <br><h3>" . $schedule['level_applied'] . "</h3></div></p></div>";
-                            echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
-                            
-                            if (!empty($schedule['udas_assessment_file'])) {
-                                echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button href='" . $schedule['udas_assessment_file'] . "' download class='btn open-modal download-button' data-schedule='" . json_encode($schedule) . "'>DOWNLOAD</button></div> </div>";
-                            } else {
-                                echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button class='btn open-modal udas-button' data-schedule='" . json_encode($schedule) . "'>START</button></div> </div>";
-                            }
+                <h1 class="mt-5 mb-5">UDAS ASSESSMENTS</h1>
+                <div class="scrollable-container-holder">
+                    <div class="scrollable-container">
+                        <?php
+                        if (count($approvedSchedules) > 0) {
+                            $counter = 1; // Counter for numbering assessments
+                            foreach ($approvedSchedules as $schedule) {
+                                $scheduleDate = date("F j, Y", strtotime($schedule['schedule_date']));
+                                $scheduleTime = date("g:i A", strtotime($schedule['schedule_time']));
+                                echo "<div class='assessment-box'>";
+                                echo "<h2>#" . $counter . "</h2>";
+                                echo "<div class='assessment-details'>";
+                                echo "<div class='assessment-holder-1'><div class='assessment-college'><p>College: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>Program:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> Level Applied: <br><h3>";
 
-                            echo "</div></div>";
-                            echo "</div>";
-                            
-                            $counter++; // Increment counter for next assessment
+                                            // Display level applied with abbreviations
+                                            switch ($schedule['level_applied']) {
+                                                case "Not Accreditable":
+                                                    echo "NA";
+                                                    break;
+                                                case "Candidate":
+                                                    echo "CAN";
+                                                    break;
+                                                default:
+                                                    echo $schedule['level_applied'];
+                                                    break;
+                                            }
+
+                                            echo "</h3></p>
+            </div>
+          </div>";
+                                echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
+
+                                if (!empty($schedule['udas_assessment_file'])) {
+                                    echo "<div class='assessment-udas'><p>UDAS Assessment:<br><a href='" . $schedule['udas_assessment_file'] . "' download class='btn download-button' data-schedule='" . json_encode($schedule) . "'>DOWNLOAD</a></div> </div>";
+                                } else {
+                                    echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button class='btn open-modal udas-button' data-schedule='" . json_encode($schedule) . "'>START</button></div> </div>";
+                                }
+
+                                echo "</div></div>";
+                                $counter++; // Increment counter for next assessment
+                            }
+                        } else {
+                            echo "<div class='no-schedule-prompt'><p>NO APPROVED SCHEDULES FOUND.</p></div>";
                         }
-                    } else {
-                        echo "<p>No approved schedules found.</p>";
-                    }
-                    ?>
+                        ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -355,70 +605,90 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
     <!-- The Modal -->
     <div id="udasModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
             <h2>UDAS Assessment</h2>
             <form action="udas_assessment_process.php" method="post" enctype="multipart/form-data">
                 <input type="hidden" id="schedule_id" name="schedule_id">
-                <div>
-                    <label for="college">College:</label>
-                    <input type="text" id="college" name="college" readonly>
+                <div class="assessment-group">
+                    <label for="college">COLLEGE</label>
+                    <input class="assessment-group-college" type="text" id="college" name="college" readonly>
+                    <label for="program">PROGRAM</label>
+                    <input class="assessment-group-program" type="text" id="program" name="program" readonly>
                 </div>
-                <div>
-                    <label for="program">Program:</label>
-                    <input type="text" id="program" name="program" readonly>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="level_applied"><strong>LEVEL APPLIED</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="date"><strong>DATE</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="time"><strong>TIME</strong></label>
+                    </div>
                 </div>
-                <div>
-                    <label for="level_applied">Level Applied:</label>
-                    <input type="text" id="level_applied" name="level_applied" readonly>
+                <div style="height: 10px;"></div>
+                <div class="orientationname1">
+                    <div class="nameContainer orientationContainer1">
+                        <input class="level" type="text" id="level_applied" name="level_applied" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="level" type="text" id="date" name="date" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer">
+                        <input class="time" type="text" id="time" name="time" readonly>
+                    </div>
                 </div>
-                <div>
-                    <label for="area">Area:</label>
-                    <input type="text" id="area" name="area" required>
+                <div style="height: 20px;"></div>
+                <div class="assessment-group">
+                    <label for="area"><strong>AREA</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="area" name="area" rows="10" placeholder="Add area" required></textarea>
+                    <div style="height: 20px;"></div>
+                    <label for="comments"><strong>COMMENTS</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="comments" name="comments" rows="10" placeholder="Add comments" required></textarea>
+                    <div style="height: 20px;"></div>
+                    <label for="remarks"><strong>REMARKS</strong></label>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="remarks" name="remarks" rows="10" placeholder="Add remarks" required></textarea>
                 </div>
-                <div>
-                    <label for="date">Date:</label>
-                    <input type="text" id="date" name="date" readonly>
+                <div style="height: 20px;"></div>
+                <div class="assessment-group">
+                    <label for="current_datetime">CURRENT DATE AND TIME</label>
+                    <input class="assessment-group-program" type="text" id="current_datetime" name="current_datetime" readonly>
                 </div>
-                <div>
-                    <label for="time">Time:</label>
-                    <input type="text" id="time" name="time" readonly>
+                <div class="orientationname1">
+                    <div class="titleContainer">
+                        <label for="qad_officer"><strong>QAD OFFICER</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="qad_officer_signature"><strong>QAD Officer E-SIGN</strong></label>
+                    </div>
                 </div>
-                <div>
-                    <label for="comments">Comments:</label>
-                    <textarea id="comments" name="comments"></textarea>
+                <div class="orientationname1 upload">
+                    <div class="nameContainer orientationContainer">
+                        <input class="area_evaluated" type="text" id="qad_officer" name="qad_officer" value="<?php echo $full_name; ?>" readonly>
+                    </div>
+                    <div class="nameContainer orientationContainer uploadContainer">
+                        <span class="upload-text">UPLOAD</span>
+                        <img id="upload-icon-officer" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                        <input class="uploadInput" type="file" id="qad_officer_signature" name="qad_officer_signature" accept="image/png" required>
+                    </div>
                 </div>
-                <div>
-                    <label for="remarks">Remarks:</label>
-                    <textarea id="remarks" name="remarks"></textarea>
+                <div style="height: 20px;"></div>
+                <div class="assessment-group">
+                    <label for="qad_director">QAD DIRECTOR</label>
+                    <input class="assessment-group-program" type="text" id="qad_director" name="qad_director" required>
                 </div>
-                <div>
-                    <label for="current_datetime">Current Date and Time:</label>
-                    <input type="text" id="current_datetime" name="current_datetime" readonly>
+                <div class="button-container">
+                    <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
+                    <button class="submit-button1" type="submit">SUBMIT</button>
                 </div>
-                <div>
-                    <label for="qad_officer">QAD Officer:</label>
-                    <input type="text" id="qad_officer" name="qad_officer" required>
-                </div>
-                <div>
-                    <label for="qad_officer_signature">QAD Officer Signature (PNG format):</label>
-                    <input type="file" id="qad_officer_signature" name="qad_officer_signature" accept="image/png" required>
-                </div>
-                <div>
-                    <label for="qad_director">QAD Director:</label>
-                    <input type="text" id="qad_director" name="qad_director" required>
-                </div>
-                <button type="submit" class="btn">Submit</button>
             </form>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
-        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
         const hamBurger = document.querySelector(".toggle-btn");
 
-        hamBurger.addEventListener("click", function () {
+        hamBurger.addEventListener("click", function() {
             document.querySelector("#sidebar").classList.toggle("expand");
         });
 
@@ -439,8 +709,12 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                 document.getElementById('college').value = schedule.college_name;
                 document.getElementById('program').value = schedule.program_name;
                 document.getElementById('level_applied').value = schedule.level_applied;
-                document.getElementById('date').value = new Date(schedule.schedule_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                
+                document.getElementById('date').value = new Date(schedule.schedule_date).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+
                 // Fix the time parsing issue
                 var timeParts = schedule.schedule_time.split(':');
                 var hours = parseInt(timeParts[0]);
@@ -448,22 +722,24 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                 var ampm = hours >= 12 ? 'PM' : 'AM';
                 hours = hours % 12;
                 hours = hours ? hours : 12; // the hour '0' should be '12'
-                var formattedTime = hours + ':' + (minutes < 10 ? '0'+minutes : minutes) + ' ' + ampm;
-                
+                var formattedTime = hours + ':' + (minutes < 10 ? '0' + minutes : minutes) + ' ' + ampm;
+
                 document.getElementById('time').value = formattedTime;
 
                 // Set current date and time
                 var now = new Date();
-                var formattedNow = now.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true });
+                var formattedNow = now.toLocaleString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: true
+                });
                 document.getElementById('current_datetime').value = formattedNow;
 
                 modal.style.display = "block";
             }
-        }
-
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function() {
-            modal.style.display = "none";
         }
 
         // When the user clicks anywhere outside of the modal, close it
@@ -472,6 +748,25 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                 modal.style.display = "none";
             }
         }
+
+        function closePopup() {
+            document.getElementById('udasModal').style.display = 'none';
+        }
+
+        function handleFileChange(inputElement, iconElement) {
+            inputElement.addEventListener('change', function () {
+                if (this.files && this.files.length > 0) {
+                    // Change icon to check mark if a file is selected
+                    iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
+                } else {
+                    // Change icon back to download if no file is selected
+                    iconElement.src = 'images/download-icon1.png';
+                }
+            });
+        }
+
+        handleFileChange(document.getElementById('qad_officer_signature'), document.getElementById('upload-icon-officer'));
     </script>
 </body>
+
 </html>

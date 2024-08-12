@@ -1,6 +1,12 @@
 <?php
 include 'connection.php';
 
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
 $company_id = $_GET['id'];
 
 $sql = "SELECT * FROM company WHERE id = ?";

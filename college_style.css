@@ -20,7 +20,6 @@ h1, h2, h3, h4, h5, h6 {
     background-color: white;
     color: black;
     padding: 10px 0;
-    border-bottom: 1px solid lightgrey;
 }
 
 .headerLeft {
@@ -448,7 +447,7 @@ tr:last-child td {
 }
 
 .custom-table th, .custom-table td {
-    padding: 15px 30px;
+    padding: 15px 20px;
     text-align: left;
     border-bottom: 1px solid #AFAFAF;
     background-color: #fff;

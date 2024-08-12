@@ -53,7 +53,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS program (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     college_code VARCHAR(2),
-    program_name VARCHAR(255) NOT NULL,
+    program_name VARCHAR(300) NOT NULL,
     program_level_id INT(6) UNSIGNED,
     FOREIGN KEY (college_code) REFERENCES college(code)
 )";
@@ -115,6 +115,7 @@ $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     profile_picture VARCHAR(255) NOT NULL,
     gender VARCHAR(50) NOT NULL,
     status ENUM('pending', 'active', 'inactive', '') NOT NULL,
+    e_sign_agreement VARCHAR(50) NOT NULL,
     otp VARCHAR(255) NOT NULL,
     otp_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -161,7 +162,8 @@ $sql = "CREATE TABLE IF NOT EXISTS schedule (
     level_validity INT(6) NOT NULL,
     schedule_date DATE NOT NULL,
     schedule_time TIME NOT NULL,
-    schedule_status ENUM('pending', 'approved', 'cancelled', 'finished') NOT NULL DEFAULT 'pending',
+    zoom VARCHAR(255),
+    schedule_status ENUM('pending', 'approved', 'cancelled', 'finished', 'failed', 'passed') NOT NULL DEFAULT 'pending',
     status_date DATETIME NOT NULL,
     FOREIGN KEY (college_code) REFERENCES college(code),
     FOREIGN KEY (program_id) REFERENCES program(id)
@@ -325,6 +327,35 @@ $sql = "CREATE TABLE IF NOT EXISTS udas_assessment (
 
 if ($conn->query($sql) === TRUE) {
     echo "Table udas_assessment created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+$sql = "CREATE TABLE IF NOT EXISTS NDA (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    team_id INT(6) UNSIGNED,
+    date_added DATE NOT NULL,
+    internal_accreditor VARCHAR(255) NOT NULL,
+    internal_accreditor_signature VARCHAR(255) NOT NULL,
+    NDA_file VARCHAR(255) NOT NULL,
+    FOREIGN KEY (team_id) REFERENCES team(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table NDA created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+$sql = "CREATE TABLE IF NOT EXISTS NDA_compilation (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    team_id INT(6) UNSIGNED,
+    NDA_compilation_file VARCHAR(255) NOT NULL,
+    FOREIGN KEY (team_id) REFERENCES team(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table NDA_compilation created successfully<br>";
 } else {
     echo "Error creating table: " . $conn->error . "<br>";
 }

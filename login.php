@@ -1,6 +1,28 @@
 <?php
 session_start();
 
+// Check if the user just logged out
+if (isset($_GET['logged_out']) && $_GET['logged_out'] == 'true') {
+    // Allow access without referer check
+} else {
+    // Allowed referring pages
+    $allowed_referers = ['register.php', 'index.php', 'logout.php', 'verify_otp.php', 'login_process.php', 'forgot_password.php'];
+
+    // Check if the referer is set and validate it
+    if (isset($_SERVER['HTTP_REFERER'])) {
+        $referer = basename(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH));
+        if (!in_array($referer, $allowed_referers)) {
+            // Redirect to index.php if the referer is not allowed
+            header("Location: index.php");
+            exit();
+        }
+    } else {
+        // If no referer is set, redirect to index.php
+        header("Location: index.php");
+        exit();
+    }
+}
+
 // Check if user is already logged in
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
@@ -20,6 +42,20 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+</head>
+<body>
+    <!-- Your existing HTML code goes here -->
+</body>
+</html>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -147,7 +183,6 @@ if (isset($_SESSION['user_id'])) {
 
     <div id="errorPopup" class="popup">
         <div class="popup-content">
-            <span class="close-btn" id="closeErrorBtn">&times;</span>
             <div style="height: 50px; width: 0px;"></div>
             <img class="Error" src="images/Error.png" height="100">
             <div style="height: 20px; width: 0px;"></div>
@@ -163,6 +198,18 @@ if (isset($_SESSION['user_id'])) {
 
     <script>
         let tempUserId = '';
+
+        document.getElementById('user_id').addEventListener('input', function(e) {
+            let userIdInput = e.target.value;
+
+            // Limit to 10 characters
+            if (userIdInput.length > 10) {
+                userIdInput = userIdInput.slice(0, 10);
+            }
+
+            // Set the cleaned value back to the input
+            e.target.value = userIdInput;
+        });
 
         document.getElementById('showPasswordCheckbox').addEventListener('change', function() {
             var passwordInput = document.querySelector('.passwordText');
@@ -191,11 +238,6 @@ if (isset($_SESSION['user_id'])) {
                 document.getElementById('errorMessage').innerHTML = errorMessage;
                 document.getElementById('errorPopup').style.display = 'block';
             }
-        });
-
-        document.getElementById('closeErrorBtn').addEventListener('click', function() {
-            document.getElementById('errorPopup').style.display = 'none';
-            document.getElementById('user_id').value = tempUserId;
         });
 
         document.getElementById('closePopup').addEventListener('click', function() {

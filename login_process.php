@@ -47,14 +47,13 @@ function display_popup($message, $type, $redirect = 'login.php', $has_apply_canc
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Operation Result</title>
+        <title>Login</title>
         <link rel="stylesheet" href="index.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
     </head>
     <body>
         <div id="errorPopup" class="popup" style="display: block;">
             <div class="popup-content">
-                <span class="close-btn" id="closeErrorBtn">&times;</span>
                 <div style="height: 50px; width: 0px;"></div>
                 <img class="Error" src="images/Error.png" height="100">
                 <div style="height: 20px; width: 0px;"></div>
@@ -116,10 +115,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if (password_verify($password, $admin['password'])) {
             // Check if email is a placeholder value
-            if ($admin['email'] === 'none') {
+            if ($admin['email'] === '') {
                 // Redirect directly if email is a placeholder
                 $_SESSION['user_id'] = $admin['user_id'];  // Set session variable to 'user_id'
-                header("Location: admin_sidebar.php");
+                header("Location: dashboard.php");
                 exit;
             }
 
@@ -141,7 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     } else {
-        echo "No admin found with this user ID.";
+        $message = "No admin found with this user ID.";
     }
 
     // Function to check user in a specific table

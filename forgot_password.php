@@ -6,9 +6,25 @@ require 'vendor/autoload.php'; // Include PHPMailer via Composer autoload
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+function generateRandomPassword($length = 8) {
+    $upper = str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    $lower = str_shuffle('abcdefghijklmnopqrstuvwxyz');
+    $numbers = str_shuffle('0123456789');
+    $symbols = str_shuffle('!@#$%^&*()_+-=[]{}|;:,.<>?');
+
+    $password = substr($upper, 0, 1) . substr($lower, 0, 1) . substr($numbers, 0, 1) . substr($symbols, 0, 1);
+    $remainingLength = $length - 4;
+
+    $allCharacters = $upper . $lower . $numbers . $symbols;
+    $password .= substr(str_shuffle($allCharacters), 0, $remainingLength);
+
+    return str_shuffle($password);
+}
+
 function resetPassword($user_id, $email, $prefix, $gender, $gender_others) {
     global $conn;
-    $new_password = password_hash($user_id, PASSWORD_DEFAULT);
+    $new_password_plain = generateRandomPassword();
+    $new_password_hashed = password_hash($new_password_plain, PASSWORD_DEFAULT);
     $tables = ['internal_users', 'external_users'];
     $email_sent = false;
 
@@ -16,7 +32,7 @@ function resetPassword($user_id, $email, $prefix, $gender, $gender_others) {
         // Fetch full name and email
         $query = "SELECT prefix, first_name, middle_initial, last_name, email FROM $table WHERE user_id=? AND email=? AND prefix=? AND gender=?";
         $stmt = $conn->prepare($query);
-        
+
         // Determine gender value for comparison
         $gender_value = ($gender === 'Others') ? $gender_others : $gender;
 
@@ -30,28 +46,27 @@ function resetPassword($user_id, $email, $prefix, $gender, $gender_others) {
             $full_name = trim("$db_prefix $first_name $middle_initial $last_name");
 
             // Attempt to send email
-            if (sendEmail($db_email, $user_id, $full_name)) {
+            if (sendEmail($db_email, $new_password_plain, $full_name)) {
                 // Update password only if email is sent successfully
                 $stmt->close();
 
                 $update_query = "UPDATE $table SET password=? WHERE user_id=? AND email=? AND prefix=? AND gender=?";
                 $update_stmt = $conn->prepare($update_query);
-                $update_stmt->bind_param('sssss', $new_password, $user_id, $email, $prefix, $gender_value);
+                $update_stmt->bind_param('sssss', $new_password_hashed, $user_id, $email, $prefix, $gender_value);
                 $update_stmt->execute();
                 $email_sent = ($update_stmt->affected_rows > 0);
                 $update_stmt->close();
-                break;
+                return $email_sent;
             } else {
-                $_SESSION['error'] = "Email could not be sent.";
                 return false;
             }
         }
         $stmt->close();
     }
-    return $email_sent;
+    return false;
 }
 
-function sendEmail($toEmail, $user_id, $full_name) {
+function sendEmail($toEmail, $new_password, $full_name) {
     $mail = new PHPMailer(true);
 
     try {
@@ -80,12 +95,11 @@ function sendEmail($toEmail, $user_id, $full_name) {
         // Content
         $mail->isHTML(true);
         $mail->Subject = 'Password Reset Notification';
-        $mail->Body = "Dear $full_name,<br><br>Your password has been reset. Your new password is your User ID: <strong>$user_id</strong>.<br>Please change your password after logging in.<br><br>Best regards,<br>USeP - Quality Assurance Division";
+        $mail->Body = "Dear $full_name,<br><br>Your password has been reset. Your new password is: <strong>$new_password</strong><br>Please change your password after logging in.<br><br>Best regards,<br>USeP - Quality Assurance Division";
 
         $mail->send();
         return true;
     } catch (Exception $e) {
-        $_SESSION['error'] = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
         return false;
     }
 }
@@ -97,17 +111,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $gender = $_POST['gender'];
     $gender_others = $_POST['gender_others'];
 
+    $response = [];
+
     if (empty($user_id) || empty($email) || empty($prefix) || empty($gender) || ($gender == 'Others' && empty($gender_others))) {
-        $_SESSION['error'] = "All fields are required.";
+        $response['error'] = "All fields are required.";
     } else {
         if (resetPassword($user_id, $email, $prefix, $gender, $gender_others)) {
-            $_SESSION['success'] = "Password has been reset. Your new password is your User ID.";
+            $response['success'] = "Password has been reset. Please check your email for the new password.";
         } else {
-            $_SESSION['error'] = "No matching user found or email could not be sent.";
+            $response['error'] = "No matching user found or email could not be sent.";
         }
     }
 
-    header('Location: forgot_password.php');
+    // Return the response as JSON
+    echo json_encode($response);
     exit;
 }
 ?>
@@ -170,15 +187,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div style="height: 8px; width: 0px;"></div>
 
                 <div class="bodyLeftText" style="color: rgb(87, 87, 87); font-weight: 300; font-size: 17px;">
-                    <h>Please enter your information below to reset your<br> password. After successful reset, your new password will be your User ID.</h>
+                    <h>Please enter your information below to reset your<br> password. After successful reset, your new password will be sent to your email.</h>
                 </div>
 
                 <div style="height: 32px; width: 0px;"></div>
 
-                <form method="post" action="forgot_password.php">
+                <form id="resetPasswordForm" method="post">
                     <div class="prefixContainer" style="width: 455px;">
                         <div class="custom-select-wrapper">
-                            <select class="prefix" name="prefix" required>
+                            <select class="prefix" name="prefix" id="prefixSelect" required>
                                 <option value="">Prefix</option>
                                 <option value="Mr.">Mr.</option>
                                 <option value="Ms.">Ms.</option>
@@ -188,7 +205,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <option value="Assoc. Prof.">Assoc. Prof.</option>
                                 <option value="Assist. Prof.">Assist. Prof.</option>
                                 <option value="Engr.">Engr.</option>
-                                <!-- Add more options as needed -->
                             </select>
                         </div>
                     </div>
@@ -216,14 +232,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <option value="Female">Female</option>
                                 <option value="Prefer not to say">Prefer not to say</option>
                                 <option value="Others">Others</option>
-                                <!-- Add more options as needed -->
                             </select>
                             <input type="text" id="genderInput" name="gender_others" style="display:none; width: 455px; padding: 12px 20px; border: 1px solid #aaa; border-radius: 8px; font-size: 1rem; background-color: #fff;" placeholder="Specify Gender">
                         </div>
                     </div>
                     <div style="height: 10px; width: 0px;"></div>
 
-                    <a href="login.php" class="loginstead" >Log in instead</a>
+                    <a href="login.php" class="loginstead">Log in instead</a>
                     <button type="submit" class="reset">Reset Password</button>
 
                     <div style="height: 10px; width: 0px;"></div>
@@ -237,100 +252,156 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 
-    <?php if (isset($_SESSION['success'])): ?>
-        <div id="successPopup" class="popup">
-            <div class="popup-content">
-                <span class="close-btn" id="closeSuccessBtn">&times;</span>
-                <div style="height: 50px; width: 0px;"></div>
-                <img class="Success" src="images/Success.png" height="100">
-                <div style="height: 20px; width: 0px;"></div>
-                <div class="popup-text"><?php echo $_SESSION['success']; unset($_SESSION['success']); ?></div>
-                <div style="height: 50px; width: 0px;"></div>
-                <a href="login.php" class="okay" id="closePopup">Okay</a>
-                <div style="height: 100px; width: 0px;"></div>
-                <div class="hairpop-up"></div>
-            </div>
+    <div id="successPopup" class="popup" style="display: none;">
+        <div class="popup-content">
+            <div style="height: 50px; width: 0px;"></div>
+            <img class="Success" src="images/Success.png" height="100">
+            <div style="height: 20px; width: 0px;"></div>
+            <div class="popup-text"></div>
+            <div style="height: 50px; width: 0px;"></div>
+            <a href="login.php" class="okay" id="closeSuccessPopup">Okay</a>
+            <div style="height: 100px; width: 0px;"></div>
+            <div class="hairpop-up"></div>
         </div>
-    <?php endif; ?>
+    </div>
 
-    <?php if (isset($_SESSION['error'])): ?>
-        <div id="errorPopup" class="popup">
-            <div class="popup-content">
-                <span class="close-btn" id="closeErrorBtn">&times;</span>
-                <div style="height: 50px; width: 0px;"></div>
-                <img class="Error" src="images/Error.png" height="100">
-                <div style="height: 20px; width: 0px;"></div>
-                <div class="popup-text"><?php echo $_SESSION['error']; unset($_SESSION['error']); ?></div>
-                <div style="height: 50px; width: 0px;"></div>
-                <a href="javascript:void(0);" class="okay" id="closeErrorPopup">Okay</a>
-                <div style="height: 100px; width: 0px;"></div>
-                <div class="hairpop-up"></div>
-            </div>
+    <div id="errorPopup" class="popup" style="display: none;">
+        <div class="popup-content">
+            <div style="height: 50px; width: 0px;"></div>
+            <img class="Error" src="images/Error.png" height="100">
+            <div style="height: 20px; width: 0px;"></div>
+            <div class="popup-text" id="errorMessage"></div>
+            <div style="height: 50px; width: 0px;"></div>
+            <a href="javascript:void(0);" class="okay" id="closeErrorPopup">Okay</a>
+            <div style="height: 100px; width: 0px;"></div>
+            <div class="hairpop-up"></div>
         </div>
-    <?php endif; ?>
+    </div>
 
     <script>
-        // Show/Hide "Specify Gender" input based on selection
-        document.getElementById('genderSelect').addEventListener('change', function() {
-            var genderSelect = document.getElementById('genderSelect');
+        // Temporary storage variables
+        let tempPrefix = '';
+        let tempUserId = '';
+        let tempEmail = '';
+        let tempGender = '';
+        let tempGenderOthers = '';
+
+        // Store user input in temporary variables
+        document.getElementById('prefixSelect').addEventListener('change', function(e) {
+            tempPrefix = e.target.value;
+        });
+
+        document.getElementById('user_id').addEventListener('input', function(e) {
+            let userIdInput = e.target.value;
+
+            // Limit to 10 characters
+            if (userIdInput.length > 10) {
+                userIdInput = userIdInput.slice(0, 10);
+            }
+
+            tempUserId = userIdInput;
+
+            // Set the cleaned value back to the input
+            e.target.value = userIdInput;
+        });
+
+        document.getElementById('email').addEventListener('input', function(e) {
+            tempEmail = e.target.value;
+        });
+
+        document.getElementById('genderSelect').addEventListener('change', function(e) {
             var genderInput = document.getElementById('genderInput');
-            if (genderSelect.value === 'Others') {
-                genderSelect.style.display = 'none';
+            if (e.target.value === 'Others') {
+                e.target.style.display = 'none';
                 genderInput.style.display = 'block';
                 genderInput.required = true;
                 genderInput.focus();
+                tempGender = e.target.value;
             } else {
+                tempGender = e.target.value;
+                tempGenderOthers = ''; // Clear other gender input
                 genderInput.style.display = 'none';
                 genderInput.required = false;
             }
         });
 
-        document.getElementById('genderInput').addEventListener('blur', function() {
+        document.getElementById('genderInput').addEventListener('input', function(e) {
+            tempGenderOthers = e.target.value;
+        });
+
+        document.getElementById('genderInput').addEventListener('blur', function(e) {
             var genderSelect = document.getElementById('genderSelect');
-            var genderInput = document.getElementById('genderInput');
-            if (genderInput.value === '') {
-                genderInput.style.display = 'none';
+            if (e.target.value === '') {
+                e.target.style.display = 'none';
                 genderSelect.style.display = 'block';
             }
         });
 
-        // Success Popup Script
-        if (document.getElementById('successPopup')) {
-            document.getElementById('successPopup').style.display = 'block';
+        document.getElementById('resetPasswordForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
 
-            document.getElementById('closeSuccessBtn').addEventListener('click', function() {
-                document.getElementById('successPopup').style.display = 'none';
-            });
+            // Prepare form data
+            let formData = new FormData(this);
 
-            document.getElementById('closePopup').addEventListener('click', function() {
-                document.getElementById('successPopup').style.display = 'none';
-            });
-
-            window.addEventListener('click', function(event) {
-                if (event.target == document.getElementById('successPopup')) {
-                    document.getElementById('successPopup').style.display = 'none';
+            // Send the form data using AJAX
+            fetch('forgot_password.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success popup
+                    document.querySelector('#successPopup .popup-text').innerText = data.success;
+                    document.getElementById('successPopup').style.display = 'block';
+                } else {
+                    // Show error popup with error message
+                    document.getElementById('errorMessage').innerText = data.error;
+                    document.getElementById('errorPopup').style.display = 'block';
                 }
+                restoreInputValues(); // Restore input values
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Show error popup with a generic error message
+                document.getElementById('errorMessage').innerText = "An error occurred. Please try again.";
+                document.getElementById('errorPopup').style.display = 'block';
+                restoreInputValues(); // Restore input values
             });
+        });
+
+        function restoreInputValues() {
+            document.getElementById('prefixSelect').value = tempPrefix;
+            document.getElementById('user_id').value = tempUserId;
+            document.getElementById('email').value = tempEmail;
+            document.getElementById('genderSelect').value = tempGender;
+            if (tempGender === 'Others') {
+                document.getElementById('genderInput').value = tempGenderOthers;
+                document.getElementById('genderInput').style.display = 'block';
+                document.getElementById('genderSelect').style.display = 'none';
+            } else {
+                document.getElementById('genderInput').value = '';
+                document.getElementById('genderInput').style.display = 'none';
+            }
         }
 
-        // Error Popup Script
-        if (document.getElementById('errorPopup')) {
-            document.getElementById('errorPopup').style.display = 'block';
+        document.getElementById('closeSuccessPopup').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+        });
 
-            document.getElementById('closeErrorBtn').addEventListener('click', function() {
+        document.getElementById('closeErrorPopup').addEventListener('click', function() {
+            document.getElementById('errorPopup').style.display = 'none';
+        });
+
+        // Optional: Close popups if the user clicks outside of them
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('successPopup')) {
+                document.getElementById('successPopup').style.display = 'none';
+            }
+            if (event.target == document.getElementById('errorPopup')) {
                 document.getElementById('errorPopup').style.display = 'none';
-            });
-
-            document.getElementById('closeErrorPopup').addEventListener('click', function() {
-                document.getElementById('errorPopup').style.display = 'none';
-            });
-
-            window.addEventListener('click', function(event) {
-                if (event.target == document.getElementById('errorPopup')) {
-                    document.getElementById('errorPopup').style.display = 'none';
-                }
-            });
-        }
+            }
+        });
     </script>
 </body>
 </html>

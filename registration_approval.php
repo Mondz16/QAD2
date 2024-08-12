@@ -159,7 +159,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt_update_external->close();
                 }
                 $conn->commit();
-                $message = "User approved with ID: " . $id;
+                $message = "User approved with User ID: " . $id;
                 $message_class = "success";
             } else {
                 // Rollback the transaction if email fails
@@ -215,7 +215,8 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operation Result</title>
+    <title>Registration Approval</title>
+    <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
     <link rel="stylesheet" href="index.css">
     <style>
@@ -282,5 +283,22 @@ $conn->close();
         <div style='height: 100px; width: 0px;'></div>
         <div class='hairpop-up'></div>
     </div>
+    <script>
+        document.getElementById('successPopup').style.display = 'block';
+
+        document.getElementById('closeSuccessBtn').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+        });
+
+        document.getElementById('closePopup').addEventListener('click', function() {
+            document.getElementById('successPopup').style.display = 'none';
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('successPopup')) {
+                document.getElementById('successPopup').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

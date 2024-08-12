@@ -15,6 +15,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     try {
         foreach ($areas as $team_member_id => $area) {
+            // Ensure the area is not null and set to an empty string if it's blank
+            $area = trim($area) === '' ? '' : $area;
+
             $sql_update = "UPDATE team SET area = ? WHERE id = ?";
             $stmt_update = $conn->prepare($sql_update);
             $stmt_update->bind_param("si", $area, $team_member_id);
@@ -115,4 +118,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 } else {
     header("Location: internal_notification.php");
 }
+
 ?>

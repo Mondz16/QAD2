@@ -90,8 +90,15 @@ button[type="remove"]:hover{
 
 .team-member-input select {
     flex: 1;
+    flex-grow: 10;
     margin-right: 10px;
 }
+
+.team-member-input button {
+    flex: 1;
+    padding-bottom: 10px;
+}
+
 
 .add-team-member-button {
     width: -webkit-fill-available;
@@ -164,6 +171,7 @@ button[type="remove"]:hover{
 .level-input-holder .highlight{
     background-color: #FFF1C0;
     border-color: #E6A33E;
+    color: #575757;
 }
 
 .level-input-holder .level-input:last-child{
@@ -203,6 +211,7 @@ button[type="remove"]:hover{
 
 .bottom-button-holder button{
     flex: 1;
+    max-height: 45px;
     border: none;
     padding: 10px 20px;
     cursor: pointer;
@@ -305,4 +314,17 @@ button[type="remove"]:hover{
     display: flex;
     padding: 10px 30px;
     justify-content: space-between;
+}
+
+#programs {
+    max-height: 300px;
+    overflow-y: scroll;
+    margin: 0px 0px 10px 0px;
+    padding: 0;
+}
+
+#removeProgramsList{
+    max-height: 500px;
+    overflow-x: auto;
+    margin: 10px 0px;
 }

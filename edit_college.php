@@ -1,5 +1,12 @@
 <?php
 include 'connection.php';
+session_start();
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: dashboard.php");
+    exit();
+}
 
 $college_code = $_GET['code'];
 
@@ -56,27 +63,42 @@ while ($row = $programs_result->fetch_assoc()) {
 
 <body>
     <div class="wrapper">
-        <div class="row top-bar"></div>
-        <div class="row header mb-3">
-            <div class="col-6 col-md-2 mx-auto d-flex align-items-center justify-content-end">
-                <img src="images/USePLogo.png" alt="USeP Logo">
-            </div>
-            <div class="col-6 col-md-4 d-flex align-items-start">
-                <div class="vertical-line"></div>
-                <div class="divider"></div>
-                <div class="text">
-                    <span class="one">One</span>
-                    <span class="datausep">Data.</span>
-                    <span class="one">One</span>
-                    <span class="datausep">USeP.</span><br>
-                    <span>Quality Assurance Division</span>
+        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+        <div class="container">
+            <div class="header">
+                <div class="headerLeft">
+                    <div class="USePData">
+                        <img class="USeP" src="images/USePLogo.png" height="36">
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div class="headerLeftText">
+                            <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                    <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                </h>
+                            </div>
+                            <h>Accreditor Portal</h>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="headerRight">
+                    <div class="QAD">
+                        <div class="headerRightText">
+                            <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                        </div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <img class="USeP" src="images/QADLogo.png" height="36">
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4 d-none d-md-flex align-items-center justify-content-end">
-            </div>
-            <div class="col-md-2 d-none d-md-flex align-items-center justify-content-start">
-            </div>
         </div>
+        <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
         <div class="container d-flex align-items-center mt-4">
             <a class="btn-back" href="college.php">&lt; BACK</a>
             <h2 class="mt-4 mb-4">EDIT COLLEGE</h2>
@@ -100,9 +122,9 @@ while ($row = $programs_result->fetch_assoc()) {
                         <?php foreach ($programs as $index => $program) : ?>
                             <div class="program-holder programs" data-index="<?php echo $index + 1; ?>">
                                 <input type="hidden" name="program_ids[]" value="<?php echo htmlspecialchars($program['id']); ?>">
-                                <input type="text" id="program_<?php echo $index + 1; ?>" name="programs[]" value="<?php echo htmlspecialchars($program['program_name']); ?>" required readonly>
-                                <input type="text" id="level_<?php echo $index + 1; ?>" name="levels[]" value="<?php echo htmlspecialchars($program['program_level']); ?>" readonly required readonly>
-                                <input type="date" id="date_received_<?php echo $index + 1; ?>" name="dates_received[]" value="<?php echo htmlspecialchars($program['date_received']); ?>" readonly required>
+                                <input type="text" id="program_<?php echo $index + 1; ?>" name="programs[]" value="<?php echo htmlspecialchars($program['program_name']); ?>" readonly>
+                                <input type="text" id="level_<?php echo $index + 1; ?>" name="levels[]" value="<?php echo htmlspecialchars($program['program_level']); ?>" readonly>
+                                <input type="date" id="date_received_<?php echo $index + 1; ?>" name="dates_received[]" value="<?php echo htmlspecialchars($program['date_received']); ?>" readonly>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -207,21 +229,36 @@ while ($row = $programs_result->fetch_assoc()) {
                 newProgramDiv.classList.add('form-group', 'programs');
                 newProgramDiv.dataset.index = newIndex;
                 newProgramDiv.innerHTML = `
-                    <div class="program-holder">
-                        <input type="hidden" name="program_ids[]" value="">
-                        <input type="text" id="new_program" name="new_programs[]" value="${program}" readonly>
-                        <input type="text" id="new_level" name="new_levels[]" value="${level}" readonly>
-                        <input type="date" id="new_date_received" name="new_dates_received[]" value="${dateReceived}" readonly>
-                    </div>
-                `;
+        <div class="program-holder">
+            <input type="hidden" name="new_program_ids[]" value="">
+            <input type="text" id="new_program_${newIndex}" name="new_programs[]" value="${program}" readonly>
+            <input type="text" id="new_level_${newIndex}" name="new_levels[]" value="${level}" readonly>
+            <input type="date" id="new_date_received_${newIndex}" name="new_dates_received[]" value="${dateReceived}" readonly>
+        </div>
+    `;
 
                 programsDiv.appendChild(newProgramDiv);
-                console.log(`${program} | ${level} | ${dateReceived}`);
+
+                // Add the new program to the remove list
+                addToRemoveProgramsList(newIndex, program, level);
 
                 // Clear the modal form fields
                 document.getElementById('programForm').reset();
 
                 $('#programModal').modal('hide');
+            }
+
+            function addToRemoveProgramsList(index, program, level) {
+                const removeProgramsList = document.getElementById('removeProgramsList');
+
+                const programEntryDiv = document.createElement('div');
+                programEntryDiv.classList.add('program-entry');
+                programEntryDiv.innerHTML = `
+        <label for="remove_program_${index}">${program} - ${level}</label>
+        <input type="checkbox" id="remove_program_${index}" name="remove_programs[]" value="${index}">
+    `;
+
+                removeProgramsList.appendChild(programEntryDiv);
             }
 
             function updateRemoveProgramsList() {
@@ -230,18 +267,22 @@ while ($row = $programs_result->fetch_assoc()) {
 
                 const programs = document.querySelectorAll('#programs .programs');
                 programs.forEach((programDiv) => {
-                    const program = programDiv.querySelector(`[id^='program_']`).value;
-                    const level = programDiv.querySelector(`[id^='level_']`).value;
-                    const dateReceived = programDiv.querySelector(`[id^='date_received_']`).value;
+                    const programInput = programDiv.querySelector(`[id^='program_']`) || programDiv.querySelector(`[id^='new_program_']`);
+                    const levelInput = programDiv.querySelector(`[id^='level_']`) || programDiv.querySelector(`[id^='new_level_']`);
 
-                    const programEntryDiv = document.createElement('div');
-                    programEntryDiv.classList.add('program-entry');
-                    programEntryDiv.innerHTML = `
-                    <label for="remove_program_${programDiv.dataset.index}">${program} - ${level}</label>
-                    <input type="checkbox" id="remove_program_${programDiv.dataset.index}" name="remove_programs[]" value="${programDiv.dataset.index}">
-                `;
+                    if (programInput && levelInput) {
+                        const program = programInput.value;
+                        const level = levelInput.value;
 
-                    removeProgramsList.appendChild(programEntryDiv);
+                        const programEntryDiv = document.createElement('div');
+                        programEntryDiv.classList.add('program-entry');
+                        programEntryDiv.innerHTML = `
+                <label for="remove_program_${programDiv.dataset.index}">${program} - ${level}</label>
+                <input type="checkbox" id="remove_program_${programDiv.dataset.index}" name="remove_programs[]" value="${programDiv.dataset.index}">
+            `;
+
+                        removeProgramsList.appendChild(programEntryDiv);
+                    }
                 });
             }
 
@@ -252,7 +293,7 @@ while ($row = $programs_result->fetch_assoc()) {
                 selectedPrograms.forEach(checkbox => {
                     const index = checkbox.value;
                     const programDiv = document.querySelector(`.programs[data-index="${index}"]`);
-                    const programId = programDiv.querySelector('input[name="program_ids[]"]').value;
+                    const programId = programDiv.querySelector('input[name="program_ids[]"]') ? programDiv.querySelector('input[name="program_ids[]"]').value : programDiv.querySelector('input[name="new_program_ids[]"]').value;
 
                     programDiv.remove();
                     removedProgramIds.push(programId);

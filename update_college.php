@@ -25,11 +25,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $new_college_code = $_POST['newCollege'];
 
         // Fetch the current user's details
-        $sql_user = "SELECT college_code, password, profile_picture, prefix, gender, otp FROM internal_users WHERE user_id = ?";
+        $sql_user = "SELECT college_code, password, profile_picture, prefix, gender, e_sign_agreement, otp FROM internal_users WHERE user_id = ?";
         $stmt_user = $conn->prepare($sql_user);
         $stmt_user->bind_param("s", $user_id);
         $stmt_user->execute();
-        $stmt_user->bind_result($current_college_code, $password, $profile_picture, $prefix, $gender, $otp);
+        $stmt_user->bind_result($current_college_code, $password, $profile_picture, $prefix, $gender, $e_sign_agreement, $otp);
         $stmt_user->fetch();
         $stmt_user->close();
 
@@ -124,9 +124,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
             // Insert the new user record with status 'pending'
-            $sql_insert = "INSERT INTO internal_users (user_id, college_code, first_name, middle_initial, last_name, email, password, profile_picture, prefix, gender, otp, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')";
+            $sql_insert = "INSERT INTO internal_users (user_id, college_code, first_name, middle_initial, last_name, email, password, profile_picture, prefix, gender, e_sign_agreement, otp, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')";
             $stmt_insert = $conn->prepare($sql_insert);
-            $stmt_insert->bind_param("sssssssssss", $new_user_id, $new_college_code, $first_name, $middle_initial, $last_name, $email, $password, $profile_picture, $prefix, $gender, $otp);
+            $stmt_insert->bind_param("ssssssssssss", $new_user_id, $new_college_code, $first_name, $middle_initial, $last_name, $email, $password, $profile_picture, $prefix, $gender, $e_sign_agreement, $otp);
 
             if ($stmt_insert->execute()) {
                 echo "College transfer request submitted successfully. <a href='internal.php'>Back to Profile</a>";

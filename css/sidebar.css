@@ -47,12 +47,11 @@ body {
     height: 100vh;
     left: 0;
     top: 0;
-    overflow: auto;
+    overflow: visible; /* Ensure overflow is visible */
     display: flex;
     flex-direction: column;
     padding-right: 3px;
-    overflow-x: hidden;
-    margin-top: 10px;
+    margin-top: 15px;
     padding-bottom: 10px;
 }
 
@@ -83,8 +82,7 @@ body {
     font-weight: 600;
 }
 
-#sidebar:not(.expand) .sidebar-logo,
-#sidebar:not(.expand) a.sidebar-link span {
+#sidebar:not(.expand) .sidebar-logo {
     display: none;
 }
 
@@ -102,19 +100,84 @@ a.sidebar-link {
     white-space: nowrap;
     border: 1px solid #AFAFAF;
     border-radius: 10px;
+    transition: all .25s ease-in-out;
+    position: relative;
+    overflow: hidden; /* Hide overflow */
+    width: 60px; /* Initial width */
+}
+
+a.sidebar-link-active {
+    padding: .625rem 1.625rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    border: 1px solid #AFAFAF;
+    background-color: #FF7B7A;
+    border-radius: 10px;
+    transition: all .25s ease-in-out;
+    position: relative;
+    overflow: hidden; /* Hide overflow */
+    width: 60px; /* Initial width */
+}
+
+a.sidebar-link span {
+    margin-left: 8px;
+    display: none;
+    transition: display 0.25s ease-in-out;
+}
+
+a.sidebar-link-active span {
+    margin-left: 8px;
+    display: none;
+    transition: display 0.25s ease-in-out;
+}
+
+#sidebar:not(.expand) a.sidebar-link-active {
+    justify-content: center;
+}
+
+#sidebar:not(.expand) .sidebar-link-active {
+    padding: .625rem;
 }
 
 #sidebar.expand a.sidebar-link {
     justify-content: flex-start;
+    width: 100%; /* Full width in expanded state */
+}
+
+#sidebar.expand a.sidebar-link span {
+    display: inline; /* Show span in expanded state */
+}
+
+#sidebar.expand a.sidebar-link-active {
+    justify-content: flex-start;
+    width: 100%; /* Full width in expanded state */
+}
+
+#sidebar.expand a.sidebar-link-active span {
+    display: inline; /* Show span in expanded state */
 }
 
 #sidebar:not(.expand) a.sidebar-link {
     justify-content: center;
 }
 
+#sidebar:not(.expand) a.sidebar-link:hover {
+    width: 260px; /* Expanded width on hover */
+    justify-content: flex-start;
+    padding-left: 1.5rem;
+}
+
+#sidebar:not(.expand) a.sidebar-link:hover span {
+    display: inline;
+}
+
 .sidebar-link i {
     font-size: 1.1rem;
-    margin-right: .75rem;
+    margin-right: 0;
+    transition: margin-right 0.25s ease-in-out;
 }
 
 #sidebar:not(.expand) .sidebar-link {
@@ -130,6 +193,7 @@ a.sidebar-link:hover {
     color: #fff;
     border: 1px solid #AFAFAF;
     border-radius: 10px;
+    z-index: 1000; /* Ensure it is on top */
 }
 
 .sidebar-item {
@@ -174,5 +238,5 @@ a.sidebar-link:hover {
 
 .sidebar-footer {
     margin-top: auto; /* Push footer to the bottom */
-    padding: 1rem;
+    margin-bottom: 10px;
 }
