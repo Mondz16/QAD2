@@ -201,7 +201,52 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Operation Result</title>
     <link rel='stylesheet' href='index.css'>
     <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap'>
-</head>
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Quicksand", sans-serif;
+        }
+        body {
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h2 {
+            font-size: 24px;
+            color: #292D32;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .btn-hover:hover {
+            background-color: #AFAFAF;
+        }
+    </style>
+    </head>
 <body>
     <div id='successPopup' class='popup'>
         <div class='popup-content'>

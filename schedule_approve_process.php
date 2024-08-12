@@ -235,7 +235,7 @@ if (!$schedule_id || !$college || !$college_code) {
             background-color: rgba(0, 0, 0, 0.5);
         }
         body {
-            background-color: #f9f9f9;
+            background-color: rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -280,8 +280,8 @@ if (!$schedule_id || !$college || !$college_code) {
         <div class="message">
             <?php if (isset($email_success) && $email_success): ?>
                 <img src="images/Success.png" height="100" alt="Success">
-                Schedule approved successfully. Email notifications have been sent.
                 <div style="height: 25px; width: 0px;"></div>
+                <p>Schedule approved successfully. Email notifications have been sent.</p>
             <?php elseif (isset($email_error) && $email_error): ?>
                 <img src="images/Error.png" height="100" alt="Error">
                 <div style="height: 25px; width: 0px;"></div>

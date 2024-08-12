@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             font-family: \"Quicksand\", sans-serif;
         }
         body {
-            background-color: #f9f9f9;
+            background-color: rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -279,7 +279,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         body {
-            background-color: #f9f9f9;
+            background-color: rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -326,7 +326,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class=\"popup-content\">
         <div style=\"height: 50px; width: 0px;\"></div>
-        <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+        <img class=\"Success\" src=\"images/Success.png\" height=\"100\">
         <div style=\"height: 25px; width: 0px;\"></div>
         <div class=\"message\">
             New schedule and team members added successfully
@@ -376,7 +376,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         body {
-            background-color: #f9f9f9;
+            background-color: rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -456,7 +456,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         body {
-            background-color: #f9f9f9;
+            background-color: rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
