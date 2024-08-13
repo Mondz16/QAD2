@@ -34,12 +34,14 @@ $conn->close();
 
 <head>
     <title>Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" type="text/css" href="reports_dashboard_styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 
 <body>
@@ -222,7 +224,7 @@ $conn->close();
                     </select>
                 </div>
                 <div>
-                    <button type="button">EXPORT <img style="margin-left: 5px;" src="images/export.png"></button>
+                    <button type="button" id="exportPDF">EXPORT <img style="margin-left: 5px;" src="images/export.png"></button>
                 </div>
             </div>
 
@@ -581,6 +583,53 @@ $conn->close();
                 await updateCharts();
             });
         });
+
+        document.getElementById('exportPDF').addEventListener('click', function() {
+            const charts = document.querySelectorAll('canvas');
+
+            const images = [];
+            let count = 0;
+
+            charts.forEach((chart, index) => {
+                html2canvas(chart).then(canvas => {
+                    images.push({
+                        data: canvas.toDataURL('image/png')
+                    });
+                    count++;
+                    if (count === charts.length) {
+                        console.log('All charts captured, sending to server');
+                        sendImagesToServer(images);
+                    }
+                }).catch(err => console.error('Error capturing canvas:', err));
+            });
+        });
+
+        function sendImagesToServer(images) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'reports_dashboard_pdf.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        console.log('PDF generated:', xhr.responseText);
+                        downloadFile(xhr.responseText);
+                    } else {
+                        console.error('Failed to generate PDF:', xhr.statusText);
+                    }
+                }
+            };
+            xhr.send(JSON.stringify(images));
+        }
+
+
+        function downloadFile(fileName) {
+            const link = document.createElement('a');
+            link.href = 'reports_dashboard_download.php?file=' + encodeURIComponent(fileName);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     </script>
 </body>
 
