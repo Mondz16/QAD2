@@ -99,8 +99,8 @@ function displayOrientationDetails($conn, $orientationType, $title)
             }
 
             echo "<td class='action-buttons'>
-                    <button class='btn btn-sm btn-success' onclick='openApproveModal({$row['id']})'>Approve</button>
-                    <button class='btn btn-sm btn-danger' onclick='openDenyModal({$row['id']})'>Deny</button>
+                    <button class='btn btn-sm approve' onclick='openApproveModal({$row['id']})'>Approve</button>
+                    <button class='btn btn-sm cancel' onclick='openDenyModal({$row['id']})'>Deny</button>
                     <button class='btn btn-sm btn-primary' onclick='viewSchedule({$row['schedule_id']})'>View Schedule</button>
                 </td>
             </tr>";
@@ -125,6 +125,25 @@ function displayOrientationDetails($conn, $orientationType, $title)
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link href="css/orientation_pagestyle.css" rel="stylesheet">
+    <style>
+        .action-btn.approve {
+            background-color: #2fde57;
+        }
+
+        .action-btn.approve:hover {
+            background-color: #02b32b;
+        }
+
+        .action-btn.cancel {
+        background-color: #dc3545;
+        }
+
+        .action-btn.cancel:hover {
+        background-color: #b82c3b;
+        }
+
+
+    </style>
 </head>
 
 <body>
