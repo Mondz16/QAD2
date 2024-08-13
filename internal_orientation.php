@@ -256,6 +256,7 @@ if (!empty($schedules)) {
         <div class="orientation2">
             <?php if (!empty($schedules)): ?>
                 <?php foreach ($schedules as $schedule_id => $schedule): ?>
+                    <?php if ($schedule['schedule_status'] === 'approved' || $schedule['schedule_status'] === 'pending'): ?>
                     <div class="notification-list1">
                         <div class="orientation3">
                             <?php
@@ -266,20 +267,18 @@ if (!empty($schedules)) {
                                 $status_color = '#34C759'; // Approved color
                             }
                             ?>
-                            <?php if ($schedule['orientation_id']): ?>
-                                <?php if ($schedule['orientation_status'] === ''): ?>
-                                    <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="orientation-button"onclick="openModal(<?php echo $schedule_id; ?>)">REQUEST ORIENTATION</button> </p>
-                                <?php elseif ($schedule['orientation_status'] === 'pending'): ?>
+                            <?php if (empty($schedule['orientation_id'])): ?>
+                    <!-- No orientation request exists, show the request orientation button -->
+                    <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> 
+                    <button class="orientation-button" onclick="openModal(<?php echo $schedule_id; ?>)">REQUEST ORIENTATION</button></p>
+                <?php else: ?>
+                                <?php if ($schedule['orientation_status'] === 'pending'): ?>
                                     <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF;">REQUEST PENDING</button> </p>
                                 <?php elseif ($schedule['orientation_status'] === 'approved'): ?>
                                     <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="assessment-button-done">REQUEST APPROVED</button> </p>
                                 <?php elseif ($schedule['orientation_status'] === 'denied'): ?>
-                                    <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="assessment-button-done" style="background-color: red; color: white; border: 1px solid red;">REQUEST DENIED</button> </p>
-                                    <button class="orientation-button"onclick="openModal(<?php echo $schedule_id; ?>)">REREQUEST ORIENTATION</button>
-                                    <button onclick="openModal(<?php echo $schedule_id; ?>)">Rerequest Orientation</button>
-                                    <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
+                                    <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="assessment-button-done" style="background-color: red; color: white; border: 1px solid red;">REQUEST DENIED</button></p>
                                 <?php endif; ?>
-                            <?php else: ?>
                             <?php endif; ?>
                             <div class="container">
                                 <div class="body3">
@@ -362,22 +361,9 @@ if (!empty($schedules)) {
                         </div>
                     </div>
                     </div>
-                            <?php if ($schedule['orientation_id']): ?>
-                                <?php if ($schedule['orientation_status'] === 'pending'): ?>
-                                    <p>A request for orientation has been submitted. Please wait for the approval.</p>
-                                    <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
-                                <?php elseif ($schedule['orientation_status'] === 'approved'): ?>
-                                    <p>This orientation request has been approved.</p>
-                                    <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
-                                <?php elseif ($schedule['orientation_status'] === 'denied'): ?>
-                                    <p>This orientation request has been denied. Do you want to request again?</p>
-                                    <button onclick="openModal(<?php echo $schedule_id; ?>)">Rerequest Orientation</button>
-                                    <p>Orientation Status: <?php echo htmlspecialchars($schedule['orientation_status']); ?></p>
-                                <?php endif; ?>
-                            <?php else: ?>
-                            <?php endif; ?>
                         </div>
                     </div>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             <?php else: ?>
                 <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ASSIGNED TO YOUR COLLEGE</strong></p>

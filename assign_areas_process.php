@@ -2,40 +2,46 @@
 include 'connection.php';
 session_start();
 
-if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11') {
+// Ensure the user is logged in
+if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $schedule_id = intval($_POST['schedule_id']);
-    $areas = $_POST['areas'];
+$user_id = $_SESSION['user_id'];
 
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Fetch the schedule ID and areas from the POST request
+    $schedule_id = intval($_POST['schedule_id']);
+    $areas = $_POST['area'];  // This will be an array with team member IDs as keys and assigned areas as values
+
+    // Start a transaction
     $conn->begin_transaction();
 
     try {
+        // Loop through each team member and update their assigned area
         foreach ($areas as $team_member_id => $area) {
-            // Ensure the area is not null and set to an empty string if it's blank
-            $area = trim($area) === '' ? '' : $area;
+            $area = trim($area);  // Ensure any whitespace is trimmed
 
-            $sql_update = "UPDATE team SET area = ? WHERE id = ?";
+            // Prepare the SQL statement to update the area
+            $sql_update = "UPDATE team SET area = ? WHERE id = ? AND schedule_id = ?";
             $stmt_update = $conn->prepare($sql_update);
-            $stmt_update->bind_param("si", $area, $team_member_id);
+            $stmt_update->bind_param("sii", $area, $team_member_id, $schedule_id);
             $stmt_update->execute();
             $stmt_update->close();
         }
 
-        // Update the team leader status only
-        $sql_update_leader = "UPDATE team SET status = 'accepted' WHERE internal_users_id = ? AND schedule_id = ?";
-        $stmt_update_leader = $conn->prepare($sql_update_leader);
-        $stmt_update_leader->bind_param("si", $_SESSION['user_id'], $schedule_id);
-        $stmt_update_leader->execute();
-        $stmt_update_leader->close();
-
+        // Commit the transaction
         $conn->commit();
-        header("Location: internal_notification.php");
+
+        // Redirect back to the internal assessment page or a success page
+        header("Location: internal_assessment.php");
+        exit();
     } catch (Exception $e) {
+        // Rollback the transaction in case of an error
         $conn->rollback();
+
+        // Display an error message
         echo "
         <!DOCTYPE html>
 <html lang=\"en\">
@@ -103,10 +109,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
         <div style=\"height: 25px; width: 0px;\"></div>
         <div class=\"message\">
-            Error: $e->getMessage();
+            Error: {$e->getMessage()};
         </div>
         <div style=\"height: 50px; width: 0px;\"></div>
-            <a href=\"internal_notification.php\" class=\"btn-hover\">OKAY</a>
+            <a href=\"internal_assessment.php\" class=\"btn-hover\">OKAY</a>
             <div style=\"height: 100px; width: 0px;\"></div>
             <div class=\"hairpop-up\"></div>
     </div>
@@ -116,7 +122,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $conn->close();
 } else {
-    header("Location: internal_notification.php");
+    // Redirect to the internal assessment page if the request method is not POST
+    header("Location: internal_assessment.php");
+    exit();
 }
-
 ?>

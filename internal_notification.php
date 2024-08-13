@@ -168,7 +168,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                                             <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
                                             <input type="hidden" name="action" id="action-<?php echo $team_id; ?>" value="">
                                             <button type="button" class="decline-button" onclick="confirmAction('<?php echo $team_id; ?>', 'decline')">DECLINE</button>
-                                            <button type="button" class="accept-button" onclick="openModal(<?php echo $schedule_id; ?>, <?php echo $team_id; ?>)">ACCEPT</button>
+                                            <button type="button" class="accept-button" onclick="confirmAction('<?php echo $team_id; ?>', 'accept')">ACCEPT</button>
                                         </form>
                                     <?php else: ?>
                                         <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
