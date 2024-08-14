@@ -104,6 +104,7 @@ a.sidebar-link {
     position: relative;
     overflow: hidden; /* Hide overflow */
     width: 60px; /* Initial width */
+    height: 49.61px;
 }
 
 a.sidebar-link-active {
@@ -120,6 +121,7 @@ a.sidebar-link-active {
     position: relative;
     overflow: hidden; /* Hide overflow */
     width: 60px; /* Initial width */
+    height: 49.61px;
 }
 
 a.sidebar-link span {
@@ -196,17 +198,17 @@ a.sidebar-link:hover {
     z-index: 1000; /* Ensure it is on top */
 }
 
-.sidebar-item {
+.sidebar-item, .sidebar-item1 {
     position: relative;
     padding: 3px;
 }
 
-.sidebar-item {
-    position: relative;
-    padding: 3px;
+.sidebar-item1 {
+    width: 221px;
+    margin-left: 30px;
 }
 
-#sidebar:not(.expand) .sidebar-item .sidebar-dropdown {
+#sidebar:not(.expand) .sidebar-item1 .sidebar-dropdown {
     position: absolute;
     top: 0;
     left: 70px;
@@ -216,7 +218,7 @@ a.sidebar-link:hover {
     display: none;
 }
 
-#sidebar:not(.expand) .sidebar-item:hover .has-dropdown+.sidebar-dropdown {
+#sidebar:not(.expand) .sidebar-item1:hover .has-dropdown+.sidebar-dropdown {
     display: block;
     max-height: 15em;
     width: 100%;
