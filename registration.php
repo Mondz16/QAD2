@@ -89,7 +89,7 @@ function displayRegistrations($conn, $tableName, $title)
             <tr>
                 <th>ID</th>
                 <th>FIRST NAME</th>
-                <th>MIDDLE INITIAL</th>
+                <th>M.I</th>
                 <th>LAST NAME</th>
                 <th>EMAIL</th>";
 

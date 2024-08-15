@@ -418,7 +418,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
                         <div style="height: 10px; width: 0px;"></div>
 
                         <div class="password">
-                            <div class="passwordContainer">
+                            <div class="passwordContainer" id="confirmPasswordContainer">
                                 <input class="passwordText" type="password" id="confirmPassword" name="confirmPassword" placeholder="CONFIRM PASSWORD" required oninput="checkPasswordMatch()"><br>
                             </div>
                         </div>
@@ -639,6 +639,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             const confirmPassword = document.getElementById('confirmPassword').value;
             const passwordMatchMessage = document.getElementById('passwordMatchMessage');
             const changePasswordButton = document.getElementById('changePasswordButton');
+            var confirmPasswordContainer = document.getElementById('confirmPasswordContainer');
 
             passwordMatchMessage.classList.toggle('valid', password === confirmPassword);
             passwordMatchMessage.classList.toggle('invalid', password !== confirmPassword);
@@ -646,6 +647,13 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             const allValid = document.querySelectorAll('#passwordChecklist .valid').length === 5;
             
             changePasswordButton.disabled = !(password === confirmPassword && allValid);
+
+            changePasswordButton.disabled = !(password === confirmPassword && allValid);
+            if (password === confirmPassword && confirmPassword !== '') {
+                confirmPasswordContainer.style.borderColor = 'green';
+            } else {
+                confirmPasswordContainer.style.borderColor = 'red';
+            }
         }
 
         function cancelAction() {

@@ -73,6 +73,7 @@ $stmt_all_colleges->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,7 +98,8 @@ $stmt_all_colleges->close();
                                 <h><span class="one">One</span>
                                     <span class="datausep">Data.</span>
                                     <span class="one">One</span>
-                                    <span class="datausep">USeP.</span></h>
+                                    <span class="datausep">USeP.</span>
+                                </h>
                             </div>
                             <h>Accreditor Portal</h>
                         </div>
@@ -175,7 +177,7 @@ $stmt_all_colleges->close();
                     <div style="height: 10px; width: 0px;"></div>
 
                     <div class="password">
-                        <div class="passwordContainer">
+                        <div class="passwordContainer" id="passwordContainer">
                             <input class="passwordText" type="password" id="newPassword" name="newPassword" placeholder="NEW PASSWORD" required oninput="checkPasswordStandards()"><br>
                         </div>
                     </div>
@@ -183,7 +185,7 @@ $stmt_all_colleges->close();
                     <div style="height: 10px; width: 0px;"></div>
 
                     <div class="password">
-                        <div class="passwordContainer">
+                        <div class="passwordContainer" id="confirmPasswordContainer">
                             <input class="passwordText" type="password" id="confirmPassword" name="confirmPassword" placeholder="CONFIRM PASSWORD" required oninput="checkPasswordMatch()"><br>
                         </div>
                     </div>
@@ -226,12 +228,12 @@ $stmt_all_colleges->close();
             <form action="update_profile.php" method="post" enctype="multipart/form-data">
                 <h2>EDITT PROFILE PICTURE</h2>
                 <div class="nameContainer orientationContainer uploadContainer">
-                        <span class="upload-text">UPLOAD</span>
-                        <img id="upload-icon-profile" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
-                        <input class="uploadInput" type="file" id="profilePicture" name="profilePicture" accept="image/*" required>
-                        <input type="hidden" name="field" value="profilePicture">
-                    </div>
-                    <div class="button-container">
+                    <span class="upload-text">UPLOAD</span>
+                    <img id="upload-icon-profile" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                    <input class="uploadInput" type="file" id="profilePicture" name="profilePicture" accept="image/*" required>
+                    <input type="hidden" name="field" value="profilePicture">
+                </div>
+                <div class="button-container">
                     <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
                     <button type="submit" class="accept-button1">CONFIRM</button>
                 </div>
@@ -271,16 +273,16 @@ $stmt_all_colleges->close();
             <form action="update_profile.php" method="post">
                 <h2>Edit Full Name</h2>
                 <div class="name1">
-                 <div class="profilenameContainer">
-                <input type="text" id="newFirstName" name="newFirstName" class="firstname" value="<?php echo htmlspecialchars($first_name); ?>" required>
-            </div>
-                <div class="profilenameContainer middleinitialContainer">
-                <input class="middleinitial" type="text" id="newMiddleInitial" name="newMiddleInitial" value="<?php echo htmlspecialchars($middle_initial); ?>" maxlength="1" required>
-                </div>
-                <div class="profilenameContainer lastnameContainer">
-                <input class="lastname" type="text" id="newLastName" name="newLastName" value="<?php echo htmlspecialchars($last_name); ?>" required>
-            </div>
-                <input type="hidden" name="field" value="fullname">
+                    <div class="profilenameContainer">
+                        <input type="text" id="newFirstName" name="newFirstName" class="firstname" value="<?php echo htmlspecialchars($first_name); ?>" required>
+                    </div>
+                    <div class="profilenameContainer middleinitialContainer">
+                        <input class="middleinitial" type="text" id="newMiddleInitial" name="newMiddleInitial" value="<?php echo htmlspecialchars($middle_initial); ?>" maxlength="1" required>
+                    </div>
+                    <div class="profilenameContainer lastnameContainer">
+                        <input class="lastname" type="text" id="newLastName" name="newLastName" value="<?php echo htmlspecialchars($last_name); ?>" required>
+                    </div>
+                    <input type="hidden" name="field" value="fullname">
                 </div>
                 <div class="button-container">
                     <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
@@ -295,10 +297,10 @@ $stmt_all_colleges->close();
             <form action="update_profile.php" method="post">
                 <h2>Edit Email</h2>
                 <div class="username">
-                <div class="usernameContainer">
-                <input class="email" type="email" id="newEmail" name="newEmail" value="<?php echo htmlspecialchars($email); ?>" required>
-            </div>
-                <input type="hidden" name="field" value="email">
+                    <div class="usernameContainer">
+                        <input class="email" type="email" id="newEmail" name="newEmail" value="<?php echo htmlspecialchars($email); ?>" required>
+                    </div>
+                    <input type="hidden" name="field" value="email">
                 </div>
                 <div class="button-container">
                     <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
@@ -313,19 +315,19 @@ $stmt_all_colleges->close();
             <form action="update_profile.php" method="post">
                 <h2>Edit Gender</h2>
                 <div class="gender">
-                <div class="edit-gender">
-                <select class="prefix"id="genderSelect" name="newGender" required>
-                    <option value="<?php echo htmlspecialchars($gender); ?>"><?php echo htmlspecialchars($gender); ?></option>
-                    <?php if ($gender !== 'Male') { ?><option value="Male">Male</option><?php } ?>
-                    <?php if ($gender !== 'Female') { ?><option value="Female">Female</option><?php } ?>
-                    <?php if ($gender !== 'Prefer not to say') { ?><option value="Prefer not to say">Prefer not to say</option><?php } ?>
-                    <?php if ($gender !== 'Others') { ?><option value="Others">Others</option><?php } ?>
-                </select>
-                <input class="specify-gender" type="text" id="genderInput" name="gender_others" placeholder="Specify Gender" value="<?php echo ($gender === 'Others') ? $gender : ''; ?>"><br><br>
-                <input type="hidden" name="field" value="gender">
-            </div>
-            </div>
-            <div class="button-container">
+                    <div class="edit-gender">
+                        <select class="prefix" id="genderSelect" name="newGender" required>
+                            <option value="<?php echo htmlspecialchars($gender); ?>"><?php echo htmlspecialchars($gender); ?></option>
+                            <?php if ($gender !== 'Male') { ?><option value="Male">Male</option><?php } ?>
+                            <?php if ($gender !== 'Female') { ?><option value="Female">Female</option><?php } ?>
+                            <?php if ($gender !== 'Prefer not to say') { ?><option value="Prefer not to say">Prefer not to say</option><?php } ?>
+                            <?php if ($gender !== 'Others') { ?><option value="Others">Others</option><?php } ?>
+                        </select>
+                        <input class="specify-gender" type="text" id="genderInput" name="gender_others" placeholder="Specify Gender" value="<?php echo ($gender === 'Others') ? $gender : ''; ?>"><br><br>
+                        <input type="hidden" name="field" value="gender">
+                    </div>
+                </div>
+                <div class="button-container">
                     <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
                     <button type="submit" class="accept-button1">CONFIRM</button>
                 </div>
@@ -339,20 +341,20 @@ $stmt_all_colleges->close();
                 <h2>Edit College</h2>
                 <div class="college">
                     <div class="college1">
-                <select id="newCollege" name="newCollege" required>
-                    <option value="">Select College</option>
-                    <?php foreach ($colleges as $college) { ?>
-                        <option value="<?php echo htmlspecialchars($college['code']); ?>"><?php echo htmlspecialchars($college['name']); ?></option>
-                    <?php } ?>
-                </select>
-                <input type="hidden" name="field" value="college">
-                <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user_id); ?>">
-                <input type="hidden" name="first_name" value="<?php echo htmlspecialchars($first_name); ?>">
-                <input type="hidden" name="middle_initial" value="<?php echo htmlspecialchars($middle_initial); ?>">
-                <input type="hidden" name="last_name" value="<?php echo htmlspecialchars($last_name); ?>">
-                <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
-            </div>
-            </div>
+                        <select id="newCollege" name="newCollege" required>
+                            <option value="">Select College</option>
+                            <?php foreach ($colleges as $college) { ?>
+                                <option value="<?php echo htmlspecialchars($college['code']); ?>"><?php echo htmlspecialchars($college['name']); ?></option>
+                            <?php } ?>
+                        </select>
+                        <input type="hidden" name="field" value="college">
+                        <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user_id); ?>">
+                        <input type="hidden" name="first_name" value="<?php echo htmlspecialchars($first_name); ?>">
+                        <input type="hidden" name="middle_initial" value="<?php echo htmlspecialchars($middle_initial); ?>">
+                        <input type="hidden" name="last_name" value="<?php echo htmlspecialchars($last_name); ?>">
+                        <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
+                    </div>
+                </div>
                 <div class="button-container">
                     <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
                     <button type="submit" class="accept-button1">CONFIRM</button>
@@ -363,7 +365,7 @@ $stmt_all_colleges->close();
 
     <script>
         function handleFileChange(inputElement, iconElement) {
-            inputElement.addEventListener('change', function () {
+            inputElement.addEventListener('change', function() {
                 if (this.files && this.files.length > 0) {
                     // Change icon to check mark if a file is selected
                     iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
@@ -380,7 +382,7 @@ $stmt_all_colleges->close();
             const showPasswordCheckbox = document.getElementById('showPasswordCheckbox');
             const newPassword = document.getElementById('newPassword');
             const confirmPassword = document.getElementById('confirmPassword');
-            
+
             if (showPasswordCheckbox.checked) {
                 newPassword.type = 'text';
                 confirmPassword.type = 'text';
@@ -389,7 +391,7 @@ $stmt_all_colleges->close();
                 confirmPassword.type = 'password';
             }
         }
-    
+
         function checkPasswordStandards() {
             const password = document.getElementById('newPassword').value;
             const minLength = document.getElementById('minLength');
@@ -416,7 +418,7 @@ $stmt_all_colleges->close();
 
             const allValid = document.querySelectorAll('#passwordChecklist .valid').length === 5;
             const passwordsMatch = password === document.getElementById('confirmPassword').value;
-            
+
             changePasswordButton.disabled = !(allValid && passwordsMatch);
         }
 
@@ -425,17 +427,25 @@ $stmt_all_colleges->close();
             const confirmPassword = document.getElementById('confirmPassword').value;
             const passwordMatchMessage = document.getElementById('passwordMatchMessage');
             const changePasswordButton = document.getElementById('changePasswordButton');
+            var confirmPasswordContainer = document.getElementById('confirmPasswordContainer');
 
             passwordMatchMessage.classList.toggle('valid', password === confirmPassword);
             passwordMatchMessage.classList.toggle('invalid', password !== confirmPassword);
 
             const allValid = document.querySelectorAll('#passwordChecklist .valid').length === 5;
-            
+
             changePasswordButton.disabled = !(password === confirmPassword && allValid);
+            if (password === confirmPassword && confirmPassword !== '') {
+                confirmPasswordContainer.style.borderColor = 'green';
+            } else {
+                confirmPasswordContainer.style.borderColor = 'red';
+            }
         }
+
         function cancelAction() {
             window.location.href = 'internal.php';
         }
+
         function toggleNotifications() {
             var dropdown = document.getElementById('notificationDropdown');
             dropdown.classList.toggle('show');
@@ -495,4 +505,5 @@ $stmt_all_colleges->close();
         }
     </script>
 </body>
+
 </html>

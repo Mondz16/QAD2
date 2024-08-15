@@ -356,10 +356,11 @@ body {
 
 .data-table th,
 .data-table td {
-    padding: 12px;
+    padding: 10px 5px;
     text-align: left;
     vertical-align: middle;
     border-bottom: 1px solid #ddd;
+    width: fit-content;
 }
 
 .btn {
@@ -507,4 +508,8 @@ body {
     border-radius: 5px;
     border: 1px solid #ddd;
     resize: none;
+}
+
+.action-buttons {
+    width: 200px;
 }

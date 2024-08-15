@@ -1505,3 +1505,8 @@ canvas {
 #confirmationMessage {
     text-align: center;
 }
+
+.changepassword-button:disabled {
+    opacity: 30%;
+    cursor:default;
+}
