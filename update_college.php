@@ -3,6 +3,7 @@ include 'connection.php';
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $image = "";
     if (isset($_POST['action']) && $_POST['action'] == 'reactivate') {
         $user_id = $_POST['user_id'];
 
@@ -11,9 +12,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_reactivate = $conn->prepare($sql_reactivate);
         $stmt_reactivate->bind_param("s", $user_id);
         if ($stmt_reactivate->execute()) {
-            echo "Reactivation request submitted successfully. <a href='internal.php'>Back to Profile</a>";
+            $message = "Reactivation request submitted successfully.";
+            $image = "success.png";
         } else {
-            echo "Error submitting reactivation request: " . $stmt_reactivate->error;
+            $message = "Error submitting reactivation request: " . $stmt_reactivate->error;
+            $image = "error.png";
         }
         $stmt_reactivate->close();
     } else {
@@ -129,16 +132,93 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt_insert->bind_param("ssssssssssss", $new_user_id, $new_college_code, $first_name, $middle_initial, $last_name, $email, $password, $profile_picture, $prefix, $gender, $e_sign_agreement, $otp);
 
             if ($stmt_insert->execute()) {
-                echo "College transfer request submitted successfully. <a href='internal.php'>Back to Profile</a>";
+                $message = "College transfer request submitted successfully.";
+                $image = "success.png";
             } else {
-                echo "Error submitting transfer request: " . $stmt_insert->error;
+                $message = "Error submitting transfer request: " . $stmt_insert->error;
+                $image = "error.png";
             }
             $stmt_insert->close();
         } else {
-            echo "You have selected the same college. No changes made. <a href='internal.php'>Back to Profile</a>";
+            $message = "You have selected the same college. No changes made.";
+            $image = "error.png";
         }
     }
 
     $conn->close();
+} else {
+    $message = "This page should only be accessed through a valid form submission.";
+    $image = "error.png";
 }
+
+// Display the operation result
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation Result</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="index.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Quicksand", sans-serif;
+        }
+        body {
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h2 {
+            font-size: 24px;
+            color: #292D32;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .btn-hover:hover {
+            background-color: #AFAFAF;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-content">
+        <div style='height: 50px; width: 0px;'></div>
+        <img class="status-image" src="images/<?php echo $image; ?>" alt="Status Image">
+        <div style="height: 25px; width: 0px;"></div>
+        <div class="message">
+            <?php echo $message; ?>
+        </div>
+        <div style="height: 50px; width: 0px;"></div>
+        <a class="btn-hover" href="internal.php">Back to Profile</a>
+        <div style='height: 100px; width: 0px;'></div>
+        <div class='hairpop-up'></div>
+    </div>
+</body>
+</html>
