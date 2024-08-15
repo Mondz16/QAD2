@@ -216,7 +216,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php echo $message; ?>
         </div>
         <div style="height: 50px; width: 0px;"></div>
-        <a class="btn-hover" href="internal.php">Back to Profile</a>
+        <a class="btn-hover" href="logout.php">Back to Profile</a>
         <div style='height: 100px; width: 0px;'></div>
         <div class='hairpop-up'></div>
     </div>

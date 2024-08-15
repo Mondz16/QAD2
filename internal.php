@@ -213,7 +213,6 @@ $stmt_all_colleges->close();
             <div class="profile-info">
                 <p><strong class="prefix">Prefix</strong><br><strong class="prefix1"><?php echo htmlspecialchars($prefix); ?></strong><button class="edit-link" onclick="openModal('prefixModal')">Edit</button></p><br>
                 <p><strong class="prefix">Full Name:</strong><br><strong class="prefix1"><?php echo htmlspecialchars($first_name . ' ' . $middle_initial . '. ' . $last_name); ?></strong><button class="edit-link" onclick="openModal('fullNameModal')">Edit</button></p><br>
-                <p><strong class="prefix">Email</strong><br><strong class="prefix1"><?php echo htmlspecialchars($email); ?></strong><button class="edit-link" onclick="openModal('emailModal')">Edit</button></p><br>
                 <p><strong class="prefix">Gender</strong><br><strong class="prefix1"><?php echo htmlspecialchars($gender); ?></strong><button class="edit-link" onclick="openModal('genderModal')">Edit</button></p><br>
                 <p><strong class="prefix">College</strong><br><strong class="prefix1"><?php echo htmlspecialchars($college_name1); ?></strong><button class="edit-link" onclick="openModal('collegeModal')">Edit</button></p>
             </div>
