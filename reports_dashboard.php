@@ -412,37 +412,37 @@ $conn->close();
                 datasets = [{
                         label: 'Not Accreditable',
                         data: data.map(item => item['Not Accreditable'] || 0),
-                        backgroundColor: '#FF6262',
+                        backgroundColor: '#FFD700',
                     },
                     {
                         label: 'PSV',
                         data: data.map(item => item['PSV'] || 0),
-                        backgroundColor: '#818181',
+                        backgroundColor: '#8FBC8F',
                     },
                     {
                         label: 'Candidate',
                         data: data.map(item => item['Candidate'] || 0),
-                        backgroundColor: '#34C759',
+                        backgroundColor: '#FF6347',
                     },
                     {
                         label: 'Level 1',
                         data: data.map(item => item['1'] || 0),
-                        backgroundColor: '#DEFF81',
+                        backgroundColor: '#4682B4',
                     },
                     {
                         label: 'Level 2',
                         data: data.map(item => item['2'] || 0),
-                        backgroundColor: '#C8FFF8',
+                        backgroundColor: '#7B68EE',
                     },
                     {
                         label: 'Level 3',
                         data: data.map(item => item['3'] || 0),
-                        backgroundColor: '#AA8CFF',
+                        backgroundColor: '#FF69B4',
                     },
                     {
                         label: 'Level 4',
                         data: data.map(item => item['4'] || 0),
-                        backgroundColor: '#FEC269',
+                        backgroundColor: '#32CD32',
                     }
                 ];
             } else {
@@ -471,9 +471,9 @@ $conn->close();
             pieChart.data.datasets = [{
                 data: programCounts,
                 backgroundColor: [
-                    '#FFD160',
-                    '#9CC8E5',
                     '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
                     '#FF6347',
                     '#8FBC8F',
                     '#4682B4',

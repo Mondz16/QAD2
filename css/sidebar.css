@@ -205,13 +205,17 @@ a.sidebar-link:hover {
 
 .sidebar-item1 {
     width: 221px;
+}
+#sidebar.expand .sidebar-item1 {
     margin-left: 30px;
 }
-
+#sidebar:not(.expand) .sidebar-item1 {
+    margin-left: 0;
+}
 #sidebar:not(.expand) .sidebar-item1 .sidebar-dropdown {
     position: absolute;
+    left: 100%; /* Changed from 70px to 100% */
     top: 0;
-    left: 70px;
     background-color: #fff;
     padding: 0;
     min-width: 15rem;

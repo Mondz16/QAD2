@@ -666,11 +666,7 @@
 }
 
 .middleinitialContainer {
-    flex: 0 0 9%;
-}
-
-.eyeContainer {
-    flex: 0 0 7%;
+    flex: 0 0 10%;
 }
 
 .prefixContainer select, .result {
