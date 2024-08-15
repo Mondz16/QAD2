@@ -210,7 +210,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="popup-content">
         <div style='height: 50px; width: 0px;'></div>
-        <img class="status-image" src="images/<?php echo $image; ?>" alt="Status Image">
+        <img class="status-image" src="images/<?php echo $image; ?>" height="100" alt="Status Image">
         <div style="height: 25px; width: 0px;"></div>
         <div class="message">
             <?php echo $message; ?>
