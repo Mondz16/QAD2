@@ -467,7 +467,7 @@
     cursor: not-allowed;
 }
 
-.popup, .popup1 {
+.popup, .popup1, .popup2 {
     display: none;
     position: fixed;
     z-index: 1;
@@ -479,9 +479,8 @@
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-.popup-content {
+.popup-content, .esign-popup-content {
     background-color: #fff;
-    margin: 10% auto;
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
@@ -489,6 +488,20 @@
     text-align: center;
     border-radius: 10px;
     position: relative;
+}
+
+.popup-content {
+    margin: 10% auto;
+}
+
+.esign-popup-content {
+    margin: 5% auto;
+    height: 800px;
+    padding: 20px 30px;
+    font-size: 17px;
+    font-weight: 500;
+    text-align: justify;
+    overflow: auto;
 }
 
 .popup-image {
@@ -502,14 +515,7 @@
     font-weight: 500;
 }
 
-.e-sign-text {
-    margin: 20px 30px;
-    font-size: 17px;
-    font-weight: 500;
-    text-align: justify;
-}
-
-.e-sign-text h2 {
+.esign-popup-content h2 {
     text-align: center;
     margin: 10px;
 }
@@ -669,6 +675,9 @@
     flex: 0 0 10%;
 }
 
+.eyeContainer {
+    flex: 0 0 7%;
+}
 .prefixContainer select, .result {
     width: 100%;
     border: none;
@@ -1404,11 +1413,10 @@ canvas {
 .e-sign-container {
     justify-content: center;
 }
-.assessmentmodal, .Summarymodal, .e-sign {
+.assessmentmodal, .Summarymodal {
     display: none;
     position: fixed;
     z-index: 1;
-    transform: translate(-50%, 0);
     width: 100%;
     max-width: 535px;
     overflow: auto;
@@ -1422,19 +1430,7 @@ canvas {
     left: 50%;
     top: 5%;
 }
-
-.e-sign {
-    height: 600px;
-    left: 50%;
-    top: 18%;
-}
 .assessmentmodal-content, .Summarymodal-content {
-    background-color: #fefefe;
-    padding: 20px;
-    border-radius: 10px;
-}
-
-.e-sign-modal {
     background-color: #fefefe;
     padding: 20px;
     border-radius: 10px;

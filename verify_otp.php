@@ -40,6 +40,41 @@ function sendOTPEmail($email, $otp) {
     }
 }
 
+function sendAccountApprovalEmail($email, $user_id) {
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'usepqad@gmail.com';
+        $mail->Password = 'vmvf vnvq ileu tmev';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        // Bypass SSL certificate verification
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
+
+        $mail->setFrom('usepqad@gmail.com', 'USeP - Quality Assurance Division');
+        $mail->addAddress($email);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Account Verification Successful';
+        $mail->Body    = "Dear User,<br><br>Your account with User ID: <b>{$user_id}</b> has been successfully verified. However, please note that you can only fully access your account once the admin has approved it.<br><br>Best Regards,<br>USeP - Quality Assurance Division";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
 $verified = false;
 $message = '';
 $message1 = '';
@@ -109,15 +144,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $message1 = "OTP has expired. Please request a new one.";
         } else {
             if (password_verify($otp, $stored_otp)) {  // Verify the hashed OTP
-                $stmt = $conn->prepare("UPDATE $table SET status = 'pending', otp = 'verified' WHERE email = ?");
+                // Fetch the user's ID
+                $stmt = $conn->prepare("SELECT user_id FROM $table WHERE email = ?");
                 $stmt->bind_param("s", $email);
-                if ($stmt->execute()) {
-                    $verified = true;
-                    $message = "Email verified successfully.<br>Your account is now pending for approval.";
-                } else {
-                    $message = "Error: " . $stmt->error;
-                }
+                $stmt->execute();
+                $stmt->bind_result($user_id);
+                $stmt->fetch();
                 $stmt->close();
+
+                // Try to send the account approval email
+                if (sendAccountApprovalEmail($email, $user_id)) {
+                    $stmt = $conn->prepare("UPDATE $table SET status = 'pending', otp = 'verified' WHERE email = ?");
+                    $stmt->bind_param("s", $email);
+                    if ($stmt->execute()) {
+                        $verified = true;
+                        $message = "Email verified successfully.<br>Your account is now pending for approval.<br>Please check your email for more details.";
+                    } else {
+                        $message = "Error: " . $stmt->error;
+                    }
+                    $stmt->close();
+                } else {
+                    $message2 = "Email verification succeeded, but we were unable to send the final account verification email. Please try again later.";
+                }
             } else {
                 $message2 = "Invalid OTP.";
             }
@@ -166,7 +214,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         window.onload = function () {
-            var duration = 60; // 180 seconds timer
+            var duration = 60; // 60 seconds timer
             var display = document.querySelector('#time');
             startTimer(duration, display);
         };
@@ -183,7 +231,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     document.getElementById('message').innerText = this.responseText;
-                    var duration = 60; // 180 seconds timer
+                    var duration = 60; // 60 seconds timer
                     var display = document.querySelector('#time');
                     startTimer(duration, display);
                 }
@@ -276,37 +324,65 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </script>
                 <?php endif; ?>
 
-                    <form method="post" action="verify_otp.php">
-                        <div class="username" style="width: 455px;">
-                            <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                                <input class="email" type="text" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
-                            </div>
+                <?php if (!$verified && $message2): ?>
+                    <div id="errorPopup" class="popup">
+                        <div class="popup-content">
+                            <div style="height: 50px; width: 0px;"></div>
+                            <img class="Error" src="images/Error.png" height="100">
+                            <div style="height: 20px; width: 0px;"></div>
+                            <div class="popup-text"><?php echo $message2; ?></div>
+                            <div style="height: 50px; width: 0px;"></div>
+                            <button id="closeErrorPopup" class="okay">Okay</button>
+                            <div style="height: 100px; width: 0px;"></div>
+                            <div class="hairpop-up"></div>
                         </div>
-                        <div style="height: 10px; width: 0px;"></div>
+                    </div>
+                    <script>
+                        document.getElementById('errorPopup').style.display = 'block';
 
-                        <div class="username" style="width: 455px;">
-                            <div style="display: flex; align-items: center; padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                                <input class="email" type="text" id="type" name="type" value="<?php echo htmlspecialchars($type); ?>" readonly style="text-transform: uppercase; flex: 1;">
-                                <span style="margin-right: 233px;">ACCREDITOR</span>
-                            </div>
+                        document.getElementById('closeErrorPopup').addEventListener('click', function() {
+                            document.getElementById('errorPopup').style.display = 'none';
+                        });
+
+                        window.addEventListener('click', function(event) {
+                            if (event.target == document.getElementById('errorPopup')) {
+                                document.getElementById('errorPopup').style.display = 'none';
+                            }
+                        });
+                    </script>
+                <?php endif; ?>
+
+                <form method="post" action="verify_otp.php">
+                    <div class="username" style="width: 455px;">
+                        <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
+                            <input class="email" type="text" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
                         </div>
-                        <div style="height: 10px; width: 0px;"></div>
+                    </div>
+                    <div style="height: 10px; width: 0px;"></div>
 
-                        <div class="username" style="width: 455px;">
-                            <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                                <input class="email" type="text" id="otp" name="otp" placeholder="OTP" required>
-                            </div>
+                    <div class="username" style="width: 455px;">
+                        <div style="display: flex; align-items: center; padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
+                            <input class="email" type="text" id="type" name="type" value="<?php echo htmlspecialchars($type); ?>" readonly style="text-transform: uppercase; flex: 1;">
+                            <span style="margin-right: 233px;">ACCREDITOR</span>
                         </div>
-                        <div style="height: 10px; width: 0px;"></div>
+                    </div>
+                    <div style="height: 10px; width: 0px;"></div>
 
-                        <button type="submit" class="verify">Verify</button>
+                    <div class="username" style="width: 455px;">
+                        <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
+                            <input class="email" type="text" id="otp" name="otp" placeholder="OTP" required>
+                        </div>
+                    </div>
+                    <div style="height: 10px; width: 0px;"></div>
 
-                        <div style="height: 10px; width: 0px;"></div>
-                    </form>
+                    <button type="submit" class="verify">Verify</button>
 
-                    <p id="message" style="color: red; font-weight: bold;"><?php echo $message1; ?></p>
-                    <p id="message" style="color: red; font-weight: bold;"><?php echo $message2; ?></p>
-                    <div style="height: 20px; width: 0px;"></div>
+                    <div style="height: 10px; width: 0px;"></div>
+                </form>
+
+                <p id="message" style="color: red; font-weight: bold;"><?php echo $message1; ?></p>
+                <p id="message" style="color: red; font-weight: bold;"><?php echo $message2; ?></p>
+                <div style="height: 20px; width: 0px;"></div>
                 <a href="login.php" style="color: rgb(87, 87, 87); font-weight: 500; text-decoration: underline;">Already have an account?</a>
                 <button type="button" class="resend disabled" id="resendOTP" onclick="resendOTP()" disabled>RESEND OTP IN <span id="time">01:00</span></button>
             </div>
