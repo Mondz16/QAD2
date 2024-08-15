@@ -227,6 +227,7 @@ $conn->close();
             width: 100%;
             margin-top: 20px;
             border-collapse: collapse;
+            margin-top: 10px;
         }
 
         table.dataTable th,
@@ -236,7 +237,7 @@ $conn->close();
         }
 
         table.dataTable thead th {
-            background-color: #007bff;
+            background-color: #FF9998;
             color: #fff;
         }
 
@@ -253,7 +254,7 @@ $conn->close();
         }
 
         #recentActivitiesTable thead th {
-            background-color: #007bff;
+            background-color: #FF9998;
             color: #fff;
         }
 
@@ -543,7 +544,7 @@ $conn->close();
                         label: 'Users Per Campus',
                         data: userDistributionData,
                         backgroundColor: [
-                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 153, 152, .2)',
                             'rgba(255, 99, 132, 0.2)',
                             'rgba(54, 162, 235, 0.2)',
                             'rgba(255, 206, 86, 0.2)',
@@ -551,7 +552,7 @@ $conn->close();
                             'rgba(255, 159, 64, 0.2)'
                         ],
                         borderColor: [
-                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 153, 152, 1)',
                             'rgba(255, 99, 132, 1)',
                             'rgba(54, 162, 235, 1)',
                             'rgba(255, 206, 86, 1)',
@@ -590,8 +591,8 @@ $conn->close();
                     datasets: [{
                         label: 'User Status',
                         data: userStatusData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(255, 153, 152, .2)',
+                        borderColor: 'rgba(255, 153, 152, 1)',
                         borderWidth: 1
                     }]
                 },

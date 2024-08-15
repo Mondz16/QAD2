@@ -49,30 +49,47 @@ $conn = new mysqli($servername, $db_username, $db_password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
 function displayRegistrations($conn, $tableName, $title)
 {
+    // Fetch all users (both pending and non-pending) to check for duplicates
     $sql = "";
     if ($tableName === 'internal_users') {
-        $sql = "SELECT i.user_id, i.first_name, i.middle_initial, i.last_name, i.email, c.college_name
+        $sql = "SELECT i.user_id, i.first_name, i.middle_initial, i.last_name, i.email, c.college_name, i.status
                 FROM internal_users i
                 LEFT JOIN college c ON i.college_code = c.code
-                WHERE i.status = 'pending' AND i.otp = 'verified'";
+                WHERE i.otp = 'verified'";
     } elseif ($tableName === 'external_users') {
         $sql = "SELECT e.user_id, e.first_name, e.middle_initial, e.last_name, e.email, c.company_name
                 FROM external_users e
-                LEFT JOIN company c ON e.company_code = c.code
-                WHERE e.status = 'pending'";
+                LEFT JOIN company c ON e.company_code = c.code";
     }
 
     $result = $conn->query($sql);
+    $userIds = [];
+    $duplicateIds = [];
+
+    // First pass: Identify duplicates across all users
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $trimmedUserId = substr($row['user_id'], 3);
+
+            if (isset($userIds[$trimmedUserId])) {
+                $duplicateIds[$trimmedUserId] = true;
+            } else {
+                $userIds[$trimmedUserId] = true;
+            }
+        }
+    }
+
+    // Second pass: Display only non-duplicate internal_users with status = 'pending'
+    $result->data_seek(0); // Reset result pointer to the start
 
     if ($result->num_rows > 0) {
         echo "<table id='collegeTable' class='data-table table border rounded-2'>
             <tr>
                 <th>ID</th>
                 <th>FIRST NAME</th>
-                <th>M.I</th>
+                <th>MIDDLE INITIAL</th>
                 <th>LAST NAME</th>
                 <th>EMAIL</th>";
 
@@ -87,7 +104,18 @@ function displayRegistrations($conn, $tableName, $title)
             </tr>";
 
         while ($row = $result->fetch_assoc()) {
-            $full_name = $row['first_name'] . " " . $row['middle_initial'] . " " . $row["last_name"];
+            $trimmedUserId = substr($row['user_id'], 3);
+
+            // Skip rows with duplicate user_id
+            if (isset($duplicateIds[$trimmedUserId])) {
+                continue;
+            }
+
+            // Display only internal_users with status = 'pending'
+            if ($tableName === 'internal_users' && $row['status'] !== 'pending') {
+                continue;
+            }
+
             echo "<tr>
                 <td>{$row['user_id']}</td>
                 <td>{$row['first_name']}</td>
@@ -115,6 +143,7 @@ function displayRegistrations($conn, $tableName, $title)
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
