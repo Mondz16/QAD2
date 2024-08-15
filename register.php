@@ -44,7 +44,7 @@ if (isset($_SESSION['user_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register Form</title>
     <link rel="stylesheet" href="index.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
 </head>
 <body>
     <div class="wrapper">
@@ -112,26 +112,26 @@ if (isset($_SESSION['user_id'])) {
                             <div style="height: 10px; width: 0px;"></div>
                             <div class="name">
                                 <div class="prefixContainer">
-                                <div class="custom-select-wrapper">
-                                    <select class="prefix" name="prefix" required>
-                                        <option value="" disabled selected hidden>Prefix</option>
-                                        <option value="Mr.">Mr.</option>
-                                        <option value="Ms.">Ms.</option>
-                                        <option value="Mrs.">Mrs.</option>
-                                        <option value="Dr.">Dr.</option>
-                                        <option value="Prof.">Prof.</option>
-                                        <option value="Assoc. Prof.">Assoc. Prof.</option>
-                                        <option value="Assist. Prof.">Assist. Prof.</option>
-                                        <option value="Engr.">Engr.</option>
-                                        <!-- Add more options as needed -->
-                                    </select>
-                                </div>
+                                    <div class="custom-select-wrapper">
+                                        <select class="prefix" name="prefix">
+                                            <option value="">Prefix</option>
+                                            <option value="Mr.">Mr.</option>
+                                            <option value="Ms.">Ms.</option>
+                                            <option value="Mrs.">Mrs.</option>
+                                            <option value="Dr.">Dr.</option>
+                                            <option value="Prof.">Prof.</option>
+                                            <option value="Prof.">Assoc. Prof.</option>
+                                            <option value="Prof.">Assist. Prof.</option>
+                                            <option value="Prof.">Engr.</option>
+                                            <!-- Add more options as needed -->
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="nameContainer firstnameContainer">
                                     <input class="firstname" type="text" name="first_name" placeholder="First Name">
                                 </div>
                                 <div class="nameContainer middleinitialContainer">
-                                    <input class="middleinitial" type="text" name="middle_initial" id="middleinitial" placeholder="M.I." style="text-transform: uppercase;">
+                                    <input class="middleinitial" type="text" name="middle_initial" placeholder="M.I.">
                                 </div>
                                 <div class="nameContainer lastnameContainer">
                                     <input class="lastname" type="text" name="last_name" placeholder="Last Name">
@@ -145,22 +145,19 @@ if (isset($_SESSION['user_id'])) {
                             </div>
                             <div style="height: 8px; width: 0px;"></div>
                             <div class="name">
-                                <div class="nameContainer" id="passwordContainer">
+                                <div class="nameContainer">
                                     <input class="middleinitial" type="password" name="password" id="passwordInput" placeholder="Password">
                                 </div>
-                                <div class="nameContainer" id="confirmPasswordContainer">
-                                    <input class="lastname" type="password" name="confirm_password" id="confirmPasswordInput" placeholder="Confirm Password">
-                                </div>
-                                <div class="nameContainer eyeContainer" style="padding: 12px 12px; display: flex; justify-content: center; align-items: center;">
-                                    <i class="fa-regular fa-eye-slash" id="togglePasswordConfirmPassword" style="cursor: pointer;"></i>
+                                <div class="nameContainer">
+                                    <input class="lastname" type="password" name="confirm_password" placeholder="Confirm Password">
                                 </div>
                             </div>
                             <div style="height: 4px; width: 0px;"></div>
                             <div class="password-requirements" style="font-size: 14px;">
                                 <p id="passwordRequirements">
                                     Password must contain: 
-                                    <span id="charRequirement" style="color:red;">Minimum of 8 characters</span>, 
-                                    <span id="uppercaseRequirement" style="color:red;">one uppercase character</span>, 
+                                    <span id="charRequirement" style="color:red;">Minimum of 8 Characters</span>, 
+                                    <span id="uppercaseRequirement" style="color:red;">one uppercase Character</span>, 
                                     <span id="numberRequirement" style="color:red;">a number</span>, and 
                                     <span id="specialRequirement" style="color:red;">a special character</span>.
                                 </p>
@@ -212,7 +209,7 @@ if (isset($_SESSION['user_id'])) {
                             <div class="gender" style="width: 721px;">
                                 <div class="college-company-gender">
                                     <select class="prefix" name="gender" id="genderSelect">
-                                        <option value="" disabled selected hidden>Gender</option>
+                                        <option value="">Gender</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                         <option value="Prefer not to say">Prefer not to say</option>
@@ -313,21 +310,9 @@ By clicking "Agree," you consent to the use of your electronic signature as desc
     </div>
 
     <script>
-    let tempFormData = {};
+let tempFormData = {};
 
-    document.getElementById('middleinitial').addEventListener('input', function(e) {
-        let middleinitialInput = e.target.value;
-
-        // Limit to 10 characters
-        if (middleinitialInput.length > 1) {
-            middleinitialInput = middleinitialInput.slice(0, 1);
-        }
-
-        // Set the cleaned value back to the input
-        e.target.value = middleinitialInput;
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Set initial state
     document.querySelector('input[name="type"][value="internal"]').checked = true;
     document.getElementById('college-field').style.display = 'block';
@@ -500,110 +485,28 @@ By clicking "Agree," you consent to the use of your electronic signature as desc
     }
 
     document.getElementById('passwordInput').addEventListener('input', function() {
-    var password = this.value;
+        var password = this.value;
 
-    // Minimum 8 characters
-    var charRequirementMet = password.length >= 8;
-    document.getElementById('charRequirement').style.color = charRequirementMet ? 'green' : 'red';
+        // Minimum 8 characters
+        var charRequirementMet = password.length >= 8;
+        document.getElementById('charRequirement').style.color = charRequirementMet ? 'green' : 'red';
 
-    // At least one uppercase character
-    var uppercaseRequirementMet = /[A-Z]/.test(password);
-    document.getElementById('uppercaseRequirement').style.color = uppercaseRequirementMet ? 'green' : 'red';
+        // At least one uppercase character
+        var uppercaseRequirementMet = /[A-Z]/.test(password);
+        document.getElementById('uppercaseRequirement').style.color = uppercaseRequirementMet ? 'green' : 'red';
 
-    // At least one number
-    var numberRequirementMet = /\d/.test(password);
-    document.getElementById('numberRequirement').style.color = numberRequirementMet ? 'green' : 'red';
+        // At least one number
+        var numberRequirementMet = /\d/.test(password);
+        document.getElementById('numberRequirement').style.color = numberRequirementMet ? 'green' : 'red';
 
-    // At least one special character
-    var specialRequirementMet = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    document.getElementById('specialRequirement').style.color = specialRequirementMet ? 'green' : 'red';
+        // At least one special character
+        var specialRequirementMet = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        document.getElementById('specialRequirement').style.color = specialRequirementMet ? 'green' : 'red';
 
-    // Store the result of validation
-    var isValidPassword = charRequirementMet && uppercaseRequirementMet && numberRequirementMet && specialRequirementMet;
-    this.dataset.valid = isValidPassword;
-
-    // Change border color of the parent div based on password validity
-    var passwordContainer = document.getElementById('passwordContainer');
-    if (isValidPassword) {
-        passwordContainer.style.borderColor = 'green';
-    } else {
-        passwordContainer.style.borderColor = 'red';
-    }
+        // Store the result of validation
+        document.getElementById('passwordInput').dataset.valid = charRequirementMet && uppercaseRequirementMet && numberRequirementMet && specialRequirementMet;
+    });
 });
-
-});
-
-document.getElementById('togglePasswordConfirmPassword').addEventListener('click', function () {
-    const passwordInput = document.getElementById('passwordInput');
-    const confirmPasswordInput = document.getElementById('confirmPasswordInput');
-    const icon = this;
-
-    if (passwordInput.type === 'password' || confirmPasswordInput.type === 'password') {
-        passwordInput.type = 'text';
-        confirmPasswordInput.type = 'text';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    } else {
-        passwordInput.type = 'password';
-        confirmPasswordInput.type = 'password';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    }
-});
-
-document.getElementById('passwordInput').addEventListener('input', function() {
-    validatePassword();
-    checkPasswordMatch();
-});
-
-document.getElementById('confirmPasswordInput').addEventListener('input', function() {
-    checkPasswordMatch();
-});
-
-function validatePassword() {
-    var password = document.getElementById('passwordInput').value;
-
-    // Minimum 8 characters
-    var charRequirementMet = password.length >= 8;
-    document.getElementById('charRequirement').style.color = charRequirementMet ? 'green' : 'red';
-
-    // At least one uppercase character
-    var uppercaseRequirementMet = /[A-Z]/.test(password);
-    document.getElementById('uppercaseRequirement').style.color = uppercaseRequirementMet ? 'green' : 'red';
-
-    // At least one number
-    var numberRequirementMet = /\d/.test(password);
-    document.getElementById('numberRequirement').style.color = numberRequirementMet ? 'green' : 'red';
-
-    // At least one special character
-    var specialRequirementMet = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    document.getElementById('specialRequirement').style.color = specialRequirementMet ? 'green' : 'red';
-
-    // Store the result of validation
-    var isValidPassword = charRequirementMet && uppercaseRequirementMet && numberRequirementMet && specialRequirementMet;
-    document.getElementById('passwordInput').dataset.valid = isValidPassword;
-
-    // Change border color of the parent div based on password validity
-    var passwordContainer = document.getElementById('passwordContainer');
-    if (isValidPassword) {
-        passwordContainer.style.borderColor = 'green';
-    } else {
-        passwordContainer.style.borderColor = 'red';
-    }
-}
-
-function checkPasswordMatch() {
-    var password = document.getElementById('passwordInput').value;
-    var confirmPassword = document.getElementById('confirmPasswordInput').value;
-    var confirmPasswordContainer = document.getElementById('confirmPasswordContainer');
-
-    if (password === confirmPassword && confirmPassword !== '') {
-        confirmPasswordContainer.style.borderColor = 'green';
-    } else {
-        confirmPasswordContainer.style.borderColor = 'red';
-    }
-}
-
 </script>
 
 </body>
