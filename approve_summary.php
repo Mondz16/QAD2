@@ -206,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Quicksand", sans-serif;
+            font-family: 'Quicksand', sans-serif;
         }
         body {
             background-color: rgba(0, 0, 0, 0.5);
