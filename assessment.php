@@ -149,7 +149,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
@@ -167,6 +167,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             top: 30%;
             transform: translate(-50%, 0);
             width: 700px;
+            height:300px;
             padding: 20px;
             border-radius: 10px;
         }
@@ -379,6 +380,41 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             border: 1px solid #ddd;
             border-radius: 20px;
             background: #f9f9f9;
+        }
+
+        .custom-loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .custom-spinner {
+            width: 40px; /* Size similar to Bootstrap's default spinner */
+            height: 40px; /* Size similar to Bootstrap's default spinner */
+            border-width: 5px;
+            border-style: solid;
+            border-radius: 50%;
+            border-color: #FF7A7A; /* Custom color for the spinner */
+            border-right-color: transparent; /* Transparent border to create the spinning effect */
+            animation: custom-spin 0.75s linear infinite; /* Bootstrap-like spinning animation */
+        }
+
+        .custom-spinner-hidden {
+            display: none;
+        }
+
+        /* Custom spin animation similar to Bootstrap */
+        @keyframes custom-spin {
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -606,11 +642,11 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                                             echo "<div class='assessment-details'>";
                                             echo "<div class='assessment-holder-1'>
             <div class='assessment-college'>
-                <p> College:  <br><div class='assessment-values'>" . $schedule['college_name'] . "</div></p>
-                <p> Program:  <br><div class='assessment-values'>" . $schedule['program_name'] . "</div></p>
+                <p> COLLEGE:  <br><div class='assessment-values'>" . $schedule['college_name'] . "</div></p>
+                <p> PROGRAM:  <br><div class='assessment-values'>" . $schedule['program_name'] . "</div></p>
             </div>
             <div class='assessment-level-applied'>
-                <p> Level Applied:  <br><h3>";
+                <p> LEVEL APPLIED:  <br><h3>";
 
                                             // Display level applied with abbreviations
                                             switch ($schedule['level_applied']) {
@@ -631,16 +667,16 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
 
                                             echo "<div class='assessment-holder-2'>
             <div class='assessment-dateTime'>
-                <p> Date:  <br><div class='assessment-values'>" . $scheduleDate . "</div></p>
+                <p> DATE:  <br><div class='assessment-values'>" . $scheduleDate . "</div></p>
             </div>
             <div class='assessment-dateTime'>
-                <p> Time:  <br><div class='assessment-values'>" . $scheduleTime . "</div></p>
+                <p> TIME:  <br><div class='assessment-values'>" . $scheduleTime . "</div></p>
             </div>
             <div class='assessment-udas'>
-                <p> Summary  <br><a href='$summaryFile' class='btn udas-button1' download>SUMMARY</a></p>
+                <p> DOWNLOADABLE  <br><a href='$summaryFile' class='btn udas-button1' download>SUMMARY</a></p>
             </div>
             <div class='assessment-udas'>
-                <p> NDA  <br><a href='$ndaFile' class='btn udas-button1' download>NDA</a></p>
+                <p> FILES:  <br><a href='$ndaFile' class='btn udas-button1' download>NDA</a></p>
             </div>";
 
                                             // Show approve button or check symbol based on approval status
@@ -682,8 +718,8 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                 <h2>Approve Summary</h2>
                 <form id="approveForm" method="POST" action="approve_summary.php" enctype="multipart/form-data">
                     <div class="label-holder">
-                        <label for="qadOfficerName"><strong>QAD Officer Name:</strong></label>
-                        <label for="qadOfficerSignature"><strong>Officer Signature (PNG only):</strong></label>
+                        <label for="qadOfficerName"><strong>QAD OFFICER NAME:</strong></label>
+                        <label for="qadOfficerSignature"><strong>OFFICER SIGNATURE (PNG ONLY):</strong></label>
                     </div>
                     <div class="input-holder">
                         <input type="text" id="qadOfficerName" name="qadOfficerName" value="<?php echo $full_name; ?>" readonly>
@@ -701,9 +737,15 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                 </form>
             </div>
         </div>
+
+        <div id="customLoadingOverlay" class="custom-loading-overlay custom-spinner-hidden">
+            <div class="custom-spinner"></div>
+        </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
         <script>
-            
+            document.querySelector('#approvalModal form').addEventListener('submit', function() {
+                document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
+            });
             function handleFileChange(inputElement, iconElement) {
                 inputElement.addEventListener('change', function () {
                     if (this.files && this.files.length > 0) {

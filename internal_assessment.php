@@ -205,6 +205,34 @@ foreach ($schedules as $schedule) {
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        .ndamodal1 {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place even when scrolling */
+            z-index: 1; /* Sit on top */
+            left: 0; /* Start from the left */
+            top: 0; /* Start from the top */
+            width: 100%; /* Cover the full width */
+            height: 100%; /* Cover the full height */
+            overflow: auto; /* Enable scrolling if needed */
+            background-color: rgba(0, 0, 0, 0.5); /* Background overlay */
+        }
+
+        .ndamodal-content1 {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #AFAFAF;
+            width: 80%; /* Could be more or less, depending on screen size */
+            max-width: 560px;
+            border-radius: 20px;
+            overflow-y: auto; /* Enables vertical scrolling if content exceeds the height */
+
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* This centers the modal */
+        }
+    </style>
 </head>
 <body>
     <div class="wrapper">
@@ -345,7 +373,7 @@ foreach ($schedules as $schedule) {
                         </div>
                     <?php endforeach; ?>
 
-                    <button type="submit" class="assessment-button">ASSIGN AREAS</button>
+                    <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
                 </form>
             <?php else: ?>
                 <!-- Proceed with checking team members' submission and approval status -->
@@ -450,8 +478,8 @@ foreach ($schedules as $schedule) {
     </div>
 
     <!-- NDA Signing Popup -->
-    <div class="ndamodal" id="ndaPopup" style="display: none;">
-        <div class="ndamodal-content">
+    <div class="ndamodal1" id="ndaPopup" style="display: none;">
+        <div class="ndamodal-content1">
             <span style="float: right; font-size: 40px; cursor: pointer;" class="close" onclick="closeNdaPopup()">&times;</span>
             <h2>NON-DISCLOSURE AGREEMENT</h2>
             <form action="internal_nda_process.php" method="POST" enctype="multipart/form-data">
@@ -662,7 +690,7 @@ foreach ($schedules as $schedule) {
         <div class="approvalmodal-content">
             <span style="float: right; font-size: 40px; cursor: pointer;" class="close" onclick="closeApproveAssessmentPopup()">&times;</span>
             <h2>APPROVE ASSESSMENT</h2>
-            <form action="internal_approve_assessment_process.php" method="POST" enctype="multipart/form-data">
+            <form id="approveAssessmentForm" action="internal_approve_assessment_process.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="team_id" id="approve_team_id">
                 <input type="hidden" name="assessment_file" id="approve_assessment_file">
                 <div class="orientationname1">
@@ -691,7 +719,25 @@ foreach ($schedules as $schedule) {
         </div>
     </div>
 
+    <div id="customLoadingOverlay" class="custom-loading-overlay custom-spinner-hidden">
+        <div class="custom-spinner"></div>
+    </div>
+
+
     <script>
+        document.getElementById('approveAssessmentForm').addEventListener('submit', function(event) {
+            // Show the loading spinner
+            document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
+        });
+
+        document.querySelector('#popup form').addEventListener('submit', function() {
+            document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
+        });
+
+        document.querySelector('#Summarypopup form').addEventListener('submit', function() {
+            document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
+        });
+
         function handleFileChange(inputElement, iconElement) {
             inputElement.addEventListener('change', function () {
                 if (this.files && this.files.length > 0) {

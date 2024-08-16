@@ -86,6 +86,41 @@ if (!isset($_SESSION['user_id'])) {
         .okay:hover {
             background-color: #EAEAEA;
         }
+
+        .loading-spinner .spinner-border {
+            width: 40px;
+            height: 40px;
+            border-width: 5px;
+            border-color: #FF7A7A !important; /* Enforce the custom color */
+            border-right-color: transparent !important;
+        }
+
+        #loadingSpinner.spinner-hidden {
+            display: none;
+        }
+
+        .loading-spinner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        input[type="date"], input[type="time"] {
+            cursor: pointer;
+        }
+
+        /* Ensure the icon itself is also covered */
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -137,7 +172,7 @@ if (!isset($_SESSION['user_id'])) {
             <form id="schedule-form" method="POST" action="add_schedule_process.php">
                 <div class="form-group">
                     <label for="college">COLLEGE:</label>
-                    <select id="college" name="college" onchange="fetchPrograms(); fetchTeamLeadersAndMembers();" required class="select2">
+                    <select id="college" name="college" onchange="fetchPrograms(); fetchTeamLeadersAndMembers();" required class="select2" style="cursor: pointer;">
                         <option value="">Select College</option>
                         <?php
                         include 'connection.php';
@@ -153,7 +188,7 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
                 <div class="form-group">
                     <label for="program">PROGRAM:</label>
-                    <select id="program" name="program" onchange="fetchProgramLevel()" required class="select2">
+                    <select id="program" name="program" onchange="fetchProgramLevel()" required class="select2" style="cursor: pointer;">
                         <option value="">Select Program</option>
                         <!-- Options will be dynamically populated based on college selection -->
                     </select>
@@ -162,7 +197,7 @@ if (!isset($_SESSION['user_id'])) {
                     <div class="level-header">
                         <label for="level">CURRENT LEVEL:</label>
                         <label class="level-applied" for="level">LEVEL APPLIED:</label>
-                        <label for="level_validity">Years of Validity:</label>
+                        <label for="level_validity">YEARS OF VALIDITY:</label>
                     </div>
                     <div class="level-input-holder">
                         <input class="level-input" type="hidden" id="program-level" name="level" readonly>
@@ -172,34 +207,34 @@ if (!isset($_SESSION['user_id'])) {
                         </div>
                         <input class="level-input highlight" type="hidden" id="level" name="level" readonly>
                         <input class="level-input highlight" type="text" id="level-output" name="level-output" readonly>
-                        <input class="level-input" type="text" id="year_validity" name="level_validity" required>
+                        <input class="level-input-validity" type="text" id="year_validity" name="level_validity" style="width:" required>
                     </div>
                 </div>
                 <div class="dateTime-holder">
                     <div class="form-group">
                         <label for="date">DATE:</label>
-                        <input type="date" id="date" name="date" required onchange="checkScheduleDate()">
+                        <input type="date" id="date" name="date" required style="cursor: pointer;" onchange="checkScheduleDate()" onclick="openDatePicker('date')">
                     </div>
                     <div class="form-group">
                         <label for="time">TIME:</label>
-                        <input type="time" id="time" name="time" required>
+                        <input type="time" id="time" name="time" required style="cursor: pointer;" onclick="openDatePicker('time')">
                     </div>
                     <div class="form-group">
-                        <label for="time">ZOOM:</label>
+                        <label for="zoom">ZOOM:</label>
                         <input type="text" id="zoom" name="zoom" placeholder="OPTIONAL">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="team-leader">Team Leader:</label>
-                    <select id="team-leader" name="team_leader" required onchange="updateDropdowns()">
+                    <label for="team-leader">TEAM LEADER:</label>
+                    <select id="team-leader" name="team_leader" required onchange="updateDropdowns()" style="cursor: pointer;">
                         <option value="">Select Team Leader</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="team-members">Team Members:</label>
+                    <label for="team-members">TEAM MEMBER/S:</label>
                     <div id="team-members-container">
                         <div class="team-member-input">
-                            <select name="team_members[]" class="team-member-select" required onchange="updateDropdowns()">
+                            <select name="team_members[]" class="team-member-select" required onchange="updateDropdowns()" style="cursor: pointer;">
                                 <option value="">Select Team Member</option>
                             </select>
                         </div>
@@ -226,7 +261,13 @@ if (!isset($_SESSION['user_id'])) {
             <div class="hairpop-up"></div>
         </div>
     </div>
-    <!-- Include jQuery -->
+
+    <div id="loadingSpinner" class="loading-spinner spinner-hidden">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
     function addTeamMemberInput() {
@@ -441,7 +482,8 @@ if (!isset($_SESSION['user_id'])) {
         });
     }
 
-    function checkScheduleDate() {
+    // Function to check if the selected date has a conflict
+    function checkScheduleDate(callback) {
         var date = document.getElementById('date').value;
         if (date) {
             $.ajax({
@@ -452,48 +494,74 @@ if (!isset($_SESSION['user_id'])) {
                     var data = JSON.parse(response);
                     if (data.status === 'exists') {
                         document.getElementById('errorPopup').style.display = 'block';
+                        if (callback) callback(false); // Date conflict, callback with false
+                    } else {
+                        if (callback) callback(true); // No conflict, callback with true
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error('Error:', error);
+                    if (callback) callback(false); // Error occurred, callback with false
                 }
             });
+        } else {
+            if (callback) callback(true); // No date selected, continue with submission
         }
     }
 
-    $(document).ready(function() {
-        fetchTeamLeadersAndMembers();
-        $('#schedule-form').submit(function(event) {
-            event.preventDefault();
-            var date = $('#date').val();
-            $.ajax({
-                url: 'check_schedule.php',
-                type: 'POST',
-                data: { date: date },
-                success: function(response) {
-                    var data = JSON.parse(response);
-                    if (data.status === 'exists') {
-                        document.getElementById('errorPopup').style.display = 'block';
-                    } else {
-                        $('#schedule-form')[0].submit();
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                }
-            });
-        });
+    // Event listener for date change
+    document.getElementById('date').addEventListener('change', function() {
+        checkScheduleDate(); // Just check the date, no callback needed here
+    });
 
-        document.getElementById('closeErrorPopup').addEventListener('click', function() {
-            document.getElementById('errorPopup').style.display = 'none';
-        });
+    // Event listener for form submission
+    document.getElementById('schedule-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the form from submitting immediately
 
-        window.addEventListener('click', function(event) {
-            if (event.target == document.getElementById('errorPopup')) {
-                document.getElementById('errorPopup').style.display = 'none';
+        // Check if the selected date is available
+        checkScheduleDate(function(isDateAvailable) {
+            if (isDateAvailable) {
+                // If date is available, show the loading spinner and submit the form
+                document.getElementById('loadingSpinner').classList.remove('spinner-hidden');
+                document.getElementById('schedule-form').submit();
+            } else {
+                // If date is not available, ensure the loading spinner is hidden
+                document.getElementById('loadingSpinner').classList.add('spinner-hidden');
             }
         });
     });
+
+    // Event listener for closing the error popup
+    document.getElementById('closeErrorPopup').addEventListener('click', function() {
+        document.getElementById('errorPopup').style.display = 'none';
+    });
+
+    // Close the error popup if the user clicks outside of it
+    window.addEventListener('click', function(event) {
+        if (event.target == document.getElementById('errorPopup')) {
+            document.getElementById('errorPopup').style.display = 'none';
+        }
+    });
+
+    function openDatePicker(id) {
+        document.getElementById(id).showPicker();
+    }
+
+    document.getElementById('year_validity').addEventListener('input', function(e) {
+        let middleinitialInput = e.target.value;
+
+        // Remove any non-numeric characters
+        middleinitialInput = middleinitialInput.replace(/[^0-9]/g, '');
+
+        // Limit to 1 character
+        if (middleinitialInput.length > 1) {
+            middleinitialInput = middleinitialInput.slice(0, 1);
+        }
+
+        // Set the cleaned value back to the input
+        e.target.value = middleinitialInput;
+    });
+
 </script>
 </body>
 </html>

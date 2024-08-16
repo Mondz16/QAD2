@@ -82,6 +82,34 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
     <title>Internal Accreditor - Notifications</title>
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .modal1 {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place even when scrolling */
+            z-index: 1; /* Sit on top */
+            left: 0; /* Start from the left */
+            top: 0; /* Start from the top */
+            width: 100%; /* Cover the full width */
+            height: 100%; /* Cover the full height */
+            overflow: auto; /* Enable scrolling if needed */
+            background-color: rgba(0, 0, 0, 0.5); /* Background overlay */
+        }
+
+        .modal-content1 {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #AFAFAF;
+            width: 80%; /* Could be more or less, depending on screen size */
+            max-width: 500px;
+            border-radius: 20px;
+            overflow-y: auto; /* Enables vertical scrolling if content exceeds the height */
+
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* This centers the modal */
+        }
+    </style>
 </head>
 <body>
     <div class="wrapper">
@@ -191,27 +219,9 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
         </div>
     </div>
 
-    <!-- Modal for team leader to assign areas -->
-    <div id="assignModal" class="modal">
-        <div class="modal-content">
-            <h2>ASSIGN AREAS</h2>
-            <form id="assignForm" action="assign_areas_process.php" method="POST">
-                <input type="hidden" name="schedule_id" id="modal_schedule_id">
-                <input type="hidden" name="team_id" id="modal_team_id">
-                <div id="teamMembers">
-                    <!-- Team members' areas will be dynamically added here -->
-                </div>
-                <div class="button-container">
-                    <button type="button" class="cancel-button1" onclick="closeModal()">CANCEL</button>
-                    <button type="submit" class="submit-button">SUBMIT</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Confirmation Modal -->
-    <div id="confirmationModal" class="modal">
-        <div class="modal-content">
+    <div id="confirmationModal" class="modal1">
+        <div class="modal-content1">
             <p id="confirmationMessage"></p>
             <div class="button-container">
                 <button type="button" class="" id="backButton" onclick="closeConfirmationModal()">BACK</button>
@@ -294,6 +304,22 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
             document.getElementById('confirmationModal').style.display = 'none';
             window.location.href = 'internal_notification.php'; // Redirect to internal.php on BACK
         }
+
+        // Get the modal
+        var modal = document.getElementById("confirmationModal");
+
+        // Function to close the modal
+        function closeConfirmationModal() {
+            modal.style.display = "none";
+        }
+
+        // Close the modal when clicking anywhere outside of the modal content
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                closeConfirmationModal();
+            }
+        }
+
     </script>
 </body>
 </html>

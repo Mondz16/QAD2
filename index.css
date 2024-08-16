@@ -1242,12 +1242,27 @@ canvas {
     border-radius: 8px;
 }
 
-.assessment-button {
+.assessment-button1 {
+    padding: 10px 25px;
+    margin: 0 0;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.assessment-button1:hover {
+    background-color: #BEE5C8;
+    color: #006118;
+    border: 1px solid #BEE5C8;
+}
+
+.assessment-button, .assessment-button1 {
     background-color: #f9f9f9;
     border: 1px solid #34C759;
     color: #34C759;
     font-weight: bold;
-    width: 441px;
+    width: 100%;
     text-align: left;
 }
 
@@ -1416,24 +1431,28 @@ canvas {
 .assessmentmodal, .Summarymodal {
     display: none;
     position: fixed;
-    z-index: 1;
-    width: 100%;
-    max-width: 535px;
-    overflow: auto;
-    border: 1px solid #AFAFAF;
-    border-radius: 10px;
-    background-color: #fefefe;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%; /* This ensures the overlay covers the full width */
+    height: 100%; /* This ensures the overlay covers the full height */
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
 }
 
-.assessmentmodal, .Summarymodal {
-    height: 850px;
-    left: 50%;
-    top: 5%;
-}
 .assessmentmodal-content, .Summarymodal-content {
     background-color: #fefefe;
     padding: 20px;
+    border: 1px solid #888;
+    width: 535px; /* Set the width of the modal content */
     border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Optional: add a subtle shadow */
+    max-height: 850px; /* Limits the height of the modal content */
+    overflow-y: auto; /* Enables vertical scrolling if content exceeds the height */
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* This centers the modal */
 }
 
 .approvalmodal, .ndamodal {
@@ -1501,4 +1520,39 @@ canvas {
 .changepassword-button:disabled {
     opacity: 30%;
     cursor:default;
+}
+
+.custom-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.custom-spinner {
+    width: 40px; /* Size similar to Bootstrap's default spinner */
+    height: 40px; /* Size similar to Bootstrap's default spinner */
+    border-width: 5px;
+    border-style: solid;
+    border-radius: 50%;
+    border-color: #FF7A7A; /* Custom color for the spinner */
+    border-right-color: transparent; /* Transparent border to create the spinning effect */
+    animation: custom-spin 0.75s linear infinite; /* Bootstrap-like spinning animation */
+}
+
+.custom-spinner-hidden {
+    display: none;
+}
+
+/* Custom spin animation similar to Bootstrap */
+@keyframes custom-spin {
+    100% {
+        transform: rotate(360deg);
+    }
 }

@@ -156,6 +156,32 @@ function displayRegistrations($conn, $tableName, $title)
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link href="css/registration_pagestyle.css" rel="stylesheet">
+    <style>
+        .loading-spinner .spinner-border {
+            width: 40px;
+            height: 40px;
+            border-width: 5px;
+            border-color: #FF7A7A !important; /* Enforce the custom color */
+            border-right-color: transparent !important;
+        }
+
+        #loadingSpinner.spinner-hidden {
+            display: none;
+        }
+
+        .loading-spinner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+    </style>
 </head>
 
 <body>
@@ -383,7 +409,7 @@ function displayRegistrations($conn, $tableName, $title)
                 <form id="rejectForm" action="registration_approval.php" method="post">
                     <input type="hidden" name="id" id="rejectUserId">
                     <input type="hidden" name="action" value="reject">
-                    <textarea rows="3" cols="52" id="rejectReason" name="reason" placeholder="Enter reason for rejection"></textarea>
+                    <textarea rows="3" cols="52" id="rejectReason" name="reason" placeholder="Enter reason for rejection" required></textarea>
                     <div class="modal-buttons">
                         <button type="button" class="no-btn" onclick="closeRejectModal()">CANCEL</button>
                         <button type="submit" class="yes-btn">CONFIRM</button>
@@ -393,8 +419,24 @@ function displayRegistrations($conn, $tableName, $title)
         </div>
     </div>
 
+    <div id="loadingSpinner" class="loading-spinner spinner-hidden">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
+        document.getElementById('approveForm').addEventListener('submit', function(event) {
+            // Show the loading spinner
+            document.getElementById('loadingSpinner').classList.remove('spinner-hidden');
+        });
+
+        document.getElementById('rejectForm').addEventListener('submit', function(event) {
+            // Show the loading spinner
+            document.getElementById('loadingSpinner').classList.remove('spinner-hidden');
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarNav = document.querySelector('.sidebar-nav');
             const sidebarFooter = document.querySelector('.sidebar-footer');

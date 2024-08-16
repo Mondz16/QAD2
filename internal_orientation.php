@@ -13,8 +13,8 @@ $user_id = $_SESSION['user_id'];
 // Check user type and redirect accordingly
 if ($user_id === 'admin') {
     // If current page is not admin.php, redirect
-    if (basename($_SERVER['PHP_SELF']) !== 'admin.php') {
-        header("Location: admin.php");
+    if (basename($_SERVER['PHP_SELF']) !== 'dashbaord.php') {
+        header("Location: dashboard.php");
         exit();
     }
 } else {
@@ -198,7 +198,6 @@ if (!empty($schedules)) {
             text-align: center;
             margin: 20px;
         }
-
     </style>
 </head>
 <body>

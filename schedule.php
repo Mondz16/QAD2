@@ -178,6 +178,12 @@ if ($user_id === 'admin') {
         thead{
             background-color: #fff;
         }
+
+        .row {
+            max-height: 600px; /* Adjust this height as needed */
+            overflow-y: auto;
+            margin-bottom: 20px; /* Optional: Adds some spacing below the row */
+        }
     </style>
 </head>
 
@@ -384,11 +390,11 @@ if ($user_id === 'admin') {
                                 <?php
                                 include 'connection.php';
 
-                                $sql = "SELECT c.college_name, c.code as college_code, COUNT(s.id) AS total_schedules 
+                                $sql = "SELECT c.college_name, c.code as college_code, COUNT(s.id) AS total_schedules, MAX(s.schedule_date) AS recent_schedule_date 
                                         FROM college c 
                                         LEFT JOIN schedule s ON c.code = s.college_code 
                                         GROUP BY c.college_name, c.code 
-                                        ORDER BY c.college_name";
+                                        ORDER BY recent_schedule_date DESC, c.college_name";
 
                                 $result = $conn->query($sql);
 

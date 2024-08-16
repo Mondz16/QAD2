@@ -103,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['admin_verified'] = true;
                 $verified = true;
                 $message = "OTP verified successfully. You will be redirected shortly.";
-                header("refresh:5;url=admin.php");
+                header("refresh:5;url=dashboard.php");
                 exit;
             } else {
                 $message = "Invalid OTP.";
@@ -235,7 +235,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <div style="height: 20px; width: 0px;"></div>
                             <div class="popup-text"><?php echo $message; ?></div>
                             <div style="height: 50px; width: 0px;"></div>
-                            <a href="admin.php" class="okay" id="closePopup">Okay</a>
+                            <a href="dashbaord.php" class="okay" id="closePopup">Okay</a>
                             <div style="height: 100px; width: 0px;"></div>
                             <div class="hairpop-up"></div>
                         </div>

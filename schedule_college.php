@@ -73,6 +73,41 @@
         .okay:hover {
             background-color: #EAEAEA;
         }
+
+        .loading-spinner .spinner-border {
+            width: 40px;
+            height: 40px;
+            border-width: 5px;
+            border-color: #FF7A7A !important; /* Enforce the custom color */
+            border-right-color: transparent !important;
+        }
+
+        #loadingSpinner.spinner-hidden {
+            display: none;
+        }
+
+        .loading-spinner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        input[type="date"], input[type="time"] {
+            cursor: pointer;
+        }
+
+        /* Ensure the icon itself is also covered */
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -267,15 +302,15 @@
                     <input type="hidden" name="college" value="<?php echo htmlspecialchars($_GET['college']); ?>">
                     <input type="hidden" name="college_code" value="<?php echo htmlspecialchars($_GET['college_code']); ?>">
                     <div class="form-group">
-                        <label for="new_date">New Date:</label>
-                        <input type="date" id="new_date" name="new_date" required>
+                        <label for="new_date">NEW DATE:</label>
+                        <input type="date" id="new_date" name="new_date" required style="cursor: pointer;" onclick="openDatePicker('new_date')">
                     </div>
                     <div class="form-group">
-                        <label for="new_time">New Time:</label>
-                        <input type="time" id="new_time" name="new_time" required>
+                        <label for="new_time">NEW TIME:</label>
+                        <input type="time" id="new_time" name="new_time" required style="cursor: pointer;" onclick="openDatePicker('new_time')">
                     </div>
                     <div class="form-group">
-                        <label for="new_zoom">New Zoom:</label>
+                        <label for="new_zoom">NEW ZOOM:</label>
                         <input type="text" id="new_zoom" name="new_zoom">
                     </div>
                     <div class="form-group">
@@ -341,7 +376,15 @@
             <div class="hairpop-up"></div>
         </div>
     </div>
+
+    <div id="loadingSpinner" class="loading-spinner spinner-hidden">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous">
+
     </script>
     <script>
         let cancelScheduleId;
@@ -493,6 +536,36 @@ document.getElementById('closeErrorPopup').addEventListener('click', function() 
             };
             xhr.send();
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
+            // For Cancel Form
+            document.getElementById('cancelForm').addEventListener('submit', function() {
+                loadingSpinner.classList.remove('spinner-hidden');
+            });
+
+            // For Approve Form (triggered from Approve Modal)
+            document.getElementById('approveForm').addEventListener('submit', function() {
+                loadingSpinner.classList.remove('spinner-hidden');
+            });
+
+            // For Reschedule Form
+            document.getElementById('rescheduleForm').addEventListener('submit', function() {
+                loadingSpinner.classList.remove('spinner-hidden');
+            });
+            
+            // For the hidden Approve Form (if the user is triggering it manually)
+            document.getElementById('confirmApproveBtn').addEventListener('click', function() {
+                loadingSpinner.classList.remove('spinner-hidden');
+                document.getElementById('approveForm').submit();
+            });
+        });
+
+        function openDatePicker(id) {
+            document.getElementById(id).showPicker();
+        }
+
     </script>
 </body>
 

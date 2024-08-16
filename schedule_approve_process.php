@@ -280,18 +280,19 @@ if (!$schedule_id || !$college || !$college_code) {
         <div class="message">
             <?php if (isset($email_success) && $email_success): ?>
                 <img src="images/Success.png" height="100" alt="Success">
-                <div style="height: 25px; width: 0px;"></div>
-                <p>Schedule approved successfully. Email notifications have been sent.</p>
+                <div style="height: 20px; width: 0px;"></div>
+                <span>Schedule approved successfully.<br>Email notifications have been sent.</span>
             <?php elseif (isset($email_error) && $email_error): ?>
                 <img src="images/Error.png" height="100" alt="Error">
-                <div style="height: 25px; width: 0px;"></div>
+                <div style="height: 20px; width: 0px;"></div>
                 <?php echo $email_error; ?>              
             <?php else: ?>
+                <img src="images/Error.png" height="100" alt="Error">
+                <div style="height: 20px; width: 0px;"></div>
                 <?php echo isset($error_message) ? $error_message : 'Unknown error.'; ?>
-                <div style="height: 25px; width: 0px;"></div>
             <?php endif; ?>
         </div>
-        <div style="height: 25px; width: 0px;"></div>
+        <div style="height: 50px; width: 0px;"></div>
         <a class="btn-hover" href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($schedule_details['college_code']); ?>">OKAY</a>
         <div style='height: 100px; width: 0px;'></div>
         <div class='hairpop-up'></div>

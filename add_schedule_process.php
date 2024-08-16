@@ -121,7 +121,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             Error: Schedule already exists for the selected date.
         </div>
         <div style=\"height: 50px; width: 0px;\"></div>
-            <a href=\"college.php\" class=\"btn-hover\">OKAY</a>
+            <a href=\"add_schedule.php\" class=\"btn-hover\">OKAY</a>
             <div style=\"height: 100px; width: 0px;\"></div>
             <div class=\"hairpop-up\"></div>
     </div>
@@ -332,7 +332,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             New schedule and team members added successfully
         </div>
         <div style=\"height: 50px; width: 0px;\"></div>
-            <a href=\"college.php\" class=\"btn-hover\">OKAY</a>
+            <a href=\"add_schedule.php\" class=\"btn-hover\">OKAY</a>
             <div style=\"height: 100px; width: 0px;\"></div>
             <div class=\"hairpop-up\"></div>
     </div>
@@ -428,7 +428,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             Schedule could not be added because there's an internet problem. Please try again.
         </div>
         <div style=\"height: 50px; width: 0px;\"></div>
-            <a href=\"college.php\" class=\"btn-hover\">OKAY</a>
+            <a href=\"add_schedule.php\" class=\"btn-hover\">OKAY</a>
             <div style=\"height: 100px; width: 0px;\"></div>
             <div class=\"hairpop-up\"></div>
     </div>
@@ -508,7 +508,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class=\"message error\">
             Schedule could not be added because there's an internet problem. Please try again.
         <div style=\"height: 50px; width: 0px;\"></div>
-            <a href=\"college.php\" class=\"btn-hover\">OKAY</a>
+            <a href=\"add_schedule.php\" class=\"btn-hover\">OKAY</a>
             <div style=\"height: 100px; width: 0px;\"></div>
             <div class=\"hairpop-up\"></div>
     </div>

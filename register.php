@@ -24,7 +24,7 @@ if (isset($_SESSION['user_id'])) {
 
     // Parse user_id to get role
     if ($user_id === 'admin') {
-        header("Location: admin.php");
+        header("Location: dashboard.php");
     } else {
         list($college_code, $role_code, $unique_number) = explode('-', $user_id);
 
@@ -310,6 +310,10 @@ By clicking "Agree," you consent to the use of your electronic signature as desc
         </div>
     </div>
 
+    <div id="customLoadingOverlay" class="custom-loading-overlay custom-spinner-hidden">
+        <div class="custom-spinner"></div>
+    </div>
+    
     <script>
     let tempFormData = {};
 
@@ -452,7 +456,6 @@ By clicking "Agree," you consent to the use of your electronic signature as desc
     });
 
     document.getElementById('acceptTerms').addEventListener('click', function() {
-        document.getElementById('termsModal').style.display = 'none';
         document.getElementById('registerForm').submit();
     });
 
@@ -601,6 +604,12 @@ function checkPasswordMatch() {
         confirmPasswordContainer.style.borderColor = 'red';
     }
 }
+
+document.getElementById('acceptTerms').addEventListener('click', function() {
+    // Show the loading spinner
+    document.getElementById('loadingSpinner').classList.remove('spinner-hidden');
+});
+
 
 </script>
 

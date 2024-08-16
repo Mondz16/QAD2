@@ -7,7 +7,7 @@ if (isset($_SESSION['user_id'])) {
 
     // Parse user_id to get role
     if ($user_id === 'admin') {
-        header("Location: admin.php");
+        header("Location: dashboard.php");
     } else {
         list($college_code, $role_code, $unique_number) = explode('-', $user_id);
 

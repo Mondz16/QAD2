@@ -182,7 +182,7 @@ $sql = "CREATE TABLE IF NOT EXISTS team (
     internal_users_id VARCHAR(10) NOT NULL,
     role VARCHAR(11) NOT NULL,
     area VARCHAR(255) NOT NULL,
-    status ENUM('pending', 'accepted', 'declined', 'finished') NOT NULL DEFAULT 'pending',
+    status ENUM('pending', 'accepted', 'declined', 'finished', 'cancelled') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (schedule_id) REFERENCES schedule(id),
     FOREIGN KEY (internal_users_id) REFERENCES internal_users(user_id)
 )";

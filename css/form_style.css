@@ -168,18 +168,25 @@ button[type="remove"]:hover{
     margin-right: 10px;
 }
 
+.level-input-validity {
+    width: 20%;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    padding: 0;
+}
+
 .level-input-holder .highlight{
     background-color: #FFF1C0;
     border-color: #E6A33E;
     color: #575757;
 }
 
-.level-input-holder .level-input:last-child{
-    width: 25%;
+.level-input-holder .level-input-validity:last-child{
+    width: 27%;
     text-align: center;
     font-size: 16px;
     padding: 0;
-    margin-right: 10px;
     font-weight: normal;
 }
 

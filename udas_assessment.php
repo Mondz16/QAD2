@@ -203,24 +203,33 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
-            transform: translate(-50%, 0);
-            width: 100%;
-            max-width: 535px;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%; /* This ensures the overlay covers the full width */
+            height: 100%; /* This ensures the overlay covers the full height */
             overflow: auto;
-            border: 1px solid #AFAFAF;
-            border-radius: 10px;
-            background-color: #fefefe;
-            height: 850px;
-            left: 50%;
-            top: 5%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
         }
 
         .modal-content {
             background-color: #fefefe;
             padding: 20px;
+            border: 1px solid #888;
+            width: 535px; /* Set the width of the modal content */
             border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Optional: add a subtle shadow */
+            max-height: 850px; /* Limits the height of the modal content */
+            overflow-y: auto; /* Enables vertical scrolling if content exceeds the height */
+
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* This centers the modal */
         }
+
+
+
 
         .modal-content h2 {
             text-align: center;
@@ -395,6 +404,41 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
 
         .button-container {
             justify-content: flex-end;
+        }
+
+        .custom-loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .custom-spinner {
+            width: 40px; /* Size similar to Bootstrap's default spinner */
+            height: 40px; /* Size similar to Bootstrap's default spinner */
+            border-width: 5px;
+            border-style: solid;
+            border-radius: 50%;
+            border-color: #FF7A7A; /* Custom color for the spinner */
+            border-right-color: transparent; /* Transparent border to create the spinning effect */
+            animation: custom-spin 0.75s linear infinite; /* Bootstrap-like spinning animation */
+        }
+
+        .custom-spinner-hidden {
+            display: none;
+        }
+
+        /* Custom spin animation similar to Bootstrap */
+        @keyframes custom-spin {
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -584,7 +628,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                                 echo "<div class='assessment-box'>";
                                 echo "<h2>#" . $counter . "</h2>";
                                 echo "<div class='assessment-details'>";
-                                echo "<div class='assessment-holder-1'><div class='assessment-college'><p>College: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>Program:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> Level Applied: <br><h3>";
+                                echo "<div class='assessment-holder-1'><div class='assessment-college'><p>COLLEGE: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>PROGRAM:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> LEVEL APPLIED: <br><h3>";
 
                                             // Display level applied with abbreviations
                                             switch ($schedule['level_applied']) {
@@ -602,10 +646,10 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                                             echo "</h3></p>
             </div>
           </div>";
-                                echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>Date:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>Time: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
+                                echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>DATE:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>TIME: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
 
                                 if (!empty($schedule['udas_assessment_file'])) {
-                                    echo "<div class='assessment-udas'><p>UDAS Assessment:<br><a href='" . $schedule['udas_assessment_file'] . "' download class='btn download-button' data-schedule='" . json_encode($schedule) . "'>DOWNLOAD</a></div> </div>";
+                                    echo "<div class='assessment-udas'><p>DOWNLOAD FILE:<br><a href='" . $schedule['udas_assessment_file'] . "' download class='btn download-button' data-schedule='" . json_encode($schedule) . "'>UDAS ASSESSMENT</a></div> </div>";
                                 } else {
                                     echo "<div class='assessment-udas'><p>UDAS Assessment:<br><button class='btn open-modal udas-button' data-schedule='" . json_encode($schedule) . "'>START</button></div> </div>";
                                 }
@@ -705,8 +749,16 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
         </div>
     </div>
 
+    <div id="customLoadingOverlay" class="custom-loading-overlay custom-spinner-hidden">
+        <div class="custom-spinner"></div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
+        document.querySelector('#udasModal form').addEventListener('submit', function() {
+            document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarNav = document.querySelector('.sidebar-nav');
             const sidebarFooter = document.querySelector('.sidebar-footer');

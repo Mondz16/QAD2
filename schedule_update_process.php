@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
 
     // Capture college name and code from the form
     $college_name = mysqli_real_escape_string($conn, $_POST['college']);
-    $college_code = mysqli_real_escape_string($conn, $_POST['college_code']);
+    $actual_college_code = mysqli_real_escape_string($conn, $_POST['college_code']);
 
     // Format the new date and time
     $formatted_new_date = date("F j, Y", strtotime($new_date));
@@ -190,6 +190,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
             box-sizing: border-box;
             font-family: "Quicksand", sans-serif;
         }
+
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
         body {
             background-color: #f9f9f9;
             display: flex;
@@ -230,22 +243,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
     </style>
 </head>
 <body>
-<div class="popup-content">
+    <div class="popup-content">
         <div style='height: 50px; width: 0px;'></div>
         <div class="message">
             <?php if (isset($email_success) && $email_success): ?>
                 <img src="images/Success.png" height="100" alt="Success">
-                Schedule updated successfully. Email notifications have been sent.
+                <div style="height: 20px; width: 0px;"></div>
+                <span>Schedule updated successfully.<br>Email notifications have been sent.</span>
             <?php elseif (isset($email_error) && $email_error): ?>
                 <img src="images/Error.png" height="100" alt="Error">
+                <div style="height: 20px; width: 0px;"></div>
                 <?php echo $email_error; ?>
             <?php else: ?>
                 <img src="images/Error.png" height="100" alt="Error">
+                <div style="height: 20px; width: 0px;"></div>
                 <?php echo isset($error_message) ? $error_message : 'Unknown error.'; ?>
             <?php endif; ?>
         </div>
-        <div style="height: 25px; width: 0px;"></div>
-        <a href="schedule_college.php?college=<?php echo urlencode($college_code); ?>#" class="btn-hover">OKAY</a>
+        <div style="height: 50px; width: 0px;"></div>
+        <a href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($actual_college_code); ?>" class="btn-hover">OKAY</a>
         <div style='height: 100px; width: 0px;'></div>
         <div class='hairpop-up'></div>
     </div>

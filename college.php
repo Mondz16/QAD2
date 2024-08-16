@@ -105,6 +105,31 @@ while ($row_company = $result_companies->fetch_assoc()) {
         .hidden {
             display: none;
         }
+
+        .loading-spinner .spinner-border {
+            width: 40px;
+            height: 40px;
+            border-width: 5px;
+            border-color: #FF7A7A !important; /* Enforce the custom color */
+            border-right-color: transparent !important;
+        }
+
+        #loadingSpinner.spinner-hidden {
+            display: none;
+        }
+
+        .loading-spinner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
     </style>
 </head>
 
@@ -405,11 +430,26 @@ while ($row_company = $result_companies->fetch_assoc()) {
                 </form>
             </div>
         </div>
-
+    </div>
+    <div id="loadingSpinner" class="loading-spinner spinner-hidden">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const importForm = document.querySelector('#importModal form');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
+            importForm.addEventListener('submit', function () {
+                // Show the loading spinner
+                loadingSpinner.classList.remove('spinner-hidden');
+            });
+        });
+
+
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarNav = document.querySelector('.sidebar-nav');
             const sidebarFooter = document.querySelector('.sidebar-footer');

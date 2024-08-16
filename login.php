@@ -29,7 +29,7 @@ if (isset($_SESSION['user_id'])) {
 
     // Parse user_id to get role
     if ($user_id === 'admin') {
-        header("Location: admin.php");
+        header("Location: dashboard.php");
     } else {
         list($college_code, $role_code, $unique_number) = explode('-', $user_id);
 
@@ -196,6 +196,10 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </div>
 
+    <div id="customLoadingOverlay" class="custom-loading-overlay custom-spinner-hidden">
+        <div class="custom-spinner"></div>
+    </div>
+
     <script>
         let tempUserId = '';
 
@@ -255,6 +259,49 @@ if (isset($_SESSION['user_id'])) {
         document.addEventListener('DOMContentLoaded', function() {
             tempUserId = '';
         });
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            // Clear any previous error message
+            var errorMessage = '';
+
+            var userIdInput = document.querySelector('.user_idText');
+            var passwordInput = document.querySelector('.passwordText');
+
+            if (!userIdInput.value) {
+                errorMessage = document.getElementById('userIdErrorMessage').innerHTML;
+                tempUserId = userIdInput.value;
+            } else if (!passwordInput.value) {
+                errorMessage = document.getElementById('passwordErrorMessage').innerHTML;
+                tempUserId = userIdInput.value;
+            }
+
+            if (errorMessage) {
+                // Prevent form submission and display the error modal
+                event.preventDefault();
+                document.getElementById('errorMessage').innerHTML = errorMessage;
+                document.getElementById('errorPopup').style.display = 'block';
+            } else {
+                // No errors, show the loading spinner
+                document.getElementById('loadingSpinner').classList.remove('spinner-hidden');
+            }
+        });
+
+        document.getElementById('closePopup').addEventListener('click', function() {
+            document.getElementById('errorPopup').style.display = 'none';
+            document.getElementById('user_id').value = tempUserId;
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('errorPopup')) {
+                document.getElementById('errorPopup').style.display = 'none';
+                document.getElementById('user_id').value = tempUserId;
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            tempUserId = '';
+        });
+
     </script>
 </body>
 </html>

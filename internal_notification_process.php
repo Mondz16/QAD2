@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($stmt_update->execute()) {
         $status = "success";
-        $message = "Notification status updated successfully.";
+        $message = "Schedule accepted successfully.";
     } else {
         $status = "error";
         $message = "Error updating notification: " . $conn->error;
