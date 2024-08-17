@@ -6,7 +6,7 @@ if (isset($_GET['logged_out']) && $_GET['logged_out'] == 'true') {
     // Allow access without referer check
 } else {
     // Allowed referring pages
-    $allowed_referers = ['register.php', 'index.php', 'logout.php', 'verify_otp.php', 'login_process.php', 'forgot_password.php'];
+    $allowed_referers = ['register.php', 'index.php', 'logout.php', 'verify_otp.php', 'login_process.php', 'forgot_password.php', 'forgot_password_verification.php', 'reset_password.php'];
 
     // Check if the referer is set and validate it
     if (isset($_SERVER['HTTP_REFERER'])) {

@@ -402,11 +402,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const verifyForm = document.querySelector('form');
-            const loadingSpinner = document.getElementById('loadingSpinner');
+            const loadingSpinner = document.getElementById('customLoadingOverlay');
 
             verifyForm.addEventListener('submit', function () {
                 // Show the loading spinner
-                loadingSpinner.classList.remove('spinner-hidden');
+                loadingSpinner.classList.remove('custom-spinner-hidden');
             });
         });
     </script>

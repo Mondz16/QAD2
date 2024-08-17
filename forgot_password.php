@@ -1,81 +1,28 @@
 <?php
 session_start();
-include 'connection.php'; // Include your database connection file
-require 'vendor/autoload.php'; // Include PHPMailer via Composer autoload
+include 'connection.php';
+require 'vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-function generateRandomPassword($length = 8) {
-    $upper = str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
-    $lower = str_shuffle('abcdefghijklmnopqrstuvwxyz');
-    $numbers = str_shuffle('0123456789');
-    $symbols = str_shuffle('!@#$%^&*()_+-=[]{}|;:,.<>?');
+// Set the default timezone to Asia/Manila
+date_default_timezone_set('Asia/Manila');
 
-    $password = substr($upper, 0, 1) . substr($lower, 0, 1) . substr($numbers, 0, 1) . substr($symbols, 0, 1);
-    $remainingLength = $length - 4;
-
-    $allCharacters = $upper . $lower . $numbers . $symbols;
-    $password .= substr(str_shuffle($allCharacters), 0, $remainingLength);
-
-    return str_shuffle($password);
+function generateOTP($length = 6) {
+    return str_pad(rand(0, pow(10, $length)-1), $length, '0', STR_PAD_LEFT);
 }
 
-function resetPassword($user_id, $email, $prefix, $gender, $gender_others) {
-    global $conn;
-    $new_password_plain = generateRandomPassword();
-    $new_password_hashed = password_hash($new_password_plain, PASSWORD_DEFAULT);
-    $tables = ['internal_users', 'external_users'];
-    $email_sent = false;
-
-    foreach ($tables as $table) {
-        // Fetch full name and email
-        $query = "SELECT prefix, first_name, middle_initial, last_name, email FROM $table WHERE user_id=? AND email=? AND prefix=? AND gender=?";
-        $stmt = $conn->prepare($query);
-
-        // Determine gender value for comparison
-        $gender_value = ($gender === 'Others') ? $gender_others : $gender;
-
-        $stmt->bind_param('ssss', $user_id, $email, $prefix, $gender_value);
-        $stmt->execute();
-        $stmt->store_result();
-        $stmt->bind_result($db_prefix, $first_name, $middle_initial, $last_name, $db_email);
-
-        if ($stmt->num_rows > 0 && $stmt->fetch()) {
-            // Construct full name
-            $full_name = trim("$db_prefix $first_name $middle_initial $last_name");
-
-            // Attempt to send email
-            if (sendEmail($db_email, $new_password_plain, $full_name)) {
-                // Update password only if email is sent successfully
-                $stmt->close();
-
-                $update_query = "UPDATE $table SET password=? WHERE user_id=? AND email=? AND prefix=? AND gender=?";
-                $update_stmt = $conn->prepare($update_query);
-                $update_stmt->bind_param('sssss', $new_password_hashed, $user_id, $email, $prefix, $gender_value);
-                $update_stmt->execute();
-                $email_sent = ($update_stmt->affected_rows > 0);
-                $update_stmt->close();
-                return $email_sent;
-            } else {
-                return false;
-            }
-        }
-        $stmt->close();
-    }
-    return false;
-}
-
-function sendEmail($toEmail, $new_password, $full_name) {
+function sendOTP($email, $otp) {
     $mail = new PHPMailer(true);
 
     try {
-        //Server settings
+        // Server settings
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com'; // Set the SMTP server to send through
+        $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'usepqad@gmail.com'; // SMTP username
-        $mail->Password = 'vmvf vnvq ileu tmev'; // SMTP password
+        $mail->Username = 'usepqad@gmail.com';
+        $mail->Password = 'vmvf vnvq ileu tmev';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
@@ -88,14 +35,14 @@ function sendEmail($toEmail, $new_password, $full_name) {
             )
         );
 
-        //Recipients
+        // Recipients
         $mail->setFrom('usepqad@gmail.com', 'USeP - Quality Assurance Division');
-        $mail->addAddress($toEmail);
+        $mail->addAddress($email);
 
         // Content
         $mail->isHTML(true);
-        $mail->Subject = 'Password Reset Notification';
-        $mail->Body = "Dear $full_name,<br><br>Your password has been reset. Your new password is: <strong>$new_password</strong><br>Please change your password after logging in.<br><br>Best regards,<br>USeP - Quality Assurance Division";
+        $mail->Subject = 'Your OTP for Password Reset';
+        $mail->Body = "Dear user,<br><br>Your OTP for password reset is: <strong>$otp</strong><br>Please use this OTP to verify your identity.<br><br>Best regards,<br>USeP - Quality Assurance Division";
 
         $mail->send();
         return true;
@@ -116,19 +63,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($user_id) || empty($email) || empty($prefix) || empty($gender) || ($gender == 'Others' && empty($gender_others))) {
         $response['error'] = "All fields are required.";
     } else {
-        if (resetPassword($user_id, $email, $prefix, $gender, $gender_others)) {
-            $response['success'] = "Password has been reset. Please check your email for the new password.";
-        } else {
-            $response['error'] = "No matching user found or email could not be sent.";
+        // Similar logic to fetch the user
+        $tables = ['internal_users', 'external_users'];
+        foreach ($tables as $table) {
+            $query = "SELECT user_id FROM $table WHERE user_id=? AND email=? AND prefix=? AND gender=?";
+            $stmt = $conn->prepare($query);
+
+            $gender_value = ($gender === 'Others') ? $gender_others : $gender;
+
+            $stmt->bind_param('ssss', $user_id, $email, $prefix, $gender_value);
+            $stmt->execute();
+            $stmt->store_result();
+
+            if ($stmt->num_rows > 0) {
+                $otp = generateOTP();
+                $_SESSION['otp'] = $otp;
+                $_SESSION['otp_timestamp'] = time(); // Store the current timestamp
+                $_SESSION['otp_expiry'] = $_SESSION['otp_timestamp'] + 300; // OTP expires in 5 minutes (300 seconds)
+                $_SESSION['user_id'] = $user_id;
+                $_SESSION['email'] = $email;
+            
+                if (sendOTP($email, $otp)) {
+                    // Redirect to OTP verification page
+                    $response['redirect'] = 'forgot_password_verification.php';
+                } else {
+                    $response['error'] = "Failed to send OTP. Please try again.";
+                }
+                break;
+            }            
+            $stmt->close();
+        }
+
+        if (!isset($response['redirect'])) {
+            $response['error'] = "No matching user found.";
         }
     }
 
-    // Return the response as JSON
     echo json_encode($response);
     exit;
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -187,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div style="height: 8px; width: 0px;"></div>
 
                 <div class="bodyLeftText" style="color: rgb(87, 87, 87); font-weight: 300; font-size: 17px;">
-                    <h>Please enter your information below to reset your<br> password. After successful reset, your new password will be sent to your email.</h>
+                    <h>To help keep your account safe, we want to make sure it's<br>really you trying to sign in. Please input the necessary information.</h>
                 </div>
 
                 <div style="height: 32px; width: 0px;"></div>
@@ -239,7 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div style="height: 10px; width: 0px;"></div>
 
                     <a href="login.php" class="loginstead">Log in instead</a>
-                    <button type="submit" class="reset">Reset Password</button>
+                    <button type="submit" class="reset">CONFIRM</button>
 
                     <div style="height: 10px; width: 0px;"></div>
                 </form>
@@ -276,6 +250,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div style="height: 100px; width: 0px;"></div>
             <div class="hairpop-up"></div>
         </div>
+    </div>
+
+    <div id="customLoadingOverlay" class="custom-loading-overlay custom-spinner-hidden">
+        <div class="custom-spinner"></div>
     </div>
 
     <script>
@@ -350,10 +328,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    // Show success popup
-                    document.querySelector('#successPopup .popup-text').innerText = data.success;
-                    document.getElementById('successPopup').style.display = 'block';
+                if (data.redirect) {
+                    // Redirect to OTP verification page
+                    window.location.href = data.redirect;
                 } else {
                     // Show error popup with error message
                     document.getElementById('errorMessage').innerText = data.error;
@@ -400,6 +377,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             if (event.target == document.getElementById('errorPopup')) {
                 document.getElementById('errorPopup').style.display = 'none';
+            }
+        });
+
+        document.getElementById('resetPasswordForm').addEventListener('submit', function() {
+            var loadingOverlay = document.getElementById('customLoadingOverlay');
+            
+            // Show the loading overlay with the spinner
+            loadingOverlay.classList.remove('custom-spinner-hidden');
+            
+            // Optionally, disable the form elements to prevent multiple submissions
+            var formElements = this.elements;
+            for (var i = 0; i < formElements.length; i++) {
+                formElements[i].disabled = true;
             }
         });
     </script>

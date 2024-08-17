@@ -2,7 +2,7 @@
 session_start();
 
 // Allowed referring pages
-$allowed_referers = ['login.php', 'index.php', 'verify_otp.php'];
+$allowed_referers = ['login.php', 'index.php', 'verify_otp.php', 'forgot_password.php', 'forgot_password_verification.php', 'reset_password.php'];
 
 // Check if the referer is set and validate it
 if (isset($_SERVER['HTTP_REFERER'])) {
@@ -607,7 +607,7 @@ function checkPasswordMatch() {
 
 document.getElementById('acceptTerms').addEventListener('click', function() {
     // Show the loading spinner
-    document.getElementById('loadingSpinner').classList.remove('spinner-hidden');
+    document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
 });
 
 
