@@ -510,7 +510,7 @@
 }
 
 .popup-text {
-    margin: 20px 50px;
+    margin: 20px 30px;
     font-size: 17px;
     font-weight: 500;
 }
@@ -918,9 +918,9 @@ input[type="radio"] {
     right: 0;
     background-color: white;
     border-radius: 50%;
-    padding: 5px;
+    padding: 3px 6px;
     cursor: pointer;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 1);
 }
 
 .edit-icon i {
@@ -980,6 +980,33 @@ input[type="radio"] {
 .button-group {
     display: flex;
     gap: 10px;
+}
+
+.modal1 {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place even when scrolling */
+    z-index: 1; /* Sit on top */
+    left: 0; /* Start from the left */
+    top: 0; /* Start from the top */
+    width: 100%; /* Cover the full width */
+    height: 100%; /* Cover the full height */
+    overflow: auto; /* Enable scrolling if needed */
+    background-color: rgba(0, 0, 0, 0.5); /* Background overlay */
+}
+
+.modal-content1 {
+    background-color: #fefefe;
+    padding: 20px;
+    border: 1px solid #AFAFAF;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 500px;
+    border-radius: 20px;
+    overflow-y: auto; /* Enables vertical scrolling if content exceeds the height */
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* This centers the modal */
 }
 
 /* Modal styles */
@@ -1555,4 +1582,18 @@ canvas {
     100% {
         transform: rotate(360deg);
     }
+}
+
+.notification-count {
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+    position: absolute;
+    top: -14px;
+    right: -17px;
+    min-width: 15px;
+    text-align: center;
+    line-height: 15px;
 }

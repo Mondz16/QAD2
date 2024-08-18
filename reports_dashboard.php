@@ -592,12 +592,24 @@ $conn->close();
         const pieChart = new Chart(ctxPie, {
             type: 'pie',
             data: {
-                labels: [],
+                labels: [], // The labels for the campuses will be set dynamically
                 datasets: []
             },
             options: {
                 responsive: true,
                 plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top', // Ensure the legend is positioned above the chart
+                        labels: {
+                            boxWidth: 20, // Adjust the width of the colored box next to each label
+                            padding: 10, // Add some padding between the labels
+                            font: {
+                                size: 14 // Adjust the font size of the labels if needed
+                            }
+                        },
+                        onClick: (e) => e.stopPropagation(), // Prevent the legend click event from affecting the chart
+                    },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
@@ -621,10 +633,16 @@ $conn->close();
                         align: 'start',
                         offset: -10
                     }
+                },
+                layout: {
+                    padding: {
+                        top: 10 // Adjust the padding above the chart if needed
+                    }
                 }
             },
             plugins: [ChartDataLabels]
         });
+
 
 
         window.addEventListener('DOMContentLoaded', async () => {

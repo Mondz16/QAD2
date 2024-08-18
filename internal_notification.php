@@ -36,8 +36,6 @@ if ($user_id === 'admin' && basename($_SERVER['PHP_SELF']) !== 'admin_sidebar.ph
     }
 }
 
-$user_id = $_SESSION['user_id'];
-
 // Fetch user details
 $sql_user = "SELECT first_name, middle_initial, last_name, email, college_code, profile_picture FROM internal_users WHERE user_id = ?";
 $stmt_user = $conn->prepare($sql_user);
@@ -72,6 +70,7 @@ $stmt_notifications = $conn->prepare($sql_notifications);
 $stmt_notifications->bind_param("s", $user_id);
 $stmt_notifications->execute();
 $stmt_notifications->store_result();
+$notification_count = $stmt_notifications->num_rows;
 $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $schedule_date, $schedule_time, $schedule_status, $team_id, $role, $area, $team_status, $internal_users_id, $college_name);
 ?>
 <!DOCTYPE html>
@@ -82,34 +81,6 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
     <title>Internal Accreditor - Notifications</title>
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .modal1 {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place even when scrolling */
-            z-index: 1; /* Sit on top */
-            left: 0; /* Start from the left */
-            top: 0; /* Start from the top */
-            width: 100%; /* Cover the full width */
-            height: 100%; /* Cover the full height */
-            overflow: auto; /* Enable scrolling if needed */
-            background-color: rgba(0, 0, 0, 0.5); /* Background overlay */
-        }
-
-        .modal-content1 {
-            background-color: #fefefe;
-            padding: 20px;
-            border: 1px solid #AFAFAF;
-            width: 80%; /* Could be more or less, depending on screen size */
-            max-width: 500px;
-            border-radius: 20px;
-            overflow-y: auto; /* Enables vertical scrolling if content exceeds the height */
-
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); /* This centers the modal */
-        }
-    </style>
 </head>
 <body>
     <div class="wrapper">
@@ -154,10 +125,16 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
             <div class="header1">
                 <div class="nav-list">
                     <a href="internal.php" class="profile1">Profile <i class="fa-regular fa-user"></i></a>
-                    <a href="internal_notification.php" class="active orientation1">NOTIFICATION<i class="fa-regular fa-bell"></i></i></a>
+                    <a href="internal_notification.php" class="active orientation1" style="position: relative;">
+                        NOTIFICATION<i class="fa-regular fa-bell" style="position: relative;">
+                            <?php if ($notification_count > 0): ?>
+                                <span id="notificationCount" class="notification-count"><?php echo $notification_count; ?></span>
+                            <?php endif; ?>
+                        </i>
+                    </a>
                     <a href="internal_assessment.php" class="assessment1">Assessment<i class="fa-solid fa-medal"></i></a>
                     <a href="internal_orientation.php" class="orientation1">Orientation<i class="fa-regular fa-calendar"></i></a>
-                    <a href="logout.php" class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                    <a class="logout" onclick="openLogoutModal()"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
                 </div>
             </div>
         </div>
@@ -230,7 +207,36 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
         </div>
     </div>
 
+    <div id="logoutModal" class="modal1">
+        <div class="modal-content1">
+            <h4 id="confirmationMessage" style="font-size: 20px;">Are you sure you want to logout?</h4>
+            <div class="button-container">
+                <button type="button" class="accept-back-button" id="backButton" onclick="cancelLogout()">CANCEL</button>
+                <button type="button" class="accept-confirm-button" id="confirmButton" onclick="confirmLogout()">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        function openLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'block'; // Show the modal
+        }
+
+        function confirmLogout() {
+            window.location.href = 'logout.php'; // Redirect to logout.php
+        }
+
+        function cancelLogout() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+
+        document.addEventListener('click', function(event) {
+            var modal = document.getElementById('logoutModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+        
         function openModal(scheduleId, teamId) {
             document.getElementById('modal_schedule_id').value = scheduleId;
             document.getElementById('modal_team_id').value = teamId;
@@ -320,6 +326,11 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
             }
         }
 
+        // Display the notification count
+        const notificationCount = <?php echo $notification_count; ?>;
+        if (notificationCount > 0) {
+            document.getElementById('notificationCount').innerText = notificationCount;
+        }
     </script>
 </body>
 </html>

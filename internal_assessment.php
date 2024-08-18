@@ -59,6 +59,21 @@ $stmt_college->bind_result($user_college_name);
 $stmt_college->fetch();
 $stmt_college->close();
 
+// Fetch notifications for the logged-in user
+$sql_notifications = "
+    SELECT COUNT(*) 
+    FROM team t
+    JOIN schedule s ON t.schedule_id = s.id
+    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status NOT IN ('cancelled', 'finished')
+";
+
+$stmt_notifications = $conn->prepare($sql_notifications);
+$stmt_notifications->bind_param("s", $user_id);
+$stmt_notifications->execute();
+$stmt_notifications->bind_result($notification_count);
+$stmt_notifications->fetch();
+$stmt_notifications->close();
+
 $accreditor_type = (substr($user_id, 3, 2) == '11') ? 'Internal Accreditor' : 'External Accreditor';
 
 // Fetch user details for displaying in the form
@@ -167,12 +182,15 @@ $sql_team_members_with_areas = "
     SELECT t.schedule_id, t.id AS team_member_id, t.role, t.area, iu.first_name, iu.middle_initial, iu.last_name
     FROM team t
     JOIN internal_users iu ON t.internal_users_id = iu.user_id
-    WHERE t.schedule_id = ?
+    WHERE t.schedule_id IN (
+        SELECT schedule_id FROM team WHERE internal_users_id = ?
+    )
 ";
 $stmt_team_members_with_areas = $conn->prepare($sql_team_members_with_areas);
-$stmt_team_members_with_areas->bind_param("i", $schedule_id);  // assuming $schedule_id is defined
+$stmt_team_members_with_areas->bind_param("s", $user_id);  // Use the user_id to get all schedules they are part of
 $stmt_team_members_with_areas->execute();
 $stmt_team_members_with_areas->bind_result($team_schedule_id, $team_member_id, $team_member_role, $team_member_area, $team_member_first_name, $team_member_middle_initial, $team_member_last_name);
+
 while ($stmt_team_members_with_areas->fetch()) {
     $team_members_with_areas[$team_schedule_id][] = [
         'team_member_id' => $team_member_id,
@@ -182,7 +200,6 @@ while ($stmt_team_members_with_areas->fetch()) {
     ];
 }
 $stmt_team_members_with_areas->close();
-
 
 // Check NDA status for each schedule
 $nda_signed_status = [];
@@ -277,10 +294,16 @@ foreach ($schedules as $schedule) {
             <div class="header1">
                 <div class="nav-list">
                     <a href="internal.php" class="profile1">Profile <i class="fa-regular fa-user"></i></a>
-                    <a href="internal_notification.php" class="orientation1">NOTIFICATION<i class="fa-regular fa-bell"></i></i></a>
+                    <a href="internal_notification.php" class="orientation1" style="position: relative;">
+                        NOTIFICATION<i class="fa-regular fa-bell" style="position: relative;">
+                            <?php if ($notification_count > 0): ?>
+                                <span id="notificationCount" class="notification-count"><?php echo $notification_count; ?></span>
+                            <?php endif; ?>
+                        </i>
+                    </a>
                     <a href="internal_assessment.php" class="active assessment1">Assessment<i class="fa-solid fa-medal"></i></a>
                     <a href="internal_orientation.php" class="orientation1">Orientation<i class="fa-regular fa-calendar"></i></a>
-                    <a href="logout.php" class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                    <a class="logout" onclick="openLogoutModal()"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
                 </div>
             </div>
         </div>
@@ -294,7 +317,7 @@ foreach ($schedules as $schedule) {
                              <div class="container">
                                 <div class="body4">
                                     <div class="bodyLeft2">
-                            <p>College <br>
+                                        <p>College <br>
                                     <div style="height: 10px;"></div>
                                     <div class="orientationname">
                                         <div class="nameContainer">
@@ -302,169 +325,177 @@ foreach ($schedules as $schedule) {
                                         </div>
                                 </div></p>
                                 <div style="height: 20px;"></div>
-                            <p>PROGRAM <br>
+                                    <p>PROGRAM <br>
                                 <div style="height: 10px;"></div>
                                 <div class="orientationname">
                                     <div class="nameContainer">
-                                <?php echo htmlspecialchars($schedule['program_name']); ?>
-                            </div>
-                            </div></p>
-                            <div class="orientationname">
+                                        <?php echo htmlspecialchars($schedule['program_name']); ?>
+                                    </div>
+                                </div></p>
+                                <div class="orientationname">
                                     <div class="titleContainer">
                                         <p>LEVEL APPLIED</p>
                                     </div>
                                     <div class="titleContainer">
                                         <p>DATE</p>
                                     </div>
-                                <div class="titleContainer">
-                                            <p>TIME</p>
+                                    <div class="titleContainer">
+                                        <p>TIME</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="orientationname">
+                                    <div class="nameContainer orientationContainer1">
+                                        <?php echo htmlspecialchars($schedule['level_applied']); ?>
+                                    </div>
+                                    
+                                    <div class="nameContainer orientationContainer">
+                                        <?php 
+                                        $schedule_date = new DateTime($schedule['schedule_date']);
+                                        echo $schedule_date->format('M. j, Y'); // This will output the date as "Nov. 20, 2024"
+                                        ?>
+                                    </div>
+
+                                    <div class="nameContainer orientationContainer">
+                                        <?php
+                                        $schedule_time = new DateTime($schedule['schedule_time']);
+                                        echo $schedule_time->format('g:i A');
+                                        ?>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="orientationname">
-                            <div class="nameContainer orientationContainer1">
-                                <?php echo htmlspecialchars($schedule['level_applied']); ?>
-                            </div>
-                            <div class="nameContainer orientationContainer"><?php 
-                                $schedule_date = new DateTime($schedule['schedule_date']);
-                                echo $schedule_date->format('F j, Y'); 
-                            ?>
-                        </div>
-                            <div class="nameContainer orientationContainer"><?php 
-                                $schedule_time = new DateTime($schedule['schedule_time']);
-                                echo $schedule_time->format('g:i A'); 
-                            ?>
-                        </div>
-                        </div>
-                        </div>
                         <div class="bodyRight2">
                         <?php if ($schedule['role'] === 'Team Leader'): ?>
-    <?php if ($schedule['schedule_status'] !== 'approved'): ?>
-        <p>SCHEDULE STATUS</p>
-        <div style="height: 10px;"></div>
-        <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button> 
-    <?php else: ?>
-        <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
-            <p>NON-DISCLOSURE AGREEMENT</p>
-            <div style="height: 10px;"></div>
-            <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
-        <?php else: ?>
-            <!-- Check if Areas are Assigned -->
-            <?php
-            $all_areas_assigned = true;
-            foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
-                if (empty($member['area']) && $member['role'] !== 'Team Leader') {
-                    $all_areas_assigned = false;
-                    break;
-                }
-            }
-            ?>
+                            <?php if ($schedule['schedule_status'] !== 'approved'): ?>
+                                <p>SCHEDULE STATUS</p>
+                                <div style="height: 10px;"></div>
+                                <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button> 
+                            <?php else: ?>
+                                <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
+                                    <p>NON-DISCLOSURE AGREEMENT</p>
+                                    <div style="height: 10px;"></div>
+                                    <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
+                                <?php else: ?>
+                                    <!-- Check if Areas are Assigned -->
+                                    <?php
+                                    $all_areas_assigned = true;
+                                    if (isset($team_members_with_areas[$schedule['schedule_id']])) {
+                                        foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
+                                            if (empty($member['area']) && $member['role'] !== 'Team Leader') {
+                                                $all_areas_assigned = false;
+                                                break;
+                                            }
+                                        }
+                                    } else {
+                                        $all_areas_assigned = false; // No members found for this schedule, so areas can't be assigned
+                                    }
+                                    ?>
 
-            <?php if (!$all_areas_assigned): ?>
-                <!-- Display Team Leader and Team Members with Area Input if not all areas are assigned -->
-                <p>ASSIGN AREAS TO TEAM MEMBERS</p>
-                <div style="height: 10px;"></div>
-                <form method="post" action="assign_areas_process.php">
-                    <input type="hidden" name="schedule_id" value="<?php echo $schedule['schedule_id']; ?>">
+                                    <?php if (!$all_areas_assigned): ?>
+                                        <!-- Display Team Leader and Team Members with Area Input if not all areas are assigned -->
+                                        <p>ASSIGN AREAS TO TEAM MEMBERS</p>
+                                        <div style="height: 10px;"></div>
+                                        <form method="post" action="assign_areas_process.php">
+                                            <input type="hidden" name="schedule_id" value="<?php echo $schedule['schedule_id']; ?>">
+                                            <?php foreach ($team_members_with_areas[$schedule['schedule_id']] as $member): ?>
+                                                <div class="form-group">
+                                                    <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
+                                                    <input type="text" name="area[<?php echo $member['team_member_id']; ?>]" value="<?php echo htmlspecialchars($member['area']); ?>" placeholder="ASSIGN AREA" <?php echo ($member['role'] !== 'Team Leader') ? 'required' : ''; ?>>
+                                                </div>
+                                            <?php endforeach; ?>
 
-                    <?php foreach ($team_members_with_areas[$schedule['schedule_id']] as $member): ?>
-                        <div class="form-group">
-                            <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
-                            <input type="text" name="area[<?php echo $member['team_member_id']; ?>]" value="<?php echo htmlspecialchars($member['area']); ?>" placeholder="ASSIGN AREA" <?php echo ($member['role'] !== 'Team Leader') ? 'required' : ''; ?>>
-                        </div>
-                    <?php endforeach; ?>
-
-                    <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
-                </form>
-            <?php else: ?>
-                <!-- Proceed with checking team members' submission and approval status -->
-                <?php
-                $team_member_count = 0;
-                $submitted_count = 0;
-                $approved_count = 0;
-                foreach ($team_members[$schedule['schedule_id']] as $member) {
-                    if ($member['role'] !== 'Team Leader') {
-                        $team_member_count++;
-                        if ($member['assessment_file']) {
-                            $submitted_count++;
-                        }
-                        if (in_array($member['assessment_id'], $approved_assessments)) {
-                            $approved_count++;
-                        }
-                    }
-                }
-                ?>
-                <p>MEMBER SUBMISSION STATUS</p>
-                    <div style="height: 10px;"></div>
-                    <div class="assessmentname2">
-                        <div class="nameContainer">
-                            <p><?php echo $submitted_count; ?>/<?php echo $team_member_count; ?> SUBMITTED ASSESSMENTS</p>
-                        </div>
-                    </div>
-                    <div style="height: 20px;"></div>
-                    <p>TEAM MEMBERS ASSESSMENT</p>
-                    <div style="height: 10px;"></div>
-                    <ul style="list-style: none; font-size: 18px;">
-                        <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
-                            <?php if ($member['assessment_file'] && $member['role'] !== 'Team Leader'): ?>
-                                <li>
-                                    <div class="assessmentname1">
-                                        <div class="titleContainer1">
-                                            <?php echo htmlspecialchars($member['name']); ?>
-                                        </div>
-                                        <div class="titleContainer2">
-                                            <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>"><i class="bi bi-file-earmark-arrow-down"></i></a>
-                                        </div>
-                                        <div class="titleContainer3">
-                                            <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
-                                                <i class="fas fa-check approve1"></i>
+                                            <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <!-- Proceed with checking team members' submission and approval status -->
+                                        <?php
+                                        $team_member_count = 0;
+                                        $submitted_count = 0;
+                                        $approved_count = 0;
+                                        foreach ($team_members[$schedule['schedule_id']] as $member) {
+                                            if ($member['role'] !== 'Team Leader') {
+                                                $team_member_count++;
+                                                if ($member['assessment_file']) {
+                                                    $submitted_count++;
+                                                }
+                                                if (in_array($member['assessment_id'], $approved_assessments)) {
+                                                    $approved_count++;
+                                                }
+                                            }
+                                        }
+                                        ?>
+                                        <p>MEMBER SUBMISSION STATUS</p>
+                                            <div style="height: 10px;"></div>
+                                            <div class="assessmentname2">
+                                                <div class="nameContainer">
+                                                    <p><?php echo $submitted_count; ?>/<?php echo $team_member_count; ?> SUBMITTED ASSESSMENTS</p>
+                                                </div>
+                                            </div>
+                                            <div style="height: 20px;"></div>
+                                            <p>TEAM MEMBERS ASSESSMENT</p>
+                                            <div style="height: 10px;"></div>
+                                            <ul style="list-style: none; font-size: 18px;">
+                                                <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
+                                                    <?php if ($member['assessment_file'] && $member['role'] !== 'Team Leader'): ?>
+                                                        <li>
+                                                            <div class="assessmentname1">
+                                                                <div class="titleContainer1">
+                                                                    <?php echo htmlspecialchars($member['name']); ?>
+                                                                </div>
+                                                                <div class="titleContainer2">
+                                                                    <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>"><i class="bi bi-file-earmark-arrow-down"></i></a>
+                                                                </div>
+                                                                <div class="titleContainer3">
+                                                                    <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
+                                                                        <i class="fas fa-check approve1"></i>
+                                                                    <?php else: ?>
+                                                                        <button class="approve" onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">APPROVE</button>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                        </li>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                            <?php if (in_array($schedule['team_id'], $existing_summaries)): ?>
+                                                <div style="height: 20px;"></div>
+                                                <p>SUBMIT SUMMARY</p>
+                                                <div style="height: 10px;"></div>
+                                                <p class="assessment-button-done">ALREADY SUBMITTED</p>
+                                            <?php elseif ($submitted_count < $team_member_count): ?>
+                                            <?php elseif ($approved_count < $team_member_count): ?>
+                                                <div style="height: 20px;"></div>
+                                                <p>SUBMIT SUMMARY</p>
+                                                <div style="height: 10px;"></div>
+                                                <p class="pending-assessments">APPROVE ASSESSMENTS FIRST</p>
                                             <?php else: ?>
-                                                <button class="approve" onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">APPROVE</button>
+                                                <div style="height: 20px;"></div>
+                                                <p>SUBMIT SUMMARY</p>
+                                                <div style="height: 10px;"></div>
+                                                <button class="assessment-button" onclick="SummaryopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START SUMMARY</button>
                                             <?php endif; ?>
-                                        </div>
-                                </li>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             <?php endif; ?>
-                        <?php endforeach; ?>
-                    </ul>
-                    <?php if (in_array($schedule['team_id'], $existing_summaries)): ?>
-                        <div style="height: 20px;"></div>
-                        <p>SUBMIT SUMMARY</p>
-                        <div style="height: 10px;"></div>
-                        <p class="assessment-button-done">ALREADY SUBMITTED</p>
-                    <?php elseif ($submitted_count < $team_member_count): ?>
-                    <?php elseif ($approved_count < $team_member_count): ?>
-                        <div style="height: 20px;"></div>
-                        <p>SUBMIT SUMMARY</p>
-                        <div style="height: 10px;"></div>
-                        <p class="pending-assessments">APPROVE ASSESSMENTS FIRST</p>
-                    <?php else: ?>
-                        <div style="height: 20px;"></div>
-                        <p>SUBMIT SUMMARY</p>
-                        <div style="height: 10px;"></div>
-                        <button class="assessment-button" onclick="SummaryopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START SUMMARY</button>
-                    <?php endif; ?>
-                <?php endif; ?>
-            <?php endif; ?>
-        <?php endif; ?>
-    <?php else: ?>
-        <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
-            <p>NON-DISCLOSURE AGREEMENT</p>
-            <div style="height: 10px;"></div>
-            <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
-        <?php elseif ($schedule['area'] == ''): ?>
-            <p>ASSESSMENT</p>
-            <div style="height: 10px;"></div>
-            <p class="pending-assessments">YOUR TEAM LEADER SHOULD ASSIGN AREA FIRST</p>
-        <?php elseif (in_array($schedule['team_id'], $existing_assessments)): ?>
-            <p>ASSESSMENT</p>
-            <div style="height: 10px;"></div>
-            <p class="assessment-button-done">ALREADY SUBMITTED</p>
-        <?php else: ?>
-            <p>ASSESSMENT</p>
-            <div style="height: 10px;"></div>
-            <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
-        <?php endif; ?>
-    <?php endif; ?>
-</div>
+                        <?php else: ?>
+                            <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
+                                <p>NON-DISCLOSURE AGREEMENT</p>
+                                <div style="height: 10px;"></div>
+                                <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
+                            <?php elseif ($schedule['area'] == ''): ?>
+                                <p>ASSESSMENT</p>
+                                <div style="height: 10px;"></div>
+                                <p class="pending-assessments">YOUR TEAM LEADER SHOULD ASSIGN AREA FIRST</p>
+                            <?php elseif (in_array($schedule['team_id'], $existing_assessments)): ?>
+                                <p>ASSESSMENT</p>
+                                <div style="height: 10px;"></div>
+                                <p class="assessment-button-done">ALREADY SUBMITTED</p>
+                            <?php else: ?>
+                                <p>ASSESSMENT</p>
+                                <div style="height: 10px;"></div>
+                                <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
 
                         </div>
                         </div>
@@ -723,8 +754,36 @@ foreach ($schedules as $schedule) {
         <div class="custom-spinner"></div>
     </div>
 
+    <div id="logoutModal" class="modal1">
+        <div class="modal-content1">
+            <h4 id="confirmationMessage" style="font-size: 20px;">Are you sure you want to logout?</h4>
+            <div class="button-container">
+                <button type="button" class="accept-back-button" id="backButton" onclick="cancelLogout()">CANCEL</button>
+                <button type="button" class="accept-confirm-button" id="confirmButton" onclick="confirmLogout()">CONFIRM</button>
+            </div>
+        </div>
+    </div>
 
     <script>
+        function openLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'block'; // Show the modal
+        }
+
+        function confirmLogout() {
+            window.location.href = 'logout.php'; // Redirect to logout.php
+        }
+
+        function cancelLogout() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+
+        document.addEventListener('click', function(event) {
+            var modal = document.getElementById('logoutModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+        
         document.getElementById('approveAssessmentForm').addEventListener('submit', function(event) {
             // Show the loading spinner
             document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
@@ -796,88 +855,58 @@ foreach ($schedules as $schedule) {
         }
 
         function SummaryopenPopup(schedule) {
-    document.getElementById('Summarymodal_schedule_id').value = schedule.schedule_id;
-    document.getElementById('Summarycollege').value = schedule.college_name;
-    document.getElementById('Summaryprogram').value = schedule.program_name;
-    document.getElementById('Summarylevel').value = schedule.level_applied;
+            document.getElementById('Summarymodal_schedule_id').value = schedule.schedule_id;
+            document.getElementById('Summarycollege').value = schedule.college_name;
+            document.getElementById('Summaryprogram').value = schedule.program_name;
+            document.getElementById('Summarylevel').value = schedule.level_applied;
 
-    // Format the date and time
-    document.getElementById('Summarydate').value = formatDate(schedule.schedule_date);
-    document.getElementById('Summarytime').value = formatTime(schedule.schedule_time);
+            // Format the date and time
+            document.getElementById('Summarydate').value = formatDate(schedule.schedule_date);
+            document.getElementById('Summarytime').value = formatTime(schedule.schedule_time);
 
-    // Fetch team members' areas
-    var areasXhr = new XMLHttpRequest();
-    areasXhr.open('GET', 'get_team_areas.php?schedule_id=' + schedule.schedule_id, true);
-    areasXhr.onreadystatechange = function() {
-        if (areasXhr.readyState == 4 && areasXhr.status == 200) {
-            var areas = JSON.parse(areasXhr.responseText);
-            document.getElementById('areas').value = areas.join('\n');
-            document.getElementById('areas').readOnly = true;
-        } else {
-            console.error('Failed to fetch team areas.');
+            var resultSection = document.getElementById('result-section');
+            var resultContainer = document.getElementById('result-container');
+
+            // Remove any existing result dropdown
+            if (resultContainer.firstChild) {
+                resultContainer.removeChild(resultContainer.firstChild);
+            }
+
+            // Check if the team leader's area is blank
+            if (schedule.area && schedule.area.trim() !== '') {
+                // If the area is not blank, show the result section and add the dropdown
+                resultSection.style.display = 'block';
+
+                // Create and add the result dropdown
+                var resultDropdown = document.createElement('select');
+                resultDropdown.setAttribute('style', 'cursor: pointer;');
+                resultDropdown.setAttribute('class', 'result');
+                resultDropdown.setAttribute('id', 'result');
+                resultDropdown.setAttribute('name', 'result');
+                resultDropdown.setAttribute('required', 'true');
+
+                var options = [
+                    { value: '', text: 'SELECT RESULT' },
+                    { value: 'Ready', text: 'Ready' },
+                    { value: 'Needs Improvement', text: 'Needs Improvement' },
+                    { value: 'Revisit', text: 'Revisit' }
+                ];
+
+                options.forEach(function(optionData) {
+                    var option = document.createElement('option');
+                    option.value = optionData.value;
+                    option.textContent = optionData.text;
+                    resultDropdown.appendChild(option);
+                });
+
+                resultContainer.appendChild(resultDropdown);
+            } else {
+                // If the area is blank, hide the result section and do not add the dropdown
+                resultSection.style.display = 'none';
+            }
+
+            document.getElementById('Summarypopup').style.display = 'block';
         }
-    };
-    areasXhr.send();
-
-    // Fetch team members' results
-    var resultsXhr = new XMLHttpRequest();
-    resultsXhr.open('GET', 'get_team_results.php?schedule_id=' + schedule.schedule_id, true);
-    resultsXhr.onreadystatechange = function() {
-        if (resultsXhr.readyState == 4 && resultsXhr.status == 200) {
-            var results = JSON.parse(resultsXhr.responseText);
-            document.getElementById('results').value = results.join('\n');
-        } else {
-            console.error('Failed to fetch team results.');
-        }
-    };
-    resultsXhr.send();
-
-    var resultSection = document.getElementById('result-section');
-    var resultContainer = document.getElementById('result-container');
-
-    // Remove any existing result dropdown
-    if (resultContainer.firstChild) {
-        resultContainer.removeChild(resultContainer.firstChild);
-    }
-
-    // Check if the team leader's area is blank
-    if (schedule.area && schedule.area.trim() !== '') {
-        // If the area is not blank, show the result section and add the dropdown
-        resultSection.style.display = 'block';
-
-        // Create and add the result dropdown
-        var resultDropdown = document.createElement('select');
-        resultDropdown.setAttribute('style', 'cursor: pointer;');
-        resultDropdown.setAttribute('class', 'result');
-        resultDropdown.setAttribute('id', 'result');
-        resultDropdown.setAttribute('name', 'result');
-        resultDropdown.setAttribute('required', 'true');
-
-        var options = [
-            { value: '', text: 'SELECT RESULT' },
-            { value: 'Ready', text: 'Ready' },
-            { value: 'Needs Improvement', text: 'Needs Improvement' },
-            { value: 'Revisit', text: 'Revisit' }
-        ];
-
-        options.forEach(function(optionData) {
-            var option = document.createElement('option');
-            option.value = optionData.value;
-            option.textContent = optionData.text;
-            resultDropdown.appendChild(option);
-        });
-
-        resultContainer.appendChild(resultDropdown);
-    } else {
-        // If the area is blank, hide the result section and do not add the dropdown
-        resultSection.style.display = 'none';
-    }
-
-    document.getElementById('Summarypopup').style.display = 'block';
-}
-
-
-
 
         function SummaryclosePopup() {
             document.getElementById('Summarypopup').style.display = 'none';

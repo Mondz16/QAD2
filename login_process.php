@@ -163,6 +163,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check internal_users table
     $internal_user = check_user($conn, 'internal_users', $user_id, $password);
     if ($internal_user) {
+        $bb_cccc = substr($user_id, 3);
+
+        $stmt = $conn->prepare("SELECT status, user_id FROM internal_users WHERE SUBSTRING(user_id, 4) = ? AND user_id != ?");
+        $stmt->bind_param("ss", $bb_cccc, $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $statuses = [];
+            while ($row = $result->fetch_assoc()) {
+                $statuses[] = $row['status'];
+            }
+
+            // Check if statuses include both 'active' and 'pending'
+            if (in_array('active', $statuses) || in_array('pending', $statuses)) {
+                $message = "This account with User ID: $user_id is currently applying for college transfer. Please wait for the admin to approve.";
+                display_popup($message, "error");
+                exit;
+            }
+        }
+
         if ($internal_user['otp'] != 'verified') {
             header("Location: verify_otp.php?email=" . urlencode($internal_user['email']) . "&type=internal");
             exit;
@@ -172,11 +193,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: internal.php");
             exit;
         } elseif ($internal_user['status'] == 'inactive') {
-            $message = "This account's status is inactive.<br>Would you like to apply again?";
+            $message = "This account with User ID: $user_id is inactive.<br>Would you like to apply again?";
             display_popup($message, "error", "login.php", true, "login_process_reactivation.php?type=internal&user_id=$user_id");
             exit;
         } else {
-            $message = "This account's status is pending.<br>Please wait for the admin to approve.";
+            $message = "This account with User ID: $user_id is pending.<br>Please wait for the admin to approve.";
             display_popup($message, "error");
             exit;
         }
@@ -194,11 +215,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: external.php");
             exit;
         } elseif ($external_user['status'] == 'inactive') {
-            $message = "This account's status is inactive.<br>Would you like to apply again?";
+            $message = "This account with User ID: $user_id is inactive.<br>Would you like to apply again?";
             display_popup($message, "error", "login.php", true, "login_process_reactivation.php?type=external&user_id=$user_id");
             exit;
         } else {
-            $message = "This account's status is pending.<br>Please wait for the admin to approve.";
+            $message = "This account with User ID: $user_id is pending.<br>Please wait for the admin to approve.";
             display_popup($message, "error");
             exit;
         }

@@ -268,6 +268,8 @@ $result = $conn->query($sql);
         border: 1px solid #ddd;
         border-radius: 20px;
         margin: 0px 5px;
+        max-height: 70vh;
+        overflow-y: auto;
     }
 
     .schedule-wrapper h3 {

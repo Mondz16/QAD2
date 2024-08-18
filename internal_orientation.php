@@ -59,6 +59,21 @@ $stmt_college->bind_result($college_name);
 $stmt_college->fetch();
 $stmt_college->close();
 
+// Fetch notifications for the logged-in user
+$sql_notifications = "
+    SELECT COUNT(*) 
+    FROM team t
+    JOIN schedule s ON t.schedule_id = s.id
+    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status NOT IN ('cancelled', 'finished')
+";
+
+$stmt_notifications = $conn->prepare($sql_notifications);
+$stmt_notifications->bind_param("s", $user_id);
+$stmt_notifications->execute();
+$stmt_notifications->bind_result($notification_count);
+$stmt_notifications->fetch();
+$stmt_notifications->close();
+
 $accreditor_type = (substr($user_id, 3, 2) == '11') ? 'Internal Accreditor' : 'External Accreditor';
 
 // Fetch schedules matching the college code and status 'pending' or 'approved'
@@ -242,10 +257,16 @@ if (!empty($schedules)) {
             <div class="header1">
                 <div class="nav-list">
                     <a href="internal.php" class="profile1">Profile <i class="fa-regular fa-user"></i></a>
-                    <a href="internal_notification.php" class="orientation1">NOTIFICATION<i class="fa-regular fa-bell"></i></i></a>
+                    <a href="internal_notification.php" class="orientation1" style="position: relative;">
+                        NOTIFICATION<i class="fa-regular fa-bell" style="position: relative;">
+                            <?php if ($notification_count > 0): ?>
+                                <span id="notificationCount" class="notification-count"><?php echo $notification_count; ?></span>
+                            <?php endif; ?>
+                        </i>
+                    </a>
                     <a href="internal_assessment.php" class="assessment1">Assessment<i class="fa-solid fa-medal"></i></a>
                     <a href="internal_orientation.php" class="active orientation1">Orientation<i class="fa-regular fa-calendar"></i></a>
-                    <a href="logout.php" class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                    <a class="logout" onclick="openLogoutModal()"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
                 </div>
             </div>
         </div>
@@ -432,29 +453,58 @@ if (!empty($schedules)) {
         </div>
     </div>
 
+    <div id="logoutModal" class="modal1">
+        <div class="modal-content1">
+            <h4 id="confirmationMessage" style="font-size: 20px;">Are you sure you want to logout?</h4>
+            <div class="button-container">
+                <button type="button" class="accept-back-button" id="backButton" onclick="cancelLogout()">CANCEL</button>
+                <button type="button" class="accept-confirm-button" id="confirmButton" onclick="confirmLogout()">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        function openLogoutModal() {
+            document.getElementById('logoutModal').style.display = 'block'; // Show the modal
+        }
+
+        function confirmLogout() {
+            window.location.href = 'logout.php'; // Redirect to logout.php
+        }
+
+        function cancelLogout() {
+            document.getElementById('logoutModal').style.display = 'none';
+        }
+
+        document.addEventListener('click', function(event) {
+            var modal = document.getElementById('logoutModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
         function toggleNotifications() {
             var dropdown = document.getElementById('notificationDropdown');
             dropdown.classList.toggle('show');
         }
         function openModal(scheduleId) {
-    // Set the schedule ID for the form (if needed)
-    document.getElementById('modal_schedule_id').value = scheduleId;
-    
-    // Get the modal element
-    const modal = document.getElementById('orientationModal');
-    
-    // Make the modal visible by changing its display to 'flex'
-    modal.style.display = 'flex';
-}
+            // Set the schedule ID for the form (if needed)
+            document.getElementById('modal_schedule_id').value = scheduleId;
+            
+            // Get the modal element
+            const modal = document.getElementById('orientationModal');
+            
+            // Make the modal visible by changing its display to 'flex'
+            modal.style.display = 'flex';
+        }
 
-function closeModal() {
-    // Get the modal element
-    const modal = document.getElementById('orientationModal');
-    
-    // Hide the modal by setting its display to 'none'
-    modal.style.display = 'none';
-}
+        function closeModal() {
+            // Get the modal element
+            const modal = document.getElementById('orientationModal');
+            
+            // Hide the modal by setting its display to 'none'
+            modal.style.display = 'none';
+        }
 
         function toggleMode(mode) {
             if (mode === 'online') {

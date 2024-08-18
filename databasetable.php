@@ -104,7 +104,8 @@ if ($conn->query($sql) === TRUE) {
 
 // Create internal_users table
 $sql = "CREATE TABLE IF NOT EXISTS internal_users (
-    user_id VARCHAR(10) PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(15) UNIQUE,
     college_code VARCHAR(2),
     prefix VARCHAR(50) NOT NULL,
     first_name VARCHAR(50) NOT NULL,
@@ -130,7 +131,8 @@ if ($conn->query($sql) === TRUE) {
 
 // Create external_users table
 $sql = "CREATE TABLE IF NOT EXISTS external_users (
-    user_id VARCHAR(10) PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(15) UNIQUE,
     company_code VARCHAR(2),
     prefix VARCHAR(50) NOT NULL,
     first_name VARCHAR(50) NOT NULL,
@@ -367,8 +369,8 @@ $result_check_admin = $conn->query($sql_check_admin);
 if ($result_check_admin->num_rows === 0) {
     $hashed_password = password_hash("admin", PASSWORD_DEFAULT);
 
-    $sql_create_admin = "INSERT INTO admin (user_id, password) 
-                         VALUES ('admin', '$hashed_password')";
+    $sql_create_admin = "INSERT INTO admin (user_id, password, profile_picture) 
+                         VALUES ('admin', '$hashed_password', 'Profile Pictures/placeholder.jpg')";
 
     if ($conn->query($sql_create_admin) === TRUE) {
         echo "Admin account created successfully<br>";

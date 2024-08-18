@@ -132,7 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt_insert->bind_param("ssssssssssss", $new_user_id, $new_college_code, $first_name, $middle_initial, $last_name, $email, $password, $profile_picture, $prefix, $gender, $e_sign_agreement, $otp);
 
             if ($stmt_insert->execute()) {
-                $message = "College transfer request submitted successfully.";
+                $message = "College transfer request submitted successfully.<br>You will be logged out after this.<br>Please wait for the admin to approve your request.";
                 $image = "success.png";
             } else {
                 $message = "Error submitting transfer request: " . $stmt_insert->error;

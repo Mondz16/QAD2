@@ -320,7 +320,10 @@ By clicking "Agree," you consent to the use of your electronic signature as desc
     document.getElementById('middleinitial').addEventListener('input', function(e) {
         let middleinitialInput = e.target.value;
 
-        // Limit to 10 characters
+        // Remove any non-letter characters
+        middleinitialInput = middleinitialInput.replace(/[^a-zA-Z]/g, '');
+
+        // Limit to 1 character
         if (middleinitialInput.length > 1) {
             middleinitialInput = middleinitialInput.slice(0, 1);
         }
@@ -328,6 +331,7 @@ By clicking "Agree," you consent to the use of your electronic signature as desc
         // Set the cleaned value back to the input
         e.target.value = middleinitialInput;
     });
+
 
     document.addEventListener('DOMContentLoaded', function() {
     // Set initial state

@@ -34,29 +34,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     include 'connection.php';
 
-    function check_existing_user($conn, $first_name, $middle_initial, $last_name, $email) {
-        $stmt = $conn->prepare("
-        SELECT status, otp 
-        FROM internal_users 
-        WHERE first_name = ? AND middle_initial = ? AND last_name = ? AND email = ?
-        UNION 
-        SELECT status, otp 
-        FROM external_users 
-        WHERE first_name = ? AND middle_initial = ? AND last_name = ? AND email = ?
-        UNION 
-        SELECT 'active' as status, otp 
-        FROM admin 
-        WHERE first_name = ? AND middle_initial = ? AND last_name = ? AND email = ?");
-
-        $stmt->bind_param("ssssssssssss",
-        $first_name, $middle_initial, $last_name, $email,
-        $first_name, $middle_initial, $last_name, $email,
-        $first_name, $middle_initial, $last_name, $email
-        );
-        $stmt->execute();
-        return $stmt->get_result();
-    }
-
     function check_existing_email($conn, $email) {
         $stmt = $conn->prepare("
         SELECT email, otp, status 
@@ -112,38 +89,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    function generate_unique_number($conn, $table) {
-        $sql_count_users = "SELECT COUNT(*) AS count FROM $table";
-        $result_count_users = $conn->query($sql_count_users);
-        $count_users = $result_count_users->fetch_assoc()['count'];
-
-        $unique_number = str_pad($count_users + 1, 4, "0", STR_PAD_LEFT);
-        return $unique_number;
-    }
-
     if ($type == 'internal') {
-        // Fetch college details based on college_id
-        $stmt_college = $conn->prepare("SELECT code, college_name FROM college WHERE code = ?");
-        $stmt_college->bind_param("s", $college_code);
-        $stmt_college->execute();
-        $result_college = $stmt_college->get_result();
-
-        if ($result_college->num_rows > 0) {
-            $row_college = $result_college->fetch_assoc();
-            $college = $row_college['college_name'];
-        } else {
-            echo "Invalid college selected.";
-            exit;
-        }
-
-        $table = "internal_users"; // Table to insert into
-        $unique_number = generate_unique_number($conn, $table);
-        $user_id = $college_code . "-11-" . $unique_number;
+        $table = "internal_users";
 
         // Insert into internal_users table
-        $stmt_internal = $conn->prepare("INSERT INTO $table (user_id, college_code, prefix, first_name, middle_initial, last_name, email, password, gender, e_sign_agreement, profile_picture, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt_internal->bind_param("ssssssssssss", $user_id, $college_code, $prefix, $first_name, $middle_initial, $last_name, $email, $hashed_password, $gender, $e_sign_agreement, $profile_picture, $hashed_otp);
+        $stmt_internal = $conn->prepare("INSERT INTO $table (college_code, prefix, first_name, middle_initial, last_name, email, password, gender, e_sign_agreement, profile_picture, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt_internal->bind_param("sssssssssss", $college_code, $prefix, $first_name, $middle_initial, $last_name, $email, $hashed_password, $gender, $e_sign_agreement, $profile_picture, $hashed_otp);
         if ($stmt_internal->execute()) {
+            $inserted_id = $conn->insert_id; // Get the last inserted ID
+            $unique_number = str_pad($inserted_id, 4, "0", STR_PAD_LEFT);
+            $user_id = $college_code . "-11-" . $unique_number;
+
+            // Update the record with the generated user_id
+            $stmt_update = $conn->prepare("UPDATE $table SET user_id = ? WHERE id = ?");
+            $stmt_update->bind_param("si", $user_id, $inserted_id);
+            $stmt_update->execute();
+
             // Send OTP Email
             sendOTPEmail($email, $otp); // Send the plain OTP to the user
             header("Location: verify_otp.php?email=" . urlencode($email) . "&type=" . urlencode($type));
@@ -153,28 +114,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         $stmt_internal->close();
     } elseif ($type == 'external') {
-        // Fetch company details based on company_id
-        $stmt_company = $conn->prepare("SELECT code, company_name FROM company WHERE code = ?");
-        $stmt_company->bind_param("s", $company_code);
-        $stmt_company->execute();
-        $result_company = $stmt_company->get_result();
-
-        if ($result_company->num_rows > 0) {
-            $row_company = $result_company->fetch_assoc();
-            $company_name = $row_company['company_name'];
-        } else {
-            echo "Invalid company selected.";
-            exit;
-        }
-
-        $table = "external_users"; // Table to insert into
-        $unique_number = generate_unique_number($conn, $table);
-        $user_id = $company_code . "-22-" . $unique_number;
+        $table = "external_users";
 
         // Insert into external_users table
-        $stmt_external = $conn->prepare("INSERT INTO $table (user_id, company_code, prefix, first_name, middle_initial, last_name, email, password, gender, e_sign_agreement, profile_picture, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt_external->bind_param("ssssssssssss", $user_id, $company_code, $prefix, $first_name, $middle_initial, $last_name, $email, $hashed_password, $gender, $e_sign_agreement, $profile_picture, $hashed_otp);
+        $stmt_external = $conn->prepare("INSERT INTO $table (company_code, prefix, first_name, middle_initial, last_name, email, password, gender, e_sign_agreement, profile_picture, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt_external->bind_param("sssssssssss", $company_code, $prefix, $first_name, $middle_initial, $last_name, $email, $hashed_password, $gender, $e_sign_agreement, $profile_picture, $hashed_otp);
         if ($stmt_external->execute()) {
+            $inserted_id = $conn->insert_id; // Get the last inserted ID
+            $unique_number = str_pad($inserted_id, 4, "0", STR_PAD_LEFT);
+            $user_id = $company_code . "-22-" . $unique_number;
+
+            // Update the record with the generated user_id
+            $stmt_update = $conn->prepare("UPDATE $table SET user_id = ? WHERE id = ?");
+            $stmt_update->bind_param("si", $user_id, $inserted_id);
+            $stmt_update->execute();
+
             // Send OTP Email
             sendOTPEmail($email, $otp); // Send the plain OTP to the user
             header("Location: verify_otp.php?email=" . urlencode($email) . "&type=" . urlencode($type));
