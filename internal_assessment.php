@@ -864,6 +864,12 @@ foreach ($schedules as $schedule) {
             document.getElementById('Summarydate').value = formatDate(schedule.schedule_date);
             document.getElementById('Summarytime').value = formatTime(schedule.schedule_time);
 
+            // Fetch team members' areas
+            fetchTeamAreas(schedule.schedule_id);
+
+            // Fetch team members' results
+            fetchTeamResults(schedule.schedule_id);
+
             var resultSection = document.getElementById('result-section');
             var resultContainer = document.getElementById('result-container');
 
@@ -906,6 +912,34 @@ foreach ($schedules as $schedule) {
             }
 
             document.getElementById('Summarypopup').style.display = 'block';
+        }
+
+        function fetchTeamAreas(schedule_id) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get_team_areas.php?schedule_id=' + schedule_id, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var areas = JSON.parse(xhr.responseText);
+                    document.getElementById('areas').value = areas.join('\n');
+
+                    console.log("Areas: ", areas); // Debugging
+                }
+            };
+            xhr.send();
+        }
+
+        function fetchTeamResults(schedule_id) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get_team_results.php?schedule_id=' + schedule_id, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var results = JSON.parse(xhr.responseText);
+                    document.getElementById('results').value = results.join('\n');
+
+                    console.log("Results: ", results); // Debugging
+                }
+            };
+            xhr.send();
         }
 
         function SummaryclosePopup() {
