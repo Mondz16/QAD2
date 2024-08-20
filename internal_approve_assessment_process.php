@@ -235,7 +235,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <div id="successPopup" class="popup">
         <div class="popup-content">
-            <span class="close-btn" id="closeSuccessBtn">&times;</span>
             <div style="height: 50px; width: 0px;"></div>
             <img class="Success" src="images/Success.png" height="100">
             <div style="height: 20px; width: 0px;"></div>

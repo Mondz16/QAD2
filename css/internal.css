@@ -453,7 +453,7 @@
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place even when scrolling */
-    z-index: 1; /* Sit on top */
+    z-index: 1000; /* Sit on top */
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%); /* Move it to the center */

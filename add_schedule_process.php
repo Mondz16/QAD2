@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Check if the date already exists
-    $sql_check_status = "SELECT id FROM schedule WHERE schedule_date = ? AND schedule_status != 'cancelled'";
+    $sql_check_status = "SELECT id FROM schedule WHERE schedule_date = ? AND schedule_status NOT IN ('cancelled', 'finished', 'failed', 'passed')";
     $stmt_check_date = $conn->prepare($sql_check_status);
     $stmt_check_date->bind_param("s", $date);
     $stmt_check_date->execute();

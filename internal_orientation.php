@@ -397,7 +397,7 @@ if (!empty($schedules)) {
                 <input type="hidden" name="schedule_id" id="modal_schedule_id">
                 <div class="orientationname1">
                     <div class="titleContainer">
-                        <label for="level"><strong>ORIENTATION DATE</strong></label>
+                        <label for="level"><strong>DATE</strong></label>
                     </div>
                     <div class="titleContainer">
                         <label for="time"><strong>TIME</strong></label>
@@ -405,15 +405,15 @@ if (!empty($schedules)) {
                 </div>
                 <div class="orientationname1">
                     <div class="nameContainer orientationContainer">
-                        <input class="level" type="date" id="orientation_date" name="orientation_date" required>
+                        <input class="level" type="date" id="orientation_date" name="orientation_date" onclick="openDatePicker('orientation_date')" style="cursor: pointer;" required>
                     </div>
                     <div class="nameContainer orientationContainer">
-                        <input class="time" type="time" id="orientation_time" name="orientation_time" required>
+                        <input class="time" type="time" id="orientation_time" name="orientation_time" onclick="openDatePicker('orientation_time')" style="cursor: pointer;" required>
                     </div>
                 </div>
                 <div class="orientationname1">
                     <div class="titleContainer">
-                        <label for="level"><strong>MODE OF ORIENTATION</strong></label>
+                        <label for="level"><strong>MODE</strong></label>
                     </div>
                 </div>
                 <div class="internal-external">
@@ -427,21 +427,21 @@ if (!empty($schedules)) {
                 <div style="height: 20px;"></div>
                 <div id="onlineFields">
                     <div class="form-group">
-                        <label for="orientation_link">Orientation Link:</label>
+                        <label for="orientation_link">Link</label>
                         <input type="text" id="orientation_link" name="orientation_link" required>
                     </div>
                     <div class="form-group">
-                        <label for="link_passcode">Link Passcode:</label>
+                        <label for="link_passcode">Link Passcode</label>
                         <input type="text" id="link_passcode" name="link_passcode" required>
                     </div>
                 </div>
                 <div id="f2fFields" style="display: none;">
                     <div class="form-group">
-                        <label for="orientation_building">Orientation Building:</label>
+                        <label for="orientation_building">Building</label>
                         <input type="text" id="orientation_building" name="orientation_building">
                     </div>
                     <div class="form-group">
-                        <label for="room_number">Room Number:</label>
+                        <label for="room_number">Room Number</label>
                         <input type="text" id="room_number" name="room_number">
                     </div>
                 </div>
@@ -464,6 +464,10 @@ if (!empty($schedules)) {
     </div>
 
     <script>
+        function openDatePicker(id) {
+            document.getElementById(id).showPicker();
+        }
+
         function openLogoutModal() {
             document.getElementById('logoutModal').style.display = 'block'; // Show the modal
         }

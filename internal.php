@@ -359,7 +359,7 @@ $stmt_all_colleges->close();
                 <div class="college">
                     <div class="college1">
                         <select id="newCollege" name="newCollege" required>
-                            <option value="">Select College</option>
+                            <option value="" disabled selected hidden>Select College</option>
                             <?php foreach ($colleges as $college) { ?>
                                 <option value="<?php echo htmlspecialchars($college['code']); ?>"><?php echo htmlspecialchars($college['name']); ?></option>
                             <?php } ?>

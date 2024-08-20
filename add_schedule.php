@@ -173,7 +173,7 @@ if (!isset($_SESSION['user_id'])) {
                 <div class="form-group">
                     <label for="college">COLLEGE:</label>
                     <select id="college" name="college" onchange="fetchPrograms(); fetchTeamLeadersAndMembers();" required class="select2" style="cursor: pointer;">
-                        <option value="">Select College</option>
+                        <option value="" disabled selected hidden>Select College</option>
                         <?php
                         include 'connection.php';
 
@@ -189,7 +189,7 @@ if (!isset($_SESSION['user_id'])) {
                 <div class="form-group">
                     <label for="program">PROGRAM:</label>
                     <select id="program" name="program" onchange="fetchProgramLevel()" required class="select2" style="cursor: pointer;">
-                        <option value="">Select Program</option>
+                        <option value="" disabled selected hidden>Select Program</option>
                         <!-- Options will be dynamically populated based on college selection -->
                     </select>
                 </div>
@@ -485,16 +485,23 @@ if (!isset($_SESSION['user_id'])) {
     // Function to check if the selected date has a conflict
     function checkScheduleDate(callback) {
         var date = document.getElementById('date').value;
+        var exclude_schedule_id = document.getElementById('exclude_schedule_id') ? document.getElementById('exclude_schedule_id').value : null;
+        
         if (date) {
             $.ajax({
                 url: 'check_schedule.php',
                 type: 'POST',
-                data: { date: date },
+                data: { date: date, exclude_schedule_id: exclude_schedule_id },
                 success: function(response) {
                     var data = JSON.parse(response);
                     if (data.status === 'exists') {
-                        document.getElementById('errorPopup').style.display = 'block';
-                        if (callback) callback(false); // Date conflict, callback with false
+                        // Check if the conflicting schedule status is 'approved' or 'pending'
+                        if (data.schedule_status === 'approved' || data.schedule_status === 'pending') {
+                            document.getElementById('errorPopup').style.display = 'block';
+                            if (callback) callback(false); // Date conflict with status, callback with false
+                        } else {
+                            if (callback) callback(true); // Date conflict but status is not approved/pending, callback with true
+                        }
                     } else {
                         if (callback) callback(true); // No conflict, callback with true
                     }

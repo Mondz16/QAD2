@@ -342,7 +342,6 @@ function displayOrientationDetails($conn, $orientationType, $title)
     <!-- Approve Modal -->
     <div id="approveModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeApproveModal()">&times;</span>
             <h2>Are you sure you want to approve this orientation request?</h2>
             <div class="modal-buttons">
                 <button class="yes-btn" id="confirmApproveBtn">Yes</button>
@@ -354,7 +353,6 @@ function displayOrientationDetails($conn, $orientationType, $title)
     <!-- Deny Modal -->
     <div id="denyModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeDenyModal()">&times;</span>
             <h2>Are you sure you want to deny this orientation request?</h2>
             <textarea rows="3" cols="52" id="denyReason" placeholder="Enter reason for denial"></textarea>
             <div class="modal-buttons">
@@ -367,7 +365,6 @@ function displayOrientationDetails($conn, $orientationType, $title)
     <!-- Schedule Modal -->
     <div id="scheduleModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeScheduleModal()">&times;</span>
             <h2>Schedule Details</h2>
             <div id="scheduleContent"></div>
             <div class="modal-footer">

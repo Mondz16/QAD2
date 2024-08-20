@@ -477,22 +477,28 @@ foreach ($schedules as $schedule) {
                                 <?php endif; ?>
                             <?php endif; ?>
                         <?php else: ?>
-                            <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
-                                <p>NON-DISCLOSURE AGREEMENT</p>
+                            <?php if ($schedule['schedule_status'] !== 'approved'): ?>
+                                <p>SCHEDULE STATUS</p>
                                 <div style="height: 10px;"></div>
-                                <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
-                            <?php elseif ($schedule['area'] == ''): ?>
-                                <p>ASSESSMENT</p>
-                                <div style="height: 10px;"></div>
-                                <p class="pending-assessments">YOUR TEAM LEADER SHOULD ASSIGN AREA FIRST</p>
-                            <?php elseif (in_array($schedule['team_id'], $existing_assessments)): ?>
-                                <p>ASSESSMENT</p>
-                                <div style="height: 10px;"></div>
-                                <p class="assessment-button-done">ALREADY SUBMITTED</p>
+                                <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button> 
                             <?php else: ?>
-                                <p>ASSESSMENT</p>
-                                <div style="height: 10px;"></div>
-                                <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
+                                <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
+                                    <p>NON-DISCLOSURE AGREEMENT</p>
+                                    <div style="height: 10px;"></div>
+                                    <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
+                                <?php elseif ($schedule['area'] == ''): ?>
+                                    <p>ASSESSMENT</p>
+                                    <div style="height: 10px;"></div>
+                                    <p class="pending-assessments">YOUR TEAM LEADER SHOULD ASSIGN AREA FIRST</p>
+                                <?php elseif (in_array($schedule['team_id'], $existing_assessments)): ?>
+                                    <p>ASSESSMENT</p>
+                                    <div style="height: 10px;"></div>
+                                    <p class="assessment-button-done">ALREADY SUBMITTED</p>
+                                <?php else: ?>
+                                    <p>ASSESSMENT</p>
+                                    <div style="height: 10px;"></div>
+                                    <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
+                                <?php endif; ?>
                             <?php endif; ?>
                         <?php endif; ?>
                     </div>
@@ -511,7 +517,6 @@ foreach ($schedules as $schedule) {
     <!-- NDA Signing Popup -->
     <div class="ndamodal1" id="ndaPopup" style="display: none;">
         <div class="ndamodal-content1">
-            <span style="float: right; font-size: 40px; cursor: pointer;" class="close" onclick="closeNdaPopup()">&times;</span>
             <h2>NON-DISCLOSURE AGREEMENT</h2>
             <form action="internal_nda_process.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="team_id" id="nda_team_id">
@@ -546,7 +551,6 @@ foreach ($schedules as $schedule) {
     <!-- Popup Form for Team Member -->
     <div class="assessmentmodal" id="popup">
         <div class="assessmentmodal-content">
-            <span style="float: right; font-size: 40px; cursor: pointer;" class="Summaryclose" onclick="closePopup()">&times;</span>
             <h2>ASSESSMENT FORM</h2>
             <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
                 <div class="assessment-group">
@@ -580,7 +584,7 @@ foreach ($schedules as $schedule) {
                 </div>
                 <div class="orientationname1">
                     <div class="titleContainer">
-                        <label for="result"><strong>RESULT</strong></label>
+                        <label for="result"><strong>RESULT<span style="color: red;"> *<span></strong></label>
                     </div>
                     <div class="titleContainer">
                         <label for="area_evaluated"><strong>AREA EVALUATED</strong></label>
@@ -601,10 +605,10 @@ foreach ($schedules as $schedule) {
                 </div>
                 <div style="height: 20px;"></div>
                 <div class="assessment-group">
-                    <label for="findings"><strong>FINDINGS</strong></label>
+                    <label for="findings"><strong>FINDINGS<span style="color: red;"> *<span></strong></label>
                     <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="findings" name="findings" rows="10" placeholder="Add a comment" required></textarea>
                     <div style="height: 20px;"></div>
-                    <label for="recommendations"><strong>RECOMMENDATIONS</strong></label>
+                    <label for="recommendations"><strong>RECOMMENDATIONS<span style="color: red;"> *<span></strong></label>
                     <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="recommendations" name="recommendations" rows="10" placeholder="Add a comment" required></textarea>
                 </div>
                 <div class="orientationname1">
@@ -612,7 +616,7 @@ foreach ($schedules as $schedule) {
                         <label for="evaluator"><strong>EVALUATOR</strong></label>
                     </div>
                     <div class="titleContainer">
-                        <label for="evaluator_signature"><strong>EVALUATOR E-SIGN</strong></label>
+                        <label for="evaluator_signature"><strong>EVALUATOR E-SIGN<span style="color: red;"> *<span></strong></label>
                     </div>
                 </div>
                 <div class="orientationname1 upload">
@@ -636,7 +640,6 @@ foreach ($schedules as $schedule) {
     <!-- Popup Form for Team Leader -->
     <div class="Summarymodal" id="Summarypopup">
         <div class="Summarymodal-content">
-            <span style="float: right; font-size: 40px; cursor: pointer;" class="Summaryclose" onclick="SummaryclosePopup()">&times;</span>
             <h2>SUMMARY FORM</h2>
             <form action="internal_summary_assessment_process.php" method="POST" enctype="multipart/form-data">
                 <div class="assessment-group">
@@ -672,7 +675,7 @@ foreach ($schedules as $schedule) {
                 <div id="result-section" style="display: none;">
                     <div class="orientationname1">
                         <div class="titleContainer">
-                            <label for="result"><strong>RESULT (TEAM LEADER)</strong></label>
+                            <label for="result"><strong>RESULT (TEAM LEADER)<span style="color: red;"> *<span></strong></label>
                         </div>
                     </div>
                     <div class="orientationname1">
@@ -695,7 +698,7 @@ foreach ($schedules as $schedule) {
                         <label for="evaluator"><strong>EVALUATOR</strong></label>
                     </div>
                     <div class="titleContainer">
-                        <label for="Summaryevaluator_signature"><strong>TEAM LEADER E-SIGN</strong></label>
+                        <label for="Summaryevaluator_signature"><strong>TEAM LEADER E-SIGN<span style="color: red;"> *<span></strong></label>
                     </div>
                 </div>
                 <div class="orientationname1 upload">
@@ -719,7 +722,6 @@ foreach ($schedules as $schedule) {
     <!-- Popup Form for Approving Assessment -->
     <div class="approvalmodal" id="approveAssessmentPopup">
         <div class="approvalmodal-content">
-            <span style="float: right; font-size: 40px; cursor: pointer;" class="close" onclick="closeApproveAssessmentPopup()">&times;</span>
             <h2>APPROVE ASSESSMENT</h2>
             <form id="approveAssessmentForm" action="internal_approve_assessment_process.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="team_id" id="approve_team_id">
@@ -729,7 +731,7 @@ foreach ($schedules as $schedule) {
                         <label for="team_leader"><strong>TEAM LEADER</strong></label>
                     </div>
                     <div class="titleContainer" style="padding-left: 100px;">
-                        <label for="team_leader_signature"><strong>TEAM LEADER E-SIGN</strong></label>
+                        <label for="team_leader_signature"><strong>TEAM LEADER E-SIGN<span style="color: red;"> *<span></strong></label>
                     </div>
                 </div>
                 <div class="orientationname1 upload">
@@ -822,11 +824,14 @@ foreach ($schedules as $schedule) {
 
         function formatDate(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', {
+            // Format the date to include short month format
+            const formattedDate = date.toLocaleDateString('en-US', {
                 year: 'numeric',
-                month: 'long',
+                month: 'short', // Short month (e.g., "Jan")
                 day: 'numeric',
             });
+            // Add a dot to the month abbreviation if it's not already there
+            return formattedDate.replace(/(\b\w{3}\b)(?=\s\d{1,2},\s\d{4})/, '$1.');
         }
 
         function formatTime(timeString) {
