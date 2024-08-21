@@ -462,11 +462,6 @@ By clicking "Agree," you consent to the use of your electronic signature as desc
         document.getElementById('registerForm').submit();
     });
 
-    document.getElementById('closeErrorBtn').addEventListener('click', function() {
-        document.getElementById('errorPopup').style.display = 'none';
-        restoreFormData();
-    });
-
     document.getElementById('closePopup').addEventListener('click', function() {
         document.getElementById('errorPopup').style.display = 'none';
         restoreFormData();
