@@ -20,6 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt_check->execute();
     $stmt_check->store_result();
 
+    $status = '';
+    $message = '';
+    
     if ($stmt_check->num_rows > 0) {
         // Orientation already requested for this schedule
         $stmt_check->close();
@@ -42,10 +45,95 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($stmt_date_check->num_rows > 0) {
         // An orientation on the same date already exists
         $stmt_date_check->close();
-        header("Location: internal_orientation.php?error=orientation_date_conflict");
+        
+        $status = "error";
+        $message = "An orientation for the selected date already exists.";
+        
+        echo "
+        <!DOCTYPE html>
+        <html lang='en'>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+            <title>Orientation Error</title>
+            <link rel='stylesheet' href='index.css'>
+            <style>
+            .popup {
+                display: block;
+                position: fixed;
+                z-index: 200;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+
+            .popup-content {
+                background-color: #fff;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+                max-width: 500px;
+                text-align: center;
+                border-radius: 10px;
+                position: relative;
+                argin: 10% auto;
+            }
+            
+            .hairpop-up {
+                height: 15px;
+                background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                border-bottom-left-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+
+            .okay {
+                color: black;
+                text-decoration: none;
+                white-space: unset;
+                font-size: 1rem;
+                font-weight: bold;
+                text-transform: uppercase;
+                border: 1px solid;
+                border-radius: 10px;
+                cursor: pointer;
+                padding: 16px 55px;
+                min-width: 120px;
+            }
+
+            .okay:hover {
+                background-color: #EAEAEA;
+            }
+            </style>
+        </head>
+        <body>
+            <div id='errorPopup' class='popup'>
+                <div class='popup-content'>
+                    <div style='height: 50px; width: 0px;'></div>
+                    <img src='images/" . ucfirst($status) . ".png' height='100' alt='" . ucfirst($status) . "'>
+                    <div style='height: 25px; width: 0px;'></div>
+                    <div class='message " . $status . "'>
+                        " . $message . "
+                    </div>
+                    <div style='height: 50px; width: 0px;'></div>
+                    <a href='internal_orientation.php' class='okay'>OKAY</a>
+                    <div style='height: 100px; width: 0px;'></div>
+                    <div class='hairpop-up'></div>
+                </div>
+            </dive
+        </body>
+        </html>
+        ";
+    
         exit();
-    }
-    $stmt_date_check->close();
+    }    
 
     // Insert into orientation table with default status 'pending'
     $orientation_type = ($mode === 'online') ? 'online' : 'face_to_face';

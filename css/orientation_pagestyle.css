@@ -375,35 +375,46 @@ body {
     background-color: #f2f2f2;
 }
 
-.data-table tr:hover {
-    background-color: #f1f1f1;
-}
-
 .btn {
-    padding: 8px 16px;
+    padding: 6px 10px;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
+    text-transform: uppercase;
+    margin: 0px 2px;
 }
 
 .btn.approve {
-    background-color: #2cb84f;
+    background-color: #76FA97;
     color: white;
+    transition: background-color 0.3s ease;
 }
 
-.btn.deny {
-    background-color: #e74c3c;
+.btn.approve:hover {
+    background-color: rgb(49, 204, 85);
+}
+
+#approveModal h2, #denyModal h2, #scheduleModal h2 {
+    width: 100%;
+    font-size: 1.5rem !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+}
+
+.btn.cancel {
+    background-color: #FF6666;
     color: white;
+    transition: background-color 0.3s ease;
+}
+
+.btn.cancel:hover {
+    background-color: #eb5f5f;
 }
 
 .btn.view {
     background-color: #3498db;
     color: white;
-}
-
-.btn:hover {
-    opacity: 0.9;
 }
 
 .back-button {
@@ -416,10 +427,6 @@ body {
     font-size: 16px;
 }
 
-.back-button:hover {
-    opacity: 0.9;
-}
-
 .modal {
     display: none;
     position: fixed;
@@ -429,8 +436,7 @@ body {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgb(0, 0, 0);
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
@@ -438,21 +444,27 @@ body {
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%;
-    max-width: 400px;
+    width: 500px;
     border-radius: 10px;
-    text-align: center;
 }
 
-.close {
+.modal-content textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    resize: none;
+}
+
+.modal .close {
     color: #aaa;
-    float: right;
-    font-size: 28px;
+    font-size: 40px;
     font-weight: bold;
 }
 
-.close:hover,
-.close:focus {
+.modal .close:hover,
+.modal .close:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
@@ -460,7 +472,7 @@ body {
 
 .modal-buttons {
     display: flex;
-    justify-content: space-around;
+    justify-content: flex-end;
     margin-top: 20px;
 }
 
@@ -472,28 +484,26 @@ body {
 }
 
 .modal-buttons .yes-btn {
-    background-color: #d9534f;
-    color: white;
-}
-
-.modal-buttons .no-btn {
-    background-color: #5bc0de;
+    background-color:  rgb(49, 204, 85);
     color: white;
 }
 
 .modal-buttons .yes-btn:hover {
-    background-color: #c9302c;
+    background-color:  #28a745;
+    color: white;
+}
+
+.modal-buttons .no-btn {
+    background-color: white;
+    color:#888;
 }
 
 .modal-buttons .no-btn:hover {
-    background-color: #31b0d5;
+    background-color: white;
+    text-decoration: underline;
 }
 
-.modal-buttons textarea {
-    width: 100%;
-    padding: 10px;
-    margin-top: 20px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    resize: none;
+.modal-buttons .rejection{
+    background-color: #e74c3c !important; 
 }
+
