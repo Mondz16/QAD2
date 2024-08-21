@@ -232,7 +232,8 @@ $stmt_all_colleges->close();
                 <p><strong class="prefix">Prefix</strong><br><strong class="prefix1"><?php echo htmlspecialchars($prefix); ?></strong><button class="edit-link" onclick="openModal('prefixModal')">Edit</button></p><br>
                 <p><strong class="prefix">Full Name:</strong><br><strong class="prefix1"><?php echo htmlspecialchars($first_name . ' ' . $middle_initial . '. ' . $last_name); ?></strong><button class="edit-link" onclick="openModal('fullNameModal')">Edit</button></p><br>
                 <p><strong class="prefix">Gender</strong><br><strong class="prefix1"><?php echo htmlspecialchars($gender); ?></strong><button class="edit-link" onclick="openModal('genderModal')">Edit</button></p><br>
-                <p><strong class="prefix">College</strong><br><strong class="prefix1"><?php echo htmlspecialchars($college_name1); ?></strong><button class="edit-link" onclick="openModal('collegeModal')">Edit</button></p>
+                <p><strong class="prefix">College</strong><br><strong class="prefix1"><?php echo htmlspecialchars($college_name1); ?></strong><button class="edit-link" onclick="openModal('collegeModal')">Edit</button></p><br>
+                <p><strong class="prefix">Email</strong><br><strong class="prefix1"><?php echo htmlspecialchars($email); ?></strong><button class="edit-link" onclick="openModal('emailModal')">Edit</button></p>
             </div>
         </div>
     </div>
@@ -311,13 +312,13 @@ $stmt_all_colleges->close();
 
     <div id="emailModal" class="modal">
         <div class="modal-content">
-            <form action="update_profile.php" method="post">
+            <form action="update_email.php" method="post">
                 <h2>Edit Email</h2>
                 <div class="username">
                     <div class="usernameContainer">
                         <input class="email" type="email" id="newEmail" name="newEmail" value="<?php echo htmlspecialchars($email); ?>" required>
                     </div>
-                    <input type="hidden" name="field" value="email">
+                    <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
                 </div>
                 <div class="button-container">
                     <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
