@@ -184,7 +184,7 @@ if (!empty($schedules)) {
         /* Modal overlay style */
         .orientationmodal {
             position: fixed; /* Stay in place even when scrolling */
-            z-index: 9999; /* Sit on top */
+            z-index: 100; /* Sit on top */
             left: 0;
             top: 0;
             width: 100%;
@@ -405,7 +405,7 @@ if (!empty($schedules)) {
                 </div>
                 <div class="orientationname1">
                     <div class="nameContainer orientationContainer">
-                        <input class="level" type="date" id="orientation_date" name="orientation_date" onclick="openDatePicker('orientation_date')" style="cursor: pointer;" required>
+                        <input class="level" type="date" id="orientation_date" name="orientation_date" onchange="checkOrientationDate()" onclick="openDatePicker('orientation_date')" style="cursor: pointer;" required>
                     </div>
                     <div class="nameContainer orientationContainer">
                         <input class="time" type="time" id="orientation_time" name="orientation_time" onclick="openDatePicker('orientation_time')" style="cursor: pointer;" required>
@@ -460,6 +460,19 @@ if (!empty($schedules)) {
                 <button type="button" class="accept-back-button" id="backButton" onclick="cancelLogout()">CANCEL</button>
                 <button type="button" class="accept-confirm-button" id="confirmButton" onclick="confirmLogout()">CONFIRM</button>
             </div>
+        </div>
+    </div>
+
+    <div id="errorPopup" class="popup" style="display: none;">
+        <div class="popup-content">
+            <div style="height: 50px; width: 0px;"></div>
+            <img class="Error" src="images/Error.png" height="100">
+            <div style="height: 20px; width: 0px;"></div>
+            <div class="popup-text">An orientation for the selected date already exists.</div>
+            <div style="height: 50px; width: 0px;"></div>
+            <a href="#" class="okay" id="closeErrorPopup">Okay</a>
+            <div style="height: 100px; width: 0px;"></div>
+            <div class="hairpop-up"></div>
         </div>
     </div>
 
@@ -527,6 +540,36 @@ if (!empty($schedules)) {
                 document.getElementById('room_number').required = true;
             }
         }
+
+        function checkOrientationDate() {
+            var date = document.getElementById('orientation_date').value;
+            var excludeId = document.getElementById('orientation_date').getAttribute('data-exclude-id');
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "check_orientation.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.status === 'exists') {
+                        // Handle the case where a conflicting date is found
+                        showErrorPopup(response.orientation_status);
+                    }
+                }
+            };
+            xhr.send("date=" + encodeURIComponent(date) + "&exclude_orientation_id=" + encodeURIComponent(excludeId));
+        }
+
+        function showErrorPopup() {
+            var errorPopup = document.getElementById('errorPopup');
+            errorPopup.style.display = 'block'; // Show the popup
+        }
+
+        document.getElementById('closeErrorPopup').addEventListener('click', function(e) {
+            e.preventDefault();
+            var errorPopup = document.getElementById('errorPopup');
+            errorPopup.style.display = 'none'; // Hide the popup
+        });
     </script>
 </body>
 </html>
