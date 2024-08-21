@@ -272,7 +272,7 @@ $sql = "CREATE TABLE IF NOT EXISTS orientation (
     orientation_date DATE NOT NULL,
     orientation_time TIME NOT NULL,
     orientation_type VARCHAR(50) NOT NULL,
-    orientation_status ENUM('pending', 'approved', 'denied') NOT NULL DEFAULT 'pending',
+    orientation_status ENUM('pending', 'approved', 'denied', 'finished') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (schedule_id) REFERENCES schedule(id)
 )";
 

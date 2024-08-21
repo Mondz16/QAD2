@@ -74,6 +74,7 @@ if (!isset($_SESSION['user_id'])) {
                 <div class="form-group">
                     <label for="college_campus">COLLEGE CAMPUS:</label>
                     <select id="college_campus" name="college_campus" required>
+                        <option value="" disabled selected hidden>Select Campus</option>
                         <option value="Obrero">Obrero</option>
                         <option value="Mintal">Mintal</option>
                         <option value="Mabini">Tagum-Mabini</option>
@@ -121,7 +122,7 @@ if (!isset($_SESSION['user_id'])) {
                         </div>
                         <div class="form-group">
                             <label for="modal_date_received">DATE RECEIVED:</label>
-                            <input type="date" id="modal_date_received" name="modal_date_received" required>
+                            <input type="date" id="modal_date_received" name="modal_date_received" onclick="openDatePicker('modal_date_received')" required>
                         </div>
                         <div class="bottom-button-holder">
                             <button type="button" class="cancel-modal-button" data-dismiss="modal"">CANCEL</button>
@@ -192,7 +193,7 @@ if (!isset($_SESSION['user_id'])) {
             newProgramDiv.innerHTML = `
                 <div class="program-holder">
                     <input type="text" id="program_${programCount}" name="programs[]" value="${program}" readonly>
-                    <input type="text" id="level_${programCount}" name="levels[]" value="LEVEL: ${level}" readonly>
+                    <input type="text" id="level_${programCount}" name="levels[]" value="${level}" readonly>
                     <input type="date" id="date_received_${programCount}" name="dates_received[]" value="${dateReceived}" readonly>
                 </div>
                     `;
@@ -261,6 +262,10 @@ if (!isset($_SESSION['user_id'])) {
 
         // Initial check to hide or show the Remove Program button on page load
         document.addEventListener('DOMContentLoaded', toggleRemoveProgramButton);
+
+        function openDatePicker(id) {
+            document.getElementById(id).showPicker();
+        }
     </script>
 
 

@@ -67,42 +67,11 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
     <link href="css/pagestyle.css" rel="stylesheet">
     <style>
 
-        .button-container{
+        .button-container {
             display: flex;
-            justify-content: flex-end;
             width: 100%;
             margin-top: 20px;
-        }
-
-        .button-container button:first-child{
-            color: #AFAFAF;
-            border: 1px solid #AFAFAF;
-            padding: 10px 25px;
-            margin: 0 5px;
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .button-container button:last-child {
-            width: 150px;
-            color: #006118;
-            border: 1px solid #006118;
-            background-color: #D4FFDF;
-            padding: 10px 25px;
-            margin: 0 5px;
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: background-color .3s ease;
-        }
-
-        .button-container button:last-child:hover {
-            border: 1px solid #006118;
-            background-color: #76FA97;
-            color: #006118;
+            justify-content: flex-end;
         }
 
         .nameContainer{
@@ -198,7 +167,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             margin-right: 15px;
         }
 
-        .moda-content .input-holder input:last-child {
+        .modal-content .input-holder input:last-child {
             position: absolute;
             opacity: 0;
             right: 0;
@@ -215,20 +184,6 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         .modal-content h2{
             text-align: center;
             margin: 20px 20px 40px 20px;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
         }
 
         .check-symbol {
@@ -415,6 +370,39 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             100% {
                 transform: rotate(360deg);
             }
+        }
+
+        .approve-cancel-button {
+            background-color: #f9f9f9;
+            border: 1px solid #AFAFAF;
+            padding: 10px 25px;
+            margin: 0px 5px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .approve-cancel-button:hover {
+            background-color: #AFAFAF;
+            color: white;
+        }
+
+        .approve-assessment-button {
+            padding: 10px 25px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 170px;
+            background-color: #76FA97;
+            color: black;
+            border: 1px solid #AFAFAF;
+        }
+
+        .approve-assessment-button:hover {
+            background-color: #43f770;
+            color: black;
         }
     </style>
 </head>
@@ -719,7 +707,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                 <form id="approveForm" method="POST" action="approve_summary.php" enctype="multipart/form-data">
                     <div class="label-holder">
                         <label for="qadOfficerName"><strong>QAD OFFICER NAME:</strong></label>
-                        <label for="qadOfficerSignature"><strong>OFFICER SIGNATURE (PNG ONLY):</strong></label>
+                        <label for="qadOfficerSignature" style="margin-right: 35px;"><strong>SIGNATURE (PNG ONLY):<span style="color: red;"> *<span></strong></label>
                     </div>
                     <div class="input-holder">
                         <input type="text" id="qadOfficerName" name="qadOfficerName" value="<?php echo $full_name; ?>" readonly>
@@ -731,8 +719,8 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                     </div>
                     <input type="hidden" id="summaryFile" name="summaryFile">
                     <div class="button-container">
-                        <button type="button" class="close">CANCEL</button>
-                        <button type="submit" >SUBMIT</button>
+                        <button type="button" class="approve-cancel-button" onclick="closeApprovalModalPopup()">CANCEL</button>
+                        <button type="submit" class="approve-assessment-button">SUBMIT</button>
                     </div>
                 </form>
             </div>
@@ -743,6 +731,21 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
         <script>
+            window.onclick = function(event) {
+                var modals = [
+                    document.getElementById('approvalModal')
+                ];
+
+                modals.forEach(function(modal) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                });
+            }
+            function closeApprovalModalPopup() {
+                document.getElementById('approvalModal').style.display = 'none';
+            }
+
             document.querySelector('#approvalModal form').addEventListener('submit', function() {
                 document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
             });

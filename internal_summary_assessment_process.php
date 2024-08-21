@@ -251,7 +251,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div id="successPopup" class="popup">
         <div class="popup-content">
-            <span class="close-btn" onclick="closePopup()">&times;</span>
             <div style="height: 50px; width: 0px;"></div>
             <?php if ($success): ?>
                 <img class="Success" src="images/Success.png" height="100">

@@ -108,6 +108,10 @@
         input[type="time"]::-webkit-calendar-picker-indicator {
             cursor: pointer;
         }
+
+        .view-user-modal {
+        margin: 5% auto !important;
+        }
     </style>
 </head>
 
@@ -338,7 +342,7 @@
 
     <!-- View User Modal -->
     <div id="viewUserModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content view-user-modal">
             <div class="view-header">
                 <h2>User Details</h2>
                 <span class="close" onclick="document.getElementById('viewUserModal').style.display='none'">&times;</span>

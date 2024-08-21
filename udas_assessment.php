@@ -704,13 +704,13 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                 </div>
                 <div style="height: 20px;"></div>
                 <div class="assessment-group">
-                    <label for="area"><strong>AREA</strong></label>
+                    <label for="area"><strong>AREA<span style="color: red;"> *<span></strong></label>
                     <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="area" name="area" rows="10" placeholder="Add area" required></textarea>
                     <div style="height: 20px;"></div>
-                    <label for="comments"><strong>COMMENTS</strong></label>
+                    <label for="comments"><strong>COMMENTS<span style="color: red;"> *<span></strong></label>
                     <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="comments" name="comments" rows="10" placeholder="Add comments" required></textarea>
                     <div style="height: 20px;"></div>
-                    <label for="remarks"><strong>REMARKS</strong></label>
+                    <label for="remarks"><strong>REMARKS<span style="color: red;"> *<span></strong></label>
                     <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="remarks" name="remarks" rows="10" placeholder="Add remarks" required></textarea>
                 </div>
                 <div style="height: 20px;"></div>
@@ -723,7 +723,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                         <label for="qad_officer"><strong>QAD OFFICER</strong></label>
                     </div>
                     <div class="titleContainer">
-                        <label for="qad_officer_signature"><strong>QAD Officer E-SIGN</strong></label>
+                        <label for="qad_officer_signature"><strong>QAD Officer E-SIGN<span style="color: red;"> *<span></strong></label>
                     </div>
                 </div>
                 <div class="orientationname1 upload">
@@ -738,7 +738,7 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                 </div>
                 <div style="height: 20px;"></div>
                 <div class="assessment-group">
-                    <label for="qad_director">QAD DIRECTOR</label>
+                    <label for="qad_director">QAD DIRECTOR<span style="color: red;"> *<span></label>
                     <input class="assessment-group-program" type="text" id="qad_director" name="qad_director" required>
                 </div>
                 <div class="button-container">

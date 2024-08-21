@@ -170,7 +170,7 @@ if (isset($_SESSION['user_id'])) {
                             <div class="college" id="college-field" style="display:none;">
                                 <div class="college-company-gender">
                                     <select name="college">
-                                        <option value="" disabled selected>College</option>
+                                        <option value="" disabled selected hidden>College</option>
                                         <?php
                                         include_once 'connection.php';
 
@@ -191,7 +191,7 @@ if (isset($_SESSION['user_id'])) {
                             <div class="company" id="company-field" style="display:none;">
                                 <div class="college-company-gender">
                                     <select name="company">
-                                        <option value="" disabled selected>Company</option>
+                                        <option value="" disabled selected hidden>Company</option>
                                         <?php
                                         include_once 'connection.php';
 
@@ -254,7 +254,6 @@ if (isset($_SESSION['user_id'])) {
     <!-- Error Modal -->
     <div id="errorPopup" class="popup">
         <div class="popup-content">
-            <span class="close-btn" id="closeErrorBtn">&times;</span>
             <div style="height: 50px; width: 0px;"></div>
             <img class="Error" src="images/Error.png" height="100">
             <div style="height: 20px; width: 0px;"></div>

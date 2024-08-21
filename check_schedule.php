@@ -5,8 +5,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $date = mysqli_real_escape_string($conn, $_POST['date']);
     $exclude_schedule_id = isset($_POST['exclude_schedule_id']) ? mysqli_real_escape_string($conn, $_POST['exclude_schedule_id']) : null;
 
-    // Check if the date already exists, excluding the current schedule if provided
-    $sql_check_status = "SELECT id FROM schedule WHERE schedule_date = ? AND schedule_status != 'cancelled'";
+    // Prepare SQL query to check for conflicting dates
+    $sql_check_status = "SELECT id, schedule_status FROM schedule WHERE schedule_date = ? AND schedule_status NOT IN ('cancelled', 'finished', 'failed', 'passed')";
     if ($exclude_schedule_id) {
         $sql_check_status .= " AND id != ?";
     }
@@ -20,12 +20,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_check_date->execute();
     $stmt_check_date->store_result();
 
+    $response = ['status' => 'available'];
+
     if ($stmt_check_date->num_rows > 0) {
-        echo json_encode(['status' => 'exists']);
-    } else {
-        echo json_encode(['status' => 'available']);
+        // Conflicting date found, fetch the status
+        $stmt_check_date->bind_result($id, $schedule_status);
+        $stmt_check_date->fetch();
+        $response = ['status' => 'exists', 'schedule_status' => $schedule_status];
     }
 
     $stmt_check_date->close();
     $conn->close();
+    echo json_encode($response);
 }

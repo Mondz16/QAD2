@@ -130,6 +130,11 @@ while ($row_company = $result_companies->fetch_assoc()) {
             background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
         }
+
+        .scrollable-container {
+            max-height: 650px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 
@@ -328,7 +333,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
                         </div>
                     </div>
                 </div>
-                <div class="row mt-3">
+                <div class="row mt-3 scrollable-container">
                     <div class="table-responsive col-12">
                         <table id="collegeTable" class="custom-table table">
                             <thead>
@@ -439,6 +444,19 @@ while ($row_company = $result_companies->fetch_assoc()) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
+        window.onclick = function(event) {
+            var modals = [
+                document.getElementById('programModal'),
+                document.getElementById('importModal')
+            ];
+
+            modals.forEach(function(modal) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             const importForm = document.querySelector('#importModal form');
             const loadingSpinner = document.getElementById('loadingSpinner');

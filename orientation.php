@@ -125,25 +125,6 @@ function displayOrientationDetails($conn, $orientationType, $title)
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link href="css/orientation_pagestyle.css" rel="stylesheet">
-    <style>
-        .action-btn.approve {
-            background-color: #2fde57;
-        }
-
-        .action-btn.approve:hover {
-            background-color: #02b32b;
-        }
-
-        .action-btn.cancel {
-        background-color: #dc3545;
-        }
-
-        .action-btn.cancel:hover {
-        background-color: #b82c3b;
-        }
-
-
-    </style>
 </head>
 
 <body>
@@ -342,37 +323,35 @@ function displayOrientationDetails($conn, $orientationType, $title)
     <!-- Approve Modal -->
     <div id="approveModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeApproveModal()">&times;</span>
             <h2>Are you sure you want to approve this orientation request?</h2>
             <div class="modal-buttons">
-                <button class="yes-btn" id="confirmApproveBtn">Yes</button>
-                <button class="no-btn" onclick="closeApproveModal()">No</button>
+                <button class="no-btn" onclick="closeApproveModal()">CANCEL</button>
+                <button class="yes-btn" id="confirmApproveBtn">CONFIRM</button>
             </div>
         </div>
     </div>
 
     <!-- Deny Modal -->
     <div id="denyModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeDenyModal()">&times;</span>
-            <h2>Are you sure you want to deny this orientation request?</h2>
-            <textarea rows="3" cols="52" id="denyReason" placeholder="Enter reason for denial"></textarea>
-            <div class="modal-buttons">
-                <button class="yes-btn" id="confirmDenyBtn">Yes</button>
-                <button class="no-btn" onclick="closeDenyModal()">No</button>
-            </div>
+            <div class="modal-content">
+                <h2>Are you sure you want to deny this orientation request?</h2>
+                <textarea rows="5" cols="52" id="denyReason" placeholder="Enter reason for denial"></textarea>
+                <div class="modal-buttons">
+                    <button class="no-btn" type="button" onclick="closeDenyModal()">CANCEL</button>
+                    <button class="yes-btn rejection" id="confirmDenyBtn">CONFIRM</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Schedule Modal -->
     <div id="scheduleModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeScheduleModal()">&times;</span>
-            <h2>Schedule Details</h2>
-            <div id="scheduleContent"></div>
-            <div class="modal-footer">
-                <button class="close-btn" onclick="closeScheduleModal()">Close</button>
+            <div class="header">
+                <h2>Schedule Details</h2>
+                <span class="close" onclick="closeScheduleModal()">&times;</span>
             </div>
+            <div id="scheduleContent"></div>
         </div>
     </div>
 
@@ -386,9 +365,26 @@ function displayOrientationDetails($conn, $orientationType, $title)
         <input type="hidden" name="action" value="deny">
         <input type="hidden" name="reason" id="denyReasonInput">
     </form>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script>
+        window.onclick = function(event) {
+            var modals = [
+                document.getElementById('approveModal'),
+                document.getElementById('denyModal'),
+                document.getElementById('scheduleModal')
+            ];
+
+            modals.forEach(function(modal) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            });
+        }
+        function closeScheduleModal() {
+            document.getElementById('scheduleModal').style.display = 'none';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarNav = document.querySelector('.sidebar-nav');
             const sidebarFooter = document.querySelector('.sidebar-footer');
