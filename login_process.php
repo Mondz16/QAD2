@@ -132,7 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Send OTP to admin email
                 sendOTPEmail($admin['email'], $otp);
 
-                $_SESSION['user_id'] = $admin['user_id'];  // Set session variable to 'user_id'
+                $_SESSION['user_id_verify'] = $admin['user_id'];  // Set session variable to 'user_id'
                 header("Location: admin_verify_otp.php"); // Redirect to OTP verification page
                 exit;
             } else {

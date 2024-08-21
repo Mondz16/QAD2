@@ -9,7 +9,7 @@ use PHPMailer\PHPMailer\Exception;
 $email = ''; // Initialize email variable
 
 if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
+    $user_id = $_SESSION['user_id_verify'];
 
     // Fetch admin email
     $stmt = $conn->prepare("SELECT email FROM admin WHERE user_id = ?");
@@ -78,6 +78,7 @@ if (isset($_GET['resend']) && $_GET['resend'] == '1') {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $otp = $_POST['otp'];
+    $user_id = $_SESSION['user_id_verify'];
 
     // Fetch OTP and otp_created_at
     $stmt = $conn->prepare("SELECT otp, otp_created_at FROM admin WHERE user_id = ?");
@@ -103,8 +104,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['admin_verified'] = true;
                 $verified = true;
                 $message = "OTP verified successfully. You will be redirected shortly.";
-                header("refresh:5;url=dashboard.php");
-                exit;
+
+                $stmt = $conn->prepare("SELECT * FROM admin WHERE user_id = ?");
+                $stmt->bind_param("s", $user_id);
+                $stmt->execute();
+                $result_admin = $stmt->get_result();
+
+                if ($result_admin->num_rows == 1) {
+                    $admin = $result_admin->fetch_assoc();
+
+                    $_SESSION['user_id'] = $admin['user_id'];  // Set session variable to 'user_id'
+                    unset($_SESSION['user_id_verify']);
+                    header("Location: dashboard.php");
+                    exit;
+                }
             } else {
                 $message = "Invalid OTP.";
             }
@@ -225,38 +238,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
 
                 <div style="height: 32px; width: 0px;"></div>
-
-                <?php if ($verified): ?>
-                    <div id="successPopup" class="popup">
-                        <div class="popup-content">
-                            <div style="height: 50px; width: 0px;"></div>
-                            <img class="Success" src="images/Success.png" height="100">
-                            <div style="height: 20px; width: 0px;"></div>
-                            <div class="popup-text"><?php echo $message; ?></div>
-                            <div style="height: 50px; width: 0px;"></div>
-                            <a href="dashbaord.php" class="okay" id="closePopup">Okay</a>
-                            <div style="height: 100px; width: 0px;"></div>
-                            <div class="hairpop-up"></div>
-                        </div>
-                    </div>
-                    <script>
-                        document.getElementById('successPopup').style.display = 'block';
-
-                        document.getElementById('closeSuccessBtn').addEventListener('click', function() {
-                            document.getElementById('successPopup').style.display = 'none';
-                        });
-
-                        document.getElementById('closePopup').addEventListener('click', function() {
-                            document.getElementById('successPopup').style.display = 'none';
-                        });
-
-                        window.addEventListener('click', function(event) {
-                            if (event.target == document.getElementById('successPopup')) {
-                                document.getElementById('successPopup').style.display = 'none';
-                            }
-                        });
-                    </script>
-                <?php endif; ?>
 
                 <form method="post" action="admin_verify_otp.php">
                     <div class="username" style="width: 455px;">

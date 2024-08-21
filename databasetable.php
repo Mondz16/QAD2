@@ -91,7 +91,7 @@ $sql = "CREATE TABLE IF NOT EXISTS admin (
     profile_picture VARCHAR(100) NOT NULL,
     gender VARCHAR(10) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    otp VARCHAR(50) NOT NULL,
+    otp VARCHAR(255) NOT NULL,
     otp_created_at TIMESTAMP,
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
