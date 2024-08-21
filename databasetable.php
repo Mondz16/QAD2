@@ -26,7 +26,7 @@ include 'connection.php';
 $sql = "CREATE TABLE IF NOT EXISTS company (
     code VARCHAR(2) PRIMARY KEY,
     company_name VARCHAR(100) NOT NULL,
-    company_email VARCHAR(255) NOT NULL
+    company_email VARCHAR(100) NOT NULL
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -39,8 +39,8 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS college (
     code VARCHAR(2) PRIMARY KEY,
     college_name VARCHAR(100) NOT NULL,
-    college_campus VARCHAR(20) NOT NULL,
-    college_email VARCHAR(255) NOT NULL
+    college_campus VARCHAR(50) NOT NULL,
+    college_email VARCHAR(100) NOT NULL
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -49,11 +49,11 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
-// Create the program table after program_level_history
+// Create the program table
 $sql = "CREATE TABLE IF NOT EXISTS program (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     college_code VARCHAR(2),
-    program_name VARCHAR(300) NOT NULL,
+    program_name VARCHAR(100) NOT NULL,
     program_level_id INT(6) UNSIGNED,
     FOREIGN KEY (college_code) REFERENCES college(code)
 )";
@@ -68,7 +68,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS program_level_history (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     program_id INT(6) UNSIGNED NOT NULL,
-    program_level VARCHAR(255) NOT NULL,
+    program_level VARCHAR(50) NOT NULL,
     date_received DATE NOT NULL,
     year_of_validity DATE NULL,
     FOREIGN KEY (program_id) REFERENCES program(id)
@@ -82,15 +82,15 @@ if ($conn->query($sql) === TRUE) {
 
 // Create admin table
 $sql = "CREATE TABLE IF NOT EXISTS admin (
-    user_id VARCHAR(50) PRIMARY KEY,
-    prefix VARCHAR(50) NOT NULL,
+    user_id VARCHAR(20) PRIMARY KEY,
+    prefix VARCHAR(10) NOT NULL,
     first_name VARCHAR(50) NOT NULL,
     middle_initial VARCHAR(1) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
-    email VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
     profile_picture VARCHAR(100) NOT NULL,
-    gender VARCHAR(50) NOT NULL,
-    password VARCHAR(100) NOT NULL,
+    gender VARCHAR(10) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     otp VARCHAR(50) NOT NULL,
     otp_created_at TIMESTAMP,
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -111,13 +111,13 @@ $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     first_name VARCHAR(50) NOT NULL,
     middle_initial VARCHAR(1) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    password VARCHAR(128) NOT NULL,
-    profile_picture VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    profile_picture VARCHAR(100) NOT NULL,
     gender VARCHAR(50) NOT NULL,
     status ENUM('pending', 'active', 'inactive', '') NOT NULL,
     e_sign_agreement VARCHAR(50) NOT NULL,
-    otp VARCHAR(255) NOT NULL,
+    otp VARCHAR(50) NOT NULL,
     otp_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (college_code) REFERENCES college(code)
@@ -138,12 +138,12 @@ $sql = "CREATE TABLE IF NOT EXISTS external_users (
     first_name VARCHAR(50) NOT NULL,
     middle_initial VARCHAR(1) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    password VARCHAR(128) NOT NULL,
-    profile_picture VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    profile_picture VARCHAR(100) NOT NULL,
     gender VARCHAR(50) NOT NULL,
     status ENUM('pending', 'active', 'inactive', '') NOT NULL,
-    otp VARCHAR(255) NOT NULL,
+    otp VARCHAR(50) NOT NULL,
     otp_created_at TIMESTAMP,
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_code) REFERENCES company(code)
@@ -161,7 +161,7 @@ $sql = "CREATE TABLE IF NOT EXISTS schedule (
     college_code VARCHAR(2),
     program_id INT(6) UNSIGNED,
     level_applied VARCHAR(10) NOT NULL,
-    level_validity INT(6) NOT NULL,
+    level_validity INT(1) NOT NULL,
     schedule_date DATE NOT NULL,
     schedule_time TIME NOT NULL,
     zoom VARCHAR(255),
@@ -183,7 +183,7 @@ $sql = "CREATE TABLE IF NOT EXISTS team (
     schedule_id INT(6) UNSIGNED,
     internal_users_id VARCHAR(10) NOT NULL,
     role VARCHAR(11) NOT NULL,
-    area VARCHAR(255) NOT NULL,
+    area VARCHAR(100) NOT NULL,
     status ENUM('pending', 'accepted', 'declined', 'finished', 'cancelled') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (schedule_id) REFERENCES schedule(id),
     FOREIGN KEY (internal_users_id) REFERENCES internal_users(user_id)
@@ -200,10 +200,10 @@ $sql = "CREATE TABLE IF NOT EXISTS assessment (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     team_id INT(6) UNSIGNED,
     result ENUM('Ready', 'Needs improvement', 'Revisit') NOT NULL,
-    area_evaluated VARCHAR(255) NOT NULL,
-    findings VARCHAR(255) NOT NULL,
-    recommendations VARCHAR(255) NOT NULL,
-    evaluator VARCHAR(255) NOT NULL,
+    area_evaluated VARCHAR(100) NOT NULL,
+    findings VARCHAR(500) NOT NULL,
+    recommendations VARCHAR(500) NOT NULL,
+    evaluator VARCHAR(50) NOT NULL,
     evaluator_signature VARCHAR(255) NOT NULL,
     assessment_file VARCHAR(255) NOT NULL,
     FOREIGN KEY (team_id) REFERENCES team(id)
@@ -219,7 +219,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS approved_assessment (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     assessment_id INT(6) UNSIGNED,
-    team_leader VARCHAR(255) NOT NULL,
+    team_leader VARCHAR(50) NOT NULL,
     team_leader_signature VARCHAR(255) NOT NULL,
     approved_assessment_file VARCHAR(255) NOT NULL,
     FOREIGN KEY (assessment_id) REFERENCES assessment(id)
@@ -271,7 +271,7 @@ $sql = "CREATE TABLE IF NOT EXISTS orientation (
     schedule_id INT(6) UNSIGNED,
     orientation_date DATE NOT NULL,
     orientation_time TIME NOT NULL,
-    orientation_type VARCHAR(255) NOT NULL,
+    orientation_type VARCHAR(50) NOT NULL,
     orientation_status ENUM('pending', 'approved', 'denied') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (schedule_id) REFERENCES schedule(id)
 )";
@@ -286,8 +286,8 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS face_to_face (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     orientation_id INT(6) UNSIGNED,
-    college_building VARCHAR(255) NOT NULL,
-    room_number VARCHAR(255) NOT NULL,
+    college_building VARCHAR(50) NOT NULL,
+    room_number VARCHAR(20) NOT NULL,
     FOREIGN KEY (orientation_id) REFERENCES orientation(id)
 )";
 
@@ -316,9 +316,9 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS udas_assessment (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     schedule_id INT(6) UNSIGNED,
-    area VARCHAR(255) NOT NULL,
-    comments VARCHAR(255) NOT NULL,
-    remarks VARCHAR(255) NOT NULL,
+    area VARCHAR(100) NOT NULL,
+    comments VARCHAR(500) NOT NULL,
+    remarks VARCHAR(500) NOT NULL,
     udas_assessment_file VARCHAR(255) NOT NULL,
     submission_date VARCHAR(255) NOT NULL,
     qad_officer VARCHAR(255) NOT NULL,
