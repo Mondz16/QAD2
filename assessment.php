@@ -688,9 +688,13 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                                         }
                                     }
                                 }
+                                else {
+                                    echo "<div class='no-schedule-prompt'><p>NO ASSESSMENT SUMMARY FOUND</p></div>";
+                                    break;
+                                }
                             }
                         } else {
-                            echo "<div class='no-schedule-prompt'><p>NO TEAM LEADERS FOUND</p></div>";
+                            echo "<div class='no-schedule-prompt'><p>NO ASSESSMENT SUMMARY FOUND</p></div>";
                         }
                         ?>
 
