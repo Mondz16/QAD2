@@ -6,6 +6,13 @@ session_start();
 use setasign\Fpdi\Fpdi;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use Dotenv\Dotenv;
+
+// Load environment variables
+$dotenv = Dotenv::createImmutable(__DIR__, 'sensitive_information.env');
+$dotenv->load();
+
+$encryption_key = getenv('ENCRYPTION_KEY'); // Retrieve the encryption key from environment variables
 
 // Function to encrypt data
 function encryptData($data, $key) {
@@ -97,13 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $signature_data = file_get_contents($qad_officer_signature['tmp_name']);
 
     // Encrypt the binary data
-    $encryption_key = bin2hex(openssl_random_pseudo_bytes(32)); // Use a secure method to generate and store the encryption key
-    $iv = openssl_random_pseudo_bytes(16);
-    $encrypted_signature_data = openssl_encrypt($signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
-
-    // Store the encrypted data in a file
-    $encrypted_signature_path = 'signatures/' . basename($qad_officer_signature['name']) . '.enc';
-    file_put_contents($encrypted_signature_path, $encrypted_signature_data);
+    $encrypted_signature_data = encryptData($signature_data, $encryption_key);
 
     // Remove the plain image file from the temporary location
     unlink($qad_officer_signature['tmp_name']);
@@ -156,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdf->SetFont('Arial', '', 10);
 
     // Decrypt the signature image before adding to PDF
-    $decrypted_signature_data = openssl_decrypt($encrypted_signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
+    $decrypted_signature_data = decryptData($encrypted_signature_data, $encryption_key);
     $temp_signature_path = tempnam(sys_get_temp_dir(), 'sig') . '.png';
     file_put_contents($temp_signature_path, $decrypted_signature_data);
 
@@ -223,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Insert assessment details into the database
         $sql_insert = "INSERT INTO udas_assessment (schedule_id, area, comments, remarks, udas_assessment_file, submission_date, qad_officer, qad_officer_signature, qad_director) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt_insert = $conn->prepare($sql_insert);
-        $stmt_insert->bind_param("issssssss", $schedule_id, $area, $comments, $remarks, $output_path, $current_datetime, $qad_officer, $encrypted_signature_path, $qad_director);
+        $stmt_insert->bind_param("issssssss", $schedule_id, $area, $comments, $remarks, $output_path, $current_datetime, $qad_officer, $encrypted_signature_data, $qad_director);
         $stmt_insert->execute();
         $stmt_insert->close();
 

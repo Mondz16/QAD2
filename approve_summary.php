@@ -6,6 +6,13 @@ require 'vendor/autoload.php'; // Ensure the autoload file is correctly referenc
 use setasign\Fpdi\Fpdi;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use Dotenv\Dotenv;
+
+// Load environment variables
+$dotenv = Dotenv::createImmutable(__DIR__, 'sensitive_information.env');
+$dotenv->load();
+
+$encryption_key = getenv('ENCRYPTION_KEY'); // Retrieve the encryption key from environment variables
 
 // Function to encrypt data
 function encryptData($data, $key) {
@@ -52,22 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $fileExtension = strtolower(end($fileNameCmps));
 
         $allowedfileExtensions = array('png');
-        if (in_array($fileExtension, $allowedfileExtensions)) {
-            $uploadFileDir = './Signatures/';
-            if (!is_dir($uploadFileDir)) {
-                mkdir($uploadFileDir, 0777, true);
-            }
+            if (in_array($fileExtension, $allowedfileExtensions)) {
+                // Read the image file into binary data
+                $signature_data = file_get_contents($fileTmpPath);
 
-            // Encrypt the signature image
-            $signature_data = file_get_contents($fileTmpPath);
-             $encryption_key = bin2hex(openssl_random_pseudo_bytes(32)); // Use a secure method to generate and store the encryption key
-            $iv = openssl_random_pseudo_bytes(16);
-            $encrypted_signature_data = openssl_encrypt($signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
-            $encrypted_signature_path = $uploadFileDir . basename($fileName) . '.enc';
-            file_put_contents($encrypted_signature_path, $encrypted_signature_data);
+                // Encrypt the binary data
+                $encrypted_signature_data = encryptData($signature_data, $encryption_key);
 
-            // Remove the plain image file
-            unlink($fileTmpPath);
+                // Remove the plain image file
+                unlink($fileTmpPath);
 
             // Load the existing summary PDF
             $pdf = new FPDI();
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $pdf->Write(0, $qadOfficerName);
 
             // Decrypt the signature image before adding to PDF
-            $decrypted_signature_data = openssl_decrypt($encrypted_signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
+            $decrypted_signature_data = decryptData($encrypted_signature_data, $encryption_key);
             $temp_signature_path = tempnam(sys_get_temp_dir(), 'sig') . '.png';
             file_put_contents($temp_signature_path, $decrypted_signature_data);
 
@@ -177,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 // Insert the approved summary details into the approved_summary table only if email is sent successfully
                 $stmt = $conn->prepare("INSERT INTO approved_summary (summary_id, qad, qad_signature, approved_summary_file) VALUES (?, ?, ?, ?)");
-                $stmt->bind_param("isss", $summaryId, $qadOfficerName, $encrypted_signature_path, $modifiedSummaryPath);
+                $stmt->bind_param("isss", $summaryId, $qadOfficerName, $encrypted_signature_data, $modifiedSummaryPath);
                 $stmt->execute();
                 $stmt->close();
 

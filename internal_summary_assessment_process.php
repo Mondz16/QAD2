@@ -3,8 +3,13 @@ require 'vendor/autoload.php';
 include 'connection.php';
 session_start();
 
+use Dotenv\Dotenv;
 use setasign\Fpdi\Fpdi;
 use setasign\Fpdi\PdfParser\StreamReader;
+
+// Load environment variables
+$dotenv = Dotenv::createImmutable(__DIR__, 'sensitive_information.env');
+$dotenv->load();
 
 // Function to encrypt data
 function encryptData($data, $key) {
@@ -81,16 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $signature_data = file_get_contents($evaluator_signature['tmp_name']);
 
         // Encrypt the binary data
-        $encryption_key = bin2hex(openssl_random_pseudo_bytes(32)); // Use a secure method to generate and store the encryption key
-        $iv = openssl_random_pseudo_bytes(16);
-        $encrypted_signature_data = openssl_encrypt($signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
-
-        // Store the encrypted data in a file
-        $encrypted_signature_path = 'signatures/' . basename($evaluator_signature['name']) . '.enc';
-        file_put_contents($encrypted_signature_path, $encrypted_signature_data);
-
-        // Remove the plain image file from the temporary location
-        unlink($evaluator_signature['tmp_name']);
+        $encryption_key = $_ENV['ENCRYPTION_KEY']; // Load encryption key from .env
+        $encrypted_signature_data = encryptData($signature_data, $encryption_key);
 
         // Load PDF template for summary
     $pdf = new FPDI();
@@ -136,23 +133,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdf->Write(0, $evaluator);
 
     // Decrypt the signature image before adding to PDF
-    $decrypted_signature_data = openssl_decrypt($encrypted_signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
-    $temp_signature_path = tempnam(sys_get_temp_dir(), 'sig') . '.png';
-    file_put_contents($temp_signature_path, $decrypted_signature_data);
+    $decrypted_signature_data = decryptData($encrypted_signature_data, $encryption_key);
 
-    // Calculate the X and Y positions to center the image
-    $centerImageX = 67; // The center X coordinate where you want to center the image
-    $centerImageY = 252; // The center Y coordinate where you want to center the image
-    $imageWidth = 40; // The width of the signature image
-    $imageHeight = 15; // The height of the signature image (adjust based on actual image aspect ratio)
-    $imageXPosition = $centerImageX - ($imageWidth / 2);
-    $imageYPosition = $centerImageY - ($imageHeight / 2);
+    // Create an image resource from the decrypted data
+    $signature_image = imagecreatefromstring($decrypted_signature_data);
+    if ($signature_image === false) {
+        $message = "Error: Failed to create an image from the decrypted signature data.";
+    } else {
+        // Save the image temporarily
+        $temp_image_path = 'temp_signature.png';
+        
+        // Preserve transparency when saving the PNG
+        imagesavealpha($signature_image, true);
+        $transparency = imagecolorallocatealpha($signature_image, 0, 0, 0, 127);
+        imagefill($signature_image, 0, 0, $transparency);
 
-    // Add QAD Officer Signature
-    $pdf->Image($temp_signature_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight); // Adjust positions as needed
+        // Save the image as a PNG with transparency
+        imagepng($signature_image, $temp_image_path);
+        imagedestroy($signature_image); // Free up memory
 
-    // Remove the temporary decrypted signature file
-    unlink($temp_signature_path);
+        // Calculate the X and Y positions to center the image
+        $centerImageX = 67; // The center X coordinate where you want to center the image
+        $centerImageY = 252; // The center Y coordinate where you want to center the image
+        $imageWidth = 40; // The width of the signature image
+        $imageHeight = 15; // The height of the signature image (adjust based on actual image aspect ratio)
+        $imageXPosition = $centerImageX - ($imageWidth / 2);
+        $imageYPosition = $centerImageY - ($imageHeight / 2);
+
+        // Add QAD Officer Signature from the temporary file
+        $pdf->Image($temp_image_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight, 'PNG'); // Adjust positions as needed
+
+        // Delete the temporary image file
+        unlink($temp_image_path);
+    }
 
     // Save the filled PDF
     $output_path = 'Summary/' . $team_id . '.pdf';
@@ -161,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Insert summary details into the database
     $sql_insert = "INSERT INTO summary (team_id, areas, results, evaluator, evaluator_signature, summary_file) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt_insert = $conn->prepare($sql_insert);
-    $stmt_insert->bind_param("isssss", $team_id, $areas, $results, $evaluator, $encrypted_signature_path, $output_path);
+    $stmt_insert->bind_param("isssss", $team_id, $areas, $results, $evaluator, $encrypted_signature_data, $output_path);
     $stmt_insert->execute();
     $stmt_insert->close();
 

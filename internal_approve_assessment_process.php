@@ -6,6 +6,13 @@ require 'vendor/autoload.php'; // Ensure the autoload file is correctly referenc
 use setasign\Fpdi\Fpdi;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use Dotenv\Dotenv;
+
+// Load environment variables
+$dotenv = Dotenv::createImmutable(__DIR__, 'sensitive_information.env');
+$dotenv->load();
+
+$encryption_key = getenv('ENCRYPTION_KEY'); // Retrieve the encryption key from environment variables
 
 // Function to encrypt data
 function encryptData($data, $key) {
@@ -64,22 +71,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 $allowedfileExtensions = array('png');
                 if (in_array($fileExtension, $allowedfileExtensions)) {
-                    $uploadFileDir = './Signatures/';
-                    if (!is_dir($uploadFileDir)) {
-                        mkdir($uploadFileDir, 0777, true);
-                    }
-
                     // Read the image file into binary data
                     $signature_data = file_get_contents($fileTmpPath);
 
                     // Encrypt the binary data
-                    $encryption_key = bin2hex(openssl_random_pseudo_bytes(32)); // Use a secure method to generate and store the encryption key
-                    $iv = openssl_random_pseudo_bytes(16);
-                    $encrypted_signature_data = openssl_encrypt($signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
-
-                    // Store the encrypted data in a file
-                    $encrypted_signature_path = $uploadFileDir . basename($fileName) . '.enc';
-                    file_put_contents($encrypted_signature_path, $encrypted_signature_data);
+                    $encrypted_signature_data = encryptData($signature_data, $encryption_key);
 
                     // Remove the plain image file
                     unlink($fileTmpPath);
@@ -109,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $pdf->Write(0, $team_leader_name);
 
                             // Decrypt the signature image before adding to PDF
-                            $decrypted_signature_data = openssl_decrypt($encrypted_signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
+                            $decrypted_signature_data = decryptData($encrypted_signature_data, $encryption_key);
                             $temp_signature_path = tempnam(sys_get_temp_dir(), 'sig') . '.png';
                             file_put_contents($temp_signature_path, $decrypted_signature_data);
 
@@ -171,14 +167,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         // Content
                         $mail->isHTML(true); // Set email format to HTML
                         $mail->Subject = 'Assessment Approved';
-                        $mail->Body    = 'Dear ' . $full_name . ',<br><br>Your assessment has been approved by the your team leader. Please find the approved assessment attached.<br><br>Best Regards,<br>USeP - Quality Assurance Division';
-                        $mail->AltBody = 'Dear ' . $full_name . ',\n\nYour assessment has been approved by the team leader. Please find the approved assessment attached.\n\nBest Regards,\nUSeP - Quality Assurance Division';
+                        $mail->Body    = 'Dear ' . $full_name . ',<br><br>Your assessment has been approved by your team leader. Please find the approved assessment attached.<br><br>Best Regards,<br>USeP - Quality Assurance Division';
+                        $mail->AltBody = 'Dear ' . $full_name . ',\n\nYour assessment has been approved by your team leader. Please find the approved assessment attached.\n\nBest Regards,\nUSeP - Quality Assurance Division';
 
                         $mail->send();
-
                         // Insert the approved assessment details into the approved_assessment table only if email is sent successfully
                         $stmt = $conn->prepare("INSERT INTO approved_assessment (assessment_id, team_leader, team_leader_signature, approved_assessment_file) VALUES (?, ?, ?, ?)");
-                        $stmt->bind_param("isss", $assessment_id, $team_leader_name, $encrypted_signature_path, $approvedAssessmentFile);
+                        $stmt->bind_param("isss", $assessment_id, $team_leader_name, $encrypted_signature_data, $approvedAssessmentFile);
                         $stmt->execute();
                         $stmt->close();
 
@@ -189,6 +184,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         // Remove the approved assessment file if email fails
                         if (file_exists($approvedAssessmentFile)) {
                             unlink($approvedAssessmentFile);
+                        }
+                    } finally {
+                        // Remove the temporary decrypted signature file
+                        if (file_exists($temp_signature_path)) {
+                            unlink($temp_signature_path);
                         }
                     }
                 } else {
