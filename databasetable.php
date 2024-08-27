@@ -25,7 +25,7 @@ include 'connection.php';
 // Create company table
 $sql = "CREATE TABLE IF NOT EXISTS company (
     code VARCHAR(2) PRIMARY KEY,
-    company_name VARCHAR(100) NOT NULL,
+    company_name VARCHAR(60) NOT NULL,
     company_email VARCHAR(100) NOT NULL
 )";
 
@@ -39,7 +39,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS college (
     code VARCHAR(2) PRIMARY KEY,
     college_name VARCHAR(100) NOT NULL,
-    college_campus VARCHAR(50) NOT NULL,
+    college_campus VARCHAR(20) NOT NULL,
     college_email VARCHAR(100) NOT NULL
 )";
 
@@ -53,7 +53,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS program (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     college_code VARCHAR(2),
-    program_name VARCHAR(100) NOT NULL,
+    program_name VARCHAR(255) NOT NULL,
     program_level_id INT(6) UNSIGNED,
     FOREIGN KEY (college_code) REFERENCES college(code)
 )";
@@ -68,7 +68,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS program_level_history (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     program_id INT(6) UNSIGNED NOT NULL,
-    program_level VARCHAR(50) NOT NULL,
+    program_level VARCHAR(20) NOT NULL,
     date_received DATE NOT NULL,
     year_of_validity DATE NULL,
     FOREIGN KEY (program_id) REFERENCES program(id)
@@ -107,7 +107,7 @@ $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(15) UNIQUE,
     college_code VARCHAR(2),
-    prefix VARCHAR(50) NOT NULL,
+    prefix VARCHAR(20) NOT NULL,
     first_name VARCHAR(50) NOT NULL,
     middle_initial VARCHAR(1) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
@@ -134,7 +134,7 @@ $sql = "CREATE TABLE IF NOT EXISTS external_users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(15) UNIQUE,
     company_code VARCHAR(2),
-    prefix VARCHAR(50) NOT NULL,
+    prefix VARCHAR(20) NOT NULL,
     first_name VARCHAR(50) NOT NULL,
     middle_initial VARCHAR(1) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
