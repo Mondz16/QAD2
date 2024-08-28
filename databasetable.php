@@ -338,6 +338,7 @@ $sql = "CREATE TABLE IF NOT EXISTS NDA (
     team_id INT(6) UNSIGNED,
     date_added DATE NOT NULL,
     internal_accreditor VARCHAR(255) NOT NULL,
+    internal_accreditor_signature VARCHAR(255) NOT NULL,
     NDA_file VARCHAR(255) NOT NULL,
     FOREIGN KEY (team_id) REFERENCES team(id)
 )";

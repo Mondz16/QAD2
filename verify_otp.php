@@ -409,6 +409,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 loadingSpinner.classList.remove('custom-spinner-hidden');
             });
         });
+
+        document.getElementById('otp').addEventListener('input', function(e) {
+            let otpinput = e.target.value;
+
+            // Remove any non-letter characters
+            otpinput = otpinput.replace(/[^0-9]/g, '');
+
+            // Limit to 1 character
+            if (otpinput.length > 6) {
+                otpinput = otpinput.slice(0, 6);
+            }
+
+            // Set the cleaned value back to the input
+            e.target.value = otpinput;
+        });
     </script>
 </body>
 </html>
