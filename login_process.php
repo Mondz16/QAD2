@@ -163,21 +163,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check internal_users table
     $internal_user = check_user($conn, 'internal_users', $user_id, $password);
     if ($internal_user) {
-        $bb_cccc = substr($user_id, 3);
+        // Extract the second and third parts of the user_id
+        $bb_cccc = substr($user_id, 3); // Extracts '11-0001'
 
-        $stmt = $conn->prepare("SELECT status, user_id FROM internal_users WHERE SUBSTRING(user_id, 4) = ? AND user_id != ?");
-        $stmt->bind_param("ss", $bb_cccc, $user_id);
+        // Prepare statement to find users with the same second and third parts, but different user_id
+        $stmt = $conn->prepare("SELECT status FROM internal_users WHERE SUBSTRING(user_id, 4) = ?");
+        $stmt->bind_param("s", $bb_cccc);
         $stmt->execute();
         $result = $stmt->get_result();
 
+        // Initialize flags for status
+        $status_active = false;
+        $status_pending = false;
+
         if ($result->num_rows > 0) {
-            $statuses = [];
             while ($row = $result->fetch_assoc()) {
-                $statuses[] = $row['status'];
+                // Check for 'active' and 'pending' statuses
+                if ($row['status'] == 'active') {
+                    $status_active = true;
+                }
+                if ($row['status'] == 'pending') {
+                    $status_pending = true;
+                }
             }
 
-            // Check if statuses include both 'active' and 'pending'
-            if (in_array('active', $statuses) || in_array('pending', $statuses)) {
+            // If both statuses are found, display the message
+            if ($status_active && $status_pending) {
                 $message = "This account with User ID: $user_id is currently applying for college transfer. Please wait for the admin to approve.";
                 display_popup($message, "error");
                 exit;
