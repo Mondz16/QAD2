@@ -1,3 +1,25 @@
+<?php
+
+include 'connection.php';
+
+$college_name = urldecode($_GET['college']);
+$college_code = htmlspecialchars($_GET['college_code']); // Added to get college_code
+$sql = "SELECT s.id, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status
+        FROM schedule s
+        JOIN program p ON s.program_id = p.id
+        JOIN college c ON s.college_code = c.code
+        WHERE c.college_name = ? 
+        AND s.schedule_status NOT IN ('passed', 'failed')
+        ORDER BY s.schedule_date, s.schedule_time";
+
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $college_name);
+$stmt->execute();
+$result = $stmt->get_result();
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -157,7 +179,7 @@
     <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
     <div class="container d-flex align-items-center mt-4">
         <a class="btn-back" href="schedule.php">&lt; BACK</a>
-        <h2 class="mt-4 mb-4">SCHEDULE DETAILS FOR COLLEGE OF EDUCATION</h2>
+        <h2 class="mt-4 mb-4">SCHEDULE DETAILS FOR <?php echo strtoupper($college_name) ?></h2>
     </div>
     <div class="container">
         <div class="filter-container text-end">
@@ -190,23 +212,6 @@
                 </thead>
                 <tbody>
                     <?php
-                    include 'connection.php';
-
-                    $college_name = urldecode($_GET['college']);
-                    $college_code = htmlspecialchars($_GET['college_code']); // Added to get college_code
-                    $sql = "SELECT s.id, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status
-                            FROM schedule s
-                            JOIN program p ON s.program_id = p.id
-                            JOIN college c ON s.college_code = c.code
-                            WHERE c.college_name = ? 
-                            AND s.schedule_status NOT IN ('passed', 'failed')
-                            ORDER BY s.schedule_date, s.schedule_time";
-
-
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("s", $college_name);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
 
                     // Set the timezone to Asia/Manila
                     date_default_timezone_set('Asia/Manila');

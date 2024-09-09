@@ -31,8 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt_update->bind_param("sii", $status, $team_id, $schedule_id);
 
     if ($stmt_update->execute()) {
-        $status = "success";
-        $message = "Schedule accepted successfully.";
+        $message = "Schedule $status successfully.";
     } else {
         $status = "error";
         $message = "Error updating notification: " . $conn->error;
@@ -102,7 +101,7 @@ $conn->close();
 <body>
     <div class="popup-content">
         <div style='height: 50px; width: 0px;'></div>
-        <img src="images/<?php echo ucfirst($status); ?>.png" height="100" alt="<?php echo ucfirst($status); ?>">
+        <img src="images/Success.png" style=height:100px;">
         <div style="height: 25px; width: 0px;"></div>
         <div class="message <?php echo $status; ?>">
             <?php echo $message; ?>

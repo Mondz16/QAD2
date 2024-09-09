@@ -52,16 +52,31 @@ $stmt->bind_param("ssi", $college_code, $current_user_id, $current_schedule_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-echo '<form action="change_user_process.php" method="post">';
+echo '<form action="change_user_process.php" method="post" style="
+    width: 400px;">';
 echo '<input type="hidden" name="team_id" value="' . htmlspecialchars($team_id) . '">';
-echo '<label for="new_user">Select New User:</label>';
-echo '<select name="new_user" required>';
+echo '<label for="new_user" style="
+    width: 300px;
+    margin-bottom: 10px;
+">Select New User:</label>';
+echo '<select name="new_user" required="" style="
+    width: 100%;
+    padding: 20px 10px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+">';
 while ($row = $result->fetch_assoc()) {
     $schedule_count = $row['schedule_count'];
     echo '<option value="' . htmlspecialchars($row['user_id']) . '">' . htmlspecialchars($row['first_name']) . ' ' . htmlspecialchars($row['middle_initial']) . '. ' . htmlspecialchars($row['last_name']) . ' (' . $schedule_count . ' schedule/s)</option>';
 }
 echo '</select>';
-echo '<button type="submit">Change User</button>';
+echo '<button type="submit" style="
+    width: 150px;
+    height: 50px;
+    border-radius: 10px;
+    background-color: #35C659;
+    color: white;
+">CHANGE</button>';
 echo '</form>';
 
 $stmt->close();

@@ -85,7 +85,7 @@ $conn->close();
             <?php echo $message; ?>
         </div>
         <div style="height: 50px; width: 0px;"></div>
-        <a href="schedule_college.php" class="btn-hover">OKAY</a>
+        <a href="schedule.php" class="btn-hover">OKAY</a>
         <div style='height: 100px; width: 0px;'></div>
         <div class='hairpop-up'></div>
     </div>

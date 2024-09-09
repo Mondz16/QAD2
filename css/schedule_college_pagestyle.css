@@ -347,6 +347,9 @@ body {
     color: #aaa;
     font-size: 40px;
     font-weight: bold;
+    position: absolute;
+    right: 30px;
+    top: 0px;
 }
 
 .modal .header {    

@@ -52,9 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $iv = openssl_random_pseudo_bytes(16);
     $encrypted_signature_data = openssl_encrypt($signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
 
-    // Load NDA PDF template
+    // Initialize the FPDI object
     $pdf = new FPDI();
-    $pdf->AddPage();
+
+    // Convert inches to millimeters (since FPDI uses millimeters)
+    $width = 216.12; // Convert width from inches to mm
+    $height = 330.42; // Convert height from inches to mm
+
+    // Add the page with custom dimensions
+    $pdf->AddPage('P', array($width, $height));
     $pdf->setSourceFile('NDA/NDA.pdf');
     $tplIdx = $pdf->importPage(1);
     $pdf->useTemplate($tplIdx);
@@ -76,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pdf->SetXY(92, 247); // Adjust position for day
     $pdf->Write(0, $day);
 
-    $pdf->SetXY(137, 247); // Adjust position for year
+    $pdf->SetXY(140, 247); // Adjust position for year
     $pdf->Write(0, $year);
 
     // Decrypt the signature image before adding it to the PDF

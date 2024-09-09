@@ -66,7 +66,6 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
     <link rel="stylesheet" href="css/navbar.css">
     <link href="css/pagestyle.css" rel="stylesheet">
     <style>
-
         .button-container {
             display: flex;
             width: 100%;
@@ -74,7 +73,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             justify-content: flex-end;
         }
 
-        .nameContainer{
+        .nameContainer {
             border-color: rgb(170, 170, 170);
             border-style: solid;
             border-width: 1px;
@@ -136,24 +135,24 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             top: 30%;
             transform: translate(-50%, 0);
             width: 700px;
-            height:300px;
+            height: 300px;
             padding: 20px;
             border-radius: 10px;
         }
 
-        .modal-content .label-holder{
+        .modal-content .label-holder {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
         }
 
-        .modal-content .input-holder{
+        .modal-content .input-holder {
             display: flex;
             align-items: center;
             position: relative;
         }
 
-        .modal-content .input-holder input{
+        .modal-content .input-holder input {
             padding: 12px 20px;
             border-color: rgb(170, 170, 170);
             border-style: solid;
@@ -161,7 +160,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             border-radius: 8px;
         }
 
-        .modal-content .input-holder input:first-child{    
+        .modal-content .input-holder input:first-child {
             padding-right: 40px;
             flex: 2;
             margin-right: 15px;
@@ -177,11 +176,11 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             flex: 1;
         }
 
-        .modal-content .input-holder{
+        .modal-content .input-holder {
             border: none;
         }
 
-        .modal-content h2{
+        .modal-content h2 {
             text-align: center;
             margin: 20px 20px 40px 20px;
         }
@@ -253,29 +252,39 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             margin-left: 12px;
         }
 
-        .assessment-udas .udas-button, .udas-button1 {
+        .assessment-udas .udas-button,
+        .udas-button1 {
             height: 46px;
             width: 100%;
             margin: 10px 0;
-            background-color: white;
+            background-color: #fff;
             font-weight: bold;
             color: #006118;
             border: 1px solid #006118;
         }
 
+        .assessment-udas .udas-button{
+            background-color: #46C556;
+            color: #fff;
+        }
+
         .udas-button1 {
-            background-color: #D4FFDF;
+            background-color: #fff;
         }
 
         .udas-button1 {
             padding-top: 9px;
         }
 
-        .assessment-udas .udas-button:hover,
-        .udas-button1:hover {
+        .udas-button1:hover{
             background-color: #D4FFDF;
             border: 1px solid #006118;
-            color: #006118;
+        }
+
+        .assessment-udas .udas-button:hover{
+            background-color: #46C556;
+            border: 1px solid #006118;
+            color: #fff;
         }
 
         .assessment-udas .download-button {
@@ -317,6 +326,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             border-radius: 10px;
             margin: 10px 0px;
             font-weight: bold;
+            font-size: .95rem;
         }
 
         .scrollable-container {
@@ -328,7 +338,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             margin-left: 30px;
         }
 
-        .scrollable-container-holder{
+        .scrollable-container-holder {
             display: inline-block;
             width: fit-content;
             padding: 20px 20px 20px 0px;
@@ -351,14 +361,19 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
         }
 
         .custom-spinner {
-            width: 40px; /* Size similar to Bootstrap's default spinner */
-            height: 40px; /* Size similar to Bootstrap's default spinner */
+            width: 40px;
+            /* Size similar to Bootstrap's default spinner */
+            height: 40px;
+            /* Size similar to Bootstrap's default spinner */
             border-width: 5px;
             border-style: solid;
             border-radius: 50%;
-            border-color: #FF7A7A; /* Custom color for the spinner */
-            border-right-color: transparent; /* Transparent border to create the spinning effect */
-            animation: custom-spin 0.75s linear infinite; /* Bootstrap-like spinning animation */
+            border-color: #FF7A7A;
+            /* Custom color for the spinner */
+            border-right-color: transparent;
+            /* Transparent border to create the spinning effect */
+            animation: custom-spin 0.75s linear infinite;
+            /* Bootstrap-like spinning animation */
         }
 
         .custom-spinner-hidden {
@@ -500,31 +515,31 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                     </a>
                 </li>
                 <li class="sidebar-item">
-                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-line" viewBox="0 0 16 16">
-                        <path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1zm1 12h2V2h-2zm-3 0V7H7v7zm-5 0v-3H2v3z"/>
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-line" viewBox="0 0 16 16">
+                            <path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1zm1 12h2V2h-2zm-3 0V7H7v7zm-5 0v-3H2v3z" />
                         </svg>
                         <span style="margin-left: 8px;">Reports</span>
                     </a>
                     <ul id="auth" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                         <li class="sidebar-item1">
                             <a href="reports_dashboard.php" class="sidebar-link"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-columns me-2" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M0 .5A.5.5 0 0 1 .5 0h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 0 .5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 2h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 4h10a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 6h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 8h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
-                            </svg>
-                            <span style="margin-left: 8px;">Programs</span></a>
+                                    <path fill-rule="evenodd" d="M0 .5A.5.5 0 0 1 .5 0h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 0 .5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 2h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 4h10a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 6h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 8h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
+                                </svg>
+                                <span style="margin-left: 8px;">Programs</span></a>
                         </li>
                         <li class="sidebar-item1">
                             <a href="program_timeline.php" class="sidebar-link"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-steps me-2" viewBox="0 0 16 16">
-                            <path d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z"/>
-                            </svg>
-                            <span style="margin-left: 8px;">Timeline</span></a>
+                                    <path d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" />
+                                </svg>
+                                <span style="margin-left: 8px;">Timeline</span></a>
                         </li>
                         <li class="sidebar-item1">
                             <a href="reports_member.php" class="sidebar-link"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill me-2" viewBox="0 0 16 16">
-                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
-                        </svg>
-                        <span style="margin-left: 8px;">Members</span></a>
+                                    <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
+                                </svg>
+                                <span style="margin-left: 8px;">Members</span></a>
                         </li>
                     </ul>
                 </li>
@@ -600,15 +615,15 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
 
                                         // Fetch schedule details for the team
                                         $scheduleQuery = "
-                                SELECT s.id, s.level_applied, s.schedule_date, s.schedule_time, 
-                                       c.college_name, p.program_name
-                                FROM schedule s
-                                JOIN college c ON s.college_code = c.code
-                                JOIN program p ON s.program_id = p.id
-                                WHERE s.id = (
-                                    SELECT schedule_id FROM team WHERE id = '$teamId'
-                                )
-                            ";
+                    SELECT s.id, s.level_applied, s.schedule_date, s.schedule_time, 
+                           c.college_name, p.program_name
+                    FROM schedule s
+                    JOIN team t ON s.id = t.schedule_id
+                    JOIN college c ON s.college_code = c.code
+                    JOIN program p ON s.program_id = p.id
+                    WHERE t.id = '$teamId' AND (s.schedule_status = 'approved' OR s.schedule_status = 'pending')
+                ";
+
                                         $scheduleResult = $conn->query($scheduleQuery);
                                         $schedule = $scheduleResult->fetch_assoc();
 
@@ -617,6 +632,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                                             $approvedQuery = "SELECT id FROM approved_summary WHERE summary_id = '$summaryId'";
                                             $approvedResult = $conn->query($approvedQuery);
                                             $isApproved = $approvedResult->num_rows > 0;
+
                                             $scheduleDate = date("F j, Y", strtotime($schedule['schedule_date']));
                                             $scheduleTime = date("g:i A", strtotime($schedule['schedule_time']));
 
@@ -625,16 +641,17 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                                             $ndaResult = $conn->query($ndaQuery);
                                             $ndaFile = $ndaResult->fetch_assoc()['NDA_compilation_file'];
 
+                                            // Render assessment details
                                             echo "<div class='assessment-box'>";
                                             echo "<h2>#" . $counter . "</h2>";
                                             echo "<div class='assessment-details'>";
                                             echo "<div class='assessment-holder-1'>
-            <div class='assessment-college'>
-                <p> COLLEGE:  <br><div class='assessment-values'>" . $schedule['college_name'] . "</div></p>
-                <p> PROGRAM:  <br><div class='assessment-values'>" . $schedule['program_name'] . "</div></p>
-            </div>
-            <div class='assessment-level-applied'>
-                <p> LEVEL APPLIED:  <br><h3>";
+                            <div class='assessment-college'>
+                                <p> COLLEGE:  <br><div class='assessment-values'>" . $schedule['college_name'] . "</div></p>
+                                <p> PROGRAM:  <br><div class='assessment-values'>" . $schedule['program_name'] . "</div></p>
+                            </div>
+                            <div class='assessment-level-applied'>
+                                <p> LEVEL APPLIED:  <br><h3>";
 
                                             // Display level applied with abbreviations
                                             switch ($schedule['level_applied']) {
@@ -650,34 +667,32 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                                             }
 
                                             echo "</h3></p>
-            </div>
-          </div>";
+                            </div>
+                          </div>";
 
                                             echo "<div class='assessment-holder-2'>
-            <div class='assessment-dateTime'>
-                <p> DATE:  <br><div class='assessment-values'>" . $scheduleDate . "</div></p>
-            </div>
-            <div class='assessment-dateTime'>
-                <p> TIME:  <br><div class='assessment-values'>" . $scheduleTime . "</div></p>
-            </div>
-            <div class='assessment-udas'>
-                <p> DOWNLOADABLE  <br><a href='$summaryFile' class='btn udas-button1' download>SUMMARY</a></p>
-            </div>
-            <div class='assessment-udas'>
-                <p> FILES:  <br><a href='$ndaFile' class='btn udas-button1' download>NDA</a></p>
-            </div>";
+                            <div class='assessment-dateTime'>
+                                <p> DATE:  <br><div class='assessment-values'>" . $scheduleDate . "</div></p>
+                            </div>
+                            <div class='assessment-dateTime'>
+                                <p> TIME:  <br><div class='assessment-values'>" . $scheduleTime . "</div></p>
+                            </div>
+                            <div class='assessment-udas'>
+                                <p> DOWNLOADABLE  <br><a href='$summaryFile' class='btn udas-button1' download>SUMMARY</a></p>
+                            </div>
+                            <div class='assessment-udas'>
+                                <p> FILES:  <br><a href='$ndaFile' class='btn udas-button1' download>NDA</a></p>
+                            </div>";
 
                                             // Show approve button or check symbol based on approval status
                                             if ($isApproved) {
-                                                // Add check symbol to assessment-holder-2 if approved
                                                 echo "<div class='assessment-udas'>
-                <p> Approve  <br><button class='assessment-button-done'>APPROVED</button></p>
-              </div>";
+                                <p> Approve  <br><button class='assessment-button-done'>APPROVED</button></p>
+                              </div>";
                                             } else {
-                                                // Add approve button to assessment-holder-2 if not approved
                                                 echo "<div class='assessment-udas'>
-                <p> Approve  <br><button class='btn approve-btn udas-button' data-summary-file='$summaryFile'>APPROVE</button></p>
-              </div>";
+                                <p> Approve  <br><button class='btn approve-btn udas-button' data-summary-file='$summaryFile'>APPROVE</button></p>
+                              </div>";
                                             }
 
                                             echo "</div>"; // Close assessment-holder-2
@@ -688,15 +703,16 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                                         }
                                     }
                                 }
-                                else {
-                                    echo "<div class='no-schedule-prompt'><p>NO ASSESSMENT SUMMARY FOUND</p></div>";
-                                    break;
-                                }
+                            }
+
+                            if($counter == 1){
+                                echo "<div class='no-schedule-prompt'><p>NO ASSESSMENT SUMMARY FOUND</p></div>";
                             }
                         } else {
                             echo "<div class='no-schedule-prompt'><p>NO ASSESSMENT SUMMARY FOUND</p></div>";
                         }
                         ?>
+
 
                     </div>
                 </div>
@@ -705,7 +721,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
 
 
         <!-- Modal -->
-         <div id="approvalModal" class="modal">
+        <div id="approvalModal" class="modal">
             <div class="modal-content">
                 <h2>Approve Summary</h2>
                 <form id="approveForm" method="POST" action="approve_summary.php" enctype="multipart/form-data">
@@ -746,6 +762,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                     }
                 });
             }
+
             function closeApprovalModalPopup() {
                 document.getElementById('approvalModal').style.display = 'none';
             }
@@ -753,8 +770,9 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             document.querySelector('#approvalModal form').addEventListener('submit', function() {
                 document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
             });
+
             function handleFileChange(inputElement, iconElement) {
-                inputElement.addEventListener('change', function () {
+                inputElement.addEventListener('change', function() {
                     if (this.files && this.files.length > 0) {
                         // Change icon to check mark if a file is selected
                         iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
@@ -833,4 +851,5 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             }
         </script>
 </body>
+
 </html>
