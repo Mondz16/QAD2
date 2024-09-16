@@ -395,8 +395,8 @@ function displayRegistrations($conn, $tableName, $title)
                     <input type="hidden" name="id" id="approveUserId">
                     <input type="hidden" name="action" value="approve">
                     <div class="modal-buttons">
-                        <button type="button" class="no-btn" onclick="closeApproveModal()">CANCEL</button>
-                        <button type="submit" class="yes-btn positive">CONFIRM</button>
+                        <button type="button" class="no-btn" onclick="closeApproveModal()">NO</button>
+                        <button type="submit" class="yes-btn positive">YES</button>
                     </div>
                 </form>
             </div>
@@ -411,8 +411,8 @@ function displayRegistrations($conn, $tableName, $title)
                     <input type="hidden" name="action" value="reject">
                     <textarea rows="3" cols="52" id="rejectReason" name="reason" placeholder="Enter reason for rejection" required></textarea>
                     <div class="modal-buttons">
-                        <button type="button" class="no-btn" onclick="closeRejectModal()">CANCEL</button>
-                        <button type="submit" class="yes-btn">CONFIRM</button>
+                        <button type="button" class="no-btn" onclick="closeRejectModal()">NO</button>
+                        <button type="submit" class="yes-btn">YES</button>
                     </div>
                 </form>
             </div>

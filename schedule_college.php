@@ -285,8 +285,8 @@ $result = $stmt->get_result();
                         <textarea id="cancel_reason" name="cancel_reason" rows="5" cols="52" placeholder="Enter reason for schedule cancellation" required></textarea>
                     </div>
                     <div class="modal-buttons">
-                        <button class="no-btn" type="button" onclick="closeCancelModal()">CANCEL</button>
-                        <button class="yes-btn rejection" type="submit">CONFIRM</button>
+                        <button class="no-btn" type="button" onclick="closeCancelModal()">NO</button>
+                        <button class="yes-btn rejection" type="submit">YES</button>
                     </div>
                 </form>
             </div>
@@ -297,8 +297,8 @@ $result = $stmt->get_result();
             <div class="modal-content">
                 <h2>Are you sure you want to approve this schedule?</h2>
                 <div class="modal-buttons">
-                    <button class="no-btn" onclick="closeApproveModal()">CANCEL</button>
-                    <button class="yes-btn" id="confirmApproveBtn">CONFIRM</button>
+                    <button class="no-btn" onclick="closeApproveModal()">NO</button>
+                    <button class="yes-btn" id="confirmApproveBtn">YES</button>
                 </div>
             </div>
         </div>

@@ -325,8 +325,8 @@ function displayOrientationDetails($conn, $orientationType, $title)
         <div class="modal-content">
             <h2>Are you sure you want to approve this orientation request?</h2>
             <div class="modal-buttons">
-                <button class="no-btn" onclick="closeApproveModal()">CANCEL</button>
-                <button class="yes-btn" id="confirmApproveBtn">CONFIRM</button>
+                <button class="no-btn" onclick="closeApproveModal()">NO</button>
+                <button class="yes-btn" id="confirmApproveBtn">YES</button>
             </div>
         </div>
     </div>
@@ -337,8 +337,8 @@ function displayOrientationDetails($conn, $orientationType, $title)
                 <h2>Are you sure you want to deny this orientation request?</h2>
                 <textarea rows="5" cols="52" id="denyReason" placeholder="Enter reason for denial"></textarea>
                 <div class="modal-buttons">
-                    <button class="no-btn" type="button" onclick="closeDenyModal()">CANCEL</button>
-                    <button class="yes-btn rejection" id="confirmDenyBtn">CONFIRM</button>
+                    <button class="no-btn" type="button" onclick="closeDenyModal()">NO</button>
+                    <button class="yes-btn rejection" id="confirmDenyBtn">YES</button>
                 </div>
             </form>
         </div>

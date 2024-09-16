@@ -330,8 +330,8 @@ $transfer_requests = array_filter($users, function ($group) {
                     <input type="hidden" name="new_user_email" id="accept_new_user_email">
                     <input type="hidden" name="new_user_name" id="accept_new_user_name">
                     <div class="modal-buttons">
-                        <button type="button" class="no-btn" onclick="closeAcceptModal()">CANCEL</button>
-                        <button type="submit" class="yes-btn positive">CONFIRM</button>
+                        <button type="button" class="no-btn" onclick="closeAcceptModal()">NO</button>
+                        <button type="submit" class="yes-btn positive">YES</button>
                     </div>
                 </form>
             </div>
@@ -347,8 +347,8 @@ $transfer_requests = array_filter($users, function ($group) {
                     <input type="hidden" name="previous_user_id" id="reject_previous_user_id">
                     <textarea id="reject_reason" name="reject_reason" rows="4" required></textarea>
                     <div class="modal-buttons">
-                        <button type="button" class="no-btn" onclick="closeRejectModal()">CANCEL</button>
-                        <button type="submit" class="yes-btn">CONFIRM</button>
+                        <button type="button" class="no-btn" onclick="closeRejectModal()">NO</button>
+                        <button type="submit" class="yes-btn">YES</button>
                     </div>
                 </form>
             </div>

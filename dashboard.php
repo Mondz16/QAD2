@@ -713,8 +713,8 @@ $result = $conn->query($sql);
                         <input type="hidden" name="id" id="approveScheduleId">
                         <input type="hidden" name="status" id="approveStatus">
                         <div class="modal-buttons">
-                            <button type="button" class="no-btn" onclick="closeApproveModal()">CANCEL</button>
-                            <button type="submit" class="yes-btn positive">CONFIRM</button>
+                            <button type="button" class="no-btn" onclick="closeApproveModal()">NO</button>
+                            <button type="submit" class="yes-btn positive">YES</button>
                         </div>
                     </form>
                 </div>

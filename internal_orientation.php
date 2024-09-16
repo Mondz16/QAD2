@@ -457,8 +457,8 @@ if (!empty($schedules)) {
         <div class="modal-content1">
             <h4 id="confirmationMessage" style="font-size: 20px;">Are you sure you want to logout?</h4>
             <div class="button-container">
-                <button type="button" class="accept-back-button" id="backButton" onclick="cancelLogout()">CANCEL</button>
-                <button type="button" class="accept-confirm-button" id="confirmButton" onclick="confirmLogout()">CONFIRM</button>
+                <button type="button" class="accept-back-button" id="backButton" onclick="cancelLogout()">NO</button>
+                <button type="button" class="accept-confirm-button" id="confirmButton" onclick="confirmLogout()">YES</button>
             </div>
         </div>
     </div>
