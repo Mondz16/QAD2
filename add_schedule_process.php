@@ -241,7 +241,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $formatted_time = date("g:i A", strtotime($time));
 
             // Prepare the Zoom link section for the email, if provided
-            $zoom_link_section = !empty($zoom) ? "<strong>Zoom Link:</strong> $zoom<br>" : "";
+            $zoom_link_section = !empty($zoom) ? "<strong>Meeting Link:</strong> $zoom<br>" : "";
 
             // Content
             $mail->isHTML(true);

@@ -129,7 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
                 }
 
                 // Prepare the Zoom link section for the email, if provided
-                $zoom_link_section = !empty($new_zoom) ? "<b>New Zoom Link:</b> {$new_zoom}<br>" : "";
+                $zoom_link_section = !empty($new_zoom) ? "<b>New Meeting Link:</b> {$new_zoom}<br>" : "";
 
                 // Content
                 $mail->isHTML(true);

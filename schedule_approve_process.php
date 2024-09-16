@@ -144,7 +144,7 @@ if (!$schedule_id || !$college || !$college_code) {
                             <b>Level Applied:</b> {$schedule_details['level_applied']}<br>
                             <b>Scheduled Date:</b> $formatted_schedule_date<br>
                             <b>Scheduled Time:</b> $formatted_schedule_time<br>
-                            <b>Zoom Link:</b> <a href='{$zoom_link}'>{$zoom_link}</a><br><br>
+                            <b>Meeting Link:</b> <a href='{$zoom_link}'>{$zoom_link}</a><br><br>
                             Best regards,<br>
                             USeP - Quality Assurance Division
                         ";
@@ -161,14 +161,14 @@ if (!$schedule_id || !$college || !$college_code) {
                                 'summary' => "UDAS Assessment for {$schedule_details['program_name']} schedule",
                                 'start' => date('c', strtotime('-16 days', strtotime($schedule_details['schedule_date'] . ' 08:00:00'))),
                                 'end' => date('c', strtotime('-16 days', strtotime($schedule_details['schedule_date'] . ' 17:00:00'))),
-                                'description' => "Zoom Link: {$zoom_link}",
+                                'description' => "Meeting Link: {$zoom_link}",
                                 'location' => $zoom_link
                             ],
                             [
                                 'summary' => "UDAS Assessment for {$schedule_details['program_name']} schedule",
                                 'start' => date('c', strtotime('-14 days', strtotime($schedule_details['schedule_date'] . ' 08:00:00'))),
                                 'end' => date('c', strtotime('-14 days', strtotime($schedule_details['schedule_date'] . ' 17:00:00'))),
-                                'description' => "Zoom Link: {$zoom_link}",
+                                'description' => "Meeting Link: {$zoom_link}",
                                 'location' => $zoom_link
                             ]
                         ];

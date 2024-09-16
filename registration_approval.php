@@ -17,7 +17,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-function sendEmailNotification($email, $userId, $action, $reason = '') {
+function sendEmailNotification($email, $userId, $action, $firstName, $reason = '') {
     $mail = new PHPMailer(true);
 
     try {
@@ -47,10 +47,10 @@ function sendEmailNotification($email, $userId, $action, $reason = '') {
         $mail->isHTML(true);
         if ($action == 'approve') {
             $mail->Subject = 'Registration Approved';
-            $mail->Body = "Dear User,<br><br>Your registration has been approved.<br><br>User ID: $userId<br><br>Best regards,<br>USeP - Quality Assurance Division";
+            $mail->Body = "Dear $firstName,<br><br>Your registration has been approved.<br><br>User ID: $userId<br><br>Best regards,<br>USeP - Quality Assurance Division";
         } else if ($action == 'reject') {
             $mail->Subject = 'Registration Rejected';
-            $mail->Body = "Dear User,<br><br>Your registration has been rejected.<br><br>User ID: $userId<br><br>Reason: $reason<br><br>Best regards,<br>USeP - Quality Assurance Division";
+            $mail->Body = "Dear $firstName,<br><br>Your registration has been rejected.<br><br>User ID: $userId<br><br>Reason: $reason<br><br>Best regards,<br>USeP - Quality Assurance Division";
         }
 
         $mail->send();
@@ -89,6 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows == 1) {
         $row = $result->fetch_assoc();
         $email = $row['email'];
+        $first_name = $row['first_name'];
         $bb_cccc = substr($id, 3); // Extract bb-cccc part of the user_id
 
         $conn->begin_transaction();
@@ -148,7 +149,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
             // Send approval email
-            $email_status = sendEmailNotification($email, $id, $action);
+            $email_status = sendEmailNotification($email, $id, $action, $first_name);
             if ($email_status === true) {
                 // Commit the transaction if email is sent successfully
                 if ($user_type == "internal") {
@@ -180,7 +181,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
             // Send rejection email
-            $email_status = sendEmailNotification($email, $id, $action, $reason);
+            $email_status = sendEmailNotification($email, $id, $action, $first_name, $reason);
             if ($email_status === true) {
                 // Commit the transaction if email is sent successfully
                 if ($user_type == "internal") {

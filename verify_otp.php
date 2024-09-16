@@ -383,7 +383,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <p id="message" style="color: red; font-weight: bold;"><?php echo $message1; ?></p>
                 <p id="message" style="color: red; font-weight: bold;"><?php echo $message2; ?></p>
                 <div style="height: 20px; width: 0px;"></div>
-                <a href="login.php" style="color: rgb(87, 87, 87); font-weight: 500; text-decoration: underline;">Already have an account?</a>
                 <button type="button" class="resend disabled" id="resendOTP" onclick="resendOTP()" disabled>RESEND OTP IN <span id="time">01:00</span></button>
             </div>
 
