@@ -1,4 +1,44 @@
 <?php
+include 'connection.php';
+session_start();
+
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Check user type and redirect accordingly
+if ($user_id === 'admin') {
+    // If current page is not admin.php, redirect
+    if (basename($_SERVER['PHP_SELF']) !== 'reports_member.php') {
+        header("Location: reports_member.php");
+        exit();
+    }
+} else {
+    $user_type_code = substr($user_id, 3, 2);
+
+    if ($user_type_code === '11') {
+        // Internal user
+        if (basename($_SERVER['PHP_SELF']) !== 'internal.php') {
+            header("Location: internal.php");
+            exit();
+        }
+    } elseif ($user_type_code === '22') {
+        // External user
+        if (basename($_SERVER['PHP_SELF']) !== 'external.php') {
+            header("Location: external.php");
+            exit();
+        }
+    } else {
+        // Handle unexpected user type, redirect to login or error page
+        header("Location: login.php");
+        exit();
+    }
+}
+
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -18,7 +58,7 @@ function getSchedules($conn, $year)
               FROM schedule 
               INNER JOIN team ON schedule.id = team.schedule_id
               WHERE YEAR(schedule_date) = ? 
-                AND schedule_status IN ('approved', 'finished')
+                AND schedule_status IN ('passed', 'failed', 'finished')
               GROUP BY schedule_date";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('i', $year);
@@ -35,16 +75,18 @@ function getSchedules($conn, $year)
 
 function getMembers($conn, $campus, $college, $search, $offset, $year)
 {
-    $query = "SELECT internal_users.first_name, internal_users.last_name, COALESCE(COUNT(team.id), 0) AS schedule_count
-              FROM internal_users 
-              LEFT JOIN team ON internal_users.user_id = team.internal_users_id
-              LEFT JOIN schedule ON team.schedule_id = schedule.id AND YEAR(schedule.schedule_date) = ?
-              LEFT JOIN program ON schedule.program_id = program.id
-              WHERE (CONCAT(internal_users.first_name, ' ', internal_users.last_name) LIKE ?)
-                AND (internal_users.college_code LIKE ? OR ? = '')
-              GROUP BY internal_users.user_id
-              ORDER BY schedule_count DESC
-              LIMIT 10 OFFSET ?";
+    $query = "SELECT internal_users.first_name, internal_users.last_name, 
+                    COALESCE(COUNT(CASE WHEN schedule.schedule_status IN ('passed', 'failed', 'finished') THEN team.id END), 0) AS schedule_count
+                    FROM internal_users 
+                    LEFT JOIN team ON internal_users.user_id = team.internal_users_id
+                    LEFT JOIN schedule ON team.schedule_id = schedule.id AND YEAR(schedule.schedule_date) = ?
+                    LEFT JOIN program ON schedule.program_id = program.id
+                    WHERE (CONCAT(internal_users.first_name, ' ', internal_users.last_name) LIKE ?)
+                    AND (internal_users.college_code LIKE ? OR ? = '')
+                    GROUP BY internal_users.user_id
+                    ORDER BY schedule_count DESC
+                    LIMIT 10 OFFSET ?";
+
     $stmt = $conn->prepare($query);
     $search_param = "%$search%";
     $stmt->bind_param('isssi', $year, $search_param, $college, $college, $offset);
@@ -440,7 +482,7 @@ $conn->close();
                     <select id="year">
                         <?php foreach ($schedules as $schedule): ?>
                             <option value="<?= date('Y', strtotime($schedule['schedule_date'])) ?>"><?= date('Y', strtotime($schedule['schedule_date'])) ?></option>
-                        <?php endforeach; ?>
+                        <?php echo strtotime($schedule['schedule_date']); endforeach; ?>
                     </select>
                     <label for="campus">Campus:</label>
                     <select id="campus">
@@ -468,7 +510,7 @@ $conn->close();
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($members as $member): ?>
+                            <?php foreach ($members as $member):?>
                                 <tr>
                                     <td><?= $member['first_name'] . ' ' . $member['last_name'] ?></td>
                                     <td><?= $member['schedule_count'] ?></td>
@@ -647,10 +689,6 @@ $conn->close();
                 pageLength: 10
             });
 
-            $('#year, #campus, #college').change(function() {
-                table.draw();
-            });
-
             $('#campus').change(function() {
                 const campus = $(this).val();
                 $.post('analytics_get_members.php', {
@@ -666,7 +704,7 @@ $conn->close();
                 });
             });
 
-            $('#college').change(function() {
+            $('#year, #campus, #college').change(function() {
                 table.draw();
             });
 

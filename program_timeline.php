@@ -8,6 +8,37 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+$user_id = $_SESSION['user_id'];
+
+// Check user type and redirect accordingly
+if ($user_id === 'admin') {
+    // If current page is not admin.php, redirect
+    if (basename($_SERVER['PHP_SELF']) !== 'program_timeline.php') {
+        header("Location: program_timeline.php");
+        exit();
+    }
+} else {
+    $user_type_code = substr($user_id, 3, 2);
+
+    if ($user_type_code === '11') {
+        // Internal user
+        if (basename($_SERVER['PHP_SELF']) !== 'internal.php') {
+            header("Location: internal.php");
+            exit();
+        }
+    } elseif ($user_type_code === '22') {
+        // External user
+        if (basename($_SERVER['PHP_SELF']) !== 'external.php') {
+            header("Location: external.php");
+            exit();
+        }
+    } else {
+        // Handle unexpected user type, redirect to login or error page
+        header("Location: login.php");
+        exit();
+    }
+}
+
 // Fetch colleges
 $colleges = [];
 $sql = "SELECT code, college_name FROM college";
