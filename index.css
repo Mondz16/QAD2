@@ -238,7 +238,7 @@
     background: #ff7070;
 }
 
-.signup, .approve, .approve1, .okay, .resend, .apply, .cancel, .loginstead, .profile1, .orientation1, .assessment1, .logout {
+.signup, .approve, .approve1, .okay, .resend, .apply, .cancel, .loginstead, .profile1, .orientation1, .assessment1, .logout, .google {
     color: black;
     text-decoration: none;
     white-space: unset;
@@ -429,10 +429,24 @@
 .apply:hover {
     background-color: #28b04b;
 }
+
 .signup {
     margin-right: 35px;
     padding: 16px 55px;
     min-width: 120px;
+}
+
+.google {
+    margin-right: 35px;
+    padding: 5px 55px;
+    width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.google img {
+    margin-right: 10px;
 }
 
 .approve {
@@ -458,7 +472,7 @@
     margin-left: 30px;
 }
 
-.signup:hover, .okay:hover, .resend:hover, .loginstead:hover {
+.signup:hover, .okay:hover, .resend:hover, .loginstead:hover, .google:hover {
     background-color: #EAEAEA;
 }
 

@@ -6,7 +6,7 @@ if (isset($_GET['logged_out']) && $_GET['logged_out'] == 'true') {
     // Allow access without referer check
 } else {
     // Allowed referring pages
-    $allowed_referers = ['register.php', 'index.php', 'logout.php', 'verify_otp.php', 'login_process.php', 'forgot_password.php', 'forgot_password_verification.php', 'reset_password.php'];
+    $allowed_referers = ['register.php', 'admin_sidebar.php', 'dashboard.php', 'schedule.php', 'college.php', 'orientation.php', 'assessment.php', 'udas_assessment.php', 'registration.php', 'college_transfer.php', 'reports_dashboard.php', 'program_timeline.php', 'reports_member.php', 'internal.php', 'index.php', 'logout.php', 'verify_otp.php', 'login_process.php', 'forgot_password.php', 'forgot_password_verification.php', 'reset_password.php'];
 
     // Check if the referer is set and validate it
     if (isset($_SERVER['HTTP_REFERER'])) {
@@ -132,6 +132,10 @@ if (isset($_SESSION['user_id'])) {
                                 <input class="passwordText" type="password" name="password" id="password" placeholder="Password">
                             </div>
                         </div>
+
+                        <div style="height: 24px; width: 0px;"></div>
+
+                        <a href="google_login.php" class="google"><img src="images/GoogleLogo.png" height="36">Sign in with Google</a>
 
                         <div style="height: 24px; width: 0px;"></div>
 
