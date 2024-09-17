@@ -469,7 +469,6 @@
 .resend {
     padding: 16px 30px;
     min-width: 120px;
-    margin-left: 30px;
 }
 
 .signup:hover, .okay:hover, .resend:hover, .loginstead:hover, .google:hover {
