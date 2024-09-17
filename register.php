@@ -140,7 +140,7 @@ if (isset($_SESSION['user_id'])) {
                             <div style="height: 8px; width: 0px;"></div>
                             <div class="username" style="width: 721px;">
                                 <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                                    <input class="email" type="email" name="email" placeholder="USeP Email">
+                                    <input class="email" type="text" name="email" id="email" placeholder="USeP Email" onblur="appendEmailDomain()" onfocus="editEmail()">
                                 </div>
                             </div>
                             <div style="height: 8px; width: 0px;"></div>
@@ -215,8 +215,6 @@ if (isset($_SESSION['user_id'])) {
                                         <option value="" disabled selected hidden>Gender</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
-                                        <option value="Prefer not to say">Prefer not to say</option>
-                                        <option value="Others">Others</option>
                                         <!-- Add more options as needed -->
                                     </select>
                                     <input type="text" id="genderInput" name="gender_others" style="display:none; width: 721px; padding: 12px 20px; border: 1px solid #aaa; border-radius: 8px; font-size: 1rem; background-color: #fff;" placeholder="Specify Gender">
@@ -607,7 +605,26 @@ document.getElementById('acceptTerms').addEventListener('click', function() {
     // Show the loading spinner
     document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
 });
+function appendEmailDomain() {
+    var emailInput = document.getElementById('email');
+    var emailValue = emailInput.value;
 
+    // If user has typed something and '@usep.edu.ph' is not already there, append it
+    if (emailValue && !emailValue.includes('@usep.edu.ph')) {
+        emailInput.value = emailValue + '@usep.edu.ph';
+    }
+}
+
+function editEmail() {
+    var emailInput = document.getElementById('email');
+    var emailValue = emailInput.value;
+
+    // If '@usep.edu.ph' is already present, only allow editing the part before '@usep.edu.ph'
+    if (emailValue.includes('@usep.edu.ph')) {
+        var editablePart = emailValue.split('@')[0];
+        emailInput.value = editablePart; // Remove the domain while editing
+    }
+}
 
 </script>
 
