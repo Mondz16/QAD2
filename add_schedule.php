@@ -239,7 +239,7 @@ if (!isset($_SESSION['user_id'])) {
                             </select>
                         </div>
                     </div>
-                    <button type="button" class="add-team-member-button" onclick="addTeamMemberInput()">ADD MEMBER</button>
+                    <button type="button" id="add-member-button" class="add-team-member-button" onclick="addTeamMemberInput()">ADD MEMBER</button>
                 </div>
                 <div class="bottom-button-holder">
                     <button type="button" class="discard-button" onclick="window.location.href='schedule.php'">DISCARD</button>
@@ -270,6 +270,8 @@ if (!isset($_SESSION['user_id'])) {
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
+    let membersCount = 0;
+    
     function addTeamMemberInput() {
         const container = document.getElementById('team-members-container');
         const newInputDiv = document.createElement('div');
@@ -288,11 +290,13 @@ if (!isset($_SESSION['user_id'])) {
         `;
         container.appendChild(newInputDiv);
         fetchTeamMembersForNewDropdown(newInputDiv.querySelector('.team-member-select'));
+        checkAvailableLeadersAndMembers();
     }
 
     function removeTeamMemberInput(button) {
         button.parentElement.remove();
         updateDropdowns();
+        checkAvailableLeadersAndMembers();
     }
 
     function fetchPrograms() {
@@ -403,9 +407,11 @@ if (!isset($_SESSION['user_id'])) {
                     try {
                         const data = JSON.parse(response);
                         console.log('Parsed data:', data); // Debugging log
+                        membersCount = data.teamMembers.length;
                         populateDropdown('#team-leader', data.teamLeaders);
                         populateAllTeamMemberDropdowns(data.teamMembers);
                         updateDropdowns();
+                        checkAvailableLeadersAndMembers(); // Check after populating
                     } catch (e) {
                         console.error('Error parsing JSON response:', e);
                     }
@@ -417,6 +423,7 @@ if (!isset($_SESSION['user_id'])) {
         } else {
             $('#team-leader').html('<option value="">Select Team Leader</option>');
             $('.team-member-input select').html('<option value="">Select Team Member</option>');
+            checkAvailableLeadersAndMembers(); // Check after populating
         }
     }
 
@@ -433,6 +440,7 @@ if (!isset($_SESSION['user_id'])) {
                     const data = JSON.parse(response);
                     populateDropdown(dropdown, data.teamMembers);
                     updateDropdowns();
+                    checkAvailableLeadersAndMembers(); // Check after populating
                 },
                 error: function(xhr, status, error) {
                     console.error('Error:', error);
@@ -458,28 +466,39 @@ if (!isset($_SESSION['user_id'])) {
     }
 
     function updateDropdowns() {
-        const selectedTeamLeader = $('#team-leader').val();
+        const selectedTeamLeader = document.getElementById('team-leader').value;
         const selectedTeamMembers = [];
 
-        $('.team-member-select').each(function() {
-            selectedTeamMembers.push($(this).val());
+        // Collect all selected team members
+        document.querySelectorAll('.team-member-select').forEach(function (select) {
+            selectedTeamMembers.push(select.value);
         });
 
-        // Reset all options
-        $('#team-leader option, .team-member-select option').prop('disabled', false);
+        // Enable all options first (reset any previous disables)
+        document.querySelectorAll('#team-leader option, .team-member-select option').forEach(function (option) {
+            option.disabled = false;
+        });
 
-        // Disable selected team leader in team members dropdowns
+        // Disable the selected team leader in all member dropdowns
         if (selectedTeamLeader) {
-            $('.team-member-select option[value="' + selectedTeamLeader + '"]').prop('disabled', true);
+            document.querySelectorAll('.team-member-select option[value="' + selectedTeamLeader + '"]').forEach(function (option) {
+                option.disabled = true;
+            });
         }
 
-        // Disable selected team members in team leader and other team member dropdowns
-        selectedTeamMembers.forEach(function(member) {
+        // Disable the selected team members in the leader dropdown and other team member dropdowns
+        selectedTeamMembers.forEach(function (member) {
             if (member) {
-                $('#team-leader option[value="' + member + '"]').prop('disabled', true);
-                $('.team-member-select option[value="' + member + '"]').not(':selected').prop('disabled', true);
+                document.querySelectorAll('#team-leader option[value="' + member + '"], .team-member-select option[value="' + member + '"]').forEach(function (option) {
+                    if (!option.selected) {
+                        option.disabled = true;
+                    }
+                });
             }
         });
+
+        // After updating dropdowns, check if the "ADD MEMBER" button should be enabled or disabled
+        checkAvailableLeadersAndMembers();
     }
 
     // Function to check if the selected date has a conflict
@@ -569,6 +588,27 @@ if (!isset($_SESSION['user_id'])) {
         e.target.value = middleinitialInput;
     });
 
+    function checkAvailableLeadersAndMembers() {
+        const teamMemberSelects = document.querySelectorAll('.team-member-select');
+        
+        const addButton = document.querySelector('.add-team-member-button');
+
+        // Disable the "ADD MEMBER" button if no leaders or members are available
+        if (membersCount <= (teamMemberSelects.length + 1)) {
+            addButton.disabled = true;
+        } else {
+            addButton.disabled = false;
+        }
+    }
+
+    // Event listeners to trigger the updateDropdowns function
+    document.getElementById('team-leader').addEventListener('change', updateDropdowns);
+    document.querySelectorAll('.team-member-select').forEach(function (select) {
+        select.addEventListener('change', updateDropdowns);
+    });
+
+    // Call updateDropdowns to initialize the state
+    updateDropdowns();
 </script>
 </body>
 </html>
