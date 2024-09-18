@@ -14,11 +14,6 @@ if (isset($_GET['code'])) {
         // Exchange the auth code for an access token
         $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
 
-        // Debug: Print token for troubleshooting
-        echo '<pre>';
-        print_r($token);
-        echo '</pre>';
-
         if (isset($token['access_token'])) {
             $client->setAccessToken($token['access_token']);
 
@@ -45,8 +40,14 @@ if (isset($_GET['code'])) {
 
                     // Check for active and pending statuses
                     if (in_array('active', $statuses) && in_array('pending', $statuses)) {
-                        echo "This account with Email: $email is currently applying for college transfer.<br>
-                              Please wait for the admin to approve.";
+                        echo "<div class='popup-content'>
+                                <div class='popup-header'>
+                                    <img class='Error' src='images/Error.png' height='100'>
+                                    <p class='error'>This account with Email: $email is currently applying for college transfer.<br>
+                                    Please wait for the admin to approve.</p>
+                                </div>
+                                <a href='college.php' class='btn-hover'>OKAY</a>
+                              </div>";
                     }
                     // Check for active and inactive statuses, allow login for the active one
                     elseif (in_array('active', $statuses) && in_array('inactive', $statuses)) {
@@ -79,9 +80,56 @@ if (isset($_GET['code'])) {
                     }
 
                     if ($status === 'inactive') {
-                        echo "This account with Email: $email is inactive.<br>Would you like to apply again?";
+                        echo "<!DOCTYPE html>
+                        <html lang=\"en\">
+                        <head>
+                            <meta charset=\"UTF-8\">
+                            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+                            <title>Login Form</title>
+                            <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+                            <link rel=\"stylesheet\" href=\"index.css\">
+                        </head>
+                        <body>
+                            <div id=\"errorPopup\" class=\"popup\" style=\"display: block;\">
+                                <div class=\"popup-content\">
+                                    <div style=\"height: 50px; width: 0px;\"></div>
+                                    <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+                                    <div style=\"height: 20px; width: 0px;\"></div>
+                                    <p class=\"popup-text\">This account with Email: $email is inactive.<br>Would you like to apply again?</p>
+                                    <div style=\"height: 50px; width: 0px;\"></div>
+                                    <button class=\"cancel\" onclick=\"window.location.href='login.php'\">CANCEL</button>
+                                    <a href=\"login_process_reactivation.php?type=internal&user_id=" . urlencode($user['user_id']) . "\" class=\"apply\">Apply</a>
+                                    <div style=\"height: 100px; width: 0px;\"></div>
+                                    <div class=\"hairpop-up\"></div>
+                                </div>
+                            </div>
+                        </body>
+                        </html>";
                     } elseif ($status === 'pending') {
-                        echo "This account with Email: $email is pending.<br>Please wait for the admin to approve.";
+                        echo "<!DOCTYPE html>
+                        <html lang=\"en\">
+                        <head>
+                            <meta charset=\"UTF-8\">
+                            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+                            <title>Login Form</title>
+                            <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+                            <link rel=\"stylesheet\" href=\"index.css\">
+                        </head>
+                        <body>
+                            <div id=\"errorPopup\" class=\"popup\" style=\"display: block;\">
+                                <div class=\"popup-content\">
+                                    <div style=\"height: 50px; width: 0px;\"></div>
+                                    <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+                                    <div style=\"height: 20px; width: 0px;\"></div>
+                                    <p class=\"popup-text\">This account with Email: $email is pending.<br>Please wait for the admin to approve.</p>
+                                    <div style=\"height: 50px; width: 0px;\"></div>
+                                    <button class=\"cancel\" onclick=\"window.location.href='login.php'\">OKAY</button>
+                                    <div style=\"height: 100px; width: 0px;\"></div>
+                                    <div class=\"hairpop-up\"></div>
+                                </div>
+                            </div>
+                        </body>
+                        </html>";
                     } elseif ($status === 'active') {
                         // Log in the active user
                         $_SESSION['user_id'] = $user['user_id'];
@@ -90,8 +138,30 @@ if (isset($_GET['code'])) {
                         exit();
                     }
                 } else {
-                    // No user found
-                    echo "No user with this email exists in the system.";
+                    echo "<!DOCTYPE html>
+                    <html lang=\"en\">
+                    <head>
+                        <meta charset=\"UTF-8\">
+                        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+                        <title>Login Form</title>
+                        <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+                        <link rel=\"stylesheet\" href=\"index.css\">
+                    </head>
+                    <body>
+                        <div id=\"errorPopup\" class=\"popup\" style=\"display: block;\">
+                            <div class=\"popup-content\">
+                                <div style=\"height: 50px; width: 0px;\"></div>
+                                <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+                                <div style=\"height: 20px; width: 0px;\"></div>
+                                <p class=\"popup-text\">There is no account with Email: $email<br>exists in the system.</p>
+                                <div style=\"height: 50px; width: 0px;\"></div>
+                                <button class=\"cancel\" onclick=\"window.location.href='login.php'\">OKAY</button>
+                                <div style=\"height: 100px; width: 0px;\"></div>
+                                <div class=\"hairpop-up\"></div>
+                            </div>
+                        </div>
+                    </body>
+                    </html>";
                 }
             }
 
@@ -121,17 +191,81 @@ if (isset($_GET['code'])) {
                 handleUserLogic($stmt, $email, 'external.php', 'verify_otp.php');
             }
         } else {
-            // Access token not found
-            echo "Failed to obtain access token. Token response:";
-            echo '<pre>';
-            print_r($token);
-            echo '</pre>';
+            echo "<!DOCTYPE html>
+            <html lang=\"en\">
+            <head>
+                <meta charset=\"UTF-8\">
+                <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+                <title>Login Form</title>
+                <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+                <link rel=\"stylesheet\" href=\"index.css\">
+            </head>
+            <body>
+                <div id=\"errorPopup\" class=\"popup\" style=\"display: block;\">
+                    <div class=\"popup-content\">
+                        <div style=\"height: 50px; width: 0px;\"></div>
+                        <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+                        <div style=\"height: 20px; width: 0px;\"></div>
+                        <p class=\"popup-text\">Failed to obtain access token. Please try again later.</p>
+                        <div style=\"height: 50px; width: 0px;\"></div>
+                        <button class=\"cancel\" onclick=\"window.location.href='login.php'\">OKAY</button>
+                        <div style=\"height: 100px; width: 0px;\"></div>
+                        <div class=\"hairpop-up\"></div>
+                    </div>
+                </div>
+            </body>
+            </html>";
         }
     } catch (Exception $e) {
-        echo 'Error: ' . $e->getMessage();
+        echo "<!DOCTYPE html>
+        <html lang=\"en\">
+        <head>
+            <meta charset=\"UTF-8\">
+            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+            <title>Login Form</title>
+            <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+            <link rel=\"stylesheet\" href=\"index.css\">
+        </head>
+        <body>
+            <div id=\"errorPopup\" class=\"popup\" style=\"display: block;\">
+                <div class=\"popup-content\">
+                    <div style=\"height: 50px; width: 0px;\"></div>
+                    <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+                    <div style=\"height: 20px; width: 0px;\"></div>
+                    <p class=\"popup-text\">Error: \" . htmlspecialchars($e->getMessage()) . \"</p>
+                    <div style=\"height: 50px; width: 0px;\"></div>
+                    <button class=\"cancel\" onclick=\"window.location.href='login.php'\">OKAY</button>
+                    <div style=\"height: 100px; width: 0px;\"></div>
+                    <div class=\"hairpop-up\"></div>
+                </div>
+            </div>
+        </body>
+        </html>";
     }
 } else {
-    // OAuth 2.0 authentication failed
-    echo 'Google login failed.';
+    echo "<!DOCTYPE html>
+    <html lang=\"en\">
+    <head>
+        <meta charset=\"UTF-8\">
+        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+        <title>Login Form</title>
+        <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap\">
+        <link rel=\"stylesheet\" href=\"index.css\">
+    </head>
+    <body>
+        <div id=\"errorPopup\" class=\"popup\" style=\"display: block;\">
+            <div class=\"popup-content\">
+                <div style=\"height: 50px; width: 0px;\"></div>
+                <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
+                <div style=\"height: 20px; width: 0px;\"></div>
+                <p class=\"popup-text\">OAuth authentication failed. Please try again.</p>
+                <div style=\"height: 50px; width: 0px;\"></div>
+                <button class=\"cancel\" onclick=\"window.location.href='login.php'\">OKAY</button>
+                <div style=\"height: 100px; width: 0px;\"></div>
+                <div class=\"hairpop-up\"></div>
+            </div>
+        </div>
+    </body>
+    </html>";
 }
 ?>
