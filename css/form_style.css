@@ -116,7 +116,13 @@ button[type="remove"]:hover{
     transition: background-color 0.3s, color 0.3s;
 }
 
-.add-team-member-button:hover {
+.add-team-member-button:disabled {
+    background-color: #dbdbdb;
+    color: #0061185d;
+    border: 1px solid #dbdbdb;
+}
+
+.add-team-member-button:enabled:hover {
     background-color: #34C759;
 }
 

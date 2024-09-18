@@ -40,7 +40,7 @@ function sendOTPEmail($email, $otp) {
     }
 }
 
-function sendAccountApprovalEmail($email, $user_id) {
+function sendAccountApprovalEmail($email, $firstName , $user_id) {
     $mail = new PHPMailer(true);
 
     try {
@@ -66,7 +66,7 @@ function sendAccountApprovalEmail($email, $user_id) {
 
         $mail->isHTML(true);
         $mail->Subject = 'Account Verification Successful';
-        $mail->Body    = "Dear User,<br><br>Your account with User ID: <b>{$user_id}</b> has been successfully verified. However, please note that you can only fully access your account once the admin has approved it.<br><br>Best Regards,<br>USeP - Quality Assurance Division";
+        $mail->Body    = "Dear $firstName,<br><br>Your account with User ID: <b>{$user_id}</b> has been successfully verified. However, please note that you can only fully access your account once the admin has approved it.<br><br>Best Regards,<br>USeP - Quality Assurance Division";
 
         $mail->send();
         return true;
@@ -145,15 +145,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             if (password_verify($otp, $stored_otp)) {  // Verify the hashed OTP
                 // Fetch the user's ID
-                $stmt = $conn->prepare("SELECT user_id FROM $table WHERE email = ?");
+                $stmt = $conn->prepare("SELECT user_id, first_name FROM $table WHERE email = ?");
                 $stmt->bind_param("s", $email);
                 $stmt->execute();
-                $stmt->bind_result($user_id);
+                $stmt->bind_result($user_id, $first_name);
                 $stmt->fetch();
                 $stmt->close();
 
                 // Try to send the account approval email
-                if (sendAccountApprovalEmail($email, $user_id)) {
+                if (sendAccountApprovalEmail($email, firstName: $first_name , user_id: $user_id)) {
                     $stmt = $conn->prepare("UPDATE $table SET status = 'pending', otp = 'verified' WHERE email = ?");
                     $stmt->bind_param("s", $email);
                     if ($stmt->execute()) {

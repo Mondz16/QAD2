@@ -13,7 +13,7 @@ function generateOTP($length = 6) {
     return str_pad(rand(0, pow(10, $length)-1), $length, '0', STR_PAD_LEFT);
 }
 
-function sendOTP($email, $otp) {
+function sendOTP($email, $firstName , $otp) {
     $mail = new PHPMailer(true);
 
     try {
@@ -42,7 +42,7 @@ function sendOTP($email, $otp) {
         // Content
         $mail->isHTML(true);
         $mail->Subject = 'Your OTP for Password Reset';
-        $mail->Body = "Dear user,<br><br>Your OTP for password reset is: <strong>$otp</strong><br>Please use this OTP to verify your identity.<br><br>Best regards,<br>USeP - Quality Assurance Division";
+        $mail->Body = "Dear $firstName,<br><br>Your OTP for password reset is: <strong>$otp</strong><br>Please use this OTP to verify your identity.<br><br>Best regards,<br>USeP - Quality Assurance Division";
 
         $mail->send();
         return true;
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Similar logic to fetch the user
         $tables = ['internal_users', 'external_users'];
         foreach ($tables as $table) {
-            $query = "SELECT user_id FROM $table WHERE user_id=? AND email=? AND prefix=? AND gender=?";
+            $query = "SELECT * FROM $table WHERE user_id=? AND email=? AND prefix=? AND gender=?";
             $stmt = $conn->prepare($query);
 
             $gender_value = ($gender === 'Others') ? $gender_others : $gender;
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['user_id'] = $user_id;
                 $_SESSION['email'] = $email;
             
-                if (sendOTP($email, $otp)) {
+                if (sendOTP($email, $row['first_name'], $otp)) {
                     // Redirect to OTP verification page
                     $response['redirect'] = 'forgot_password_verification.php';
                 } else {
