@@ -139,9 +139,10 @@ if (isset($_SESSION['user_id'])) {
                             </div>
                             <div style="height: 8px; width: 0px;"></div>
                             <div class="username" style="width: 721px;">
-                                <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px;">
-                                    <input class="email" type="text" name="email" id="email" placeholder="USeP Email" onblur="appendEmailDomain()" onfocus="editEmail()">
-                                </div>
+                            <div class="usernameContainer" style="padding: 12px 20px; border-color: rgb(170, 170, 170); border-style: solid; border-width: 1px; border-radius: 8px; position: relative;">
+                                <input class="email" type="text" name="email" id="email" placeholder="USeP Email" style="width: 100%; padding-right: 120px;" onblur="appendEmailDomain()" onfocus="editEmail()" oninput="showPlaceholder()">
+                                <span id="email-domain" style="position: absolute; right: 20px; top: 12px; color: #999; pointer-events: none;">@usep.edu.ph</span>
+                            </div>
                             </div>
                             <div style="height: 8px; width: 0px;"></div>
                             <div class="name">
@@ -613,19 +614,36 @@ function appendEmailDomain() {
     if (emailValue && !emailValue.includes('@usep.edu.ph')) {
         emailInput.value = emailValue + '@usep.edu.ph';
     }
+
+    // Hide the muted domain text once appended
+    document.getElementById('email-domain').style.display = 'none';
 }
 
 function editEmail() {
     var emailInput = document.getElementById('email');
     var emailValue = emailInput.value;
 
-    // If '@usep.edu.ph' is already present, only allow editing the part before '@usep.edu.ph'
+    // If '@usep.edu.ph' is already present, allow editing only the part before '@usep.edu.ph'
     if (emailValue.includes('@usep.edu.ph')) {
         var editablePart = emailValue.split('@')[0];
         emailInput.value = editablePart; // Remove the domain while editing
     }
+
+    // Show the muted domain text again for clarity
+    document.getElementById('email-domain').style.display = 'inline';
 }
 
+function showPlaceholder() {
+    var emailInput = document.getElementById('email');
+    var domainText = document.getElementById('email-domain');
+
+    // Show the muted text only if there's no '@' in the input
+    if (emailInput.value.includes('@')) {
+        domainText.style.display = 'none';
+    } else {
+        domainText.style.display = 'inline';
+    }
+}
 </script>
 
 </body>
