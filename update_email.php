@@ -8,11 +8,13 @@ use PHPMailer\PHPMailer\Exception;
 
 date_default_timezone_set('Asia/Manila');
 
-function generateOTP($length = 6) {
-    return str_pad(rand(0, pow(10, $length)-1), $length, '0', STR_PAD_LEFT);
+function generateOTP($length = 6)
+{
+    return str_pad(rand(0, pow(10, $length) - 1), $length, '0', STR_PAD_LEFT);
 }
 
-function sendOTP($email, $otp) {
+function sendOTP($email, $firstName, $otp)
+{
     $mail = new PHPMailer(true);
 
     try {
@@ -37,7 +39,7 @@ function sendOTP($email, $otp) {
 
         $mail->isHTML(true);
         $mail->Subject = 'Your OTP for Email Update';
-        $mail->Body = "Dear user,<br><br>Your OTP for email update is: <strong>$otp</strong><br>Please use this OTP to verify your identity.<br><br>Best regards,<br>USeP - Quality Assurance Division";
+        $mail->Body = "Dear $firstName,<br><br>Your OTP for email update is: <strong>$otp</strong><br>Please use this OTP to verify your identity.<br><br>Best regards,<br>USeP - Quality Assurance Division";
 
         $mail->send();
         return true;
@@ -51,11 +53,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $user_id = $_SESSION['user_id'];
 
-    if($newEmail === $email){
+    $user_type = "";
+    $sql = "SELECT * FROM internal_users WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $user_id); // Change "i" to "s" since user_id is a string
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($newEmail === $email) {
         header("Location: internal.php");
         exit;
     }
-
     if (empty($newEmail)) {
         $_SESSION['error'] = "Email field cannot be empty.";
         header("Location: internal.php");
@@ -67,14 +75,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['otp_expiry'] = $_SESSION['otp_timestamp'] + 300;
         $_SESSION['newEmail'] = $newEmail;
 
-        if (sendOTP($newEmail, $otp)) {
-            header("Location: update_email_verification.php");
-            exit;
-        } else {
-            $_SESSION['error'] = "Failed to send OTP. Please try again.";
-            header("Location: internal.php");
-            exit;
+
+        if ($result->num_rows == 1) {
+            $first_name = $row['first_name'];
+
+            if (sendOTP($newEmail, $first_name, $otp)) {
+                header("Location: update_email_verification.php");
+                exit;
+            } else {
+                $_SESSION['error'] = "Failed to send OTP. Please try again.";
+                header("Location: internal.php");
+                exit;
+            }
         }
     }
 }
-?>
