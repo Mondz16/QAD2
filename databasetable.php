@@ -80,6 +80,19 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create the area table
+$sql = "CREATE TABLE IF NOT EXISTS area (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    area_name VARCHAR(255) NOT NULL,
+    area_weight INT(6) UNSIGNED
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table area created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
 // Create admin table
 $sql = "CREATE TABLE IF NOT EXISTS admin (
     user_id VARCHAR(20) PRIMARY KEY,
@@ -181,12 +194,13 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS team (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     schedule_id INT(6) UNSIGNED,
+    area_id INT(6) UNSIGNED,
     internal_users_id VARCHAR(10) NOT NULL,
     role VARCHAR(11) NOT NULL,
-    area VARCHAR(100) NOT NULL,
     status ENUM('pending', 'accepted', 'declined', 'finished', 'cancelled') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (schedule_id) REFERENCES schedule(id),
-    FOREIGN KEY (internal_users_id) REFERENCES internal_users(user_id)
+    FOREIGN KEY (internal_users_id) REFERENCES internal_users(user_id),
+    FOREIGN KEY (area_id) REFERENCES area(id)
 )";
 
 if ($conn->query($sql) === TRUE) {

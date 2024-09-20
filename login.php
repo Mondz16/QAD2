@@ -6,7 +6,7 @@ if (isset($_GET['logged_out']) && $_GET['logged_out'] == 'true') {
     // Allow access without referer check
 } else {
     // Allowed referring pages
-    $allowed_referers = ['oauth2callback_sso.php', 'register.php', 'admin_sidebar.php', 'dashboard.php', 'schedule.php', 'college.php', 'orientation.php', 'assessment.php', 'udas_assessment.php', 'registration.php', 'college_transfer.php', 'reports_dashboard.php', 'program_timeline.php', 'reports_member.php', 'internal.php', 'index.php', 'logout.php', 'verify_otp.php', 'login_process.php', 'forgot_password.php', 'forgot_password_verification.php', 'reset_password.php'];
+    $allowed_referers = ['internal_notification.php', 'internal_assessment.php', 'internal_orientation.php', 'oauth2callback_sso.php', 'register.php', 'admin_sidebar.php', 'dashboard.php', 'schedule.php', 'college.php', 'orientation.php', 'assessment.php', 'udas_assessment.php', 'registration.php', 'college_transfer.php', 'reports_dashboard.php', 'program_timeline.php', 'reports_member.php', 'internal.php', 'index.php', 'logout.php', 'verify_otp.php', 'login_process.php', 'forgot_password.php', 'forgot_password_verification.php', 'reset_password.php'];
 
     // Check if the referer is set and validate it
     if (isset($_SERVER['HTTP_REFERER'])) {

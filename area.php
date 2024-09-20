@@ -13,8 +13,8 @@ $user_id = $_SESSION['user_id'];
 // Check user type and redirect accordingly
 if ($user_id === 'admin') {
     // If current page is not admin.php, redirect
-    if (basename($_SERVER['PHP_SELF']) !== 'college_transfer.php') {
-        header("Location: college_transfer.php");
+    if (basename($_SERVER['PHP_SELF']) !== 'area.php') {
+        header("Location: college.php");
         exit();
     }
 } else {
@@ -39,50 +39,69 @@ if ($user_id === 'admin') {
     }
 }
 
-// Fetch all users and group by the same bb-cccc part of user_id
-$sql = "SELECT user_id, college_code, first_name, middle_initial, last_name, email, status 
-        FROM internal_users";
+$sql = "SELECT id AS area_code, area_name, area_parameters FROM area";
 $result = $conn->query($sql);
+$areas = [];
 
-$users = [];
-while ($row = $result->fetch_assoc()) {
-    $bb_cccc = substr($row['user_id'], 3); // Extract bb-cccc part
-    $users[$bb_cccc][] = $row;
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $areas[] = $row;
+    }
 }
-
-// Filter out groups with less than 2 users (no transfer request)
-$transfer_requests = array_filter($users, function ($group) {
-    return count($group) > 1;
-});
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>College Transfer Requests</title>
-    <link rel="stylesheet" href="college_style.css">
+    <title>College</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="stylesheet" href="css/sidebar.css">
-    <link rel="stylesheet" href="css/navbar.css">
-    <link href="css/registration_pagestyle.css" rel="stylesheet">
+    <link href="css/navbar.css" rel="stylesheet">
+    <link href="css/pagestyle.css" rel="stylesheet">
+    <link href="college_style.css" rel="stylesheet">
     <style>
-        .college-transfer-table th {
-            font-weight: bold;
+        .hidden {
+            display: none;
         }
 
-        .college-transfer-table th,
-        .college-transfer-table td {
-            border-bottom: 1px solid #ddd;
-            background-color: white;
+        .loading-spinner .spinner-border {
+            width: 40px;
+            height: 40px;
+            border-width: 5px;
+            border-color: #FF7A7A !important; /* Enforce the custom color */
+            border-right-color: transparent !important;
+        }
+
+        #loadingSpinner.spinner-hidden {
+            display: none;
+        }
+
+        .loading-spinner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .scrollable-container {
+            max-height: 650px;
+            overflow-y: auto;
         }
     </style>
 </head>
 
 <body>
     <div class="wrapper">
+        <!-- Sidebar -->
         <!-- Sidebar -->
         <aside id="sidebar">
             <div class="d-flex">
@@ -92,7 +111,7 @@ $transfer_requests = array_filter($users, function ($group) {
                     </svg>
                 </button>
                 <div class="sidebar-logo">
-                    <a href="college_transfer.php">QAD</a>
+                    <a href="college.php">QAD</a>
                 </div>
             </div>
             <ul class="sidebar-nav">
@@ -131,7 +150,7 @@ $transfer_requests = array_filter($users, function ($group) {
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="area.php" class="sidebar-link">
+                    <a href="area.php" class="sidebar-link-active">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mortarboard" viewBox="0 0 16 16">
                             <path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.916l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.916zM8 8.46 1.758 5.965 8 3.052l6.242 2.913z" />
                             <path d="M4.166 9.032a.5.5 0 0 0-.656.327l-.5 1.7a.5.5 0 0 0 .294.605l4.5 1.8a.5.5 0 0 0 .372 0l4.5-1.8a.5.5 0 0 0 .294-.605l-.5-1.7a.5.5 0 0 0-.656-.327L8 10.466zm-.068 1.873.22-.748 3.496 1.311a.5.5 0 0 0 .352 0l3.496-1.311.22.748L8 12.46z" />
@@ -175,7 +194,7 @@ $transfer_requests = array_filter($users, function ($group) {
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="college_transfer.php" class="sidebar-link-active">
+                    <a href="college_transfer.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
                             <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5" />
                         </svg>
@@ -226,213 +245,210 @@ $transfer_requests = array_filter($users, function ($group) {
         <!-- Main Content -->
         <div class="main">
             <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
-                <div class="container">
-                    <div class="header">
-                        <div class="headerLeft">
-                            <div class="USePData">
-                                <img class="USeP" src="images/USePLogo.png" height="36">
-                                <div style="height: 0px; width: 16px;"></div>
-                                <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
-                                <div style="height: 0px; width: 16px;"></div>
-                                <div class="headerLeftText">
-                                    <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
-                                        <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                            <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
-                                            <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                            <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
-                                        </h>
-                                    </div>
-                                    <h>Accreditor Portal</h>
+            <div class="container">
+                <div class="header">
+                    <div class="headerLeft">
+                        <div class="USePData">
+                            <img class="USeP" src="images/USePLogo.png" height="36">
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div class="headerLeftText">
+                                <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                    <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                        <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                        <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                    </h>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="headerRight">
-                            <div class="QAD">
-                                <div class="headerRightText">
-                                    <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
-                                </div>
-                                <div style="height: 0px; width: 16px;"></div>
-                                <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
-                                <div style="height: 0px; width: 16px;"></div>
-                                <img class="USeP" src="images/QADLogo.png" height="36">
+                                <h>Accreditor Portal</h>
                             </div>
                         </div>
                     </div>
-            </div>
-            <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
 
-            <div class="container text-center mt-4">
-                <h1 class="mt-5 mb-5">COLLEGE TRANSFER</h1>
-                <div class="row mt-3">
-                    <div class="table-responsive col-12">
-                        <div class="tab-container">
-                            <div class="admin-content">
-                                <div class="tab-content active" id="internal">
-                                    <table class='college-transfer-table'>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                            <th>Previous College</th>
-                                            <th>New College</th>
-                                            <th>Action</th>
-                                        </tr>
-                                        <?php foreach ($transfer_requests as $bb_cccc => $group) : ?>
-                                            <?php
-                                            $previous_user = null;
-                                            $new_user = null;
-                                            foreach ($group as $user) {
-                                                if ($user['status'] == 'active') {
-                                                    $previous_user = $user;
-                                                } elseif ($user['status'] == 'pending') {
-                                                    $new_user = $user;
-                                                }
-                                            }
-                                            if ($previous_user && $new_user) :
-                                                $previous_college_code = $previous_user['college_code'];
-                                                $new_college_code = $new_user['college_code'];
-
-                                                // Fetch college names
-                                                $stmt_prev_college = $conn->prepare("SELECT college_name FROM college WHERE code = ?");
-                                                $stmt_prev_college->bind_param("s", $previous_college_code);
-                                                $stmt_prev_college->execute();
-                                                $stmt_prev_college->bind_result($previous_college_name);
-                                                $stmt_prev_college->fetch();
-                                                $stmt_prev_college->close();
-
-                                                $stmt_new_college = $conn->prepare("SELECT college_name FROM college WHERE code = ?");
-                                                $stmt_new_college->bind_param("s", $new_college_code);
-                                                $stmt_new_college->execute();
-                                                $stmt_new_college->bind_result($new_college_name);
-                                                $stmt_new_college->fetch();
-                                                $stmt_new_college->close();
-                                            ?>
-                                                <tr>
-                                                    <td><?php echo $previous_user['first_name'] . ' ' . $previous_user['middle_initial'] . '. ' . $previous_user['last_name']; ?></td>
-                                                    <td><?php echo $previous_user['email']; ?></td>
-                                                    <td><?php echo $previous_college_name; ?></td>
-                                                    <td><?php echo $new_college_name; ?></td>
-                                                    <td class="action-buttons">
-                                                        <button class="btn btn-approve btn-sm" onclick="openAcceptModal('<?php echo $new_user['user_id']; ?>', '<?php echo $previous_user['user_id']; ?>', '<?php echo $new_user['email']; ?>', '<?php echo $new_user['first_name'] . ' ' . $new_user['middle_initial'] . '. ' . $new_user['last_name']; ?>')">Accept</button>
-                                                        <button class="btn btn-reject btn-sm" onclick="openRejectModal('<?php echo $new_user['user_id']; ?>', '<?php echo $previous_user['user_id']; ?>')">Reject</button>
-                                                    </td>
-                                                </tr>
-                                            <?php endif; ?>
-                                        <?php endforeach; ?>
-                                    </table>
-                                </div>
+                    <div class="headerRight">
+                        <div class="QAD">
+                            <div class="headerRightText">
+                                <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
                             </div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                            <div style="height: 0px; width: 16px;"></div>
+                            <img class="USeP" src="images/QADLogo.png" height="36">
                         </div>
                     </div>
                 </div>
             </div>
+            <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
+            <div class="container text-center mt-4">
+                <h1 class="mb-5 mt-5">AREAS</h1>
+                <div class="custom-btn-group">
+                    <div class="col-12 d-flex justify-content-between" style="background: white;">
+                        <div class="d-flex">
+                            <button class="btn-import" onclick="openImportModal()">IMPORT
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download ms-2" viewBox="0 0 16 16">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5" />
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z" />
+                                </svg>
+                            </button>
+                            <button class="btn-add-schedule" onclick="location.href='add_area.php'">ADD AREA
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus ms-2" viewBox="0 0 16 16">
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3 scrollable-container">
+                    <div class="table-responsive col-12">
+                        <table id="areaTable" class="custom-table table">
+                            <thead>
+                                <tr>
+                                    <th>AREA CODE</th>
+                                    <th>AREA NAME</th>
+                                    <th>AREA PARAMETERS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($areas as $area) : ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($area['area_code']); ?></td>
+                                        <td><?php echo htmlspecialchars($area['area_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($area['area_parameters']); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
-        <!-- The Modal for Acceptance -->
-        <div id="acceptModal" class="modal">
-            <div class="modal-content">
-                <h4>Are you sure you want to accept this registration?</h4>
-                <form id="acceptForm" action="college_transfer_process.php" method="post">
-                    <input type="hidden" name="action" value="accept">
-                    <input type="hidden" name="new_user_id" id="accept_new_user_id">
-                    <input type="hidden" name="previous_user_id" id="accept_previous_user_id">
-                    <input type="hidden" name="new_user_email" id="accept_new_user_email">
-                    <input type="hidden" name="new_user_name" id="accept_new_user_name">
-                    <div class="modal-buttons">
-                        <button type="button" class="no-btn" onclick="closeAcceptModal()">NO</button>
-                        <button type="submit" class="yes-btn positive">YES</button>
+        <!-- Modal for importing colleges -->
+        <div id="importModal" class="modal">
+            <div class="import-modal-content">
+                <h2>IMPORT AREA</h2>
+                <form action="add_area_import.php" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="excel_file">Upload Excel File:</label>
+                        <input type="file" id="excel_file" name="excel_file" accept=".xlsx, .xls" required>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="button" class="btn-cancel" onclick="closeImportModal()">CANCEL</button>
+                        <button type="submit" class="btn-add-program">IMPORT</button>
                     </div>
                 </form>
             </div>
         </div>
-
-        <!-- The Modal for Rejection -->
-        <div id="rejectModal" class="modal">
-            <div class="modal-content">
-                <h4>Are you sure you want to reject this registration?</h4>
-                <form id="rejectForm" action="college_transfer_process.php" method="post">
-                    <input type="hidden" name="action" value="reject">
-                    <input type="hidden" name="new_user_id" id="reject_new_user_id">
-                    <input type="hidden" name="previous_user_id" id="reject_previous_user_id">
-                    <textarea id="reject_reason" name="reject_reason" rows="4" required></textarea>
-                    <div class="modal-buttons">
-                        <button type="button" class="no-btn" onclick="closeRejectModal()">NO</button>
-                        <button type="submit" class="yes-btn">YES</button>
-                    </div>
-                </form>
-            </div>
+    </div>
+    <div id="loadingSpinner" class="loading-spinner spinner-hidden">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-        
-        <script>
-            window.onclick = function(event) {
-                var modals = [
-                    document.getElementById('acceptModal'),
-                    document.getElementById('rejectModal')
-                ];
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script>
+        window.onclick = function(event) {
+            var modals = [
+                document.getElementById('programModal'),
+                document.getElementById('importModal')
+            ];
 
-                modals.forEach(function(modal) {
-                    if (event.target == modal) {
-                        modal.style.display = "none";
-                    }
-                });
-            }
-            document.addEventListener('DOMContentLoaded', function() {
-                const sidebarNav = document.querySelector('.sidebar-nav');
-                const sidebarFooter = document.querySelector('.sidebar-footer');
-                const sidebar = document.getElementById('sidebar');
-                const toggleBtn = document.querySelector('.toggle-btn');
-                let isSidebarPermanentlyExpanded = false;
-
-                // Toggle sidebar expansion on hamburger button click
-                toggleBtn.addEventListener('click', function() {
-                    isSidebarPermanentlyExpanded = !isSidebarPermanentlyExpanded;
-                    sidebar.classList.toggle('expand', isSidebarPermanentlyExpanded);
-                });
-
-                // Hover effect to apply on both .sidebar-nav and .sidebar-footer
-                function handleMouseEnter() {
-                    if (!isSidebarPermanentlyExpanded) {
-                        sidebar.classList.add('expand');
-                    }
+            modals.forEach(function(modal) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
                 }
-
-                function handleMouseLeave() {
-                    if (!isSidebarPermanentlyExpanded) {
-                        sidebar.classList.remove('expand');
-                    }
-                }
-
-                sidebarNav.addEventListener('mouseenter', handleMouseEnter);
-                sidebarNav.addEventListener('mouseleave', handleMouseLeave);
-
-                sidebarFooter.addEventListener('mouseenter', handleMouseEnter);
-                sidebarFooter.addEventListener('mouseleave', handleMouseLeave);
             });
-            
-            function openAcceptModal(newUserId, previousUserId, newUserEmail, newUserName) {
-                document.getElementById('accept_new_user_id').value = newUserId;
-                document.getElementById('accept_previous_user_id').value = previousUserId;
-                document.getElementById('accept_new_user_email').value = newUserEmail;
-                document.getElementById('accept_new_user_name').value = newUserName;
-                document.getElementById('acceptModal').style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const importForm = document.querySelector('#importModal form');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
+            importForm.addEventListener('submit', function () {
+                // Show the loading spinner
+                loadingSpinner.classList.remove('spinner-hidden');
+            });
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarNav = document.querySelector('.sidebar-nav');
+            const sidebarFooter = document.querySelector('.sidebar-footer');
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            let isSidebarPermanentlyExpanded = false;
+
+            // Toggle sidebar expansion on hamburger button click
+            toggleBtn.addEventListener('click', function() {
+                isSidebarPermanentlyExpanded = !isSidebarPermanentlyExpanded;
+                sidebar.classList.toggle('expand', isSidebarPermanentlyExpanded);
+            });
+
+            // Hover effect to apply on both .sidebar-nav and .sidebar-footer
+            function handleMouseEnter() {
+                if (!isSidebarPermanentlyExpanded) {
+                    sidebar.classList.add('expand');
+                }
             }
 
-            function closeAcceptModal() {
-                document.getElementById('acceptModal').style.display = 'none';
+            function handleMouseLeave() {
+                if (!isSidebarPermanentlyExpanded) {
+                    sidebar.classList.remove('expand');
+                }
             }
 
-            function openRejectModal(newUserId, previousUserId) {
-                document.getElementById('reject_new_user_id').value = newUserId;
-                document.getElementById('reject_previous_user_id').value = previousUserId;
-                document.getElementById('rejectModal').style.display = 'block';
-            }
+            sidebarNav.addEventListener('mouseenter', handleMouseEnter);
+            sidebarNav.addEventListener('mouseleave', handleMouseLeave);
 
-            function closeRejectModal() {
-                document.getElementById('rejectModal').style.display = 'none';
+            sidebarFooter.addEventListener('mouseenter', handleMouseEnter);
+            sidebarFooter.addEventListener('mouseleave', handleMouseLeave);
+        });
+
+        function showTable(tableId, buttonId) {
+            const tables = document.querySelectorAll('.table');
+            tables.forEach(table => {
+                if (table.id === tableId) {
+                    table.classList.remove('hidden');
+                } else {
+                    table.classList.add('hidden');
+                }
+            });
+        }
+
+        var programModal = document.getElementById("programModal");
+        var importModal = document.getElementById("importModal");
+        var spanProgram = document.getElementsByClassName("close")[0];
+        var spanImport = document.getElementsByClassName("close")[1];
+        var programsData = [];
+
+        spanProgram.onclick = function() {
+            programModal.style.display = "none";
+        }
+
+        spanImport.onclick = function() {
+            importModal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == programModal) {
+                programModal.style.display = "none";
             }
-        </script>
+            if (event.target == importModal) {
+                importModal.style.display = "none";
+            }
+        }
+
+        function openImportModal() {
+            importModal.style.display = "block";
+        }
+
+        function closeImportModal() {
+            importModal.style.display = "none";
+        }
+    </script>
 </body>
 
 </html>

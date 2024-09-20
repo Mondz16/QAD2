@@ -311,13 +311,13 @@ foreach ($schedules as $schedule) {
         <div style="height: 32px;"></div>
         <div class="orientation2">
             <?php if (!empty($schedules)): ?>
-                <?php foreach ($schedules as $schedule): ?>
+                <?php foreach ($schedules as $index => $schedule): ?>
                     <div class="notification-list1">
                         <div class="orientation3">
-                             <div class="container">
+                            <div class="container">
                                 <div class="body4">
                                     <div class="bodyLeft2">
-                                        <p>College <br>
+                                        <p>COLLEGE<br>
                                     <div style="height: 10px;"></div>
                                     <div class="orientationname">
                                         <div class="nameContainer">
@@ -337,10 +337,7 @@ foreach ($schedules as $schedule) {
                                         <p>LEVEL APPLIED</p>
                                     </div>
                                     <div class="titleContainer">
-                                        <p>DATE</p>
-                                    </div>
-                                    <div class="titleContainer">
-                                        <p>TIME</p>
+                                        <p>TEAM MEMBERS</p>
                                     </div>
                                 </div>
                                 
@@ -349,10 +346,23 @@ foreach ($schedules as $schedule) {
                                         <?php echo htmlspecialchars($schedule['level_applied']); ?>
                                     </div>
                                     
+                                    <button id="openModalBtn-<?php echo $index; ?>" class="view-membersContainer orientationContainer">View Team</button>
+                                </div>
+
+                                <div class="orientationname">
+                                    <div class="titleContainer">
+                                        <p>DATE</p>
+                                    </div>
+                                    <div class="titleContainer">
+                                        <p>TIME</p>
+                                    </div>
+                                </div>
+
+                                <div class="orientationname">
                                     <div class="nameContainer orientationContainer">
                                         <?php 
                                         $schedule_date = new DateTime($schedule['schedule_date']);
-                                        echo $schedule_date->format('M. j, Y'); // This will output the date as "Nov. 20, 2024"
+                                        echo $schedule_date->format('F j, Y'); // This will output the date as "Nov. 20, 2024"
                                         ?>
                                     </div>
 
@@ -363,6 +373,40 @@ foreach ($schedules as $schedule) {
                                         ?>
                                     </div>
                                 </div>
+
+                                <!-- Team Members Modal -->
+                                <div id="myModal-<?php echo $index; ?>" class="ndamodal1"> 
+                                    <div class="ndamodal-content1">
+                                        <span class="close-btn" id="closeModalBtn-<?php echo $index; ?>">&times;</span>
+                                        <h2>Team Members</h2>
+                                        <div style="height: 20px; width: 0px;"></div>
+                                        <div class="modal-body">
+                                            <?php 
+                                            // Assuming the role "Leader" can be identified with the role variable
+                                            $team_leader = null;
+                                            $team_members_list = [];
+
+                                            // Separate the team leader and members
+                                            foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
+                                                if ($member['role'] === 'Team Leader') {
+                                                    $team_leader = $member;
+                                                } else {
+                                                    $team_members_list[] = $member;
+                                                }
+                                            }
+                                            ?>
+
+                                            <p><strong>Team Leader:</strong> <?php echo $team_leader ? htmlspecialchars($team_leader['name']) : 'N/A'; ?></p>
+                                            <div style="height: 10px; width: 0px;"></div>
+                                            <p><strong>Team Members:</strong></p>
+                                            <ul style="margin-left: 30px; padding-left: 0;">
+                                                <?php foreach ($team_members_list as $member): ?>
+                                                    <li><?php echo htmlspecialchars($member['name']); ?></li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         <div class="bodyRight2">
                         <?php if ($schedule['role'] === 'Team Leader'): ?>
@@ -371,11 +415,6 @@ foreach ($schedules as $schedule) {
                                 <div style="height: 10px;"></div>
                                 <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button> 
                             <?php else: ?>
-                                <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
-                                    <p>NON-DISCLOSURE AGREEMENT</p>
-                                    <div style="height: 10px;"></div>
-                                    <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
-                                <?php else: ?>
                                     <!-- Check if Areas are Assigned -->
                                     <?php
                                     $all_areas_assigned = true;
@@ -397,16 +436,44 @@ foreach ($schedules as $schedule) {
                                         <div style="height: 10px;"></div>
                                         <form method="post" action="assign_areas_process.php">
                                             <input type="hidden" name="schedule_id" value="<?php echo $schedule['schedule_id']; ?>">
-                                            <?php foreach ($team_members_with_areas[$schedule['schedule_id']] as $member): ?>
+
+                                            <?php 
+                                            // Separate team leader and other members
+                                            $team_leader = null;
+                                            $other_members = [];
+
+                                            foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
+                                                if ($member['role'] === 'Team Leader') {
+                                                    $team_leader = $member; // Store the Team Leader
+                                                } else {
+                                                    $other_members[] = $member; // Store other members
+                                                }
+                                            }
+
+                                            // Display Team Leader first
+                                            if ($team_leader): ?>
+                                                <div class="form-group">
+                                                    <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)</label>
+                                                    <input type="text" name="area[<?php echo $team_leader['team_member_id']; ?>]" value="<?php echo htmlspecialchars($team_leader['area']); ?>" placeholder="ASSIGN AREA" required>
+                                                </div>
+                                            <?php endif; ?>
+
+                                            <!-- Display other team members -->
+                                            <?php foreach ($other_members as $member): ?>
                                                 <div class="form-group">
                                                     <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
-                                                    <input type="text" name="area[<?php echo $member['team_member_id']; ?>]" value="<?php echo htmlspecialchars($member['area']); ?>" placeholder="ASSIGN AREA" <?php echo ($member['role'] !== 'Team Leader') ? 'required' : ''; ?>>
+                                                    <input type="text" name="area[<?php echo $member['team_member_id']; ?>]" value="<?php echo htmlspecialchars($member['area']); ?>" placeholder="ASSIGN AREA" required>
                                                 </div>
                                             <?php endforeach; ?>
 
                                             <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
                                         </form>
                                     <?php else: ?>
+                                        <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
+                                            <p>NON-DISCLOSURE AGREEMENT</p>
+                                            <div style="height: 10px;"></div>
+                                            <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
+                                        <?php else: ?>
                                         <!-- Proceed with checking team members' submission and approval status -->
                                         <?php
                                         $team_member_count = 0;
@@ -991,6 +1058,24 @@ foreach ($schedules as $schedule) {
                 }
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            <?php foreach ($schedules as $index => $schedule): ?>
+                var modal<?php echo $index; ?> = document.getElementById('myModal-<?php echo $index; ?>');
+                var btn<?php echo $index; ?> = document.getElementById('openModalBtn-<?php echo $index; ?>');
+                var span<?php echo $index; ?> = document.getElementById('closeModalBtn-<?php echo $index; ?>');
+                
+                // Open modal
+                btn<?php echo $index; ?>.onclick = function() {
+                    modal<?php echo $index; ?>.style.display = "block";
+                }
+
+                // Close modal
+                span<?php echo $index; ?>.onclick = function() {
+                    modal<?php echo $index; ?>.style.display = "none";
+                }
+            <?php endforeach; ?>
+        });
     </script>
 </body>
 </html>
