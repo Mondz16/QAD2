@@ -58,12 +58,17 @@ $accreditor_type = (substr($user_id, 3, 2) == '11') ? 'Internal Accreditor' : 'E
 
 // Fetch notifications for the logged-in user
 $sql_notifications = "
-    SELECT s.id AS schedule_id, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status, t.id AS team_id, t.role, t.area, t.status, t.internal_users_id, c.college_name
+    SELECT s.id AS schedule_id, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status, 
+        t.id AS team_id, t.role, t.status AS team_status, c.college_name, 
+        GROUP_CONCAT(a.area_name SEPARATOR ', ') AS assigned_area_names
     FROM team t
     JOIN schedule s ON t.schedule_id = s.id
     JOIN program p ON s.program_id = p.id
     JOIN college c ON s.college_code = c.code
+    LEFT JOIN team_areas ta ON t.id = ta.team_id
+    LEFT JOIN area a ON ta.area_id = a.id
     WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status NOT IN ('cancelled', 'finished')
+    GROUP BY t.id
 ";
 
 $stmt_notifications = $conn->prepare($sql_notifications);
@@ -71,7 +76,7 @@ $stmt_notifications->bind_param("s", $user_id);
 $stmt_notifications->execute();
 $stmt_notifications->store_result();
 $notification_count = $stmt_notifications->num_rows;
-$stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $schedule_date, $schedule_time, $schedule_status, $team_id, $role, $area, $team_status, $internal_users_id, $college_name);
+$stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $schedule_date, $schedule_time, $schedule_status, $team_id, $role, $team_status, $college_name, $assigned_area_names);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -150,7 +155,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                         // Format the schedule date and time
                         $date = new DateTime($schedule_date);
                         $time = new DateTime($schedule_time);
-
+                        
                         // Determine status color
                         $status_color = '';
                         if ($schedule_status === 'pending') {
@@ -165,7 +170,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                             <p><strong>Level Applied:</strong> <?php echo htmlspecialchars($level_applied); ?></p><br>
                             <p><strong>Date:</strong> <?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i A'); ?></p><br>
                             <div class="role-area">
-                                <p><strong>Role:</strong> <?php echo htmlspecialchars($role); ?><br><strong>Area:</strong> <?php echo htmlspecialchars($area); ?></p>
+                                <p><strong>Role:</strong> <?php echo htmlspecialchars($role); ?><br><strong>Areas:</strong> <?php echo htmlspecialchars($assigned_area_names); ?></p>
                                 <div class="notification-actions">
                                     <?php if ($role === 'Team Leader'): ?>
                                         <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
@@ -190,7 +195,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                     <?php endwhile;
                 else: ?>
                     <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ASSIGNED TO YOU</strong></p>
-                <?php endif; ?>
+                <?php endif; ?>                              
             </div>
             <?php $stmt_notifications->close(); ?>
         </div>

@@ -88,20 +88,26 @@ $stmt_user_details->close();
 
 // Fetch schedule details for the logged-in user with status 'accepted'
 $sql_schedules = "
-    SELECT s.id AS schedule_id, c.college_name, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status, t.id AS team_id, t.role, t.area
+    SELECT s.id AS schedule_id, c.college_name, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status, 
+        t.id AS team_id, t.role, GROUP_CONCAT(a.area_name SEPARATOR ', ') AS area_names
     FROM team t
     JOIN schedule s ON t.schedule_id = s.id
     JOIN program p ON s.program_id = p.id
     JOIN college c ON s.college_code = c.code
+    LEFT JOIN team_areas ta ON t.id = ta.team_id
+    LEFT JOIN area a ON ta.area_id = a.id
     WHERE t.internal_users_id = ? 
     AND t.status = 'accepted'
     AND s.schedule_status NOT IN ('cancelled', 'finished')
+    GROUP BY t.id, s.id
 ";
+
 $stmt_schedules = $conn->prepare($sql_schedules);
 $stmt_schedules->bind_param("s", $user_id);
 $stmt_schedules->execute();
 $stmt_schedules->store_result();
-$stmt_schedules->bind_result($schedule_id, $college_name, $program_name, $level_applied, $schedule_date, $schedule_time, $schedule_status, $team_id, $role, $area);
+$stmt_schedules->bind_result($schedule_id, $college_name, $program_name, $level_applied, $schedule_date, $schedule_time, $schedule_status, $team_id, $role, $area_names);
+
 $schedules = [];
 while ($stmt_schedules->fetch()) {
     $schedules[] = [
@@ -114,10 +120,11 @@ while ($stmt_schedules->fetch()) {
         'schedule_status' => $schedule_status,
         'team_id' => $team_id,
         'role' => $role,
-        'area' => $area
+        'area' => $area_names // Use the concatenated area names here
     ];
 }
 $stmt_schedules->close();
+
 
 // Fetch existing assessments and summaries for the user
 $existing_assessments = [];
@@ -177,26 +184,31 @@ while ($stmt_team_members->fetch()) {
 }
 $stmt_team_members->close();
 
+// Prepare to retrieve team members with areas assigned to them
 $team_members_with_areas = [];
 $sql_team_members_with_areas = "
-    SELECT t.schedule_id, t.id AS team_member_id, t.role, t.area, iu.first_name, iu.middle_initial, iu.last_name
+    SELECT t.schedule_id, t.id AS team_member_id, t.role, iu.first_name, iu.middle_initial, iu.last_name,
+        GROUP_CONCAT(ta.area_id) AS area_ids
     FROM team t
     JOIN internal_users iu ON t.internal_users_id = iu.user_id
+    LEFT JOIN team_areas ta ON t.id = ta.team_id
     WHERE t.schedule_id IN (
         SELECT schedule_id FROM team WHERE internal_users_id = ?
     )
+    GROUP BY t.id
 ";
+
 $stmt_team_members_with_areas = $conn->prepare($sql_team_members_with_areas);
-$stmt_team_members_with_areas->bind_param("s", $user_id);  // Use the user_id to get all schedules they are part of
+$stmt_team_members_with_areas->bind_param("s", $user_id); // Use the user_id to get all schedules they are part of
 $stmt_team_members_with_areas->execute();
-$stmt_team_members_with_areas->bind_result($team_schedule_id, $team_member_id, $team_member_role, $team_member_area, $team_member_first_name, $team_member_middle_initial, $team_member_last_name);
+$stmt_team_members_with_areas->bind_result($team_schedule_id, $team_member_id, $team_member_role, $team_member_first_name, $team_member_middle_initial, $team_member_last_name, $assigned_area_ids);
 
 while ($stmt_team_members_with_areas->fetch()) {
     $team_members_with_areas[$team_schedule_id][] = [
         'team_member_id' => $team_member_id,
         'name' => $team_member_first_name . ' ' . $team_member_middle_initial . '. ' . $team_member_last_name,
         'role' => $team_member_role,
-        'area' => $team_member_area
+        'areas' => explode(',', $assigned_area_ids) // Convert the comma-separated area IDs into an array
     ];
 }
 $stmt_team_members_with_areas->close();
@@ -211,6 +223,35 @@ foreach ($schedules as $schedule) {
     $stmt_nda->store_result();
     $nda_signed_status[$schedule['schedule_id']] = $stmt_nda->num_rows > 0;
     $stmt_nda->close();
+}
+
+// Fetch areas from the database
+$areas = [];
+$sql = "SELECT id, area_name FROM area";
+$result = $conn->query($sql);
+
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $areas[$row['id']] = $row['area_name'];
+    }
+}
+
+// Function to convert an integer to Roman numeral
+function intToRoman($num) {
+    $map = [
+        1000 => 'M', 900 => 'CM', 500 => 'D', 400 => 'CD',
+        100 => 'C', 90 => 'XC', 50 => 'L', 40 => 'XL',
+        10 => 'X', 9 => 'IX', 5 => 'V', 4 => 'IV',
+        1 => 'I'
+    ];
+    $result = '';
+    foreach ($map as $value => $roman) {
+        while ($num >= $value) {
+            $result .= $roman;
+            $num -= $value;
+        }
+    }
+    return $result;
 }
 ?>
 <!DOCTYPE html>
@@ -417,10 +458,12 @@ foreach ($schedules as $schedule) {
                             <?php else: ?>
                                     <!-- Check if Areas are Assigned -->
                                     <?php
+                                    // Check if all areas are assigned
                                     $all_areas_assigned = true;
                                     if (isset($team_members_with_areas[$schedule['schedule_id']])) {
                                         foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
-                                            if (empty($member['area']) && $member['role'] !== 'Team Leader') {
+                                            // Check if non-team leaders have no areas assigned
+                                            if ($member['role'] !== 'Team Leader' && empty($member['areas'][0])) {
                                                 $all_areas_assigned = false;
                                                 break;
                                             }
@@ -435,7 +478,7 @@ foreach ($schedules as $schedule) {
                                         <p>ASSIGN AREAS TO TEAM MEMBERS</p>
                                         <div style="height: 10px;"></div>
                                         <form method="post" action="assign_areas_process.php">
-                                            <input type="hidden" name="schedule_id" value="<?php echo $schedule['schedule_id']; ?>">
+                                            <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['schedule_id']); ?>">
 
                                             <?php 
                                             // Separate team leader and other members
@@ -450,22 +493,45 @@ foreach ($schedules as $schedule) {
                                                 }
                                             }
 
-                                            // Display Team Leader first
+                                            // Display Team Leader
                                             if ($team_leader): ?>
-                                                <div class="form-group">
+                                                <div class="add-area" id="team-leader-area" style="display: flex; flex-direction: column; margin-bottom: 10px;">
                                                     <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)</label>
-                                                    <input type="text" name="area[<?php echo $team_leader['team_member_id']; ?>]" value="<?php echo htmlspecialchars($team_leader['area']); ?>" placeholder="ASSIGN AREA" required>
+                                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                                        <select class="area-select" name="area[<?php echo $team_leader['team_member_id']; ?>][]" required onchange="updateAreaOptions()">
+                                                            <option value="" disabled selected>Select Area</option>
+                                                            <?php foreach ($areas as $id => $area_name): ?>
+                                                                <option value="<?php echo $id; ?>">
+                                                                    Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                        <button type="button" onclick="addAreaDropdown('team-leader-area', '<?php echo $team_leader['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
+                                                            <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             <?php endif; ?>
 
-                                            <!-- Display other team members -->
+                                            <!-- Other members -->
                                             <?php foreach ($other_members as $member): ?>
-                                                <div class="form-group">
+                                                <div class="add-area" id="member-area-<?php echo $member['team_member_id']; ?>" style="display: flex; flex-direction: column; margin-bottom: 10px;">
                                                     <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
-                                                    <input type="text" name="area[<?php echo $member['team_member_id']; ?>]" value="<?php echo htmlspecialchars($member['area']); ?>" placeholder="ASSIGN AREA" required>
+                                                    <div style="display: flex; align-items: center; margin-bottom: 10px;"> <!-- Add margin here -->
+                                                        <select class="area-select" name="area[<?php echo $member['team_member_id']; ?>][]" required onchange="updateAreaOptions()">
+                                                            <option value="" disabled selected>Select Area</option>
+                                                            <?php foreach ($areas as $id => $area_name): ?>
+                                                                <option value="<?php echo $id; ?>">
+                                                                    Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                        <button type="button" onclick="addAreaDropdown('member-area-<?php echo $member['team_member_id']; ?>', '<?php echo $member['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
+                                                            <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             <?php endforeach; ?>
-
                                             <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
                                         </form>
                                     <?php else: ?>
@@ -1076,6 +1142,85 @@ foreach ($schedules as $schedule) {
                 }
             <?php endforeach; ?>
         });
+
+        function addAreaDropdown(divId, teamMemberId) {
+    var container = document.getElementById(divId);
+    var newDiv = document.createElement('div');
+    newDiv.classList.add('dropdown-container');
+    newDiv.style.display = 'flex';
+    newDiv.style.alignItems = 'center';
+    newDiv.style.marginBottom = '10px'; // Adds space between dropdowns
+
+    var newSelect = document.createElement('select');
+    newSelect.name = 'area[' + teamMemberId + '][]'; // Ensure array format
+    newSelect.classList.add('area-select');
+    newSelect.required = true;
+    newSelect.onchange = updateAreaOptions;
+
+    var defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.text = 'Select Area';
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    newSelect.appendChild(defaultOption);
+
+    <?php foreach ($areas as $id => $area_name): ?>
+        var option = document.createElement('option');
+        option.value = '<?php echo $id; ?>';
+        option.text = 'Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>';
+        newSelect.appendChild(option);
+    <?php endforeach; ?>
+
+    newDiv.appendChild(newSelect);
+
+    var removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.style.border = 'none';
+    removeButton.style.background = 'none';
+    removeButton.style.cursor = 'pointer';
+    removeButton.style.paddingLeft = '8px';
+    
+    var removeIcon = document.createElement('i');
+    removeIcon.classList.add('fa-solid', 'fa-circle-minus');
+    removeIcon.style.color = 'red';
+    removeIcon.style.fontSize = '25px';
+    
+    removeButton.appendChild(removeIcon);
+    removeButton.onclick = function() {
+        container.removeChild(newDiv);
+        updateAreaOptions();
+    };
+
+    newDiv.appendChild(removeButton);
+    container.appendChild(newDiv);
+
+    // Update area options
+    updateAreaOptions();
+}
+
+
+        function updateAreaOptions() {
+            // Get all dropdowns with the class 'area-select'
+            var selects = document.querySelectorAll('.area-select');
+
+            // Get all selected values
+            var selectedValues = Array.from(selects).map(function(select) {
+                return select.value;
+            });
+
+            // Loop through each dropdown
+            selects.forEach(function(select) {
+                // Loop through each option in the dropdown
+                Array.from(select.options).forEach(function(option) {
+                    // Disable the option if it's already selected in another dropdown, but allow it if it's selected in the current dropdown
+                    if (selectedValues.includes(option.value) && option.value !== select.value && option.value !== '') {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                });
+            });
+        }
     </script>
 </body>
 </html>

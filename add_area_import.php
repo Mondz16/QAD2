@@ -125,14 +125,19 @@ $conn->close();
 
 <body>
 <div class="popup-content">
+<div style='height: 50px; width: 0px;'></div>
     <?php
         $image_src = ($message_class === "success") ? "images/Success.png" : "images/Error.png";
     ?>
     <img src="<?php echo $image_src; ?>" height="100" alt="<?php echo ucfirst($message_class); ?>">
+    <div style="height: 25px; width: 0px;"></div>
     <div class="message <?php echo $message_class; ?>">
         <?php echo $message; ?>
     </div>
+    <div style="height: 50px; width: 0px;"></div>
     <a href="area.php" class="btn-hover">OKAY</a>
+    <div style='height: 100px; width: 0px;'></div>
+    <div class='hairpop-up'></div>
 </div>
 </body>
 </html>

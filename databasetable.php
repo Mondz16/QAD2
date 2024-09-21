@@ -84,7 +84,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS area (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     area_name VARCHAR(255) NOT NULL,
-    area_weight INT(6) UNSIGNED
+    area_parameters INT(6) UNSIGNED
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -194,17 +194,30 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS team (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     schedule_id INT(6) UNSIGNED,
-    area_id INT(6) UNSIGNED,
     internal_users_id VARCHAR(10) NOT NULL,
     role VARCHAR(11) NOT NULL,
     status ENUM('pending', 'accepted', 'declined', 'finished', 'cancelled') NOT NULL DEFAULT 'pending',
     FOREIGN KEY (schedule_id) REFERENCES schedule(id),
-    FOREIGN KEY (internal_users_id) REFERENCES internal_users(user_id),
-    FOREIGN KEY (area_id) REFERENCES area(id)
+    FOREIGN KEY (internal_users_id) REFERENCES internal_users(user_id)
 )";
 
 if ($conn->query($sql) === TRUE) {
     echo "Table team created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+// Create team_areas table
+$sql = "CREATE TABLE IF NOT EXISTS team_areas (
+    team_id INT(6) UNSIGNED,
+    area_id INT(6) UNSIGNED,
+    FOREIGN KEY (team_id) REFERENCES team(id),
+    FOREIGN KEY (area_id) REFERENCES area(id),
+    PRIMARY KEY (team_id, area_id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table team_areas created successfully<br>";
 } else {
     echo "Error creating table: " . $conn->error . "<br>";
 }
