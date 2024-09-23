@@ -92,6 +92,22 @@ $stmt_all_colleges->close();
     <title>Internal</title>
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        .edit-icon {
+            display: inline-block;
+            margin-left: 10px;
+            /* Add space between the text and icon */
+            cursor: pointer;
+        }
+
+        .edit-icon i {
+            font-size: 14px;
+            /* Adjust icon size */
+            color: #000;
+            /* Change icon color if needed */
+        }
+    </style>
 </head>
 
 <body>
@@ -229,329 +245,344 @@ $stmt_all_colleges->close();
             </div>
 
             <div class="profile-info">
-                <p><strong class="prefix">Prefix</strong><br><strong class="prefix1"><?php echo htmlspecialchars($prefix); ?></strong><button class="edit-link" onclick="openModal('prefixModal')">Edit</button></p><br>
-                <p><strong class="prefix">Full Name:</strong><br><strong class="prefix1"><?php echo htmlspecialchars($first_name . ' ' . $middle_initial . '. ' . $last_name); ?></strong><button class="edit-link" onclick="openModal('fullNameModal')">Edit</button></p><br>
-                <p><strong class="prefix">Gender</strong><br><strong class="prefix1"><?php echo htmlspecialchars($gender); ?></strong><button class="edit-link" onclick="openModal('genderModal')">Edit</button></p><br>
-                <p><strong class="prefix">College</strong><br><strong class="prefix1"><?php echo htmlspecialchars($college_name1); ?></strong><button class="edit-link" onclick="openModal('collegeModal')">Edit</button></p><br>
-                <p><strong class="prefix">Email</strong><br><strong class="prefix1"><?php echo htmlspecialchars($email); ?></strong><button class="edit-link" onclick="openModal('emailModal')">Edit</button></p>
+                <p><strong class="prefix">Prefix</strong><br><strong class="prefix1"><?php echo htmlspecialchars($prefix); ?></strong>
+                    <button class="edit-link" onclick="openModal('prefixModal')"><i class="fas fa-edit"></i></button>
+                </p><br>
+
+                <p><strong class="prefix">Full Name:</strong><br><strong class="prefix1"><?php echo htmlspecialchars($first_name . ' ' . $middle_initial . '. ' . $last_name); ?></strong>
+                    <button class="edit-link" onclick="openModal('fullNameModal')"><i class="fas fa-edit"></i></button>
+                </p><br>
+
+                <p><strong class="prefix">Gender</strong><br><strong class="prefix1"><?php echo htmlspecialchars($gender); ?></strong>
+                    <button class="edit-link" onclick="openModal('genderModal')"><i class="fas fa-edit"></i></button>
+                </p><br>
+
+                <p><strong class="prefix">College</strong><br><strong class="prefix1"><?php echo htmlspecialchars($college_name1); ?></strong>
+                    <button class="edit-link" onclick="openModal('collegeModal')"><i class="fas fa-edit"></i></button>
+                </p><br>
+
+                <p><strong class="prefix">Email</strong><br><strong class="prefix1"><?php echo htmlspecialchars($email); ?></strong>
+                    <button class="edit-link" onclick="openModal('emailModal')"><i class="fas fa-edit"></i></button>
+                </p>
+            </div>
+
+
+        </div>
+
+        <div id="passwordMatchMessage"></div>
+
+        <!-- Modals -->
+        <div id="profilePictureModal" class="modal">
+            <div class="modal-content">
+                <form action="update_profile.php" method="post" enctype="multipart/form-data">
+                    <h2>EDIT PROFILE PICTURE</h2>
+                    <div class="nameContainer orientationContainer uploadContainer">
+                        <span class="upload-text">UPLOAD</span>
+                        <img id="upload-icon-profile" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                        <input class="uploadInput" type="file" id="profilePicture" name="profilePicture" accept="image/*" required>
+                        <input type="hidden" name="field" value="profilePicture">
+                    </div>
+                    <div class="button-container">
+                        <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
+                        <button type="submit" class="accept-button1">CONFIRM</button>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
 
-    <div id="passwordMatchMessage"></div>
-
-    <!-- Modals -->
-    <div id="profilePictureModal" class="modal">
-        <div class="modal-content">
-            <form action="update_profile.php" method="post" enctype="multipart/form-data">
-                <h2>EDIT PROFILE PICTURE</h2>
-                <div class="nameContainer orientationContainer uploadContainer">
-                    <span class="upload-text">UPLOAD</span>
-                    <img id="upload-icon-profile" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
-                    <input class="uploadInput" type="file" id="profilePicture" name="profilePicture" accept="image/*" required>
-                    <input type="hidden" name="field" value="profilePicture">
-                </div>
-                <div class="button-container">
-                    <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
-                    <button type="submit" class="accept-button1">CONFIRM</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="prefixModal" class="modal">
-        <div class="modal-content">
-            <form action="update_profile.php" method="post">
-                <h2>Edit Prefix</h2>
-                <div class="prefixContainer">
-                    <select class="newPrefix" name="newPrefix">
-                        <option value="<?php echo htmlspecialchars($prefix); ?>"><?php echo htmlspecialchars($prefix); ?></option>
-                        <?php if ($prefix !== 'Mr.') { ?><option value="Mr.">Mr.</option><?php } ?>
-                        <?php if ($prefix !== 'Ms.') { ?><option value="Ms.">Ms.</option><?php } ?>
-                        <?php if ($prefix !== 'Mrs.') { ?><option value="Mrs.">Mrs.</option><?php } ?>
-                        <?php if ($prefix !== 'Dr.') { ?><option value="Dr.">Dr.</option><?php } ?>
-                        <?php if ($prefix !== 'Prof.') { ?><option value="Prof.">Prof.</option><?php } ?>
-                        <?php if ($prefix !== 'Assoc. Prof.') { ?><option value="Assoc. Prof.">Assoc. Prof.</option><?php } ?>
-                        <?php if ($prefix !== 'Assist. Prof.') { ?><option value="Assist. Prof.">Assist. Prof.</option><?php } ?>
-                        <?php if ($prefix !== 'Engr.') { ?><option value="Engr.">Engr.</option><?php } ?>
-                        <!-- Add more options as needed -->
-                    </select>
-                </div>
-                <input type="hidden" name="field" value="prefix">
-                <div class="button-container">
-                    <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
-                    <button type="submit" class="accept-button1">CONFIRM</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="fullNameModal" class="modal">
-        <div class="modal-content">
-            <form action="update_profile.php" method="post">
-                <h2>Edit Full Name</h2>
-                <div class="name1">
-                    <div class="profilenameContainer">
-                        <input type="text" id="newFirstName" name="newFirstName" class="firstname" value="<?php echo htmlspecialchars($first_name); ?>" required>
-                    </div>
-                    <div class="profilenameContainer middleinitialContainer">
-                        <input class="middleinitial" type="text" id="newMiddleInitial" name="newMiddleInitial" value="<?php echo htmlspecialchars($middle_initial); ?>" maxlength="1" required>
-                    </div>
-                    <div class="profilenameContainer lastnameContainer">
-                        <input class="lastname" type="text" id="newLastName" name="newLastName" value="<?php echo htmlspecialchars($last_name); ?>" required>
-                    </div>
-                    <input type="hidden" name="field" value="fullname">
-                </div>
-                <div class="button-container">
-                    <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
-                    <button type="submit" class="accept-button1">CONFIRM</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="emailModal" class="modal">
-        <div class="modal-content">
-            <form action="update_email.php" method="post">
-                <h2>Edit Email</h2>
-                <div class="username">
-                    <div class="usernameContainer">
-                        <input class="email" type="email" id="newEmail" name="newEmail" value="<?php echo htmlspecialchars($email); ?>" required>
-                    </div>
-                    <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
-                </div>
-                <div class="button-container">
-                    <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
-                    <button type="submit" class="accept-button1">CONFIRM</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="genderModal" class="modal">
-        <div class="modal-content">
-            <form action="update_profile.php" method="post">
-                <h2>Edit Gender</h2>
-                <div class="gender">
-                    <div class="edit-gender">
-                        <select class="prefix" id="genderSelect" name="newGender" required>
-                            <option value="<?php echo htmlspecialchars($gender); ?>"><?php echo htmlspecialchars($gender); ?></option>
-                            <?php if ($gender !== 'Male') { ?><option value="Male">Male</option><?php } ?>
-                            <?php if ($gender !== 'Female') { ?><option value="Female">Female</option><?php } ?>
-                            <?php if ($gender !== 'Prefer not to say') { ?><option value="Prefer not to say">Prefer not to say</option><?php } ?>
-                            <?php if ($gender !== 'Others') { ?><option value="Others">Others</option><?php } ?>
+        <div id="prefixModal" class="modal">
+            <div class="modal-content">
+                <form action="update_profile.php" method="post">
+                    <h2>Edit Prefix</h2>
+                    <div class="prefixContainer">
+                        <select class="newPrefix" name="newPrefix">
+                            <option value="<?php echo htmlspecialchars($prefix); ?>"><?php echo htmlspecialchars($prefix); ?></option>
+                            <?php if ($prefix !== 'Mr.') { ?><option value="Mr.">Mr.</option><?php } ?>
+                            <?php if ($prefix !== 'Ms.') { ?><option value="Ms.">Ms.</option><?php } ?>
+                            <?php if ($prefix !== 'Mrs.') { ?><option value="Mrs.">Mrs.</option><?php } ?>
+                            <?php if ($prefix !== 'Dr.') { ?><option value="Dr.">Dr.</option><?php } ?>
+                            <?php if ($prefix !== 'Prof.') { ?><option value="Prof.">Prof.</option><?php } ?>
+                            <?php if ($prefix !== 'Assoc. Prof.') { ?><option value="Assoc. Prof.">Assoc. Prof.</option><?php } ?>
+                            <?php if ($prefix !== 'Assist. Prof.') { ?><option value="Assist. Prof.">Assist. Prof.</option><?php } ?>
+                            <?php if ($prefix !== 'Engr.') { ?><option value="Engr.">Engr.</option><?php } ?>
+                            <!-- Add more options as needed -->
                         </select>
-                        <input class="specify-gender" type="text" id="genderInput" name="gender_others" placeholder="Specify Gender" value="<?php echo ($gender === 'Others') ? $gender : ''; ?>"><br><br>
-                        <input type="hidden" name="field" value="gender">
                     </div>
-                </div>
-                <div class="button-container">
-                    <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
-                    <button type="submit" class="accept-button1">CONFIRM</button>
-                </div>
-            </form>
+                    <input type="hidden" name="field" value="prefix">
+                    <div class="button-container">
+                        <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
+                        <button type="submit" class="accept-button1">CONFIRM</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <div id="collegeModal" class="modal">
-        <div class="modal-content">
-            <form action="update_college.php" method="post">
-                <h2>Request College Transfer</h2>
-                <div class="college">
-                    <div class="college1">
-                        <select id="newCollege" name="newCollege" required>
-                            <option value="" disabled selected hidden>Select College</option>
-                            <?php foreach ($colleges as $college) { ?>
-                                <option value="<?php echo htmlspecialchars($college['code']); ?>"><?php echo htmlspecialchars($college['name']); ?></option>
-                            <?php } ?>
-                        </select>
-                        <input type="hidden" name="field" value="college">
-                        <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user_id); ?>">
-                        <input type="hidden" name="first_name" value="<?php echo htmlspecialchars($first_name); ?>">
-                        <input type="hidden" name="middle_initial" value="<?php echo htmlspecialchars($middle_initial); ?>">
-                        <input type="hidden" name="last_name" value="<?php echo htmlspecialchars($last_name); ?>">
+        <div id="fullNameModal" class="modal">
+            <div class="modal-content">
+                <form action="update_profile.php" method="post">
+                    <h2>Edit Full Name</h2>
+                    <div class="name1">
+                        <div class="profilenameContainer">
+                            <input type="text" id="newFirstName" name="newFirstName" class="firstname" value="<?php echo htmlspecialchars($first_name); ?>" required>
+                        </div>
+                        <div class="profilenameContainer middleinitialContainer">
+                            <input class="middleinitial" type="text" id="newMiddleInitial" name="newMiddleInitial" value="<?php echo htmlspecialchars($middle_initial); ?>" maxlength="1" required>
+                        </div>
+                        <div class="profilenameContainer lastnameContainer">
+                            <input class="lastname" type="text" id="newLastName" name="newLastName" value="<?php echo htmlspecialchars($last_name); ?>" required>
+                        </div>
+                        <input type="hidden" name="field" value="fullname">
+                    </div>
+                    <div class="button-container">
+                        <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
+                        <button type="submit" class="accept-button1">CONFIRM</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="emailModal" class="modal">
+            <div class="modal-content">
+                <form action="update_email.php" method="post">
+                    <h2>Edit Email</h2>
+                    <div class="username">
+                        <div class="usernameContainer">
+                            <input class="email" type="email" id="newEmail" name="newEmail" value="<?php echo htmlspecialchars($email); ?>" required>
+                        </div>
                         <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
                     </div>
-                </div>
-                <div class="button-container">
-                    <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
-                    <button type="submit" class="accept-button1">CONFIRM</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="logoutModal" class="modal1">
-        <div class="modal-content1">
-            <h4 id="confirmationMessage" style="font-size: 20px;">Are you sure you want to logout?</h4>
-            <div class="button-container">
-                <button type="button" class="accept-back-button" id="backButton" onclick="cancelLogout()">NO</button>
-                <button type="button" class="accept-confirm-button" id="confirmButton" onclick="confirmLogout()">YES</button>
+                    <div class="button-container">
+                        <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
+                        <button type="submit" class="accept-button1">CONFIRM</button>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
 
-    <script>
-        function openLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'block'; // Show the modal
-        }
+        <div id="genderModal" class="modal">
+            <div class="modal-content">
+                <form action="update_profile.php" method="post">
+                    <h2>Edit Gender</h2>
+                    <div class="gender">
+                        <div class="edit-gender">
+                            <select class="prefix" id="genderSelect" name="newGender" required>
+                                <option value="<?php echo htmlspecialchars($gender); ?>"><?php echo htmlspecialchars($gender); ?></option>
+                                <?php if ($gender !== 'Male') { ?><option value="Male">Male</option><?php } ?>
+                                <?php if ($gender !== 'Female') { ?><option value="Female">Female</option><?php } ?>
+                                <?php if ($gender !== 'Prefer not to say') { ?><option value="Prefer not to say">Prefer not to say</option><?php } ?>
+                                <?php if ($gender !== 'Others') { ?><option value="Others">Others</option><?php } ?>
+                            </select>
+                            <input class="specify-gender" type="text" id="genderInput" name="gender_others" placeholder="Specify Gender" value="<?php echo ($gender === 'Others') ? $gender : ''; ?>"><br><br>
+                            <input type="hidden" name="field" value="gender">
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
+                        <button type="submit" class="accept-button1">CONFIRM</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-        function confirmLogout() {
-            window.location.href = 'logout.php'; // Redirect to logout.php
-        }
+        <div id="collegeModal" class="modal">
+            <div class="modal-content">
+                <form action="update_college.php" method="post">
+                    <h2>Request College Transfer</h2>
+                    <div class="college">
+                        <div class="college1">
+                            <select id="newCollege" name="newCollege" required>
+                                <option value="" disabled selected hidden>Select College</option>
+                                <?php foreach ($colleges as $college) { ?>
+                                    <option value="<?php echo htmlspecialchars($college['code']); ?>"><?php echo htmlspecialchars($college['name']); ?></option>
+                                <?php } ?>
+                            </select>
+                            <input type="hidden" name="field" value="college">
+                            <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($user_id); ?>">
+                            <input type="hidden" name="first_name" value="<?php echo htmlspecialchars($first_name); ?>">
+                            <input type="hidden" name="middle_initial" value="<?php echo htmlspecialchars($middle_initial); ?>">
+                            <input type="hidden" name="last_name" value="<?php echo htmlspecialchars($last_name); ?>">
+                            <input type="hidden" name="email" value="<?php echo htmlspecialchars($email); ?>">
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
+                        <button type="submit" class="accept-button1">CONFIRM</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-        function cancelLogout() {
-            document.getElementById('logoutModal').style.display = 'none';
-        }
+        <div id="logoutModal" class="modal1">
+            <div class="modal-content1">
+                <h4 id="confirmationMessage" style="font-size: 20px;">Are you sure you want to logout?</h4>
+                <div class="button-container">
+                    <button type="button" class="accept-back-button" id="backButton" onclick="cancelLogout()">NO</button>
+                    <button type="button" class="accept-confirm-button" id="confirmButton" onclick="confirmLogout()">YES</button>
+                </div>
+            </div>
+        </div>
 
-        document.addEventListener('click', function(event) {
-            var modal = document.getElementById('logoutModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
+        <script>
+            function openLogoutModal() {
+                document.getElementById('logoutModal').style.display = 'block'; // Show the modal
             }
-        });
 
+            function confirmLogout() {
+                window.location.href = 'logout.php'; // Redirect to logout.php
+            }
 
-        function handleFileChange(inputElement, iconElement) {
-            inputElement.addEventListener('change', function() {
-                if (this.files && this.files.length > 0) {
-                    // Change icon to check mark if a file is selected
-                    iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
-                } else {
-                    // Change icon back to download if no file is selected
-                    iconElement.src = 'images/download-icon1.png';
+            function cancelLogout() {
+                document.getElementById('logoutModal').style.display = 'none';
+            }
+
+            document.addEventListener('click', function(event) {
+                var modal = document.getElementById('logoutModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
                 }
             });
-        }
 
-        handleFileChange(document.getElementById('profilePicture'), document.getElementById('upload-icon-profile'));
 
-        function togglePasswordVisibility() {
-            const showPasswordCheckbox = document.getElementById('showPasswordCheckbox');
-            const newPassword = document.getElementById('newPassword');
-            const confirmPassword = document.getElementById('confirmPassword');
-
-            if (showPasswordCheckbox.checked) {
-                newPassword.type = 'text';
-                confirmPassword.type = 'text';
-            } else {
-                newPassword.type = 'password';
-                confirmPassword.type = 'password';
+            function handleFileChange(inputElement, iconElement) {
+                inputElement.addEventListener('change', function() {
+                    if (this.files && this.files.length > 0) {
+                        // Change icon to check mark if a file is selected
+                        iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
+                    } else {
+                        // Change icon back to download if no file is selected
+                        iconElement.src = 'images/download-icon1.png';
+                    }
+                });
             }
-        }
 
-        function checkPasswordStandards() {
-            const password = document.getElementById('newPassword').value;
-            const minLength = document.getElementById('minLength');
-            const uppercase = document.getElementById('uppercase');
-            const lowercase = document.getElementById('lowercase');
-            const number = document.getElementById('number');
-            const specialChar = document.getElementById('specialChar');
-            const changePasswordButton = document.getElementById('changePasswordButton');
+            handleFileChange(document.getElementById('profilePicture'), document.getElementById('upload-icon-profile'));
 
-            minLength.classList.toggle('valid', password.length >= 8);
-            minLength.classList.toggle('invalid', password.length < 8);
+            function togglePasswordVisibility() {
+                const showPasswordCheckbox = document.getElementById('showPasswordCheckbox');
+                const newPassword = document.getElementById('newPassword');
+                const confirmPassword = document.getElementById('confirmPassword');
 
-            uppercase.classList.toggle('valid', /[A-Z]/.test(password));
-            uppercase.classList.toggle('invalid', !/[A-Z]/.test(password));
-
-            lowercase.classList.toggle('valid', /[a-z]/.test(password));
-            lowercase.classList.toggle('invalid', !/[a-z]/.test(password));
-
-            number.classList.toggle('valid', /[0-9]/.test(password));
-            number.classList.toggle('invalid', !/[0-9]/.test(password));
-
-            specialChar.classList.toggle('valid', /[^A-Za-z0-9]/.test(password));
-            specialChar.classList.toggle('invalid', !/[^A-Za-z0-9]/.test(password));
-
-            const allValid = document.querySelectorAll('#passwordChecklist .valid').length === 5;
-            const passwordsMatch = password === document.getElementById('confirmPassword').value;
-
-            changePasswordButton.disabled = !(allValid && passwordsMatch);
-        }
-
-        function checkPasswordMatch() {
-            const password = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const passwordMatchMessage = document.getElementById('passwordMatchMessage');
-            const changePasswordButton = document.getElementById('changePasswordButton');
-            var confirmPasswordContainer = document.getElementById('confirmPasswordContainer');
-
-            passwordMatchMessage.classList.toggle('valid', password === confirmPassword);
-            passwordMatchMessage.classList.toggle('invalid', password !== confirmPassword);
-
-            const allValid = document.querySelectorAll('#passwordChecklist .valid').length === 5;
-
-            changePasswordButton.disabled = !(password === confirmPassword && allValid);
-            if (password === confirmPassword && confirmPassword !== '') {
-                confirmPasswordContainer.style.borderColor = 'green';
-            } else {
-                confirmPasswordContainer.style.borderColor = 'red';
+                if (showPasswordCheckbox.checked) {
+                    newPassword.type = 'text';
+                    confirmPassword.type = 'text';
+                } else {
+                    newPassword.type = 'password';
+                    confirmPassword.type = 'password';
+                }
             }
-        }
 
-        function cancelAction() {
-            window.location.href = 'internal.php';
-        }
+            function checkPasswordStandards() {
+                const password = document.getElementById('newPassword').value;
+                const minLength = document.getElementById('minLength');
+                const uppercase = document.getElementById('uppercase');
+                const lowercase = document.getElementById('lowercase');
+                const number = document.getElementById('number');
+                const specialChar = document.getElementById('specialChar');
+                const changePasswordButton = document.getElementById('changePasswordButton');
 
-        function toggleNotifications() {
-            var dropdown = document.getElementById('notificationDropdown');
-            dropdown.classList.toggle('show');
-        }
+                minLength.classList.toggle('valid', password.length >= 8);
+                minLength.classList.toggle('invalid', password.length < 8);
 
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = "block";
-        }
+                uppercase.classList.toggle('valid', /[A-Z]/.test(password));
+                uppercase.classList.toggle('invalid', !/[A-Z]/.test(password));
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = "none";
-        }
+                lowercase.classList.toggle('valid', /[a-z]/.test(password));
+                lowercase.classList.toggle('invalid', !/[a-z]/.test(password));
 
-        // Show/hide gender input based on selection
-        document.getElementById('genderSelect').addEventListener('change', function() {
-            var genderSelect = document.getElementById('genderSelect');
-            var genderInput = document.getElementById('genderInput');
-            if (genderSelect.value === 'Others') {
-                genderSelect.style.display = 'none';
-                genderInput.style.display = 'block';
-                genderInput.required = true;
-                genderInput.focus();
-            } else {
-                genderInput.style.display = 'none';
-                genderInput.required = false;
+                number.classList.toggle('valid', /[0-9]/.test(password));
+                number.classList.toggle('invalid', !/[0-9]/.test(password));
+
+                specialChar.classList.toggle('valid', /[^A-Za-z0-9]/.test(password));
+                specialChar.classList.toggle('invalid', !/[^A-Za-z0-9]/.test(password));
+
+                const allValid = document.querySelectorAll('#passwordChecklist .valid').length === 5;
+                const passwordsMatch = password === document.getElementById('confirmPassword').value;
+
+                changePasswordButton.disabled = !(allValid && passwordsMatch);
             }
-        });
 
-        document.getElementById('genderInput').addEventListener('blur', function() {
-            var genderSelect = document.getElementById('genderSelect');
-            var genderInput = document.getElementById('genderInput');
-            if (genderInput.value === '') {
-                genderInput.style.display = 'none';
-                genderSelect.style.display = 'block';
+            function checkPasswordMatch() {
+                const password = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const passwordMatchMessage = document.getElementById('passwordMatchMessage');
+                const changePasswordButton = document.getElementById('changePasswordButton');
+                var confirmPasswordContainer = document.getElementById('confirmPasswordContainer');
+
+                passwordMatchMessage.classList.toggle('valid', password === confirmPassword);
+                passwordMatchMessage.classList.toggle('invalid', password !== confirmPassword);
+
+                const allValid = document.querySelectorAll('#passwordChecklist .valid').length === 5;
+
+                changePasswordButton.disabled = !(password === confirmPassword && allValid);
+                if (password === confirmPassword && confirmPassword !== '') {
+                    confirmPasswordContainer.style.borderColor = 'green';
+                } else {
+                    confirmPasswordContainer.style.borderColor = 'red';
+                }
             }
-        });
 
-        // Close the dropdown if the user clicks outside of it
-        window.onclick = function(event) {
-            if (!event.target.matches('.notification-bell, .notification-bell *')) {
-                var dropdowns = document.getElementsByClassName("dropdown-content");
-                for (var i = 0; i < dropdowns.length; i++) {
-                    var openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
+            function cancelAction() {
+                window.location.href = 'internal.php';
+            }
+
+            function toggleNotifications() {
+                var dropdown = document.getElementById('notificationDropdown');
+                dropdown.classList.toggle('show');
+            }
+
+            function openModal(modalId) {
+                document.getElementById(modalId).style.display = "block";
+            }
+
+            function closeModal(modalId) {
+                document.getElementById(modalId).style.display = "none";
+            }
+
+            // Show/hide gender input based on selection
+            document.getElementById('genderSelect').addEventListener('change', function() {
+                var genderSelect = document.getElementById('genderSelect');
+                var genderInput = document.getElementById('genderInput');
+                if (genderSelect.value === 'Others') {
+                    genderSelect.style.display = 'none';
+                    genderInput.style.display = 'block';
+                    genderInput.required = true;
+                    genderInput.focus();
+                } else {
+                    genderInput.style.display = 'none';
+                    genderInput.required = false;
+                }
+            });
+
+            document.getElementById('genderInput').addEventListener('blur', function() {
+                var genderSelect = document.getElementById('genderSelect');
+                var genderInput = document.getElementById('genderInput');
+                if (genderInput.value === '') {
+                    genderInput.style.display = 'none';
+                    genderSelect.style.display = 'block';
+                }
+            });
+
+            // Close the dropdown if the user clicks outside of it
+            window.onclick = function(event) {
+                if (!event.target.matches('.notification-bell, .notification-bell *')) {
+                    var dropdowns = document.getElementsByClassName("dropdown-content");
+                    for (var i = 0; i < dropdowns.length; i++) {
+                        var openDropdown = dropdowns[i];
+                        if (openDropdown.classList.contains('show')) {
+                            openDropdown.classList.remove('show');
+                        }
+                    }
+                }
+
+                // Close modals if clicked outside
+                var modals = document.getElementsByClassName('modal');
+                for (var i = 0; i < modals.length; i++) {
+                    if (event.target == modals[i]) {
+                        modals[i].style.display = "none";
                     }
                 }
             }
-
-            // Close modals if clicked outside
-            var modals = document.getElementsByClassName('modal');
-            for (var i = 0; i < modals.length; i++) {
-                if (event.target == modals[i]) {
-                    modals[i].style.display = "none";
-                }
-            }
-        }
-    </script>
+        </script>
 </body>
 
 </html>

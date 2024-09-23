@@ -68,9 +68,10 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
     <link href="css/pagestyle.css" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
     <style>
-        *   {
+        * {
             font-family: "Quicksand";
         }
+
         .custom-btn-group {
             display: flex;
             justify-content: space-between;
@@ -83,7 +84,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
         .custom-btn-group .btn-toggle {
             border-radius: 4px;
             padding: 10px 20px;
-            transition: background-color 0.3s ease;    
+            transition: background-color 0.3s ease;
             width: 160px;
             height: 50px;
             font-size: 18px;
@@ -166,8 +167,8 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             text-align: center;
             width: 175px;
         }
-        
-        .custom-table tr td:nth-child(3) {    
+
+        .custom-table tr td:nth-child(3) {
             display: flex;
             padding-right: 80px;
             justify-content: flex-end;
@@ -190,7 +191,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             display: none;
         }
 
-        thead{
+        thead {
             background-color: #fff;
         }
     </style>
@@ -213,7 +214,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
                 <li class="sidebar-item">
                     <a href="dashboard.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/>
+                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07" />
                         </svg>
                         <span style="margin-left: 8px;">Dashboard</span>
                     </a>
@@ -291,37 +292,37 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
                 <li class="sidebar-item">
                     <a href="college_transfer.php" class="sidebar-link">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                            <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5" />
                         </svg>
                         <span style="margin-left: 8px;">College Transfer</span>
                     </a>
                 </li>
                 <li class="sidebar-item">
-                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-line" viewBox="0 0 16 16">
-                        <path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1zm1 12h2V2h-2zm-3 0V7H7v7zm-5 0v-3H2v3z"/>
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-line" viewBox="0 0 16 16">
+                            <path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1zm1 12h2V2h-2zm-3 0V7H7v7zm-5 0v-3H2v3z" />
                         </svg>
                         <span style="margin-left: 8px;">Reports</span>
                     </a>
                     <ul id="auth" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                         <li class="sidebar-item1">
                             <a href="reports_dashboard.php" class="sidebar-link"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-columns me-2" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M0 .5A.5.5 0 0 1 .5 0h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 0 .5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 2h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 4h10a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 6h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 8h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
-                            </svg>
-                            <span style="margin-left: 8px;">Programs</span></a>
+                                    <path fill-rule="evenodd" d="M0 .5A.5.5 0 0 1 .5 0h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 0 .5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 2h8a.5.5 0 0 1 0 1h-8a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 4h10a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 6h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2A.5.5 0 0 1 .5 8h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-13 2a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H.5a.5.5 0 0 1-.5-.5m13 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5" />
+                                </svg>
+                                <span style="margin-left: 8px;">Programs</span></a>
                         </li>
                         <li class="sidebar-item1">
                             <a href="program_timeline.php" class="sidebar-link"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-steps me-2" viewBox="0 0 16 16">
-                            <path d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z"/>
-                            </svg>
-                            <span style="margin-left: 8px;">Timeline</span></a>
+                                    <path d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" />
+                                </svg>
+                                <span style="margin-left: 8px;">Timeline</span></a>
                         </li>
                         <li class="sidebar-item1">
                             <a href="reports_member.php" class="sidebar-link"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill me-2" viewBox="0 0 16 16">
-                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
-                        </svg>
-                        <span style="margin-left: 8px;">Members</span></a>
+                                    <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
+                                </svg>
+                                <span style="margin-left: 8px;">Members</span></a>
                         </li>
                     </ul>
                 </li>
@@ -338,7 +339,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
         </aside>
 
         <div class="main">
-        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+            <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
             <div class="container">
                 <div class="header">
                     <div class="headerLeft">
@@ -375,7 +376,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             </div>
             <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
             <div style="height: 48px; width: 0px;"></div>
-            <h1 style="text-align: center;" >ADMIN PROFILE</h1>
+            <h1 style="text-align: center;">ADMIN PROFILE</h1>
             <div style="height: 48px; width: 0px;"></div>
             <div class="container1">
                 <div class="profile-info">
@@ -454,10 +455,21 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
                 </div>
 
                 <div class="profile-info">
-                    <h><strong class="prefix">Prefix</strong><br><strong class="prefix1"><?php echo htmlspecialchars($prefix); ?></strong><button class="edit-link" onclick="openModal('prefixModal')">Edit</button></h><br><br>
-                    <h><strong class="prefix">Full Name:</strong><br><strong class="prefix1"><?php echo htmlspecialchars($first_name . ' ' . $middle_initial . '. ' . $last_name); ?></strong><button class="edit-link" onclick="openModal('fullNameModal')">Edit</button></h><br><br>
-                    <h><strong class="prefix">Email</strong><br><strong class="prefix1"><?php echo htmlspecialchars($email); ?></strong><button class="edit-link" onclick="openModal('emailModal')">Edit</button></h><br><br>
-                    <h><strong class="prefix">Gender</strong><br><strong class="prefix1"><?php echo htmlspecialchars($gender); ?></strong><button class="edit-link" onclick="openModal('genderModal')">Edit</button></h><br>
+                    <h><strong class="prefix">Prefix</strong><br><strong class="prefix1"><?php echo htmlspecialchars($prefix); ?></strong>
+                        <button class="edit-link" onclick="openModal('prefixModal')"><i class="fas fa-edit"></i></button>
+                    </h><br><br>
+
+                    <h><strong class="prefix">Full Name:</strong><br><strong class="prefix1"><?php echo htmlspecialchars($first_name . ' ' . $middle_initial . '. ' . $last_name); ?></strong>
+                        <button class="edit-link" onclick="openModal('fullNameModal')"><i class="fas fa-edit"></i></button>
+                    </h><br><br>
+
+                    <h><strong class="prefix">Email</strong><br><strong class="prefix1"><?php echo htmlspecialchars($email); ?></strong>
+                        <button class="edit-link" onclick="openModal('emailModal')"><i class="fas fa-edit"></i></button>
+                    </h><br><br>
+
+                    <h><strong class="prefix">Gender</strong><br><strong class="prefix1"><?php echo htmlspecialchars($gender); ?></strong>
+                        <button class="edit-link" onclick="openModal('genderModal')"><i class="fas fa-edit"></i></button>
+                    </h><br>
                 </div>
             </div>
         </div>
@@ -470,12 +482,12 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             <form action="update_profile.php" method="post" enctype="multipart/form-data">
                 <h2>EDITT PROFILE PICTURE</h2>
                 <div class="nameContainer orientationContainer uploadContainer">
-                        <span class="upload-text">UPLOAD</span>
-                        <img id="upload-icon-profile" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
-                        <input class="uploadInput" type="file" id="profilePicture" name="profilePicture" accept="image/*" required>
-                        <input type="hidden" name="field" value="profilePicture">
-                    </div>
-                    <div class="button-container">
+                    <span class="upload-text">UPLOAD</span>
+                    <img id="upload-icon-profile" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                    <input class="uploadInput" type="file" id="profilePicture" name="profilePicture" accept="image/*" required>
+                    <input type="hidden" name="field" value="profilePicture">
+                </div>
+                <div class="button-container">
                     <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
                     <button type="submit" class="accept-button1">CONFIRM</button>
                 </div>
@@ -515,16 +527,16 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             <form action="update_profile.php" method="post">
                 <h2>Edit Full Name</h2>
                 <div class="name1">
-                 <div class="profilenameContainer">
-                <input type="text" id="newFirstName" name="newFirstName" class="firstname" value="<?php echo htmlspecialchars($first_name); ?>" required>
-            </div>
-                <div class="profilenameContainer middleinitialContainer">
-                <input class="middleinitial" type="text" id="newMiddleInitial" name="newMiddleInitial" value="<?php echo htmlspecialchars($middle_initial); ?>" maxlength="1" required>
-                </div>
-                <div class="profilenameContainer lastnameContainer">
-                <input class="lastname" type="text" id="newLastName" name="newLastName" value="<?php echo htmlspecialchars($last_name); ?>" required>
-            </div>
-                <input type="hidden" name="field" value="fullname">
+                    <div class="profilenameContainer">
+                        <input type="text" id="newFirstName" name="newFirstName" class="firstname" value="<?php echo htmlspecialchars($first_name); ?>" required>
+                    </div>
+                    <div class="profilenameContainer middleinitialContainer">
+                        <input class="middleinitial" type="text" id="newMiddleInitial" name="newMiddleInitial" value="<?php echo htmlspecialchars($middle_initial); ?>" maxlength="1" required>
+                    </div>
+                    <div class="profilenameContainer lastnameContainer">
+                        <input class="lastname" type="text" id="newLastName" name="newLastName" value="<?php echo htmlspecialchars($last_name); ?>" required>
+                    </div>
+                    <input type="hidden" name="field" value="fullname">
                 </div>
                 <div class="button-container">
                     <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
@@ -539,10 +551,10 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             <form action="update_profile.php" method="post">
                 <h2>Edit Email</h2>
                 <div class="username">
-                <div class="usernameContainer">
-                <input class="email" type="email" id="newEmail" name="newEmail" value="<?php echo htmlspecialchars($email); ?>" required>
-            </div>
-                <input type="hidden" name="field" value="email">
+                    <div class="usernameContainer">
+                        <input class="email" type="email" id="newEmail" name="newEmail" value="<?php echo htmlspecialchars($email); ?>" required>
+                    </div>
+                    <input type="hidden" name="field" value="email">
                 </div>
                 <div class="button-container">
                     <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
@@ -557,19 +569,19 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             <form action="update_profile.php" method="post">
                 <h2>Edit Gender</h2>
                 <div class="gender">
-                <div class="edit-gender">
-                <select class="prefix"id="genderSelect" name="newGender" required>
-                    <option value="<?php echo htmlspecialchars($gender); ?>"><?php echo htmlspecialchars($gender); ?></option>
-                    <?php if ($gender !== 'Male') { ?><option value="Male">Male</option><?php } ?>
-                    <?php if ($gender !== 'Female') { ?><option value="Female">Female</option><?php } ?>
-                    <?php if ($gender !== 'Prefer not to say') { ?><option value="Prefer not to say">Prefer not to say</option><?php } ?>
-                    <?php if ($gender !== 'Others') { ?><option value="Others">Others</option><?php } ?>
-                </select>
-                <input class="specify-gender" type="text" id="genderInput" name="gender_others" placeholder="Specify Gender" value="<?php echo ($gender === 'Others') ? $gender : ''; ?>"><br><br>
-                <input type="hidden" name="field" value="gender">
-            </div>
-            </div>
-            <div class="button-container">
+                    <div class="edit-gender">
+                        <select class="prefix" id="genderSelect" name="newGender" required>
+                            <option value="<?php echo htmlspecialchars($gender); ?>"><?php echo htmlspecialchars($gender); ?></option>
+                            <?php if ($gender !== 'Male') { ?><option value="Male">Male</option><?php } ?>
+                            <?php if ($gender !== 'Female') { ?><option value="Female">Female</option><?php } ?>
+                            <?php if ($gender !== 'Prefer not to say') { ?><option value="Prefer not to say">Prefer not to say</option><?php } ?>
+                            <?php if ($gender !== 'Others') { ?><option value="Others">Others</option><?php } ?>
+                        </select>
+                        <input class="specify-gender" type="text" id="genderInput" name="gender_others" placeholder="Specify Gender" value="<?php echo ($gender === 'Others') ? $gender : ''; ?>"><br><br>
+                        <input type="hidden" name="field" value="gender">
+                    </div>
+                </div>
+                <div class="button-container">
                     <button type="button" class="cancel-button" onclick="cancelAction()">CANCEL</button>
                     <button type="submit" class="accept-button1">CONFIRM</button>
                 </div>
@@ -640,7 +652,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
 
             const allValid = document.querySelectorAll('#passwordChecklist .valid').length === 5;
             const passwordsMatch = password === document.getElementById('confirmPassword').value;
-            
+
             changePasswordButton.disabled = !(allValid && passwordsMatch);
         }
 
@@ -655,7 +667,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             passwordMatchMessage.classList.toggle('invalid', password !== confirmPassword);
 
             const allValid = document.querySelectorAll('#passwordChecklist .valid').length === 5;
-            
+
             changePasswordButton.disabled = !(password === confirmPassword && allValid);
 
             changePasswordButton.disabled = !(password === confirmPassword && allValid);
@@ -702,7 +714,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
         });
 
         function handleFileChange(inputElement, iconElement) {
-            inputElement.addEventListener('change', function () {
+            inputElement.addEventListener('change', function() {
                 if (this.files && this.files.length > 0) {
                     // Change icon to check mark if a file is selected
                     iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
@@ -719,7 +731,7 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
             const showPasswordCheckbox = document.getElementById('showPasswordCheckbox');
             const newPassword = document.getElementById('newPassword');
             const confirmPassword = document.getElementById('confirmPassword');
-            
+
             if (showPasswordCheckbox.checked) {
                 newPassword.type = 'text';
                 confirmPassword.type = 'text';
@@ -730,4 +742,5 @@ $accreditor_type = ($user_id === 'admin') ? 'admin' : '';
         }
     </script>
 </body>
+
 </html>
