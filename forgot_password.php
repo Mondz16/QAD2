@@ -66,7 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Similar logic to fetch the user
         $tables = ['internal_users', 'external_users'];
         foreach ($tables as $table) {
-            $query = "SELECT * FROM $table WHERE user_id=? AND email=? AND prefix=? AND gender=?";
+            // Fetch user_id and first_name
+            $query = "SELECT user_id, first_name FROM $table WHERE user_id=? AND email=? AND prefix=? AND gender=?";
             $stmt = $conn->prepare($query);
 
             $gender_value = ($gender === 'Others') ? $gender_others : $gender;
@@ -76,21 +77,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->store_result();
 
             if ($stmt->num_rows > 0) {
+                // Fetch the result and get the first_name
+                $stmt->bind_result($fetched_user_id, $first_name);
+                $stmt->fetch();
+
+                // Generate OTP and set session variables
                 $otp = generateOTP();
                 $_SESSION['otp'] = $otp;
                 $_SESSION['otp_timestamp'] = time(); // Store the current timestamp
                 $_SESSION['otp_expiry'] = $_SESSION['otp_timestamp'] + 300; // OTP expires in 5 minutes (300 seconds)
                 $_SESSION['user_id'] = $user_id;
                 $_SESSION['email'] = $email;
-            
-                if (sendOTP($email, $row['first_name'], $otp)) {
+
+                // Use first_name in sendOTP function
+                if (sendOTP($email, $first_name, $otp)) {
                     // Redirect to OTP verification page
                     $response['redirect'] = 'forgot_password_verification.php';
                 } else {
                     $response['error'] = "Failed to send OTP. Please try again.";
                 }
                 break;
-            }            
+            }
             $stmt->close();
         }
 
