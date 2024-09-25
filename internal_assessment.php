@@ -618,7 +618,7 @@ function intToRoman($num) {
                                 <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
                                     <p>NON-DISCLOSURE AGREEMENT</p>
                                     <div style="height: 10px;"></div>
-                                    <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
+                                    <button class="assessment-button" id="sign-button">SIGN</button>
                                 <?php elseif ($schedule['area'] == ''): ?>
                                     <p>ASSESSMENT</p>
                                     <div style="height: 10px;"></div>
@@ -680,6 +680,38 @@ function intToRoman($num) {
             </form>
         </div>
     </div>
+
+        <!-- Terms and Conditions Modal -->
+        <div id="termsModal" class="popup2" style="display:none;">
+            <div class="esign-popup-content">
+                <div style="height: 20px; width: 0px;"></div>
+                <h2>Electronic Signature<br>Usage Agreement</h2>
+                <p>By agreeing to this statement, you consent to the following terms and conditions regarding the use of your electronic signature:<br><br>
+
+                    1. You acknowledge and agree that your electronic signature will be used exclusively for internal accreditation purposes within our organization. This includes, but is not limited to, verifying and validating documents, authorizations, and other internal procedures.<br><br>
+
+                    2. You understand and agree that your electronic signature will be encrypted using AES-256-CBC encryption. This ensures that your electronic signature is secure and protected against unauthorized access, tampering, and breaches.<br><br>
+
+                    3. You consent to the secure storage of your electronic signature in our database, which is protected by advanced security measures. Access to this database is restricted to authorized personnel only, ensuring that your electronic signature is used appropriately and solely for the purposes outlined above.<br><br>
+
+                    4. You agree that your electronic signature will be kept confidential and will not be shared, disclosed, or used for any purposes other than those specified in this agreement without your explicit consent.<br><br>
+
+                    5. You acknowledge that it is your responsibility to ensure that your electronic signature is accurate and to safeguard any credentials or devices used to create your electronic signature.<br><br>
+
+                    6. You understand that we reserve the right to update or modify these terms and conditions at any time. Any changes will be communicated to you, and your continued use of your electronic signature for internal accreditation purposes will constitute your acceptance of the revised terms.<br><br>
+
+                    If you have any questions or concerns regarding the use of your electronic signature or these terms and conditions, please contact us at usepqad@gmail.com.<br><br>
+
+                    By clicking "Agree," you consent to the use of your electronic signature as described above and agree to the security measures implemented for its protection.</p><br><br>
+                <label>
+                    <input type="checkbox" id="agreeTermsCheckbox"> I agree to the terms and conditions
+                </label><br><br>
+                <div class="e-sign-container">
+                    <button class="cancel-button1" id="closeTermsBtn" type="button">CLOSE</button>
+                    <button class="approve-assessment-button" id="acceptTerms" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)" disabled>SUBMIT</button>
+                </div>
+            </div>
+        </div>
 
     <!-- Popup Form for Team Member -->
     <div class="assessmentmodal" id="popup">
@@ -1092,6 +1124,7 @@ function intToRoman($num) {
             document.getElementById('nda_internal_accreditor').value = fullName;
             document.getElementById('nda_team_id').value = teamId;
             document.getElementById('ndaPopup').style.display = 'block';
+            document.getElementById('termsModal').style.display = 'none';
         }
 
         function closeNdaPopup() {
@@ -1221,6 +1254,26 @@ function intToRoman($num) {
                 });
             });
         }
+        
+        document.getElementById('agreeTermsCheckbox').addEventListener('change', function() {
+            var acceptButton = document.getElementById('acceptTerms');
+            if (this.checked) {
+                acceptButton.disabled = false;
+                acceptButton.classList.remove('disabled');
+            } else {
+                acceptButton.disabled = true;
+                acceptButton.classList.add('disabled');
+            }
+        });
+
+        document.getElementById('closeTermsBtn').addEventListener('click', function() {
+                document.getElementById('termsModal').style.display = 'none';
+            });
+
+            document.getElementById('sign-button').addEventListener('click', function() {
+                document.getElementById('agreeTermsCheckbox').checked = false;
+                document.getElementById('termsModal').style.display = 'block';
+            });
     </script>
 </body>
 </html>
