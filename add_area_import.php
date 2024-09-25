@@ -30,7 +30,8 @@ if (isset($_FILES['excel_file']['name'])) {
         for ($row = 2; $row <= $highestRow; $row++) {
             // Extracting cell values
             $area_name = $sheet->getCellByColumnAndRow(1, $row)->getValue();
-            $area_parameters = $sheet->getCellByColumnAndRow(2, $row)->getValue();
+            $parameter_name = $sheet->getCellByColumnAndRow(2, $row)->getValue();
+            $parameter_description = $sheet->getCellByColumnAndRow(3, $row)->getValue();
 
             // Check if the area already exists
             $sql_check_area = "SELECT id FROM area WHERE area_name = ?";
@@ -40,17 +41,33 @@ if (isset($_FILES['excel_file']['name'])) {
             $result_check_area = $stmt_check_area->get_result();
 
             if ($result_check_area->num_rows > 0) {
-                // Area already exists, skip the insert
-                continue; // Optionally, you could log this or notify the user
+                // Get the existing area ID
+                $row_area = $result_check_area->fetch_assoc();
+                $area_id = $row_area['id'];
+            } else {
+                // Insert new area
+                $sql_insert_area = "INSERT INTO area (area_name) VALUES (?)";
+                $stmt_insert_area = $conn->prepare($sql_insert_area);
+                $stmt_insert_area->bind_param("s", $area_name);
+
+                if ($stmt_insert_area->execute()) {
+                    $area_id = $stmt_insert_area->insert_id; // Get the inserted area ID
+                } else {
+                    // Capture error if execution fails
+                    $message = "Error inserting area: " . $stmt_insert_area->error;
+                    $message_class = "error";
+                    break; // Stop further processing on error
+                }
             }
 
-            // Insert new area
-            $sql_insert_area = "INSERT INTO area (area_name, area_parameters) VALUES (?, ?)";
-            $stmt_insert_area = $conn->prepare($sql_insert_area);
-            $stmt_insert_area->bind_param("ss", $area_name, $area_parameters);
-            if (!$stmt_insert_area->execute()) {
+            // Insert parameter associated with the area
+            $sql_insert_parameter = "INSERT INTO parameters (area_id, parameter_name, parameter_description) VALUES (?, ?, ?)";
+            $stmt_insert_parameter = $conn->prepare($sql_insert_parameter);
+            $stmt_insert_parameter->bind_param("iss", $area_id, $parameter_name, $parameter_description);
+
+            if (!$stmt_insert_parameter->execute()) {
                 // Capture error if execution fails
-                $message = "Error inserting area: " . $stmt_insert_area->error;
+                $message = "Error inserting parameter: " . $stmt_insert_parameter->error;
                 $message_class = "error";
                 break; // Stop further processing on error
             }

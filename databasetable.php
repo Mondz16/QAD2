@@ -83,12 +83,26 @@ if ($conn->query($sql) === TRUE) {
 // Create the area table
 $sql = "CREATE TABLE IF NOT EXISTS area (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    area_name VARCHAR(255) NOT NULL,
-    area_parameters INT(6) UNSIGNED
+    area_name VARCHAR(255) NOT NULL
 )";
 
 if ($conn->query($sql) === TRUE) {
     echo "Table area created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
+// Create the parameters table
+$sql = "CREATE TABLE IF NOT EXISTS parameters (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    area_id INT(6) UNSIGNED NOT NULL,
+    parameter_name VARCHAR(255) NOT NULL,
+    parameter_description VARCHAR(255) NOT NULL,
+    FOREIGN KEY (area_id) REFERENCES area(id)
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table parameters created successfully<br>";
 } else {
     echo "Error creating table: " . $conn->error . "<br>";
 }

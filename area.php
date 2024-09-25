@@ -39,7 +39,15 @@ if ($user_id === 'admin') {
     }
 }
 
-$sql = "SELECT id AS area_code, area_name, area_parameters FROM area";
+// Updated SQL query to fetch area information and count of parameters
+$sql = "SELECT 
+            area.id AS area_code, 
+            area.area_name, 
+            COUNT(parameters.id) AS parameter_count 
+        FROM area 
+        LEFT JOIN parameters ON area.id = parameters.area_id
+        GROUP BY area.id, area.area_name";
+
 $result = $conn->query($sql);
 $areas = [];
 
@@ -56,7 +64,7 @@ if ($result->num_rows > 0) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>College</title>
+    <title>Area</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="stylesheet" href="css/sidebar.css">
     <link href="css/navbar.css" rel="stylesheet">
@@ -101,8 +109,6 @@ if ($result->num_rows > 0) {
 
 <body>
     <div class="wrapper">
-        <!-- Sidebar -->
-        <!-- Sidebar -->
         <aside id="sidebar">
             <div class="d-flex">
                 <button class="toggle-btn" type="button">
@@ -307,6 +313,7 @@ if ($result->num_rows > 0) {
                                     <th>AREA CODE</th>
                                     <th>AREA NAME</th>
                                     <th>AREA PARAMETERS</th>
+                                    <th>ACTIONS</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -314,7 +321,16 @@ if ($result->num_rows > 0) {
                                     <tr>
                                         <td><?php echo htmlspecialchars($area['area_code']); ?></td>
                                         <td><?php echo htmlspecialchars($area['area_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($area['area_parameters']); ?></td>
+                                        <td><?php echo htmlspecialchars($area['parameter_count']); ?></td>
+                                        <td>
+                                            <button class="view-button" onclick="showParameters('<?php echo $area['area_code']; ?>', '<?php echo htmlspecialchars($area['area_name']); ?>')">VIEW</button>
+                                            <button class="edit-button" onclick="location.href='edit_area.php?code=<?php echo $area['area_code']; ?>'">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                                                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                                                </svg>
+                                            </button>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -325,7 +341,23 @@ if ($result->num_rows > 0) {
             </div>
         </div>
 
-        <!-- Modal for importing colleges -->
+        <div id="viewModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Parameters</h2>
+                <table id="parametersTable">
+                    <thead>
+                        <tr>
+                            <th>Parameter Name</th>
+                            <th>Parameter Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="parametersBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div id="importModal" class="modal">
             <div class="import-modal-content">
                 <h2>IMPORT AREA</h2>
@@ -353,7 +385,8 @@ if ($result->num_rows > 0) {
         window.onclick = function(event) {
             var modals = [
                 document.getElementById('programModal'),
-                document.getElementById('importModal')
+                document.getElementById('importModal'),
+                document.getElementById('viewModal')
             ];
 
             modals.forEach(function(modal) {
@@ -371,10 +404,16 @@ if ($result->num_rows > 0) {
                 // Show the loading spinner
                 loadingSpinner.classList.remove('spinner-hidden');
             });
-        });
 
+            // Reference span elements for modals after DOM is fully loaded
+            var spanView = document.getElementsByClassName("close")[0];
+            var viewModal = document.getElementById("viewModal");
 
-        document.addEventListener('DOMContentLoaded', function() {
+            // Close the viewModal when the span is clicked
+            spanView.onclick = function() {
+                viewModal.style.display = "none"; // Correctly reference viewModal
+            }
+
             const sidebarNav = document.querySelector('.sidebar-nav');
             const sidebarFooter = document.querySelector('.sidebar-footer');
             const sidebar = document.getElementById('sidebar');
@@ -402,7 +441,6 @@ if ($result->num_rows > 0) {
 
             sidebarNav.addEventListener('mouseenter', handleMouseEnter);
             sidebarNav.addEventListener('mouseleave', handleMouseLeave);
-
             sidebarFooter.addEventListener('mouseenter', handleMouseEnter);
             sidebarFooter.addEventListener('mouseleave', handleMouseLeave);
         });
@@ -418,29 +456,6 @@ if ($result->num_rows > 0) {
             });
         }
 
-        var programModal = document.getElementById("programModal");
-        var importModal = document.getElementById("importModal");
-        var spanProgram = document.getElementsByClassName("close")[0];
-        var spanImport = document.getElementsByClassName("close")[1];
-        var programsData = [];
-
-        spanProgram.onclick = function() {
-            programModal.style.display = "none";
-        }
-
-        spanImport.onclick = function() {
-            importModal.style.display = "none";
-        }
-
-        window.onclick = function(event) {
-            if (event.target == programModal) {
-                programModal.style.display = "none";
-            }
-            if (event.target == importModal) {
-                importModal.style.display = "none";
-            }
-        }
-
         function openImportModal() {
             importModal.style.display = "block";
         }
@@ -448,7 +463,46 @@ if ($result->num_rows > 0) {
         function closeImportModal() {
             importModal.style.display = "none";
         }
-    </script>
-</body>
 
+        function showParameters(area_code, area_name) {
+            console.log("Displaying modal for area_code: " + area_code);
+            fetchParameters(area_code);
+
+            // Update modal header with the actual area name
+            var modalHeader = document.querySelector("#viewModal h2");
+            modalHeader.textContent = area_name; // Set the area name here
+
+            var modal = document.getElementById("viewModal");
+            if (modal) {
+                modal.style.display = "block"; // Show the modal
+                console.log("Modal displayed.");
+            } else {
+                console.error("Modal element not found!");
+            }
+        }
+
+        // Fetch parameters via AJAX
+        function fetchParameters(area_code) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "fetch_parameters.php?area_code=" + area_code, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var parameters = JSON.parse(xhr.responseText);
+                    var parametersBody = document.getElementById("parametersBody");
+                    parametersBody.innerHTML = ""; // Clear existing content
+
+                    parameters.forEach(function(param) {
+                        var row = "<tr>";
+                        row += "<td>" + param.parameter_name + "</td>";
+                        row += "<td><a href='" + param.parameter_description + "' target='_blank'>" + param.parameter_description + "</a></td>";
+                        row += "</tr>";
+                        parametersBody.innerHTML += row;
+                    });
+                }
+            };
+            xhr.send();
+        }
+    </script>
+
+</body>
 </html>
