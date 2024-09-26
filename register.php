@@ -1,4 +1,4 @@
-<?php
+<strong?php
 session_start();
 
 // Allowed referring pages
@@ -281,19 +281,24 @@ if (isset($_SESSION['user_id'])) {
         <div class="esign-popup-content">
             <div style="height: 20px; width: 0px;"></div>
                 <h2>Electronic Signature<br>Usage Agreement</h2>
-                <p>By agreeing to this statement, you consent to the following terms and conditions regarding the use of your electronic signature:<br><br>
+                <p>By agreeing to this statement, you consent to the following terms and conditions the collection, use, and processing of your personal data:<br><br>
 
-1. You acknowledge and agree that your electronic signature will be used exclusively for internal accreditation purposes within our organization. This includes, but is not limited to, verifying and validating documents, authorizations, and other internal procedures.<br><br>
+                <strong>1. Data Collection and Use</strong><br>
+By accessing and using our website, you agree to the collection and use of your personal information in accordance with Republic Act No. 10173 (Data Privacy Act of 2012). We collect personal data such as name, email address, contact information, and other details necessary for providing our services.<br><br>
 
-2. You understand and agree that your electronic signature will be encrypted using AES-256-CBC encryption. This ensures that your electronic signature is secure and protected against unauthorized access, tampering, and breaches.<br><br>
+<strong>2. Data Protection </strong><br>
+We are committed to safeguarding your personal data. All information collected is securely stored and protected against unauthorized access, use, or disclosure. We implement industry-standard security measures to ensure data protection.<br><br>
 
-3. You consent to the secure storage of your electronic signature in our database, which is protected by advanced security measures. Access to this database is restricted to authorized personnel only, ensuring that your electronic signature is used appropriately and solely for the purposes outlined above.<br><br>
+<strong>3. Purpose of Data Collection</strong><br>
+Your data is collected to improve user experience, process transactions, and provide personalized content. We ensure that your information is used only for legitimate purposes in line with your engagement with our website.<br><br>
 
-4. You agree that your electronic signature will be kept confidential and will not be shared, disclosed, or used for any purposes other than those specified in this agreement without your explicit consent.<br><br>
+<strong>4. Data Sharing and Transfer </strong><br>
+Your information will not be shared with third parties unless required by law or necessary for the services you have requested. We do not sell, trade, or otherwise transfer your personal information without your explicit consent.<br><br>
 
-5. You acknowledge that it is your responsibility to ensure that your electronic signature is accurate and to safeguard any credentials or devices used to create your electronic signature.<br><br>
+<strong>5. Rights of the Data Subject</strong><br>
+As a user, you have the right to access, update, or correct your personal data. You may also request the deletion of your information or object to its processing, in accordance with RA 10173.<br><br>
 
-6. You understand that we reserve the right to update or modify these terms and conditions at any time. Any changes will be communicated to you, and your continued use of your electronic signature for internal accreditation purposes will constitute your acceptance of the revised terms.<br><br>
+<strong>6. Data Retention </strong><br>We retain your personal data only for as long as necessary to fulfill the purposes for which it was collected or as required by law.<br><br>
 
 If you have any questions or concerns regarding the use of your electronic signature or these terms and conditions, please contact us at usepqad@gmail.com.<br><br>
 
