@@ -85,6 +85,7 @@
         }
     </style>
 </head>
+
 <body>
     <div id="successPopup" class="popup">
         <div class="popup-content">
@@ -98,28 +99,48 @@
                 $password = "";
                 $dbname = "qadDB";
 
+                // Create connection
                 $conn = new mysqli($servername, $username, $password, $dbname);
 
+                // Check connection
                 if ($conn->connect_error) {
                     die("<p class='error'>Connection failed: " . $conn->connect_error . "</p>");
                 }
 
-                $area_code = isset($_POST['area_code']) ? intval($_POST['area_code']) : 0;
+                // Get the input values
                 $area_name = isset($_POST['area_name']) ? trim($_POST['area_name']) : '';
-                $area_parameters = isset($_POST['area_parameters']) ? intval($_POST['area_parameters']) : 0;
+                $parameter_names = isset($_POST['parameter_name']) ? $_POST['parameter_name'] : [];
+                $parameter_descriptions = isset($_POST['parameter_description']) ? $_POST['parameter_description'] : [];
 
-                if ($area_code > 0 && !empty($area_name) && $area_parameters >= 0) {
-                    // Prepare and bind
-                    $stmt = $conn->prepare("INSERT INTO area (area_code, area_name, area_parameters) VALUES (?, ?, ?)");
-                    $stmt->bind_param("isi", $area_code, $area_name, $area_parameters);
+                // Validate inputs
+                if (!empty($area_name) && !empty($parameter_names) && !empty($parameter_descriptions)) {
+                    // Insert into the area table
+                    $stmt = $conn->prepare("INSERT INTO area (area_name) VALUES (?)");
+                    $stmt->bind_param("s", $area_name);
 
                     if ($stmt->execute()) {
-                        echo "<p class='success'>New area added successfully!</p>";
+                        // Get the last inserted area_id
+                        $area_id = $conn->insert_id;
+
+                        // Prepare the statement for inserting parameters
+                        $stmt_params = $conn->prepare("INSERT INTO parameters (area_id, parameter_name, parameter_description) VALUES (?, ?, ?)");
+
+                        // Bind parameters
+                        foreach ($parameter_names as $index => $parameter_name) {
+                            $parameter_description = isset($parameter_descriptions[$index]) ? $parameter_descriptions[$index] : '';
+                            if (!empty($parameter_name) && !empty($parameter_description)) {
+                                $stmt_params->bind_param("iss", $area_id, $parameter_name, $parameter_description);
+                                $stmt_params->execute();
+                            }
+                        }
+
+                        echo "<p class='success'>New area and its parameters added successfully!</p>";
                     } else {
                         echo "<p class='error'>Error: " . $stmt->error . "</p>";
                     }
 
                     $stmt->close();
+                    $stmt_params->close();
                 } else {
                     echo "<p class='error'>Please fill in all fields correctly.</p>";
                 }
