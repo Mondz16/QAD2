@@ -280,7 +280,7 @@ if (isset($_SESSION['user_id'])) {
     <div id="termsModal" class="popup2" style="display:none;">
         <div class="esign-popup-content">
             <div style="height: 20px; width: 0px;"></div>
-                <h2>Electronic Signature<br>Usage Agreement</h2>
+                <h2>Terms and Conditions for <br>Data Collection</h2>
                 <p>By agreeing to this statement, you consent to the following terms and conditions the collection, use, and processing of your personal data:<br><br>
 
                 <strong>1. Data Collection and Use</strong><br>
