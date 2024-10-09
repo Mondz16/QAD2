@@ -83,7 +83,7 @@ if ($conn->query($sql) === TRUE) {
 // Create the area table
 $sql = "CREATE TABLE IF NOT EXISTS area (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    area_name VARCHAR(255) NOT NULL
+    area_name VARCHAR(50) NOT NULL
 )";
 
 if ($conn->query($sql) === TRUE) {
@@ -96,7 +96,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS parameters (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     area_id INT(6) UNSIGNED NOT NULL,
-    parameter_name VARCHAR(255) NOT NULL,
+    parameter_name VARCHAR(80) NOT NULL,
     parameter_description VARCHAR(255) NOT NULL,
     FOREIGN KEY (area_id) REFERENCES area(id)
 )";
@@ -115,7 +115,7 @@ $sql = "CREATE TABLE IF NOT EXISTS admin (
     middle_initial VARCHAR(1) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    profile_picture VARCHAR(100) NOT NULL,
+    profile_picture VARCHAR(50) NOT NULL,
     gender VARCHAR(10) NOT NULL,
     password VARCHAR(255) NOT NULL,
     otp VARCHAR(255) NOT NULL,
@@ -140,7 +140,7 @@ $sql = "CREATE TABLE IF NOT EXISTS internal_users (
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    profile_picture VARCHAR(100) NOT NULL,
+    profile_picture VARCHAR(50) NOT NULL,
     gender VARCHAR(50) NOT NULL,
     status ENUM('pending', 'active', 'inactive', '') NOT NULL,
     e_sign_agreement VARCHAR(50) NOT NULL,
@@ -167,7 +167,7 @@ $sql = "CREATE TABLE IF NOT EXISTS external_users (
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    profile_picture VARCHAR(100) NOT NULL,
+    profile_picture VARCHAR(50) NOT NULL,
     gender VARCHAR(50) NOT NULL,
     status ENUM('pending', 'active', 'inactive', '') NOT NULL,
     otp VARCHAR(255) NOT NULL,
@@ -191,7 +191,7 @@ $sql = "CREATE TABLE IF NOT EXISTS schedule (
     level_validity INT(1) NOT NULL,
     schedule_date DATE NOT NULL,
     schedule_time TIME NOT NULL,
-    zoom VARCHAR(255),
+    zoom VARCHAR(50),
     schedule_status ENUM('pending', 'approved', 'cancelled', 'finished', 'failed', 'passed') NOT NULL DEFAULT 'pending',
     status_date DATETIME NOT NULL,
     FOREIGN KEY (college_code) REFERENCES college(code),
@@ -241,12 +241,12 @@ $sql = "CREATE TABLE IF NOT EXISTS assessment (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     team_id INT(6) UNSIGNED,
     result ENUM('Ready', 'Needs improvement', 'Revisit') NOT NULL,
-    area_evaluated VARCHAR(100) NOT NULL,
-    findings VARCHAR(500) NOT NULL,
-    recommendations VARCHAR(500) NOT NULL,
+    area_evaluated VARCHAR(80) NOT NULL,
+    findings VARCHAR(100) NOT NULL,
+    recommendations VARCHAR(100) NOT NULL,
     evaluator VARCHAR(50) NOT NULL,
-    evaluator_signature VARCHAR(255) NOT NULL,
-    assessment_file VARCHAR(255) NOT NULL,
+    evaluator_signature VARCHAR(50) NOT NULL,
+    assessment_file VARCHAR(50) NOT NULL,
     FOREIGN KEY (team_id) REFERENCES team(id)
 )";
 
@@ -261,8 +261,8 @@ $sql = "CREATE TABLE IF NOT EXISTS approved_assessment (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     assessment_id INT(6) UNSIGNED,
     team_leader VARCHAR(50) NOT NULL,
-    team_leader_signature VARCHAR(255) NOT NULL,
-    approved_assessment_file VARCHAR(255) NOT NULL,
+    team_leader_signature VARCHAR(50) NOT NULL,
+    approved_assessment_file VARCHAR(50) NOT NULL,
     FOREIGN KEY (assessment_id) REFERENCES assessment(id)
 )";
 
@@ -278,9 +278,9 @@ $sql = "CREATE TABLE IF NOT EXISTS summary (
     team_id INT(6) UNSIGNED,
     areas VARCHAR(255) NOT NULL,
     results VARCHAR(10) NOT NULL,
-    evaluator VARCHAR(255) NOT NULL,
-    evaluator_signature VARCHAR(255) NOT NULL,
-    summary_file VARCHAR(255) NOT NULL,
+    evaluator VARCHAR(50) NOT NULL,
+    evaluator_signature VARCHAR(50) NOT NULL,
+    summary_file VARCHAR(50) NOT NULL,
     FOREIGN KEY (team_id) REFERENCES team(id)
 )";
 
@@ -294,9 +294,9 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS approved_summary (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     summary_id INT(6) UNSIGNED,
-    qad VARCHAR(255) NOT NULL,
-    qad_signature VARCHAR(255) NOT NULL,
-    approved_summary_file VARCHAR(255) NOT NULL,
+    qad VARCHAR(50) NOT NULL,
+    qad_signature VARCHAR(50) NOT NULL,
+    approved_summary_file VARCHAR(50) NOT NULL,
     FOREIGN KEY (summary_id) REFERENCES summary(id)
 )";
 
@@ -328,7 +328,7 @@ $sql = "CREATE TABLE IF NOT EXISTS face_to_face (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     orientation_id INT(6) UNSIGNED,
     college_building VARCHAR(50) NOT NULL,
-    room_number VARCHAR(20) NOT NULL,
+    room_number VARCHAR(3) NOT NULL,
     FOREIGN KEY (orientation_id) REFERENCES orientation(id)
 )";
 
@@ -342,8 +342,8 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS online (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     orientation_id INT(6) UNSIGNED,
-    orientation_link VARCHAR(255) NOT NULL,
-    link_passcode VARCHAR(255) NOT NULL,
+    orientation_link VARCHAR(50) NOT NULL,
+    link_passcode VARCHAR(50) NOT NULL,
     FOREIGN KEY (orientation_id) REFERENCES orientation(id)
 )";
 
@@ -357,14 +357,14 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS udas_assessment (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     schedule_id INT(6) UNSIGNED,
-    area VARCHAR(100) NOT NULL,
-    comments VARCHAR(500) NOT NULL,
-    remarks VARCHAR(500) NOT NULL,
-    udas_assessment_file VARCHAR(255) NOT NULL,
-    submission_date VARCHAR(255) NOT NULL,
-    qad_officer VARCHAR(255) NOT NULL,
-    qad_officer_signature VARCHAR(255) NOT NULL,
-    qad_director VARCHAR(255) NOT NULL,
+    area VARCHAR(80) NOT NULL,
+    comments VARCHAR(100) NOT NULL,
+    remarks VARCHAR(100) NOT NULL,
+    udas_assessment_file VARCHAR(50) NOT NULL,
+    submission_date VARCHAR(10) NOT NULL,
+    qad_officer VARCHAR(50) NOT NULL,
+    qad_officer_signature VARCHAR(50) NOT NULL,
+    qad_director VARCHAR(50) NOT NULL,
     FOREIGN KEY (schedule_id) REFERENCES schedule(id)
 )";
 
@@ -378,9 +378,9 @@ $sql = "CREATE TABLE IF NOT EXISTS NDA (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     team_id INT(6) UNSIGNED,
     date_added DATE NOT NULL,
-    internal_accreditor VARCHAR(255) NOT NULL,
-    internal_accreditor_signature VARCHAR(255) NOT NULL,
-    NDA_file VARCHAR(255) NOT NULL,
+    internal_accreditor VARCHAR(50) NOT NULL,
+    internal_accreditor_signature VARCHAR(50) NOT NULL,
+    NDA_file VARCHAR(50) NOT NULL,
     FOREIGN KEY (team_id) REFERENCES team(id)
 )";
 
@@ -393,7 +393,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS NDA_compilation (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     team_id INT(6) UNSIGNED,
-    NDA_compilation_file VARCHAR(255) NOT NULL,
+    NDA_compilation_file VARCHAR(50) NOT NULL,
     FOREIGN KEY (team_id) REFERENCES team(id)
 )";
 
