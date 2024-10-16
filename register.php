@@ -300,9 +300,9 @@ As a user, you have the right to access, update, or correct your personal data. 
 
 <strong>6. Data Retention </strong><br>We retain your personal data only for as long as necessary to fulfill the purposes for which it was collected or as required by law.<br><br>
 
-If you have any questions or concerns regarding the use of your electronic signature or these terms and conditions, please contact us at usepqad@gmail.com.<br><br>
+If you have any questions or concerns regarding the use of your personal data or these terms and conditions, please contact us at usepqad@gmail.com.<br><br>
 
-By clicking "Agree," you consent to the use of your electronic signature as described above and agree to the security measures implemented for its protection.</p><br><br>
+By clicking "Agree," you consent to the use of personal data as described above and agree to the security measures implemented for its protection.</p><br><br>
                 <label>
                     <input type="checkbox" id="agreeTermsCheckbox"> I agree to the terms and conditions
                 </label><br><br>

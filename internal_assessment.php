@@ -12,9 +12,11 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
+$is_admin = false;
 
 // Check user type and redirect accordingly
 if ($user_id === 'admin' && basename($_SERVER['PHP_SELF']) !== 'admin_sidebar.php') {
+    $is_admin = true;
     header("Location: admin_sidebar.php");
     exit();
 } else {
@@ -331,23 +333,103 @@ function intToRoman($num) {
 
         <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
         <div style="height: 10px; width: 0px;"></div>
-        <div class="container">
-            <div class="header1">
-                <div class="nav-list">
-                    <a href="internal.php" class="profile1">Profile <i class="fa-regular fa-user"></i></a>
-                    <a href="internal_notification.php" class="orientation1" style="position: relative;">
-                        NOTIFICATION<i class="fa-regular fa-bell" style="position: relative;">
-                            <?php if ($notification_count > 0): ?>
-                                <span id="notificationCount" class="notification-count"><?php echo $notification_count; ?></span>
-                            <?php endif; ?>
-                        </i>
+        <nav id="sidebar">
+            <ul class="sidebar-nav">
+                <li class="sidebar-item has-dropdown">
+                    <a href="#" class="sidebar-link">
+                        <span style="margin-left: 8px;">Schedule</span>
                     </a>
-                    <a href="internal_assessment.php" class="active assessment1">Assessment<i class="fa-solid fa-medal"></i></a>
-                    <a href="internal_orientation.php" class="orientation1">Orientation<i class="fa-regular fa-calendar"></i></a>
-                    <a class="logout" onclick="openLogoutModal()"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
-                </div>
-            </div>
-        </div>
+                    <div class="sidebar-dropdown">
+                        <a href="dashboard.php" class="sidebar-link">
+                            <span style="margin-left: 8px;">View Schedule</span>
+                        </a>
+                        <a href="<?php echo $is_admin ? 'schedule.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">Add Schedule</span>
+                        </a>
+                        <a href="<?php echo $is_admin ? 'orientation.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">View Orientation</span>
+                        </a>
+                        <a href="<?php echo $is_admin === false ? 'internal_orientation.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">Request Orientation</span>
+                        </a>
+                    </div>
+                </li>
+                <li class="sidebar-item has-dropdown">
+                    <a href="#" class="sidebar-link">
+                        <span style="margin-left: 8px;">College</span>
+                    </a>
+                    <div class="sidebar-dropdown">
+                        <a href="college.php" class="sidebar-link">
+                            <span style="margin-left: 8px;">View College</span>
+                        </a>
+                        <a href="<?php echo $is_admin ? 'college.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">Add College</span>
+                        </a>
+                    </div>
+                </li>
+                <li class="sidebar-item has-dropdown">
+                    <a href="#" class="sidebar-link-active">
+                        <span style="margin-left: 8px;">Assessment</span>
+                    </a>
+                    <div class="sidebar-dropdown">
+                        <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
+                            <span style="margin-left: 8px;">View Assessments</span>
+                        </a>
+                        <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">UDAS Assessments</span>
+                        </a>
+                    </div>
+                </li>
+                <li class="sidebar-item has-dropdown">
+                    <a href="#" class="sidebar-link">
+                        <span style="margin-left: 8px;">Administrative</span>
+                    </a>
+                    <div class="sidebar-dropdown">
+                        <a href="<?php echo $is_admin ? 'area.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">View Area</span>
+                        </a>
+                        <a href="<?php echo $is_admin ? 'registration.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">Register Verification</span>
+                        </a>
+                        <a href="<?php echo $is_admin ? 'college_transfer.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">College Transfer</span>
+                        </a>
+                    </div>
+                </li>
+                <li class="sidebar-item has-dropdown">
+                    <a href="#" class="sidebar-link">
+                        <span style="margin-left: 8px;">Reports</span>
+                    </a>
+                    <div class="sidebar-dropdown">
+                        <a href="<?php echo $is_admin === false ? 'internal_assigned_schedule.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">View Assigned Schedule</span></a>
+                        <a href="reports_dashboard.php" class="sidebar-link">
+                            <span style="margin-left: 8px;">View Programs</span></a>
+                        <a href="program_timeline.php" class="sidebar-link">
+                            <span style="margin-left: 8px;">View Timeline</span></a>
+                        <a href="<?php echo $is_admin ? 'reports_member.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">View Accreditors</span></a>
+                    </div>
+                </li>
+                <li class="sidebar-item has-dropdown">
+                    <a href="#" class="sidebar-link">
+                        <span style="margin-left: 8px;">Account</span>
+                    </a>
+
+                    <div class="sidebar-dropdown">
+                        <a href="<?php echo $is_admin ? 'admin_sidebar.php' : 'internal.php'; ?>" class="sidebar-link">
+                            <span style="margin-left: 8px;">Profile</span>
+                        </a>
+                        <a href="<?php echo $is_admin === false ? 'internal_notification.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">Notifications</span>
+                        </a>
+                        <a href="logout.php" class="sidebar-link">
+                            <span style="margin-left: 8px;">Logout</span>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </nav>
     <div class="container">
         <div style="height: 32px;"></div>
         <div class="orientation2">

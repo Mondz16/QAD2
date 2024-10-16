@@ -301,6 +301,7 @@ if (!isset($_SESSION['user_id'])) {
 
     function fetchPrograms() {
         var collegeId = document.getElementById('college').value;
+        console.log(collegeId);
         if (collegeId) {
             $.ajax({
                 url: 'get_programs.php',
@@ -309,6 +310,7 @@ if (!isset($_SESSION['user_id'])) {
                     college_id: collegeId
                 },
                 success: function(response) {
+                    console.log(response);
                     $('#program').html(response);
                     $('#program-level').html(''); // Clear the program level display
                     $('#level').val(''); // Clear the program level display

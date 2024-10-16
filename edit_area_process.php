@@ -51,17 +51,21 @@ try {
     // Remove parameters if there are any marked for removal
     if (!empty($removed_parameter_ids)) {
         $removed_ids = explode(',', $removed_parameter_ids);
-
+    
+        // Add the area_id to the list of parameters
+        $removed_ids[] = $area_id; // Add area_id to the end of the array
+    
         // Use placeholders to prepare a single DELETE statement
-        $placeholders = implode(',', array_fill(0, count($removed_ids), '?'));
+        $placeholders = implode(',', array_fill(0, count($removed_ids) - 1, '?')); // All removed IDs placeholders
         $sql = "DELETE FROM parameters WHERE id IN ($placeholders) AND area_id = ?";
-        
+    
         // Prepare the statement and dynamically bind the parameter ids and area id
         $stmt = $conn->prepare($sql);
-        $types = str_repeat('i', count($removed_ids)) . 'i'; // 'i' for each parameter ID, plus one more for the area ID
-        $stmt->bind_param($types, ...$removed_ids, $area_id);
+        $types = str_repeat('i', count($removed_ids)); // 'i' for each parameter ID and the area ID
+        $stmt->bind_param($types, ...$removed_ids); // Unpack the IDs and area_id together
         $stmt->execute();
     }
+    
 
     // Commit the transaction
     $conn->commit();
