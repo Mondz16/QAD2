@@ -2,9 +2,12 @@
 
 include 'connection.php';
 
+// Get and sanitize the college name and college code from the GET parameters
 $college_name = urldecode($_GET['college']);
 $college_code = htmlspecialchars($_GET['college_code']); // Added to get college_code
-$sql = "SELECT s.id, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status
+
+// Update the SQL query to include the manually_unlocked column from the schedule table
+$sql = "SELECT s.id, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status, s.manually_unlocked
         FROM schedule s
         JOIN program p ON s.program_id = p.id
         JOIN college c ON s.college_code = c.code
@@ -12,13 +15,13 @@ $sql = "SELECT s.id, p.program_name, s.level_applied, s.schedule_date, s.schedul
         AND s.schedule_status NOT IN ('passed', 'failed')
         ORDER BY s.schedule_date, s.schedule_time";
 
-
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $college_name);
 $stmt->execute();
 $result = $stmt->get_result();
 
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -211,21 +214,49 @@ $result = $stmt->get_result();
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
 
-                    // Set the timezone to Asia/Manila
-                    date_default_timezone_set('Asia/Manila');
+                <?php
+                date_default_timezone_set('Asia/Manila');
 
-                    if ($result->num_rows > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            $schedule_date = date("F-d-Y", strtotime($row['schedule_date']));
-                            $schedule_time = date("h:i A", strtotime($row['schedule_time']));
+                if ($result->num_rows > 0) {
+                    while ($row = $result->fetch_assoc()) {
+                        $schedule_date = date("F-d-Y", strtotime($row['schedule_date']));
+                        $schedule_time = date("h:i A", strtotime($row['schedule_time']));
 
-                            // Create DateTime objects with the Asia/Manila timezone
-                            $scheduleDateTime = new DateTime($row['schedule_date'] . ' ' . $row['schedule_time'], new DateTimeZone('Asia/Manila'));
-                            $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
+                        // Create DateTime objects with the Asia/Manila timezone
+                        $scheduleDateTime = new DateTime($row['schedule_date'] . ' ' . $row['schedule_time'], new DateTimeZone('Asia/Manila'));
+                        $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
 
-                            if ($currentDateTime > $scheduleDateTime && $row['schedule_status'] === 'approved' && $row['schedule_status'] !== 'cancelled') {
+                        // Create date-only and time-only objects for the current and schedule dates
+                        $currentDate = new DateTime($currentDateTime->format('Y-m-d'), new DateTimeZone('Asia/Manila'));
+                        $scheduleDate = new DateTime($scheduleDateTime->format('Y-m-d'), new DateTimeZone('Asia/Manila'));
+                        $currentTime = $currentDateTime->format('H:i');  // Get the current time in 24-hour format
+
+                        // Set a grace period (24 hours after the schedule date and time)
+                        $gracePeriodEnd = clone $scheduleDateTime;
+                        $gracePeriodEnd->modify('+24 hours');
+
+                        // Automatically mark as done if the current date matches the schedule date and time is 5 PM or later, 
+                        // or if the current date is after the schedule date, but only if it hasn't been manually unlocked
+                        if (($currentDate == $scheduleDate && $currentTime >= '17:00') || $currentDate > $scheduleDate) {
+                            
+                            // Check if the grace period has passed
+                            if ($currentDateTime > $gracePeriodEnd) {
+                                // Reset the manually_unlocked flag if the grace period has passed and it was manually unlocked
+                                if ($row['manually_unlocked'] == 1) {
+                                    $reset_sql = "UPDATE schedule SET manually_unlocked = 0 WHERE id = ?";
+                                    $reset_stmt = $conn->prepare($reset_sql);
+                                    $reset_stmt->bind_param("i", $row['id']);
+                                    $reset_stmt->execute();
+                                    $reset_stmt->close();
+                                    
+                                    // Update the flag in the current row so it doesn't need to be done again in this iteration
+                                    $row['manually_unlocked'] = 0;
+                                }
+                            }
+
+                            // Automatically mark as done if it hasn't been manually unlocked or if the grace period has passed
+                            if ($row['schedule_status'] === 'approved' && $row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'done' && $row['manually_unlocked'] == 0) {
                                 // Update the schedule status to "done" in the database
                                 $update_sql = "UPDATE schedule SET schedule_status = 'done' WHERE id = ?";
                                 $update_stmt = $conn->prepare($update_sql);
@@ -236,39 +267,54 @@ $result = $stmt->get_result();
                                 // Update the status in the current row data
                                 $row['schedule_status'] = 'done';
                             }
+                        }                        
 
-                            echo "<tr class='schedule-row' data-status='" . htmlspecialchars($row['schedule_status']) . "'>";
-                            echo "<td>" . htmlspecialchars($row['program_name']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['level_applied']) . "</td>";
-                            echo "<td>" . htmlspecialchars($schedule_date) . "</td>";
-                            echo "<td>" . htmlspecialchars($schedule_time) . "</td>";
-                            if ($row['schedule_status'] !== 'pending') {
-                                echo "<td>" . htmlspecialchars($row['schedule_status']) . "</td>";
-                            } else {
-                                echo "<td>waiting for approval</td>";
-                            }
-                            echo "<td>";
-                            echo "<button class='button view-team' onclick='openTeamModal(" . $row['id'] . ")'>
-                                        <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-people' viewBox='0 0 16 16'>
-                                            <path d='M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4'/>
-                                        </svg>
-                                    </button>";
+                        // Start displaying the table row
+                        echo "<tr class='schedule-row' data-status='" . htmlspecialchars($row['schedule_status']) . "'>";
+                        echo "<td>" . htmlspecialchars($row['program_name']) . "</td>";
+                        echo "<td>" . htmlspecialchars($row['level_applied']) . "</td>";
+                        echo "<td>" . htmlspecialchars($schedule_date) . "</td>";
+                        echo "<td>" . htmlspecialchars($schedule_time) . "</td>";
 
-                            if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'approved' && $row['schedule_status'] !== 'done' && $row['schedule_status'] !== 'finished') {
-                                echo "<button class='button approve mt-lg-0 mt-1' onclick='openApproveModal(" . $row['id'] . ")'>APPROVE</button>";
-                                echo "<button class='button reschedule mt-lg-0 mt-1' onclick='openRescheduleModal(" . $row['id'] . ")'>RESCHEDULE</button>";
-                                echo "<button class='button cancel mt-lg-0 mt-1' onclick='openCancelModal(" . $row['id'] . ")'>CANCEL</button>";
-                            }
-                            echo "</td>";
-                            echo "</tr>";
+                        // Schedule status column
+                        if ($row['schedule_status'] !== 'pending') {
+                            echo "<td>" . htmlspecialchars($row['schedule_status']) . "</td>";
+                        } else {
+                            echo "<td>waiting for approval</td>";
                         }
-                    } else {
-                        echo "<tr><td colspan='6'>No schedules found for this college</td></tr>";
-                    }
 
-                    $stmt->close();
-                    $conn->close();
-                    ?>
+                        echo "<td>";
+
+                        // Always show the "View Team" button
+                        echo "<button class='button view-team' onclick='openTeamModal(" . $row['id'] . ")'>
+                                    <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-people' viewBox='0 0 16 16'>
+                                        <path d='M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4'/>
+                                    </svg>
+                                </button>";
+
+                        // Display the "UNLOCK" button if the schedule is marked as "done" and it's still within the 24-hour grace period
+                        if ($row['schedule_status'] === 'done' && $currentDateTime <= $gracePeriodEnd) {
+                            echo "<button class='button unlock mt-lg-0 mt-1' onclick='unlockSchedule(" . $row['id'] . ")'>UNLOCK</button>";
+                        }
+
+                        // Other buttons (Approve, Reschedule, Cancel) if the schedule is not cancelled, approved, done, or finished
+                        if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'approved' && $row['schedule_status'] !== 'done' && $row['schedule_status'] !== 'finished') {
+                            echo "<button class='button approve mt-lg-0 mt-1' onclick='openApproveModal(" . $row['id'] . ")'>APPROVE</button>";
+                            echo "<button class='button reschedule mt-lg-0 mt-1' onclick='openRescheduleModal(" . $row['id'] . ")'>RESCHEDULE</button>";
+                            echo "<button class='button cancel mt-lg-0 mt-1' onclick='openCancelModal(" . $row['id'] . ")'>CANCEL</button>";
+                        }
+
+                        echo "</td>";
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='6'>No schedules found for this college</td></tr>";
+                }
+
+                $stmt->close();
+                $conn->close();
+                ?>
+
                 </tbody>
             </table>
         </div>
@@ -574,6 +620,30 @@ document.getElementById('closeErrorPopup').addEventListener('click', function() 
         function openDatePicker(id) {
             document.getElementById(id).showPicker();
         }
+
+        function unlockSchedule(scheduleId) {
+    if (confirm("Are you sure you want to unlock this schedule?")) {
+        // Send an AJAX request to unlock the schedule
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "unlock_schedule.php", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        // Handle the response
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                // Success, notify the user
+                alert(xhr.responseText);
+                location.reload();  // Reload the page to show the updated status
+            } else if (xhr.readyState == 4) {
+                // Handle error responses
+                alert("An error occurred: " + xhr.responseText);
+            }
+        };
+
+        // Send the schedule ID to the server
+        xhr.send("id=" + scheduleId);
+    }
+}
 
     </script>
 </body>

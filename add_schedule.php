@@ -217,7 +217,7 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
                     <div class="form-group">
                         <label for="time">TIME:</label>
-                        <input type="time" id="time" name="time" required style="cursor: pointer;" onclick="openDatePicker('time')">
+                        <input type="time" id="time" name="time" required style="cursor: pointer;" onchange="checkScheduleDate()" onclick="openDatePicker('time')">
                     </div>
                     <div class="form-group">
                         <label for="zoom">ZOOM:</label>
@@ -254,7 +254,7 @@ if (!isset($_SESSION['user_id'])) {
             <div style="height: 50px; width: 0px;"></div>
             <img class="Error" src="images/Error.png" height="100">
             <div style="height: 20px; width: 0px;"></div>
-            <div class="popup-text">A schedule for the selected date already exists.</div>
+            <div class="popup-text">A schedule for the selected date, and time already exists.</div>
             <div style="height: 50px; width: 0px;"></div>
             <a href="#" class="okay" id="closeErrorPopup">Okay</a>
             <div style="height: 100px; width: 0px;"></div>
@@ -503,23 +503,24 @@ if (!isset($_SESSION['user_id'])) {
         checkAvailableLeadersAndMembers();
     }
 
-    // Function to check if the selected date has a conflict
+    // Function to check if the selected date and time have a conflict
     function checkScheduleDate(callback) {
         var date = document.getElementById('date').value;
+        var time = document.getElementById('time').value; // Get time value
         var exclude_schedule_id = document.getElementById('exclude_schedule_id') ? document.getElementById('exclude_schedule_id').value : null;
         
-        if (date) {
+        if (date && time) { // Ensure both date and time are selected
             $.ajax({
                 url: 'check_schedule.php',
                 type: 'POST',
-                data: { date: date, exclude_schedule_id: exclude_schedule_id },
+                data: { date: date, time: time, exclude_schedule_id: exclude_schedule_id }, // Include time in the request
                 success: function(response) {
                     var data = JSON.parse(response);
                     if (data.status === 'exists') {
                         // Check if the conflicting schedule status is 'approved' or 'pending'
                         if (data.schedule_status === 'approved' || data.schedule_status === 'pending') {
                             document.getElementById('errorPopup').style.display = 'block';
-                            if (callback) callback(false); // Date conflict with status, callback with false
+                            if (callback) callback(false); // Date and time conflict with status, callback with false
                         } else {
                             if (callback) callback(true); // Date conflict but status is not approved/pending, callback with true
                         }
@@ -533,7 +534,7 @@ if (!isset($_SESSION['user_id'])) {
                 }
             });
         } else {
-            if (callback) callback(true); // No date selected, continue with submission
+            if (callback) callback(true); // No date or time selected, continue with submission
         }
     }
 
@@ -558,7 +559,7 @@ if (!isset($_SESSION['user_id'])) {
             }
         });
     });
-
+    
     // Event listener for closing the error popup
     document.getElementById('closeErrorPopup').addEventListener('click', function() {
         document.getElementById('errorPopup').style.display = 'none';

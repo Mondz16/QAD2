@@ -44,15 +44,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    // Check if the date already exists
-    $sql_check_status = "SELECT id FROM schedule WHERE schedule_date = ? AND schedule_status NOT IN ('cancelled', 'finished', 'failed', 'passed')";
-    $stmt_check_date = $conn->prepare($sql_check_status);
-    $stmt_check_date->bind_param("s", $date);
-    $stmt_check_date->execute();
-    $stmt_check_date->store_result();
+    // Check if the same date and time already exists in the schedule
+$sql_check_status = "SELECT id FROM schedule WHERE schedule_date = ? AND schedule_time = ? AND schedule_status NOT IN ('cancelled', 'finished', 'failed', 'passed')";
+$stmt_check_date = $conn->prepare($sql_check_status);
+$stmt_check_date->bind_param("ss", $date, $time); // Bind both date and time
+$stmt_check_date->execute();
+$stmt_check_date->store_result();
 
-    if ($stmt_check_date->num_rows > 0) {
-        echo "<!DOCTYPE html>
+if ($stmt_check_date->num_rows > 0) {
+    echo "<!DOCTYPE html>
 <html lang=\"en\">
 <head>
     <meta charset=\"UTF-8\">
@@ -118,7 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <img class=\"Error\" src=\"images/Error.png\" height=\"100\">
         <div style=\"height: 25px; width: 0px;\"></div>
         <div class=\"message\">
-            Error: Schedule already exists for the selected date.
+            Schedule already exists for the selected date and time.
         </div>
         <div style=\"height: 50px; width: 0px;\"></div>
             <a href=\"add_schedule.php\" class=\"btn-hover\">OKAY</a>
@@ -127,12 +127,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </body>
 </html>";
-        $stmt_check_date->close();
-        $conn->close();
-        exit();
-    }
-
     $stmt_check_date->close();
+    $conn->close();
+    exit();
+}
+
+$stmt_check_date->close();
+
 
     date_default_timezone_set('Asia/Manila');
     $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
@@ -144,7 +145,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
         // Insert into schedule table
         $sql_schedule = "INSERT INTO schedule (college_code, program_id, level_applied, level_validity, schedule_date, schedule_time, zoom, status_date)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt_schedule = $conn->prepare($sql_schedule);
         $stmt_schedule->bind_param("sissssss", $collegeId, $programId, $level, $level_validity, $date, $time, $zoom, $result);
@@ -154,7 +155,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Insert team leader into team table
         $sql_insert_leader = "INSERT INTO team (schedule_id, internal_users_id, role, status)
-                              VALUES (?, ?, 'Team Leader', 'pending')";
+                            VALUES (?, ?, 'Team Leader', 'pending')";
         $stmt_insert_leader = $conn->prepare($sql_insert_leader);
         $stmt_insert_leader->bind_param("is", $schedule_id, $team_leader_id);
         $stmt_insert_leader->execute();
@@ -162,7 +163,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Insert team members into team table
         $sql_insert_members = "INSERT INTO team (schedule_id, internal_users_id, role, status)
-                               VALUES (?, ?, 'Team Member', 'pending')";
+                            VALUES (?, ?, 'Team Member', 'pending')";
 
         foreach ($team_members_ids as $member_id) {
             $stmt_insert_members = $conn->prepare($sql_insert_members);
@@ -247,15 +248,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->isHTML(true);
             $mail->Subject = 'New Schedule Notification';
             $mail->Body    = "Dear Team,<br><br>A new schedule has been added:<br><br>
-                              College: $college_name<br>
-                              Program: $program_name<br>
-                              Level Applied: $level<br>
-                              Date: $formatted_date<br>
-                              Time: $formatted_time<br>
-                              $zoom_link_section<br>
-                              <strong>Team Leader:</strong> $team_leader_name<br>
-                              <strong>Team Members:</strong><br><ul>$team_members_list</ul><br>
-                              Best regards,<br>USeP - Quality Assurance Division";
+                            College: $college_name<br>
+                            Program: $program_name<br>
+                            Level Applied: $level<br>
+                            Date: $formatted_date<br>
+                            Time: $formatted_time<br>
+                            $zoom_link_section<br>
+                            <strong>Team Leader:</strong> $team_leader_name<br>
+                            <strong>Team Members:</strong><br><ul>$team_members_list</ul><br>
+                            Best regards,<br>USeP - Quality Assurance Division";
 
             $mail->send();
 

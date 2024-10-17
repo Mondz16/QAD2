@@ -192,7 +192,8 @@ $sql = "CREATE TABLE IF NOT EXISTS schedule (
     schedule_date DATE NOT NULL,
     schedule_time TIME NOT NULL,
     zoom VARCHAR(50),
-    schedule_status ENUM('pending', 'approved', 'cancelled', 'finished', 'failed', 'passed') NOT NULL DEFAULT 'pending',
+    schedule_status ENUM('pending', 'approved', 'cancelled', 'finished', 'failed', 'passed', 'done') NOT NULL DEFAULT 'pending',
+    manually_unlocked TINYINT(1) DEFAULT 0,
     status_date DATETIME NOT NULL,
     FOREIGN KEY (college_code) REFERENCES college(code),
     FOREIGN KEY (program_id) REFERENCES program(id)
@@ -411,7 +412,7 @@ if ($result_check_admin->num_rows === 0) {
     $hashed_password = password_hash("admin", PASSWORD_DEFAULT);
 
     $sql_create_admin = "INSERT INTO admin (user_id, password, profile_picture) 
-                         VALUES ('admin', '$hashed_password', 'Profile Pictures/placeholder.jpg')";
+                        VALUES ('admin', '$hashed_password', 'Profile Pictures/placeholder.jpg')";
 
     if ($conn->query($sql_create_admin) === TRUE) {
         echo "Admin account created successfully<br>";

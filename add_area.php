@@ -27,7 +27,36 @@ if (!isset($_SESSION['user_id'])) {
         <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
         <div class="container">
             <div class="header">
-                <!-- Your existing header code -->
+            <div class="headerLeft">
+                    <div class="USePData">
+                        <img class="USeP" src="images/USePLogo.png" height="36">
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div class="headerLeftText">
+                            <div class="onedata" style="height: 100%; width: 100%; display: flex; flex-flow: unset; place-content: unset; align-items: unset; overflow: unset;">
+                                <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
+                                    <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                </h>
+                            </div>
+                            <h>Accreditor Portal</h>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="headerRight">
+                    <div class="QAD">
+                        <div class="headerRightText">
+                            <h style="color: rgb(87, 87, 87); font-weight: 600; font-size: 16px;">Quality Assurance Division</h>
+                        </div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
+                        <div style="height: 0px; width: 16px;"></div>
+                        <img class="USeP" src="images/QADLogo.png" height="36">
+                    </div>
+                </div>
             </div>
         </div>
         <div style="height: 1px; width: 100%; background: #E5E5E5"></div>

@@ -227,17 +227,6 @@ foreach ($schedules as $schedule) {
     $stmt_nda->close();
 }
 
-// Fetch areas from the database
-$areas = [];
-$sql = "SELECT id, area_name FROM area";
-$result = $conn->query($sql);
-
-if ($result) {
-    while ($row = $result->fetch_assoc()) {
-        $areas[$row['id']] = $row['area_name'];
-    }
-}
-
 // Function to convert an integer to Roman numeral
 function intToRoman($num) {
     $map = [
@@ -435,6 +424,67 @@ function intToRoman($num) {
         <div class="orientation2">
             <?php if (!empty($schedules)): ?>
                 <?php foreach ($schedules as $index => $schedule): ?>
+                    <?php
+                    // Initialize the $areas array for this schedule
+                    $areas = [];
+
+                    // Fetch areas dynamically based on level_applied and program_name
+                    if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2) {
+                        // Level 1 and 2 areas
+                        $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+                            'Vision, Mission, Goals, and Objectives', 
+                            'Faculty', 
+                            'Curriculum and Instruction', 
+                            'Support to Students', 
+                            'Research', 
+                            'Extension and Community Development', 
+                            'Library', 
+                            'Physical Plant and Facilities', 
+                            'Laboratories', 
+                            'Administration'
+                        )";
+                    } elseif ($schedule['level_applied'] == 3) {
+                        // Level 3 areas
+                        if (strpos($schedule['program_name'], 'Bachelor') === 0) {
+                            // Program name starts with "Bachelor"
+                            $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+                                'Curriculum and Instruction', 
+                                'Extension and Community Development', 
+                                'Faculty Development', 
+                                'Licensure Exam', 
+                                'Consortia or linkages', 
+                                'Library'
+                            )";
+                        } else {
+                            // Program name does NOT start with "Bachelor"
+                            $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+                                'Curriculum and Instruction', 
+                                'Research', 
+                                'Faculty Development', 
+                                'Licensure Exam', 
+                                'Consortia or linkages', 
+                                'Library'
+                            )";
+                        }
+                    } elseif ($schedule['level_applied'] == 4) {
+                        // Level 4 areas
+                        $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+                            'Research', 
+                            'Curriculum and Instruction', 
+                            'Extension and Community Development', 
+                            'Consortia or linkages', 
+                            'Administration'
+                        )";
+                    }
+
+                    // Execute the query to get areas for this schedule
+                    $result_areas = $conn->query($sql_areas);
+                    if ($result_areas) {
+                        while ($row = $result_areas->fetch_assoc()) {
+                            $areas[$row['id']] = $row['area_name']; // Store area id and name
+                        }
+                    }
+                    ?>
                     <div class="notification-list1">
                         <div class="orientation3">
                             <div class="container">
@@ -533,7 +583,12 @@ function intToRoman($num) {
                             </div>
                         <div class="bodyRight2">
                         <?php if ($schedule['role'] === 'Team Leader'): ?>
-                            <?php if ($schedule['schedule_status'] !== 'approved'): ?>
+                            <?php if ($schedule['schedule_status'] == 'done'): ?>
+                                <!-- Logic for displaying "locked" message when schedule is done for Team Leader -->
+                                <p>ASSESSMENT</p>
+                                <div style="height: 10px;"></div>
+                                <p class="pending-assessments">THIS SCHEDULE IS LOCKED.</p>
+                            <?php elseif ($schedule['schedule_status'] == 'pending'): ?>
                                 <p>SCHEDULE STATUS</p>
                                 <div style="height: 10px;"></div>
                                 <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button> 
@@ -692,10 +747,15 @@ function intToRoman($num) {
                                 <?php endif; ?>
                             <?php endif; ?>
                         <?php else: ?>
-                            <?php if ($schedule['schedule_status'] !== 'approved'): ?>
+                            <?php if ($schedule['schedule_status'] == 'pending'): ?>
                                 <p>SCHEDULE STATUS</p>
                                 <div style="height: 10px;"></div>
-                                <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button> 
+                                <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button>
+                            <?php elseif ($schedule['schedule_status'] == 'done'): ?>
+                                <!-- Logic for displaying "locked" message when schedule is done for non-Team Leader -->
+                                <p>ASSESSMENT</p>
+                                <div style="height: 10px;"></div>
+                                <p class="pending-assessments">THIS SCHEDULE IS LOCKED.</p>
                             <?php else: ?>
                                 <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
                                     <p>NON-DISCLOSURE AGREEMENT</p>
@@ -717,7 +777,6 @@ function intToRoman($num) {
                             <?php endif; ?>
                         <?php endif; ?>
                     </div>
-
                         </div>
                         </div>
                         </div>

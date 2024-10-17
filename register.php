@@ -275,43 +275,6 @@ if (isset($_SESSION['user_id'])) {
             <div class="hairpop-up"></div>
         </div>
     </div>
-    
-    <!-- Terms and Conditions Modal -->
-    <div id="termsModal" class="popup2" style="display:none;">
-        <div class="esign-popup-content">
-            <div style="height: 20px; width: 0px;"></div>
-                <h2>Terms and Conditions for <br>Data Collection</h2>
-                <p>By agreeing to this statement, you consent to the following terms and conditions the collection, use, and processing of your personal data:<br><br>
-
-                <strong>1. Data Collection and Use</strong><br>
-By accessing and using our website, you agree to the collection and use of your personal information in accordance with Republic Act No. 10173 (Data Privacy Act of 2012). We collect personal data such as name, email address, contact information, and other details necessary for providing our services.<br><br>
-
-<strong>2. Data Protection </strong><br>
-We are committed to safeguarding your personal data. All information collected is securely stored and protected against unauthorized access, use, or disclosure. We implement industry-standard security measures to ensure data protection.<br><br>
-
-<strong>3. Purpose of Data Collection</strong><br>
-Your data is collected to improve user experience, process transactions, and provide personalized content. We ensure that your information is used only for legitimate purposes in line with your engagement with our website.<br><br>
-
-<strong>4. Data Sharing and Transfer </strong><br>
-Your information will not be shared with third parties unless required by law or necessary for the services you have requested. We do not sell, trade, or otherwise transfer your personal information without your explicit consent.<br><br>
-
-<strong>5. Rights of the Data Subject</strong><br>
-As a user, you have the right to access, update, or correct your personal data. You may also request the deletion of your information or object to its processing, in accordance with RA 10173.<br><br>
-
-<strong>6. Data Retention </strong><br>We retain your personal data only for as long as necessary to fulfill the purposes for which it was collected or as required by law.<br><br>
-
-If you have any questions or concerns regarding the use of your personal data or these terms and conditions, please contact us at usepqad@gmail.com.<br><br>
-
-By clicking "Agree," you consent to the use of personal data as described above and agree to the security measures implemented for its protection.</p><br><br>
-                <label>
-                    <input type="checkbox" id="agreeTermsCheckbox"> I agree to the terms and conditions
-                </label><br><br>
-                <div class="e-sign-container">
-                    <button class="cancel-button1" id="closeTermsBtn" type="button">CLOSE</button>
-                    <button class="approve-assessment-button" id="acceptTerms" disabled>SUBMIT</button>
-                </div>
-        </div>
-    </div>
 
     <div id="customLoadingOverlay" class="custom-loading-overlay custom-spinner-hidden">
         <div class="custom-spinner"></div>
@@ -447,23 +410,8 @@ By clicking "Agree," you consent to the use of personal data as described above 
             document.getElementById('errorMessage').innerHTML = errorMessage;
             document.getElementById('errorPopup').style.display = 'block';
         } else {
-            document.getElementById('termsModal').style.display = 'block';
+            document.getElementById('registerForm').submit();
         }
-    });
-
-    document.getElementById('agreeTermsCheckbox').addEventListener('change', function() {
-        var acceptButton = document.getElementById('acceptTerms');
-        if (this.checked) {
-            acceptButton.disabled = false;
-            acceptButton.classList.remove('disabled');
-        } else {
-            acceptButton.disabled = true;
-            acceptButton.classList.add('disabled');
-        }
-    });
-
-    document.getElementById('acceptTerms').addEventListener('click', function() {
-        document.getElementById('registerForm').submit();
     });
 
     document.getElementById('closePopup').addEventListener('click', function() {
