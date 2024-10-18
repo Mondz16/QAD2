@@ -20,7 +20,7 @@
     <div class="wrapper">
         <!-- Sidebar -->
         <aside id="sidebar">
-        <div class="row" style=" background: linear-gradient(275.52deg, #CD7E7E 0%, #FF7A7A 96%); height: 9px;"></div>
+        <div class="row" style=" background: linear-gradient(275.52deg, #CD7E7E 0%, #B73033 96%); height: 9px;"></div>
             <div class="d-flex">
                 <button class="toggle-btn" type="button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-grid" viewBox="0 0 16 16">

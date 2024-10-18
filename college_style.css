@@ -127,7 +127,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .custom-btn-group .btn-colleges {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     color: white;
     border: none;
 }
@@ -179,7 +179,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-company:hover {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     color: white;
     font-weight: bold !important;
 }

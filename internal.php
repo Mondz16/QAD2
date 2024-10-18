@@ -181,7 +181,7 @@ $stmt_all_colleges->close();
                         <a href="college.php" class="sidebar-link">
                             <span style="margin-left: 8px;">View College</span>
                         </a>
-                        <a href="<?php echo $is_admin ? 'college.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                        <a href="<?php echo $is_admin ? 'add_college.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Add College</span>
                         </a>
                     </div>

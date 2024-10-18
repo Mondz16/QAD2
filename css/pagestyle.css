@@ -5,7 +5,7 @@ body {
     overflow-x: hidden;
 }
 .top-bar {
-    background: linear-gradient(275.52deg, #FF7A7A 0%, #CD7E7E 96%);
+    background: linear-gradient(275.52deg, #B73033 0%, #CD7E7E 96%);
     height: 9px;
 }
 .bg-white {
@@ -217,7 +217,7 @@ body {
     font-size: 16px;
 }
 .pobtn {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     color: white;
     border: none;
 }

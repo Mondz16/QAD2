@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             .hairpop-up {
                 height: 15px;
-                background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+                background: #9B0303;
                 position: absolute;
                 bottom: 0;
                 left: 0;

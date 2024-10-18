@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
     <div class="wrapper">
-        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+        <div class="hair" style="height: 15px; background: #9B0303;"></div>
         <div class="container">
             <div class="header">
                 <div class="headerLeft">

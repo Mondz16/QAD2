@@ -8,7 +8,7 @@
 
 .hair {
     height: 15px;
-    background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+    background: #9B0303;
 }
 
 .container, .container1 {
@@ -212,7 +212,7 @@
     font-size: 1rem;
     font-weight: bold;
     text-transform: uppercase;
-    background: #FF7A7A;
+    background: #B73033;
     border: unset;
     outline: unset;
     text-decoration: none;
@@ -268,13 +268,13 @@
 }
 
 .nav-list a.active {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     color: white;
     border-color: #AFAFAF;
 }
 
 .nav-list a:hover {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     color: white;
     border-color: #AFAFAF;
 }
@@ -568,7 +568,7 @@
 
 .hairpop-up {
     height: 15px;
-    background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+    background: #9B0303;
     position: absolute;
     bottom: 0;
     left: 0;
@@ -792,7 +792,7 @@
 
 /* Checked effect */
 #showPasswordCheckbox:checked + .custom-checkbox {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     border-color: rgb(87, 87, 87);
 }
 
@@ -826,7 +826,7 @@ input[type="radio"] {
 }
 
 .register-form input[type="radio"]:checked+label {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     color: white;
 }
 
@@ -1615,7 +1615,7 @@ canvas {
     border-width: 5px;
     border-style: solid;
     border-radius: 50%;
-    border-color: #FF7A7A; /* Custom color for the spinner */
+    border-color: #B73033; /* Custom color for the spinner */
     border-right-color: transparent; /* Transparent border to create the spinning effect */
     animation: custom-spin 0.75s linear infinite; /* Bootstrap-like spinning animation */
 }
@@ -1706,7 +1706,7 @@ a.sidebar-link-active {
     flex: 1;
     height: 50px;
     transition: .1s ease-in;
-    background-color: #FF7B7A;
+    background-color:  #B73033;
     border-radius: 10px;
     font-weight: bold;
     text-decoration: none;
@@ -1722,7 +1722,7 @@ a.sidebar-link span {
 }
 
 a.sidebar-link:hover, a.sidebar-link-active:hover {
-    background-color: #FF7B7A;
+    background-color:  #B73033;
     color: #fff;
 }
 
@@ -1769,6 +1769,6 @@ a.sidebar-link:hover, a.sidebar-link-active:hover {
 }
 
 .sidebar-dropdown a.sidebar-link:hover {
-    background-color: #FF7B7A;
+    background-color:  #B73033;
     color: #fff;
 }

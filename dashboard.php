@@ -208,14 +208,14 @@ $result = $conn->query($sql);
 
 
     #retain-button {
-        color: #FF7B7A;
-        border: 1px solid #FF7B7A;
+        color:  #B73033;
+        border: 1px solid  #B73033;
         transition: background-color .3s ease;
     }
 
     #retain-button:hover {
         color: #fff;
-        background-color: #FF7B7A;
+        background-color:  #B73033;
         border: 1px solid #DC7171;
     }
 
@@ -234,7 +234,7 @@ $result = $conn->query($sql);
 
     #retain-button-active {
         color: #fff;
-        background-color: #FF7B7A;
+        background-color:  #B73033;
         border: 1px solid #DC7171;
     }
 
@@ -256,8 +256,8 @@ $result = $conn->query($sql);
 
     .status-holder {
         display: inline-block;
-        color: #FF7B7A;
-        border: 1px solid #FF7B7A;
+        color:  #B73033;
+        border: 1px solid  #B73033;
         padding: 5px 10px;
         margin: 0;
         text-align: center;
@@ -358,11 +358,11 @@ $result = $conn->query($sql);
     <div class="wrapper">
         <!-- Main Content -->
         <div class="main bg-white">
-            <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+            <div class="hair" style="height: 15px; background: #973939;"></div>
             <div class="container">
                 <div class="header">
                     <div class="headerLeft">
-                        <div class="USePData">
+                        <div class="USePData">  
                             <img class="USeP" src="images/USePLogo.png" height="36">
                             <div style="height: 0px; width: 16px;"></div>
                             <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
@@ -423,7 +423,7 @@ $result = $conn->query($sql);
                             <a href="college.php" class="sidebar-link">
                                 <span style="margin-left: 8px;">View College</span>
                             </a>
-                            <a href="<?php echo $is_admin ? 'college.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <a href="<?php echo $is_admin ? 'add_college.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">Add College</span>
                             </a>
                         </div>

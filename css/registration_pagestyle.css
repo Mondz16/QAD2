@@ -5,7 +5,7 @@ body {
     overflow-x: hidden;
 }
 .top-bar {
-    background: linear-gradient(275.52deg, #FF7A7A 0%, #CD7E7E 96%);
+    background: linear-gradient(275.52deg, #B73033 0%, #CD7E7E 96%);
     height: 9px;
 }
 .bg-white {
@@ -220,14 +220,14 @@ body {
 }
 
 .nebtn:hover {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     color: white;
     font-size: 18px !important;
     font-weight: bold;
 }
 
 .pobtn {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     color: white;
     border: none;
     height: 54px;
@@ -236,7 +236,7 @@ body {
 }
 
 .pobtn:hover {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     color: white;
 }
 
@@ -292,7 +292,7 @@ body {
 
 .hair {
     height: 9px;
-    background: linear-gradient(275.52deg, #CD7E7E 0%, #FF7A7A 96%);
+    background: linear-gradient(275.52deg, #CD7E7E 0%, #B73033 96%);
 }
 
 .admin-content {

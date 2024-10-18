@@ -8,7 +8,7 @@
 
 .hair {
     height: 15px;
-    background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+    background: #9B0303;
 }
 
 .container, .container1 {
@@ -169,13 +169,13 @@
 }
 
 .nav-list a.active {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     color: white;
     border-color: #AFAFAF;
 }
 
 .nav-list a:hover {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     color: white;
     border-color: #AFAFAF;
 }
@@ -417,7 +417,7 @@
 
 /* Checked effect */
 #showPasswordCheckbox:checked + .custom-checkbox {
-    background-color: #FF7A7A;
+    background-color: #B73033;
     border-color: rgb(87, 87, 87);
 }
 

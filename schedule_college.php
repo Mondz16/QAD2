@@ -71,7 +71,7 @@ $result = $stmt->get_result();
 
         .hairpop-up {
             height: 15px;
-            background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+            background: #9B0303;
             position: absolute;
             bottom: 0;
             left: 0;
@@ -103,7 +103,7 @@ $result = $stmt->get_result();
             width: 40px;
             height: 40px;
             border-width: 5px;
-            border-color: #FF7A7A !important; /* Enforce the custom color */
+            border-color: #B73033 !important; /* Enforce the custom color */
             border-right-color: transparent !important;
         }
 
@@ -142,7 +142,7 @@ $result = $stmt->get_result();
 
 <body>
     <div class="wrapper">
-        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+        <div class="hair" style="height: 15px; background: #9B0303;"></div>
         <div class="container">
             <div class="header">
                 <div class="headerLeft">

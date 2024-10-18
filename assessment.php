@@ -372,7 +372,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             border-width: 5px;
             border-style: solid;
             border-radius: 50%;
-            border-color: #FF7A7A;
+            border-color: #B73033;
             /* Custom color for the spinner */
             border-right-color: transparent;
             /* Transparent border to create the spinning effect */
@@ -429,7 +429,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
 <body>
     <div class="wrapper">
         <div class="main">
-            <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+            <div class="hair" style="height: 15px; background: #9B0303;"></div>
             <div class="container">
                 <div class="header">
                     <div class="headerLeft">
@@ -494,7 +494,7 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                             <a href="college.php" class="sidebar-link">
                                 <span style="margin-left: 8px;">View College</span>
                             </a>
-                            <a href="<?php echo $is_admin ? 'college.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <a href="<?php echo $is_admin ? 'add_college.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">Add College</span>
                             </a>
                         </div>

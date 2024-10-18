@@ -166,7 +166,7 @@ if (!empty($schedules)) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .internal-external input[type="radio"]:checked+label {
-            background-color: #FF7A7A;
+            background-color: #B73033;
             color: white;
         }
 
@@ -219,7 +219,7 @@ if (!empty($schedules)) {
 </head>
 <body>
     <div class="wrapper">
-        <div class="hair" style="height: 15px; background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);"></div>
+        <div class="hair" style="height: 15px; background: #9B0303;"></div>
         <div class="container">
             <div class="header">
                 <div class="headerLeft">
@@ -284,7 +284,7 @@ if (!empty($schedules)) {
                         <a href="college.php" class="sidebar-link">
                             <span style="margin-left: 8px;">View College</span>
                         </a>
-                        <a href="<?php echo $is_admin ? 'college.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                        <a href="<?php echo $is_admin ? 'add_college.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Add College</span>
                         </a>
                     </div>

@@ -127,7 +127,7 @@ a.sidebar-link-active {
     flex: 1;
     height: 50px;
     transition: .1s ease-in;
-    background-color: #FF7B7A;
+    background-color: #B73033;
     border-radius: 10px;
     font-weight: bold;
 }
@@ -142,7 +142,7 @@ a.sidebar-link span {
 }
 
 a.sidebar-link:hover, a.sidebar-link-active:hover {
-    background-color: #FF7B7A;
+    background-color: #B73033;
     color: #fff;
 }
 
@@ -189,6 +189,6 @@ a.sidebar-link:hover, a.sidebar-link-active:hover {
 }
 
 .sidebar-dropdown a.sidebar-link:hover {
-    background-color: #FF7B7A;
+    background-color: #B73033;
     color: #fff;
 }

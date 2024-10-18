@@ -115,7 +115,7 @@ a.sidebar-link-active {
     font-size: 0.9rem;
     white-space: nowrap;
     border: 1px solid #AFAFAF;
-    background-color: #FF7B7A;
+    background-color:  #B73033;
     border-radius: 10px;
     transition: all .25s ease-in-out;
     position: relative;
@@ -191,7 +191,7 @@ a.sidebar-link-active span {
 }
 
 a.sidebar-link:hover {
-    background-color: #FF7B7A;
+    background-color:  #B73033;
     color: #fff;
     border: 1px solid #AFAFAF;
     border-radius: 10px;

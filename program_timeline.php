@@ -160,11 +160,11 @@ $conn->close();
             font-weight: bold;
         }
         .select-item:hover {
-            background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+            background: #9B0303;
             color: white;
         }
         .same-as-selected {
-            background: linear-gradient(275.52deg, #973939 0.28%, #DC7171 100%);
+            background: #9B0303;
             color: white;
         }
 
@@ -202,7 +202,7 @@ $conn->close();
         }
 
         .red-line {
-            background-color: #FF7B7A; /* Color for 'Not Accreditable' */
+            background-color:  #B73033; /* Color for 'Not Accreditable' */
         }
 
         .green-line {
@@ -274,7 +274,7 @@ $conn->close();
             font-weight: bold;
         }
 
-        .red-tooltip { background-color: #FF7B7A; }
+        .red-tooltip { background-color:  #B73033; }
         .green-tooltip { background-color: #76FA97; }
         .grey-tooltip { background-color: #CCCCCC; }
         .yellow-tooltip { background-color: #FDC879; }
@@ -348,7 +348,7 @@ $conn->close();
                         <a href="college.php" class="sidebar-link">
                             <span style="margin-left: 8px;">View College</span>
                         </a>
-                        <a href="<?php echo $is_admin ? 'college.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                        <a href="<?php echo $is_admin ? 'add_college.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Add College</span>
                         </a>
                     </div>
@@ -630,7 +630,7 @@ function renderTimelineCharts(eventsGroupedByProgram, selectedPrograms) {
 
         // Define colors for each level
         const levelColors = {
-            'Not Accreditable': '#FF7B7A',  // Red
+            'Not Accreditable': ' #B73033',  // Red
             'Candidate': '#76FA97',        // Green
             'PSV': '#CCCCCC',              // Grey
             '1': '#FDC879',                // Yellow
