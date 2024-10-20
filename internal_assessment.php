@@ -112,6 +112,23 @@ $stmt_schedules->bind_result($schedule_id, $college_name, $program_name, $level_
 
 $schedules = [];
 while ($stmt_schedules->fetch()) {
+    // Fetch the average rating for the current team_id
+    $sql_ratings = "
+        SELECT AVG(rating) AS average_rating
+        FROM team_areas
+        WHERE team_id = ?
+    ";
+    $stmt_ratings = $conn->prepare($sql_ratings);
+    $stmt_ratings->bind_param("i", $team_id);
+    $stmt_ratings->execute();
+    $stmt_ratings->bind_result($average_rating);
+    $stmt_ratings->fetch();
+    $stmt_ratings->close();
+
+    // If ratings were found, round the result to 2 decimal places, otherwise set it to 'N/A'
+    $result_display = ($average_rating !== null) ? round($average_rating, 2) : 'N/A';
+
+    // Add schedule and rating data to the array
     $schedules[] = [
         'schedule_id' => $schedule_id,
         'college_name' => $college_name,
@@ -122,11 +139,36 @@ while ($stmt_schedules->fetch()) {
         'schedule_status' => $schedule_status,
         'team_id' => $team_id,
         'role' => $role,
-        'area' => $area_names // Use the concatenated area names here
+        'area' => $area_names,  // Use the concatenated area names here
+        'average_rating' => $result_display  // Use the calculated result
     ];
 }
+
 $stmt_schedules->close();
 
+
+//fetch individual areas for the member
+$sql_individual_areas = "
+    SELECT t.schedule_id, a.id AS area_id, a.area_name
+    FROM team t
+    JOIN team_areas ta ON t.id = ta.team_id
+    JOIN area a ON ta.area_id = a.id
+    WHERE t.internal_users_id = ?
+";
+
+$stmt_individual_areas = $conn->prepare($sql_individual_areas);
+$stmt_individual_areas->bind_param("s", $user_id);
+$stmt_individual_areas->execute();
+$stmt_individual_areas->bind_result($schedule_id, $area_id, $area_name);
+
+$individual_areas = [];
+while ($stmt_individual_areas->fetch()) {
+    $individual_areas[$schedule_id][] = [
+        'area_id' => $area_id,
+        'area_name' => $area_name
+    ];
+}
+$stmt_individual_areas->close();
 
 // Fetch existing assessments and summaries for the user
 $existing_assessments = [];
@@ -151,6 +193,28 @@ while ($stmt_summaries->fetch()) {
     $existing_summaries[] = $team_id;
 }
 $stmt_summaries->close();
+
+$existing_area_rating_files = [];
+
+// Fetch the area_rating_file based on internal_users_id and schedule_id
+$sql_area_files = "SELECT area_rating_file FROM team WHERE internal_users_id = ? AND schedule_id = ? AND area_rating_file IS NOT NULL";
+$stmt_area_files = $conn->prepare($sql_area_files);
+
+// Loop through the user's schedules and check if there is an area_rating_file for each
+foreach ($schedules as $schedule) {
+    $schedule_id = $schedule['schedule_id']; // Get schedule_id from the user's schedules
+
+    // Bind the user_id and schedule_id to the query
+    $stmt_area_files->bind_param("si", $user_id, $schedule_id);
+    $stmt_area_files->execute();
+    $stmt_area_files->bind_result($area_rating_file);
+
+    // If there is an area_rating_file, add it to the array
+    while ($stmt_area_files->fetch()) {
+        $existing_area_rating_files[$schedule_id] = $area_rating_file;
+    }
+}
+$stmt_area_files->close();
 
 // Fetch approved assessments
 $approved_assessments = [];
@@ -186,6 +250,27 @@ while ($stmt_team_members->fetch()) {
 }
 $stmt_team_members->close();
 
+// Fetch the average rating
+$sql_ratings = "
+    SELECT AVG(rating) AS average_rating
+    FROM team_areas
+    WHERE team_id = ?
+";
+$stmt_ratings = $conn->prepare($sql_ratings);
+$stmt_ratings->bind_param("i", $team_id);
+$stmt_ratings->execute();
+$stmt_ratings->bind_result($average_rating);
+$stmt_ratings->fetch();
+$stmt_ratings->close();
+
+// If ratings were found, round the result to 2 decimal places, otherwise set it to 'N/A'
+$result_display = ($average_rating !== null) ? round($average_rating, 2) : 'N/A';
+
+// Add average rating to the schedule array
+$schedule['average_rating'] = $result_display;
+
+
+
 // Prepare to retrieve team members with areas assigned to them
 $team_members_with_areas = [];
 $sql_team_members_with_areas = "
@@ -218,14 +303,28 @@ $stmt_team_members_with_areas->close();
 // Check NDA status for each schedule
 $nda_signed_status = [];
 foreach ($schedules as $schedule) {
-    $sql_nda = "SELECT id FROM NDA WHERE team_id = ?";
-    $stmt_nda = $conn->prepare($sql_nda);
-    $stmt_nda->bind_param("i", $schedule['team_id']);
-    $stmt_nda->execute();
-    $stmt_nda->store_result();
-    $nda_signed_status[$schedule['schedule_id']] = $stmt_nda->num_rows > 0;
-    $stmt_nda->close();
+    $sql_team = "SELECT id FROM team WHERE schedule_id = ? AND internal_users_id = ?";
+    $stmt_team = $conn->prepare($sql_team);
+    $stmt_team->bind_param("is", $schedule['schedule_id'], $user_id); // Match schedule_id and logged-in user
+    $stmt_team->execute();
+    $stmt_team->bind_result($team_id);
+    $stmt_team->fetch();
+    $stmt_team->close();
+
+    if ($team_id) {
+        // Check if an NDA exists for this team_id
+        $sql_nda = "SELECT NDA_file FROM NDA WHERE team_id = ?";
+        $stmt_nda = $conn->prepare($sql_nda);
+        $stmt_nda->bind_param("i", $team_id);
+        $stmt_nda->execute();
+        $stmt_nda->store_result();
+        $nda_signed_status[$schedule['schedule_id']] = $stmt_nda->num_rows > 0; // Store NDA status
+        $stmt_nda->close();
+    } else {
+        $nda_signed_status[$schedule['schedule_id']] = false; // No team ID found, set NDA status as not signed
+    }
 }
+
 
 // Function to convert an integer to Roman numeral
 function intToRoman($num) {
@@ -244,6 +343,7 @@ function intToRoman($num) {
     }
     return $result;
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -675,7 +775,7 @@ function intToRoman($num) {
                                         <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
                                             <p>NON-DISCLOSURE AGREEMENT</p>
                                             <div style="height: 10px;"></div>
-                                            <button class="assessment-button" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)">SIGN</button>
+                                            <button class="assessment-button" onclick="openTermsModal(<?php echo htmlspecialchars(json_encode($schedule)); ?>)" id="sign-button">SIGN</button>
                                         <?php else: ?>
                                         <!-- Proceed with checking team members' submission and approval status -->
                                         <?php
@@ -752,7 +852,6 @@ function intToRoman($num) {
                                 <div style="height: 10px;"></div>
                                 <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button>
                             <?php elseif ($schedule['schedule_status'] == 'done'): ?>
-                                <!-- Logic for displaying "locked" message when schedule is done for non-Team Leader -->
                                 <p>ASSESSMENT</p>
                                 <div style="height: 10px;"></div>
                                 <p class="pending-assessments">THIS SCHEDULE IS LOCKED.</p>
@@ -760,19 +859,25 @@ function intToRoman($num) {
                                 <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
                                     <p>NON-DISCLOSURE AGREEMENT</p>
                                     <div style="height: 10px;"></div>
-                                    <button class="assessment-button" id="sign-button">SIGN</button>
+                                    <button class="assessment-button" onclick="openTermsModal(<?php echo htmlspecialchars(json_encode($schedule)); ?>)" id="sign-button">SIGN</button>
                                 <?php elseif ($schedule['area'] == ''): ?>
                                     <p>ASSESSMENT</p>
                                     <div style="height: 10px;"></div>
                                     <p class="pending-assessments">YOUR TEAM LEADER SHOULD ASSIGN AREA FIRST</p>
-                                <?php elseif (in_array($schedule['team_id'], $existing_assessments)): ?>
-                                    <p>ASSESSMENT</p>
-                                    <div style="height: 10px;"></div>
-                                    <p class="assessment-button-done">ALREADY SUBMITTED</p>
+                                <?php elseif (isset($existing_area_rating_files[$schedule['schedule_id']])): ?>
+                                    <?php if (in_array($schedule['team_id'], $existing_assessments)): ?>
+                                        <p>SUBMISSION STATUS</p>
+                                        <div style="height: 10px;"></div>
+                                        <p class="assessment-button-done">ALREADY SUBMITTED RATING AND ASSESSMENT</p>
+                                    <?php else: ?>
+                                        <p>ASSESSMENT</p>
+                                        <div style="height: 10px;"></div>
+                                        <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
+                                    <?php endif; ?>
                                 <?php else: ?>
-                                    <p>ASSESSMENT</p>
+                                    <p>RATING</p>
                                     <div style="height: 10px;"></div>
-                                    <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
+                                    <button class="assessment-button" onclick="RatingopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>, <?php echo htmlspecialchars(json_encode($individual_areas[$schedule['schedule_id']])); ?>)">START RATING</button>
                                 <?php endif; ?>
                             <?php endif; ?>
                         <?php endif; ?>
@@ -854,6 +959,81 @@ function intToRoman($num) {
             </div>
         </div>
 
+        <!-- Popup Form for Team Member -->
+        <div class="assessmentmodal" id="Ratingpopup">
+            <div class="assessmentmodal-content">
+                <h2>RATING FORM</h2>
+                <form action="internal_rating_process.php" method="POST" enctype="multipart/form-data">
+                    <div class="assessment-group">
+                        <input type="hidden" name="schedule_id" id="Ratingmodal_schedule_id">
+                        <label for="college">COLLEGE</label>
+                        <input class="assessment-group-college" type="text" id="Ratingcollege" name="college" readonly>
+                        <label for="program">PROGRAM</label>
+                        <input class="assessment-group-program" type="text" id="Ratingprogram" name="program" readonly>
+                    </div>
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="level"><strong>LEVEL APPLIED</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="date"><strong>DATE</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="time"><strong>TIME</strong></label>
+                        </div>
+                    </div>
+                    <div class="orientationname1">
+                        <div class="nameContainer orientationContainer1">
+                            <input class="level" type="text" id="Ratinglevel" name="level" readonly>
+                        </div>
+                        <div class="nameContainer orientationContainer">
+                            <input class="level" type="text" id="Ratingdate" name="date" readonly>
+                        </div>
+                        <div class="nameContainer orientationContainer">
+                            <input class="time" type="text" id="Ratingtime" name="time" readonly>
+                        </div>
+                    </div>
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="result"><strong>AREAS ASSIGNED</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="area_evaluated"><strong>RATING<span style="color: red;"> *<span></strong></label>
+                        </div>
+                    </div>
+
+                    <div id="Ratingarea_container">
+                    </div>
+
+                    <div style="height: 20px;"></div>
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="evaluator"><strong>EVALUATOR</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="evaluator_signature"><strong>EVALUATOR E-SIGN<span style="color: red;"> *<span></strong></label>
+                        </div>
+                    </div>
+
+                    <div class="orientationname1 upload">
+                        <div class="nameContainer orientationContainer">
+                            <input class="area_evaluated" type="text" id="Ratingevaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly>
+                        </div>
+                        <div class="nameContainer orientationContainer uploadContainer">
+                            <span class="upload-text">UPLOAD</span>
+                            <img id="upload-icon-evaluator" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                            <input class="uploadInput" type="file" id="Ratingevaluator_signature" name="evaluator_signature" accept="image/png" required>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
+                        <button class="submit-button1" type="submit">SUBMIT</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
     <!-- Popup Form for Team Member -->
     <div class="assessmentmodal" id="popup">
         <div class="assessmentmodal-content">
@@ -890,21 +1070,19 @@ function intToRoman($num) {
                 </div>
                 <div class="orientationname1">
                     <div class="titleContainer">
-                        <label for="result"><strong>RESULT<span style="color: red;"> *<span></strong></label>
+                        <label for="result"><strong>RESULT<span style="color: red;"> *</span></strong></label>
                     </div>
                     <div class="titleContainer">
                         <label for="area_evaluated"><strong>AREA EVALUATED</strong></label>
                     </div>
                 </div>
                 <div class="orientationname1">
+                    <!-- Result input field to display the average rating -->
                     <div class="nameContainer orientationContainer">
-                        <select style="cursor: pointer;" class="result" id="result" name="result" required>
-                            <option value="">SELECT RESULT</option>
-                            <option value="Ready">Ready</option>
-                            <option value="Needs Improvement">Needs Improvement</option>
-                            <option value="Revisit">Revisit</option>
-                        </select>
+                        <input class="result" type="text" id="result" name="result" readonly value="<?php echo $result_display; ?>">
                     </div>
+                    
+                    <!-- Area evaluated field remains the same as before -->
                     <div class="nameContainer orientationContainer">
                         <input class="area_evaluated" type="text" id="area_evaluated" name="area_evaluated" readonly>
                     </div>
@@ -978,27 +1156,19 @@ function intToRoman($num) {
                         <input class="time" type="text" id="Summarytime" name="time" readonly>
                     </div>
                 </div>
-                <div id="result-section" style="display: none;">
-                    <div class="orientationname1">
-                        <div class="titleContainer">
-                            <label for="result"><strong>RESULT (TEAM LEADER)<span style="color: red;"> *<span></strong></label>
-                        </div>
-                    </div>
-                    <div class="orientationname1">
-                        <div class="nameContainer orientationContainer" id="result-container">
-                            <!-- Result dropdown will be dynamically added here -->
-                        </div>
-                    </div>
-                </div>
+                <div class="orientationname1">
+    <div class="titleContainer">
+        <label for="result"><strong>AREAS EVALUATED</strong></label>
+    </div>
+    <div class="titleContainer">
+        <label for="area_evaluated"><strong>RATINGS<span style="color: red;"> *</span></strong></label>
+    </div>
+</div>
 
-                <div style="height: 20px;"></div>
-                <div class="assessment-group">
-                    <label for="results"><strong>RESULTS (TEAM MEMBERS)</strong></label>
-                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px; font-size: 16px;" id="results" name="results" rows="10" readonly></textarea>
-                    <div style="height: 20px;"></div>
-                    <label for="areas"><strong>AREAS EVALUATED</strong></label>
-                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px; font-size: 16px;" id="areas" name="areas" rows="10" readonly></textarea>
-                </div>
+<div id="SummaryRatingarea_container">
+    <!-- Areas and ratings will be dynamically added here -->
+</div>
+
                 <div class="orientationname1">
                     <div class="titleContainer">
                         <label for="evaluator"><strong>EVALUATOR</strong></label>
@@ -1151,107 +1321,157 @@ function intToRoman($num) {
             });
         }
 
-        function openPopup(schedule) {
-            document.getElementById('modal_schedule_id').value = schedule.schedule_id;
-            document.getElementById('college').value = schedule.college_name;
-            document.getElementById('program').value = schedule.program_name;
-            document.getElementById('level').value = schedule.level_applied;
+        function RatingopenPopup(schedule, areas) {
+    // Set readonly fields
+    document.getElementById('Ratingmodal_schedule_id').value = schedule.schedule_id;
+    document.getElementById('Ratingcollege').value = schedule.college_name;
+    document.getElementById('Ratingprogram').value = schedule.program_name;
+    document.getElementById('Ratinglevel').value = schedule.level_applied;
+    document.getElementById('Ratingdate').value = formatDate(schedule.schedule_date);
+    document.getElementById('Ratingtime').value = formatTime(schedule.schedule_time);
 
-            // Format the date and time
-            document.getElementById('date').value = formatDate(schedule.schedule_date);
-            document.getElementById('time').value = formatTime(schedule.schedule_time);
-            document.getElementById('area_evaluated').value = schedule.area;
+    // Clear previous areas
+    const areaContainer = document.getElementById('Ratingarea_container');
+    areaContainer.innerHTML = '';  // Clear out any previous areas
 
-            document.getElementById('popup').style.display = 'block';
-        }
+    // Generate the range of values for the datalist (1.00 to 5.00 counting by 0.25)
+    let ratingOptions = '';
+    for (let i = 1; i <= 5; i += 0.25) {
+        ratingOptions += `<option value="${i.toFixed(2)}"></option>`;
+    }
+
+    // Check if areas are defined and not empty
+    if (areas && areas.length > 0) {
+        areas.forEach(area => {
+            // Create the input with datalist and input type="number" with constraints
+            const inputDiv = document.createElement('div');
+            inputDiv.classList.add('orientationname1');
+            inputDiv.style.marginBottom = '20px'; // Add margin below each field
+
+            inputDiv.innerHTML = `
+                <div class="nameContainer orientationContainer">
+                    <input class="area_evaluated" type="text" value="${area.area_name}" readonly>
+                </div>
+                <div class="nameContainer orientationContainer">
+                    <input list="ratingOptions" class="result" name="area_rating[${area.area_id}]" min="1" max="5" step="0.01" placeholder="Enter or select rating" required pattern="^[1-5](\\.\\d{1,2})?$">
+                    <datalist id="ratingOptions">${ratingOptions}</datalist>
+                </div>
+            `;
+            areaContainer.appendChild(inputDiv);
+        });
+    } else {
+        // Optionally handle cases where there are no areas to display
+        const noAreasElement = document.createElement('p');
+        noAreasElement.innerText = 'No areas assigned.';
+        areaContainer.appendChild(noAreasElement);
+    }
+
+    // Show the modal
+    document.getElementById('Ratingpopup').style.display = 'block';
+}
+
+
+
+function openPopup(schedule) {
+    document.getElementById('modal_schedule_id').value = schedule.schedule_id;
+    document.getElementById('college').value = schedule.college_name;
+    document.getElementById('program').value = schedule.program_name;
+    document.getElementById('level').value = schedule.level_applied;
+
+    // Format the date and time
+    document.getElementById('date').value = formatDate(schedule.schedule_date);
+    document.getElementById('time').value = formatTime(schedule.schedule_time);
+    document.getElementById('area_evaluated').value = schedule.area;
+
+    // Set the result field to display the average rating
+    document.getElementById('result').value = schedule.average_rating || 'N/A';
+
+    document.getElementById('popup').style.display = 'block';
+}
+
 
         function SummaryopenPopup(schedule) {
-            document.getElementById('Summarymodal_schedule_id').value = schedule.schedule_id;
-            document.getElementById('Summarycollege').value = schedule.college_name;
-            document.getElementById('Summaryprogram').value = schedule.program_name;
-            document.getElementById('Summarylevel').value = schedule.level_applied;
+    document.getElementById('Summarymodal_schedule_id').value = schedule.schedule_id;
+    document.getElementById('Summarycollege').value = schedule.college_name;
+    document.getElementById('Summaryprogram').value = schedule.program_name;
+    document.getElementById('Summarylevel').value = schedule.level_applied;
 
-            // Format the date and time
-            document.getElementById('Summarydate').value = formatDate(schedule.schedule_date);
-            document.getElementById('Summarytime').value = formatTime(schedule.schedule_time);
+    // Format the date and time
+    document.getElementById('Summarydate').value = formatDate(schedule.schedule_date);
+    document.getElementById('Summarytime').value = formatTime(schedule.schedule_time);
 
-            // Fetch team members' areas
-            fetchTeamAreas(schedule.schedule_id);
+    // Fetch and display areas with their ratings
+    fetchTeamAreasAndRatings(schedule.schedule_id);
 
-            // Fetch team members' results
-            fetchTeamResults(schedule.schedule_id);
+    document.getElementById('Summarypopup').style.display = 'block';
+}
 
-            var resultSection = document.getElementById('result-section');
-            var resultContainer = document.getElementById('result-container');
+function fetchTeamAreasAndRatings(schedule_id) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'get_team_areas.php?schedule_id=' + schedule_id, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            try {
+                var areas = JSON.parse(xhr.responseText); // Parse the JSON response
+                var container = document.getElementById('SummaryRatingarea_container');
+                container.innerHTML = ''; // Clear existing content
 
-            // Remove any existing result dropdown
-            if (resultContainer.firstChild) {
-                resultContainer.removeChild(resultContainer.firstChild);
-            }
+                areas.forEach(function(area) {
+                    // Create the container for each area and rating
+                    var areaRow = document.createElement('div');
+                    areaRow.classList.add('orientationname1'); // Use style class for row consistency
+                    areaRow.style.marginBottom = '20px'; // Add margin below each field
 
-            // Check if the team leader's area is blank
-            if (schedule.area && schedule.area.trim() !== '') {
-                // If the area is not blank, show the result section and add the dropdown
-                resultSection.style.display = 'block';
+                    // Create the left side for the area name
+                    var areaLabelContainer = document.createElement('div');
+                    areaLabelContainer.classList.add('nameContainer', 'orientationContainer');
+                    var areaInput = document.createElement('input');
+                    areaInput.classList.add('area_evaluated');
+                    areaInput.type = 'text';
+                    areaInput.value = area.area_name;
+                    areaInput.readOnly = true;
+                    areaLabelContainer.appendChild(areaInput);
 
-                // Create and add the result dropdown
-                var resultDropdown = document.createElement('select');
-                resultDropdown.setAttribute('style', 'cursor: pointer;');
-                resultDropdown.setAttribute('class', 'result');
-                resultDropdown.setAttribute('id', 'result');
-                resultDropdown.setAttribute('name', 'result');
-                resultDropdown.setAttribute('required', 'true');
+                    // Create the right side for the rating dropdown/input
+                    var ratingInputContainer = document.createElement('div');
+                    ratingInputContainer.classList.add('nameContainer', 'orientationContainer');
+                    var ratingInput = document.createElement('input');
+                    ratingInput.setAttribute('list', `ratingOptions-${area.area_id}`);
+                    ratingInput.classList.add('result');
+                    ratingInput.name = `area_rating[${area.area_id}]`;
+                    ratingInput.placeholder = 'Enter or select rating';
+                    ratingInput.required = true;
+                    ratingInput.pattern = '^[1-5](\\.\\d{1,2})?$'; // Validate between 1 and 5 with up to 2 decimal places
+                    ratingInput.value = area.rating || ''; // Pre-fill if rating exists
 
-                var options = [
-                    { value: '', text: 'SELECT RESULT' },
-                    { value: 'Ready', text: 'Ready' },
-                    { value: 'Needs Improvement', text: 'Needs Improvement' },
-                    { value: 'Revisit', text: 'Revisit' }
-                ];
+                    // Create the datalist for rating options (1.00 to 5.00 in steps of 0.25)
+                    var ratingOptions = document.createElement('datalist');
+                    ratingOptions.id = `ratingOptions-${area.area_id}`;
+                    for (let i = 1; i <= 5; i += 0.25) {
+                        var option = document.createElement('option');
+                        option.value = i.toFixed(2);
+                        ratingOptions.appendChild(option);
+                    }
 
-                options.forEach(function(optionData) {
-                    var option = document.createElement('option');
-                    option.value = optionData.value;
-                    option.textContent = optionData.text;
-                    resultDropdown.appendChild(option);
+                    // Disable input if rating exists (readonly)
+                    if (area.rating) {
+                        ratingInput.readOnly = true;
+                    }
+
+                    ratingInputContainer.appendChild(ratingInput);
+                    ratingInputContainer.appendChild(ratingOptions);
+                    areaRow.appendChild(areaLabelContainer);
+                    areaRow.appendChild(ratingInputContainer);
+                    container.appendChild(areaRow);
                 });
-
-                resultContainer.appendChild(resultDropdown);
-            } else {
-                // If the area is blank, hide the result section and do not add the dropdown
-                resultSection.style.display = 'none';
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+                console.log("Server response:", xhr.responseText);
             }
-
-            document.getElementById('Summarypopup').style.display = 'block';
         }
-
-        function fetchTeamAreas(schedule_id) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'get_team_areas.php?schedule_id=' + schedule_id, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var areas = JSON.parse(xhr.responseText);
-                    document.getElementById('areas').value = areas.join('\n');
-
-                    console.log("Areas: ", areas); // Debugging
-                }
-            };
-            xhr.send();
-        }
-
-        function fetchTeamResults(schedule_id) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'get_team_results.php?schedule_id=' + schedule_id, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var results = JSON.parse(xhr.responseText);
-                    document.getElementById('results').value = results.join('\n');
-
-                    console.log("Results: ", results); // Debugging
-                }
-            };
-            xhr.send();
-        }
+    };
+    xhr.send();
+}
 
         function SummaryclosePopup() {
             document.getElementById('Summarypopup').style.display = 'none';
@@ -1261,12 +1481,21 @@ function intToRoman($num) {
             document.getElementById('popup').style.display = 'none';
         }
 
-        function openNdaPopup(fullName, teamId) {
-            document.getElementById('nda_internal_accreditor').value = fullName;
-            document.getElementById('nda_team_id').value = teamId;
-            document.getElementById('ndaPopup').style.display = 'block';
-            document.getElementById('termsModal').style.display = 'none';
-        }
+        let selectedTeamId = null;
+
+// Open the terms modal and store the team ID
+function openTermsModal(schedule) {
+    selectedTeamId = schedule.team_id; // Store the team ID
+    document.getElementById('termsModal').style.display = 'block';
+}
+
+// Open the NDA popup after agreeing to terms
+function openNdaPopup(fullName) {
+    document.getElementById('nda_internal_accreditor').value = fullName;
+    document.getElementById('nda_team_id').value = selectedTeamId; // Use the stored team ID
+    document.getElementById('ndaPopup').style.display = 'block';
+    document.getElementById('termsModal').style.display = 'none';
+}
 
         function closeNdaPopup() {
             document.getElementById('ndaPopup').style.display = 'none';

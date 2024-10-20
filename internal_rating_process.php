@@ -34,24 +34,13 @@ function decryptData($data, $key) {
     return openssl_decrypt($encryptedData, 'AES-256-CBC', $key, 0, $iv);
 }
 
+// Handle the POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
     $schedule_id = $_POST['schedule_id'];
-    $result = floatval($_POST['result']);  // Convert the result to a float
-    $area_evaluated = $_POST['area_evaluated'];
-    $findings = $_POST['findings'];
-    $recommendations = $_POST['recommendations'];
     $evaluator = $_POST['evaluator'];
     $evaluator_signature = $_FILES['evaluator_signature'];
-
-    // Retrieve user details
-    $sql_user = "SELECT user_id FROM internal_users WHERE user_id = ?";
-    $stmt_user = $conn->prepare($sql_user);
-    $stmt_user->bind_param("s", $user_id);
-    $stmt_user->execute();
-    $stmt_user->bind_result($user_id);
-    $stmt_user->fetch();
-    $stmt_user->close();
+    $ratings = $_POST['area_rating'];  // Ratings for each area
 
     // Retrieve team_id for the specific schedule_id
     $sql_team = "SELECT id FROM team WHERE internal_users_id = ? AND schedule_id = ? AND status = 'accepted'";
@@ -87,55 +76,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $signature_data = file_get_contents($evaluator_signature['tmp_name']);
 
         // Encrypt the binary data
-        $encryption_key = $_ENV['ENCRYPTION_KEY']; // Load encryption key from .env
+        $encryption_key = $_ENV['ENCRYPTION_KEY'];  // Load encryption key from .env
         $encrypted_signature_data = encryptData($signature_data, $encryption_key);
 
         // Load PDF template
         $pdf = new FPDI();
         $pdf->AddPage();
-        $pdf->setSourceFile('Assessments/assessment.pdf');
+        $pdf->setSourceFile('Ratings/Area-Rating.pdf');  // Use your provided template
         $tplIdx = $pdf->importPage(1);
         $pdf->useTemplate($tplIdx);
 
-        // Set font
-        $pdf->SetFont('Arial', '', 12);
+        // Set font for PDF
+        $pdf->SetFont('Arial', '', 10);
 
-        // Add dynamic data to the PDF
-        $pdf->SetXY(43, 90); // Adjust position
+        // Add schedule details (college, program, etc.)
+        $pdf->SetXY(53, 69);  // Position for college
         $pdf->Write(0, $college_name);
 
-        $pdf->SetXY(43, 98); // Adjust position
+        $pdf->SetXY(54, 75);  // Position for program
         $pdf->MultiCell(80, 5, $program_name);
 
-        $pdf->SetXY(43, 116); // Adjust position
-        $pdf->Write(0, $level_applied);
+        // Iterate over each rating and add it to the PDF
+        // Starting positions and column widths
+$yPosition = 97;  // Starting Y position for areas and ratings
+$xAreaPosition = 27;  // X position for area_name
+$xRatingPosition = 166;  // X position for rating
+$verticalSpacing = 7.5;  // Space between rows
 
-        $pdf->SetXY(170, 103); // Adjust position
-        $pdf->Write(0, $schedule_date);
+foreach ($ratings as $area_id => $rating) {
+    // Retrieve the area name
+    $sql_area = "SELECT area_name FROM area WHERE id = ?";
+    $stmt_area = $conn->prepare($sql_area);
+    $stmt_area->bind_param("i", $area_id);
+    $stmt_area->execute();
+    $stmt_area->bind_result($area_name);
+    $stmt_area->fetch();
+    $stmt_area->close();
 
-        // Format the result to 2 decimal places before inserting it into the PDF
-        $formatted_result = number_format($result, 2);
-        $pdf->SetXY(145, 116); // Adjust position
-        $pdf->Write(0, $formatted_result);
+    // Write area name and corresponding rating in the PDF
 
-        $pdf->SetXY(13, 141); // Adjust position
-        $pdf->MultiCell(38, 5, $area_evaluated);
+    // Set X and Y position for area_name
+    $pdf->SetXY($xAreaPosition, $yPosition);  
+    $pdf->MultiCell(100, 5, $area_name);  // 50 is the width of the area column
 
-        $pdf->SetXY(58, 141); // Adjust position
-        $pdf->MultiCell(61, 5, $findings);
+    // Set X and Y position for rating, keeping in line with the area_name's row
+    $pdf->SetXY($xRatingPosition, $yPosition);
+    $pdf->MultiCell(100, 5, $rating);  // 50 is the width of the rating column
 
-        $pdf->SetXY(125, 141); // Adjust position
-        $pdf->MultiCell(70, 5, $recommendations);
+    // Increment Y position for the next row
+    $yPosition += $verticalSpacing;
+}
 
-        $centerTextX = 65.5; // The center X coordinate where you want to center the text
-        $textYPosition = 258; // The Y coordinate where you want to place the text
-        $textWidth = $pdf->GetStringWidth($evaluator);
-
-        // Calculate the X position to center the text
-        $textXPosition = $centerTextX - ($textWidth / 2);
-
-        // Print the QAD Officer's name centered at the specified centerTextX
-        $pdf->SetXY($textXPosition, $textYPosition);
+        // Add evaluator's name
+        $pdf->SetXY(25, 205);  // Adjust based on your layout
         $pdf->Write(0, $evaluator);
 
         // Decrypt the signature image before adding to PDF
@@ -148,48 +141,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Save the image temporarily
             $temp_image_path = 'temp_signature.png';
-            
-            // Preserve transparency when saving the PNG
             imagesavealpha($signature_image, true);
-            $transparency = imagecolorallocatealpha($signature_image, 0, 0, 0, 127);
-            imagefill($signature_image, 0, 0, $transparency);
-
-            // Save the image as a PNG with transparency
             imagepng($signature_image, $temp_image_path);
-            imagedestroy($signature_image); // Free up memory
+            imagedestroy($signature_image);  // Free up memory
 
             // Calculate the X and Y positions to center the image
-            $centerImageX = 67; // The center X coordinate where you want to center the image
-            $centerImageY = 252; // The center Y coordinate where you want to center the image
-            $imageWidth = 40; // The width of the signature image
-            $imageHeight = 15; // The height of the signature image (adjust based on actual image aspect ratio)
-            $imageXPosition = $centerImageX - ($imageWidth / 2);
-            $imageYPosition = $centerImageY - ($imageHeight / 2);
+            $imageXPosition = 19;
+            $imageYPosition = 195;
+            $imageWidth = 40;
+            $imageHeight = 15;
 
-            // Add QAD Officer Signature from the temporary file
-            $pdf->Image($temp_image_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight, 'PNG'); // Adjust positions as needed
+            // Add signature to the PDF
+            $pdf->Image($temp_image_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight, 'PNG');
 
             // Delete the temporary image file
             unlink($temp_image_path);
         }
 
         // Save the filled PDF
-        $output_path = 'Assessments/' . $team_id . '.pdf';
+        $output_path = 'Ratings/' . $team_id . '-Rating.pdf';
         $pdf->Output('F', $output_path);
 
-        // Insert assessment details into the database
-        $sql_insert = "INSERT INTO assessment (team_id, result, area_evaluated, findings, recommendations, evaluator, evaluator_signature, assessment_file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $stmt_insert = $conn->prepare($sql_insert);
-        $stmt_insert->bind_param("isssssss", $team_id, $formatted_result, $area_evaluated, $findings, $recommendations, $evaluator, $encrypted_signature_data, $output_path);
-        if ($stmt_insert->execute()) {
-            // Set session variable to indicate successful submission
-            $_SESSION['assessment_submitted'] = true;
-            $success = true;
-            $message = "Assessment submitted successfully.";
-        } else {
-            $message = "Error: " . $stmt_insert->error;
+        // Update the team table with the file path using the team_id
+        $sql_update_team = "UPDATE team SET area_rating_file = ? WHERE id = ?";
+        $stmt_update_team = $conn->prepare($sql_update_team);
+        $stmt_update_team->bind_param("si", $output_path, $team_id);
+        $stmt_update_team->execute();
+        $stmt_update_team->close();
+
+        // Update team_areas with the ratings
+        foreach ($ratings as $area_id => $rating) {
+            $rating = floatval($rating); // Ensure that the rating is being passed as a float (decimal)
+
+            $sql_update_areas = "UPDATE team_areas SET rating = ? WHERE team_id = ? AND area_id = ?";
+            $stmt_update_areas = $conn->prepare($sql_update_areas);
+            $stmt_update_areas->bind_param("dii", $rating, $team_id, $area_id);
+            $stmt_update_areas->execute();
+            $stmt_update_areas->close();
         }
-        $stmt_insert->close();
+
+        // Set session variable to indicate successful submission
+        $_SESSION['rating_submitted'] = true;
+        $success = true;
+        $message = "Rating submitted and PDF generated successfully.";
     }
     $conn->close();
 } else {
@@ -202,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assessment Submission</title>
+    <title>Rating Submission</title>
     <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
     <style>

@@ -34,13 +34,8 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
     $schedule_id = $_POST['schedule_id'];
-    $areas = $_POST['areas'];
-    $results = $_POST['results'];
     $evaluator = $_POST['evaluator'];
     $evaluator_signature = $_FILES['evaluator_signature'];
-
-    // Check if result is set and not empty
-    $result = isset($_POST['result']) && !empty($_POST['result']) ? $_POST['result'] : null;
 
     // Retrieve user details
     $sql_user = "SELECT user_id FROM internal_users WHERE user_id = ?";
@@ -64,167 +59,182 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = "No matching team found for the user.";
         $success = false;
     } else {
-        // Retrieve schedule details from the database
-        $sql_schedule = "
-            SELECT 
-                c.college_name, 
-                p.program_name, 
-                s.level_applied, 
-                s.schedule_date 
-            FROM schedule s
-            JOIN college c ON s.college_code = c.code
-            JOIN program p ON s.program_id = p.id
-            WHERE s.id = ?";
-        $stmt_schedule = $conn->prepare($sql_schedule);
-        $stmt_schedule->bind_param("i", $schedule_id);
-        $stmt_schedule->execute();
-        $stmt_schedule->bind_result($college_name, $program_name, $level_applied, $schedule_date);
-        $stmt_schedule->fetch();
-        $stmt_schedule->close();
-
         // Read the image file into binary data
         $signature_data = file_get_contents($evaluator_signature['tmp_name']);
-
-        // Encrypt the binary data
-        $encryption_key = $_ENV['ENCRYPTION_KEY']; // Load encryption key from .env
+        $encryption_key = $_ENV['ENCRYPTION_KEY'];
         $encrypted_signature_data = encryptData($signature_data, $encryption_key);
 
-        // Load PDF template for summary
-    $pdf = new FPDI();
-    $pdf->AddPage();
-    $pdf->setSourceFile('Summary/summary.pdf');
-    $tplIdx = $pdf->importPage(1);
-    $pdf->useTemplate($tplIdx);
+        // Process the areas and ratings
+        $area_ratings = $_POST['area_rating']; // Contains the ratings from the form
+        $areas = [];
+        $results = [];
 
-    // Set font
-    $pdf->SetFont('Arial', '', 12);
+        foreach ($area_ratings as $area_id => $rating) {
+            // Fetch the area name using the area_id
+            $sql_area = "SELECT area_name FROM area WHERE id = ?";
+            $stmt_area = $conn->prepare($sql_area);
+            $stmt_area->bind_param("i", $area_id);
+            $stmt_area->execute();
+            $stmt_area->bind_result($area_name);
+            $stmt_area->fetch();
+            $stmt_area->close();
 
-    // Add dynamic data to the PDF
-    $pdf->SetXY(50, 90); // Adjust position
-    $pdf->Write(0, $college_name);
+            // Insert or update the rating in team_areas
+            // Insert or update the rating in team_areas
+$sql_rating = "INSERT INTO team_areas (team_id, area_id, rating) VALUES (?, ?, ?) 
+ON DUPLICATE KEY UPDATE rating = ?";
 
-    $pdf->SetXY(50, 103); // Adjust position
-    $pdf->Write(0, $program_name);
+// Prepare the SQL statement
+$stmt_rating = $conn->prepare($sql_rating);
 
-    $pdf->SetXY(50, 116); // Adjust position
-    $pdf->Write(0, $level_applied);
+// Assign the rating to another variable for the update
+$updated_rating = $rating;  // Ensure it's a separate variable
 
-    $pdf->SetXY(12, 141); // Adjust position
-    $pdf->MultiCell(37, 5, $areas);
+// Bind the variables to the prepared statement
+$stmt_rating->bind_param("iidd", $team_id, $area_id, $rating, $updated_rating);
 
-    $pdf->SetXY(50, 145); // Adjust position
-    $pdf->MultiCell(148, 5, $results);
+// Execute the statement
+$stmt_rating->execute();
 
-    // Add result to the PDF if it is provided
-    if ($result) {
-        $pdf->SetXY(50, 142); // Adjust position for the result
-        $pdf->Write(0, $result);
+// Close the statement
+$stmt_rating->close();
+
+
+            // Prepare for the PDF
+            $areas[] = $area_name;
+            $results[] = $rating;
+        }
+
+        // Save the filled PDF for summary
+        $pdf = new FPDI();
+        $pdf->AddPage();
+        $pdf->setSourceFile('Summary/summary.pdf');
+        $tplIdx = $pdf->importPage(1);
+        $pdf->useTemplate($tplIdx);
+
+        // Set font
+        $pdf->SetFont('Arial', '', 12);
+
+        // Add dynamic data to the PDF
+        $pdf->SetXY(50, 90);
+        $pdf->Write(0, $_POST['college']);
+
+        $pdf->SetXY(50, 103);
+        $pdf->Write(0, $_POST['program']);
+
+        $pdf->SetXY(50, 116);
+        $pdf->Write(0, $_POST['level']);
+
+        // Add areas and their ratings to the PDF
+        $pdf->SetXY(12, 141);
+        $pdf->MultiCell(37, 5, implode("\n", $areas));
+
+        $pdf->SetXY(50, 145);
+        $pdf->MultiCell(148, 5, implode("\n", $results));
+
+        // Add evaluator's signature and name
+        $centerTextX = 65;
+        $textYPosition = 258;
+        $textWidth = $pdf->GetStringWidth($evaluator);
+        $textXPosition = $centerTextX - ($textWidth / 2);
+
+        // Print evaluator's name
+        $pdf->SetXY($textXPosition, $textYPosition);
+        $pdf->Write(0, $evaluator);
+
+        // Decrypt and add signature to the PDF
+        $decrypted_signature_data = decryptData($encrypted_signature_data, $encryption_key);
+        $signature_image = imagecreatefromstring($decrypted_signature_data);
+        if ($signature_image === false) {
+            $message = "Error: Failed to create an image from the decrypted signature data.";
+        } else {
+            $temp_image_path = 'temp_signature.png';
+            imagesavealpha($signature_image, true);
+            $transparency = imagecolorallocatealpha($signature_image, 0, 0, 0, 127);
+            imagefill($signature_image, 0, 0, $transparency);
+            imagepng($signature_image, $temp_image_path);
+            imagedestroy($signature_image);
+
+            $centerImageX = 67;
+            $centerImageY = 252;
+            $imageWidth = 40;
+            $imageHeight = 15;
+            $imageXPosition = $centerImageX - ($imageWidth / 2);
+            $imageYPosition = $centerImageY - ($imageHeight / 2);
+            $pdf->Image($temp_image_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight, 'PNG');
+            unlink($temp_image_path);
+        }
+
+        // Save the filled PDF
+        $output_path = 'Summary/' . $team_id . '_summary.pdf';
+        $pdf->Output('F', $output_path);
+
+        // Prepare the SQL query for inserting summary details into the database
+$sql_insert = "INSERT INTO summary (team_id, areas, results, evaluator, evaluator_signature, summary_file) VALUES (?, ?, ?, ?, ?, ?)";
+
+// Prepare the statement
+$stmt_insert = $conn->prepare($sql_insert);
+
+// Assign the results of implode() to variables before passing them to bind_param()
+$areas_imploded = implode("\n", $areas);
+$results_imploded = implode("\n", $results);
+
+// Bind the variables to the statement
+$stmt_insert->bind_param("isssss", $team_id, $areas_imploded, $results_imploded, $evaluator, $encrypted_signature_data, $output_path);
+
+// Execute the statement
+$stmt_insert->execute();
+
+// Close the statement
+$stmt_insert->close();
+
+// New Logic to Combine NDA Files
+$nda_pdf = new FPDI(); // Create a new FPDI instance for NDA compilation
+
+// Retrieve all team IDs for the specific schedule_id
+$sql_all_teams = "SELECT id FROM team WHERE schedule_id = ?";
+$stmt_all_teams = $conn->prepare($sql_all_teams);
+$stmt_all_teams->bind_param("i", $schedule_id);
+$stmt_all_teams->execute();
+$result_all_teams = $stmt_all_teams->get_result();
+
+$nda_files = [];
+while ($row = $result_all_teams->fetch_assoc()) {
+    $team_ids[] = $row['id'];
+}
+$stmt_all_teams->close();
+
+// Find NDA files for these team IDs
+foreach ($team_ids as $tid) {
+    $sql_nda = "SELECT NDA_file FROM nda WHERE team_id = ?";
+    $stmt_nda = $conn->prepare($sql_nda);
+    $stmt_nda->bind_param("i", $tid);
+    $stmt_nda->execute();
+    $stmt_nda->bind_result($nda_file);
+    while ($stmt_nda->fetch()) {
+        $nda_files[] = $nda_file;
     }
+    $stmt_nda->close();
+}
 
-    $centerTextX = 65; // The center X coordinate where you want to center the text
-    $textYPosition = 258; // The Y coordinate where you want to place the text
-    $textWidth = $pdf->GetStringWidth($evaluator);
+// Combine all NDA files into one PDF
+foreach ($nda_files as $file) {
+    $nda_pdf->AddPage();
+    $nda_pdf->setSourceFile($file);
+    $tplIdx = $nda_pdf->importPage(1);
+    $nda_pdf->useTemplate($tplIdx);
+}
 
-    // Calculate the X position to center the text
-    $textXPosition = $centerTextX - ($textWidth / 2);
+// Save the combined NDA PDF
+$nda_output_path = 'NDA Compilation/' . $team_id . '_nda_compilation.pdf';
+$nda_pdf->Output('F', $nda_output_path);
 
-    // Print the QAD Officer's name centered at the specified centerTextX
-    $pdf->SetXY($textXPosition, $textYPosition);
-    $pdf->Write(0, $evaluator);
-
-    // Decrypt the signature image before adding to PDF
-    $decrypted_signature_data = decryptData($encrypted_signature_data, $encryption_key);
-
-    // Create an image resource from the decrypted data
-    $signature_image = imagecreatefromstring($decrypted_signature_data);
-    if ($signature_image === false) {
-        $message = "Error: Failed to create an image from the decrypted signature data.";
-    } else {
-        // Save the image temporarily
-        $temp_image_path = 'temp_signature.png';
-        
-        // Preserve transparency when saving the PNG
-        imagesavealpha($signature_image, true);
-        $transparency = imagecolorallocatealpha($signature_image, 0, 0, 0, 127);
-        imagefill($signature_image, 0, 0, $transparency);
-
-        // Save the image as a PNG with transparency
-        imagepng($signature_image, $temp_image_path);
-        imagedestroy($signature_image); // Free up memory
-
-        // Calculate the X and Y positions to center the image
-        $centerImageX = 67; // The center X coordinate where you want to center the image
-        $centerImageY = 252; // The center Y coordinate where you want to center the image
-        $imageWidth = 40; // The width of the signature image
-        $imageHeight = 15; // The height of the signature image (adjust based on actual image aspect ratio)
-        $imageXPosition = $centerImageX - ($imageWidth / 2);
-        $imageYPosition = $centerImageY - ($imageHeight / 2);
-
-        // Add QAD Officer Signature from the temporary file
-        $pdf->Image($temp_image_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight, 'PNG'); // Adjust positions as needed
-
-        // Delete the temporary image file
-        unlink($temp_image_path);
-    }
-
-    // Save the filled PDF
-    $output_path = 'Summary/' . $team_id . '.pdf';
-    $pdf->Output('F', $output_path);
-
-    // Insert summary details into the database
-    $sql_insert = "INSERT INTO summary (team_id, areas, results, evaluator, evaluator_signature, summary_file) VALUES (?, ?, ?, ?, ?, ?)";
-    $stmt_insert = $conn->prepare($sql_insert);
-    $stmt_insert->bind_param("isssss", $team_id, $areas, $results, $evaluator, $encrypted_signature_data, $output_path);
-    $stmt_insert->execute();
-    $stmt_insert->close();
-
-        // New Logic to Combine NDA Files
-        $nda_pdf = new FPDI(); // Create a new FPDI instance for NDA compilation
-
-        // Retrieve all team IDs for the specific schedule_id
-        $sql_all_teams = "SELECT id FROM team WHERE schedule_id = ?";
-        $stmt_all_teams = $conn->prepare($sql_all_teams);
-        $stmt_all_teams->bind_param("i", $schedule_id);
-        $stmt_all_teams->execute();
-        $result_all_teams = $stmt_all_teams->get_result();
-
-        $nda_files = [];
-        while ($row = $result_all_teams->fetch_assoc()) {
-            $team_ids[] = $row['id'];
-        }
-        $stmt_all_teams->close();
-
-        // Find NDA files for these team IDs
-        foreach ($team_ids as $tid) {
-            $sql_nda = "SELECT NDA_file FROM nda WHERE team_id = ?";
-            $stmt_nda = $conn->prepare($sql_nda);
-            $stmt_nda->bind_param("i", $tid);
-            $stmt_nda->execute();
-            $stmt_nda->bind_result($nda_file);
-            while ($stmt_nda->fetch()) {
-                $nda_files[] = $nda_file;
-            }
-            $stmt_nda->close();
-        }
-
-        // Combine all NDA files into one PDF
-        foreach ($nda_files as $file) {
-            $nda_pdf->AddPage();
-            $nda_pdf->setSourceFile($file);
-            $tplIdx = $nda_pdf->importPage(1);
-            $nda_pdf->useTemplate($tplIdx);
-        }
-
-        // Save the combined NDA PDF
-        $nda_output_path = 'NDA Compilation/' . $team_id . '_nda_compilation.pdf';
-        $nda_pdf->Output('F', $nda_output_path);
-
-        // Insert NDA compilation details into the database
-        $sql_insert_nda = "INSERT INTO NDA_compilation (team_id, NDA_compilation_file) VALUES (?, ?)";
-        $stmt_insert_nda = $conn->prepare($sql_insert_nda);
-        $stmt_insert_nda->bind_param("is", $team_id, $nda_output_path);
-        $stmt_insert_nda->execute();
-        $stmt_insert_nda->close();
+// Insert NDA compilation details into the database
+$sql_insert_nda = "INSERT INTO NDA_compilation (team_id, NDA_compilation_file) VALUES (?, ?)";
+$stmt_insert_nda = $conn->prepare($sql_insert_nda);
+$stmt_insert_nda->bind_param("is", $team_id, $nda_output_path);
+$stmt_insert_nda->execute();
+$stmt_insert_nda->close();
 
         // Set session variable to indicate successful submission
         $_SESSION['summary_submitted'] = true;

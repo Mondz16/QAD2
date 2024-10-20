@@ -205,27 +205,30 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
-// Create team table
+// Create or modify the team table to include the area_rating_file column
 $sql = "CREATE TABLE IF NOT EXISTS team (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     schedule_id INT(6) UNSIGNED,
     internal_users_id VARCHAR(10) NOT NULL,
     role VARCHAR(11) NOT NULL,
     status ENUM('pending', 'accepted', 'declined', 'finished', 'cancelled') NOT NULL DEFAULT 'pending',
+    area_rating_file VARCHAR(255) DEFAULT NULL,
     FOREIGN KEY (schedule_id) REFERENCES schedule(id),
     FOREIGN KEY (internal_users_id) REFERENCES internal_users(user_id)
 )";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Table team created successfully<br>";
+    echo "Table team created/modified successfully<br>";
 } else {
-    echo "Error creating table: " . $conn->error . "<br>";
+    echo "Error creating/modifying table: " . $conn->error . "<br>";
 }
+
 
 // Create team_areas table
 $sql = "CREATE TABLE IF NOT EXISTS team_areas (
     team_id INT(6) UNSIGNED,
     area_id INT(6) UNSIGNED,
+    rating DECIMAL(4,2) UNSIGNED,
     FOREIGN KEY (team_id) REFERENCES team(id),
     FOREIGN KEY (area_id) REFERENCES area(id),
     PRIMARY KEY (team_id, area_id)
@@ -241,7 +244,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS assessment (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     team_id INT(6) UNSIGNED,
-    result ENUM('Ready', 'Needs improvement', 'Revisit') NOT NULL,
+    result DECIMAL(4,2) UNSIGNED,
     area_evaluated VARCHAR(80) NOT NULL,
     findings VARCHAR(100) NOT NULL,
     recommendations VARCHAR(100) NOT NULL,
