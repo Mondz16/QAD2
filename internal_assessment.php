@@ -170,6 +170,31 @@ while ($stmt_individual_areas->fetch()) {
 }
 $stmt_individual_areas->close();
 
+//check for team members statuses
+$sql_team_status = "
+    SELECT t.schedule_id, COUNT(t.id) AS total_members,
+           SUM(CASE 
+                WHEN t.status IN ('accepted', 'finished') THEN 1 
+                ELSE 0 
+           END) AS accepted_or_finished
+    FROM team t
+    WHERE t.role = 'Team Member'
+    GROUP BY t.schedule_id
+    HAVING accepted_or_finished = 0
+";
+
+$stmt_team_status = $conn->prepare($sql_team_status);
+$stmt_team_status->execute();
+$stmt_team_status->store_result();
+$stmt_team_status->bind_result($schedule_id, $total_members, $accepted_or_finished);
+
+$schedules_with_unaccepted_members = [];
+while ($stmt_team_status->fetch()) {
+    // This schedule has no members with status 'accepted' or 'finished'
+    $schedules_with_unaccepted_members[] = $schedule_id;
+}
+$stmt_team_status->close();
+
 // Fetch existing assessments and summaries for the user
 $existing_assessments = [];
 $existing_summaries = [];
@@ -224,12 +249,13 @@ while ($row = $result_approved_assessments->fetch_assoc()) {
     $approved_assessments[] = $row['assessment_id'];
 }
 
-// Fetch team members and their assessment status
+// Fetch team members and their assessment status, including the 'status' field
 $team_members = [];
 $sql_team_members = "
     SELECT t.schedule_id, t.internal_users_id, iu.first_name, iu.middle_initial, iu.last_name, t.id AS team_id, 
-    (SELECT a.id FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_id, 
-    (SELECT a.assessment_file FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_file, t.role
+           t.status, t.role, 
+           (SELECT a.id FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_id, 
+           (SELECT a.assessment_file FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_file
     FROM team t
     JOIN internal_users iu ON t.internal_users_id = iu.user_id
     WHERE t.schedule_id IN (SELECT schedule_id FROM team WHERE internal_users_id = ?)
@@ -237,18 +263,32 @@ $sql_team_members = "
 $stmt_team_members = $conn->prepare($sql_team_members);
 $stmt_team_members->bind_param("s", $user_id);
 $stmt_team_members->execute();
-$stmt_team_members->bind_result($team_schedule_id, $team_member_id, $team_member_first_name, $team_member_middle_initial, $team_member_last_name, $team_member_team_id, $team_member_assessment_id, $team_member_assessment_file, $team_member_role);
+$stmt_team_members->bind_result(
+    $team_schedule_id, 
+    $team_member_id, 
+    $team_member_first_name, 
+    $team_member_middle_initial, 
+    $team_member_last_name, 
+    $team_member_team_id, 
+    $team_member_status, // Fetch the status field
+    $team_member_role, 
+    $team_member_assessment_id, 
+    $team_member_assessment_file
+);
+
 while ($stmt_team_members->fetch()) {
     $team_members[$team_schedule_id][] = [
         'user_id' => $team_member_id,
         'name' => $team_member_first_name . ' ' . $team_member_middle_initial . '. ' . $team_member_last_name,
         'team_id' => $team_member_team_id,
+        'status' => $team_member_status,  // Include the status in the array
         'assessment_id' => $team_member_assessment_id,
         'assessment_file' => $team_member_assessment_file,
         'role' => $team_member_role
     ];
 }
 $stmt_team_members->close();
+
 
 // Fetch the average rating
 $sql_ratings = "
@@ -525,66 +565,71 @@ function intToRoman($num) {
             <?php if (!empty($schedules)): ?>
                 <?php foreach ($schedules as $index => $schedule): ?>
                     <?php
-                    // Initialize the $areas array for this schedule
-                    $areas = [];
+// Initialize the $areas array for this schedule
+$areas = [];
+$maxAreas = 0; // Initialize variable to store the max areas
 
-                    // Fetch areas dynamically based on level_applied and program_name
-                    if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2) {
-                        // Level 1 and 2 areas
-                        $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
-                            'Vision, Mission, Goals, and Objectives', 
-                            'Faculty', 
-                            'Curriculum and Instruction', 
-                            'Support to Students', 
-                            'Research', 
-                            'Extension and Community Development', 
-                            'Library', 
-                            'Physical Plant and Facilities', 
-                            'Laboratories', 
-                            'Administration'
-                        )";
-                    } elseif ($schedule['level_applied'] == 3) {
-                        // Level 3 areas
-                        if (strpos($schedule['program_name'], 'Bachelor') === 0) {
-                            // Program name starts with "Bachelor"
-                            $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
-                                'Curriculum and Instruction', 
-                                'Extension and Community Development', 
-                                'Faculty Development', 
-                                'Licensure Exam', 
-                                'Consortia or linkages', 
-                                'Library'
-                            )";
-                        } else {
-                            // Program name does NOT start with "Bachelor"
-                            $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
-                                'Curriculum and Instruction', 
-                                'Research', 
-                                'Faculty Development', 
-                                'Licensure Exam', 
-                                'Consortia or linkages', 
-                                'Library'
-                            )";
-                        }
-                    } elseif ($schedule['level_applied'] == 4) {
-                        // Level 4 areas
-                        $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
-                            'Research', 
-                            'Curriculum and Instruction', 
-                            'Extension and Community Development', 
-                            'Consortia or linkages', 
-                            'Administration'
-                        )";
-                    }
+// Fetch areas dynamically based on level_applied and program_name
+if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2) {
+    // Level 1 and 2 areas
+    $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+        'Vision, Mission, Goals, and Objectives', 
+        'Faculty', 
+        'Curriculum and Instruction', 
+        'Support to Students', 
+        'Research', 
+        'Extension and Community Development', 
+        'Library', 
+        'Physical Plant and Facilities', 
+        'Laboratories', 
+        'Administration'
+    )";
+    $maxAreas = 10; // Maximum areas for level 1 and 2
+} elseif ($schedule['level_applied'] == 3) {
+    // Level 3 areas
+    if (strpos($schedule['program_name'], 'Bachelor') === 0) {
+        // Program name starts with "Bachelor"
+        $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+            'Curriculum and Instruction', 
+            'Extension and Community Development', 
+            'Faculty Development', 
+            'Licensure Exam', 
+            'Consortia or linkages', 
+            'Library'
+        )";
+    } else {
+        // Program name does NOT start with "Bachelor"
+        $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+            'Curriculum and Instruction', 
+            'Research', 
+            'Faculty Development', 
+            'Licensure Exam', 
+            'Consortia or linkages', 
+            'Library'
+        )";
+    }
+    $maxAreas = 6; // Maximum areas for level 3
+} elseif ($schedule['level_applied'] == 4) {
+    // Level 4 areas
+    $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+        'Research', 
+        'Curriculum and Instruction', 
+        'Extension and Community Development', 
+        'Consortia or linkages', 
+        'Administration'
+    )";
+    $maxAreas = 5; // Maximum areas for level 4
+}
 
-                    // Execute the query to get areas for this schedule
-                    $result_areas = $conn->query($sql_areas);
-                    if ($result_areas) {
-                        while ($row = $result_areas->fetch_assoc()) {
-                            $areas[$row['id']] = $row['area_name']; // Store area id and name
-                        }
-                    }
-                    ?>
+// Execute the query to get areas for this schedule
+$result_areas = $conn->query($sql_areas);
+if ($result_areas) {
+    while ($row = $result_areas->fetch_assoc()) {
+        $areas[$row['id']] = $row['area_name']; // Store area id and name
+    }
+}
+?>
+
                     <div class="notification-list1">
                         <div class="orientation3">
                             <div class="container">
@@ -692,6 +737,26 @@ function intToRoman($num) {
                                 <p>SCHEDULE STATUS</p>
                                 <div style="height: 10px;"></div>
                                 <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button> 
+                                <?php elseif ($schedule['schedule_status'] == 'approved'): ?>
+        <!-- If the schedule is approved, then check team members' statuses -->
+        <?php
+        // Check if all team members are either 'accepted' or 'finished'
+        $all_team_members_accepted_or_finished = true;
+        if (isset($team_members[$schedule['schedule_id']])) {
+            foreach ($team_members[$schedule['schedule_id']] as $member) {
+                if ($member['role'] === 'Team Member' && !in_array($member['status'], ['accepted', 'finished'])) {
+                    // If any team member is not 'accepted' or 'finished', set the flag to false
+                    $all_team_members_accepted_or_finished = false;
+                    break;
+                }
+            }
+        }
+        ?>
+
+        <?php if (!$all_team_members_accepted_or_finished): ?>
+            <p>TEAM MEMBERS STATUS</p>
+                                <div style="height: 10px;"></div>
+            <p class="pending-assessments">PLEASE WAIT FOR ALL TEAM MEMBERS TO ACCEPT</p>
                             <?php else: ?>
                                     <!-- Check if Areas are Assigned -->
                                     <?php
@@ -733,20 +798,10 @@ function intToRoman($num) {
                                             // Display Team Leader
                                             if ($team_leader): ?>
                                                 <div class="add-area" id="team-leader-area" style="display: flex; flex-direction: column; margin-bottom: 10px;">
-                                                    <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)</label>
-                                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                                                        <select class="area-select" name="area[<?php echo $team_leader['team_member_id']; ?>][]" required onchange="updateAreaOptions()">
-                                                            <option value="" disabled selected>Select Area</option>
-                                                            <?php foreach ($areas as $id => $area_name): ?>
-                                                                <option value="<?php echo $id; ?>">
-                                                                    Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>
-                                                                </option>
-                                                            <?php endforeach; ?>
-                                                        </select>
-                                                        <button type="button" onclick="addAreaDropdown('team-leader-area', '<?php echo $team_leader['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
-                                                            <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
-                                                        </button>
-                                                    </div>
+                                                <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)<button type="button" onclick="addAreaDropdown('team-leader-area', '<?php echo $team_leader['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
+            <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i> Add Area
+        </button></label>
+    
                                                 </div>
                                             <?php endif; ?>
 
@@ -845,6 +900,7 @@ function intToRoman($num) {
                                             <?php endif; ?>
                                     <?php endif; ?>
                                 <?php endif; ?>
+                            <?php endif; ?>
                             <?php endif; ?>
                         <?php else: ?>
                             <?php if ($schedule['schedule_status'] == 'pending'): ?>
@@ -1546,84 +1602,102 @@ function openNdaPopup(fullName) {
             <?php endforeach; ?>
         });
 
-        function addAreaDropdown(divId, teamMemberId) {
-    var container = document.getElementById(divId);
-    var newDiv = document.createElement('div');
-    newDiv.classList.add('dropdown-container');
-    newDiv.style.display = 'flex';
-    newDiv.style.alignItems = 'center';
-    newDiv.style.marginBottom = '10px'; // Adds space between dropdowns
+        var totalSelectedAreas = 0; // Initial count of areas, will be updated dynamically
+    var maxAreas = <?php echo $maxAreas; ?>; // Set max areas based on the number of available areas
 
-    var newSelect = document.createElement('select');
-    newSelect.name = 'area[' + teamMemberId + '][]'; // Ensure array format
-    newSelect.classList.add('area-select');
-    newSelect.required = true;
-    newSelect.onchange = updateAreaOptions;
+    // Initialize totalSelectedAreas based on existing dropdowns (team members only)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Count existing area dropdowns (for team members only, ignore team leader initially)
+        var existingDropdowns = document.querySelectorAll('.area-select');
+        totalSelectedAreas = existingDropdowns.length;
+    });
 
-    var defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.text = 'Select Area';
-    defaultOption.disabled = true;
-    defaultOption.selected = true;
-    newSelect.appendChild(defaultOption);
-
-    <?php foreach ($areas as $id => $area_name): ?>
-        var option = document.createElement('option');
-        option.value = '<?php echo $id; ?>';
-        option.text = 'Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>';
-        newSelect.appendChild(option);
-    <?php endforeach; ?>
-
-    newDiv.appendChild(newSelect);
-
-    var removeButton = document.createElement('button');
-    removeButton.type = 'button';
-    removeButton.style.border = 'none';
-    removeButton.style.background = 'none';
-    removeButton.style.cursor = 'pointer';
-    removeButton.style.paddingLeft = '8px';
-    
-    var removeIcon = document.createElement('i');
-    removeIcon.classList.add('fa-solid', 'fa-circle-minus');
-    removeIcon.style.color = 'red';
-    removeIcon.style.fontSize = '25px';
-    
-    removeButton.appendChild(removeIcon);
-    removeButton.onclick = function() {
-        container.removeChild(newDiv);
-        updateAreaOptions();
-    };
-
-    newDiv.appendChild(removeButton);
-    container.appendChild(newDiv);
-
-    // Update area options
-    updateAreaOptions();
-}
-
-
-        function updateAreaOptions() {
-            // Get all dropdowns with the class 'area-select'
-            var selects = document.querySelectorAll('.area-select');
-
-            // Get all selected values
-            var selectedValues = Array.from(selects).map(function(select) {
-                return select.value;
-            });
-
-            // Loop through each dropdown
-            selects.forEach(function(select) {
-                // Loop through each option in the dropdown
-                Array.from(select.options).forEach(function(option) {
-                    // Disable the option if it's already selected in another dropdown, but allow it if it's selected in the current dropdown
-                    if (selectedValues.includes(option.value) && option.value !== select.value && option.value !== '') {
-                        option.disabled = true;
-                    } else {
-                        option.disabled = false;
-                    }
-                });
-            });
+    // Function to add a new area dropdown
+    function addAreaDropdown(divId, teamMemberId) {
+        // Check if the total number of selected areas exceeds the max allowed areas
+        if (totalSelectedAreas >= maxAreas) {
+            alert("You cannot add more than " + maxAreas + " areas.");
+            return; // Exit if the limit is reached
         }
+
+        var container = document.getElementById(divId);
+        var newDiv = document.createElement('div');
+        newDiv.classList.add('dropdown-container');
+        newDiv.style.display = 'flex';
+        newDiv.style.alignItems = 'center';
+        newDiv.style.marginBottom = '10px'; // Adds space between dropdowns
+
+        var newSelect = document.createElement('select');
+        newSelect.name = 'area[' + teamMemberId + '][]'; // Ensure array format
+        newSelect.classList.add('area-select');
+        newSelect.required = true;
+        newSelect.onchange = updateAreaOptions;
+
+        var defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.text = 'Select Area';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        newSelect.appendChild(defaultOption);
+
+        <?php foreach ($areas as $id => $area_name): ?>
+            var option = document.createElement('option');
+            option.value = '<?php echo $id; ?>';
+            option.text = 'Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>';
+            newSelect.appendChild(option);
+        <?php endforeach; ?>
+
+        newDiv.appendChild(newSelect);
+
+        var removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.style.border = 'none';
+        removeButton.style.background = 'none';
+        removeButton.style.cursor = 'pointer';
+        removeButton.style.paddingLeft = '8px';
+
+        var removeIcon = document.createElement('i');
+        removeIcon.classList.add('fa-solid', 'fa-circle-minus');
+        removeIcon.style.color = 'red';
+        removeIcon.style.fontSize = '25px';
+
+        removeButton.appendChild(removeIcon);
+        removeButton.onclick = function() {
+            container.removeChild(newDiv);
+            totalSelectedAreas--; // Decrement total selected areas when a dropdown is removed
+            updateAreaOptions(); // Update options to make the removed area selectable again
+        };
+
+        newDiv.appendChild(removeButton);
+        container.appendChild(newDiv);
+
+        totalSelectedAreas++; // Increment the total number of selected areas
+        updateAreaOptions();
+    }
+
+    // Function to update area options dynamically
+    function updateAreaOptions() {
+        // Get all dropdowns with the class 'area-select'
+        var selects = document.querySelectorAll('.area-select');
+
+        // Get all selected values
+        var selectedValues = Array.from(selects).map(function(select) {
+            return select.value;
+        });
+
+        // Loop through each dropdown
+        selects.forEach(function(select) {
+            // Loop through each option in the dropdown
+            Array.from(select.options).forEach(function(option) {
+                // Disable the option if it's already selected in another dropdown, but allow it if it's selected in the current dropdown
+                if (selectedValues.includes(option.value) && option.value !== select.value && option.value !== '') {
+                    option.disabled = true;
+                } else {
+                    option.disabled = false;
+                }
+            });
+        });
+    }
         
         document.getElementById('agreeTermsCheckbox').addEventListener('change', function() {
             var acceptButton = document.getElementById('acceptTerms');
