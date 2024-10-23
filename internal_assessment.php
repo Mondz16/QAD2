@@ -170,31 +170,6 @@ while ($stmt_individual_areas->fetch()) {
 }
 $stmt_individual_areas->close();
 
-//check for team members statuses
-$sql_team_status = "
-    SELECT t.schedule_id, COUNT(t.id) AS total_members,
-           SUM(CASE 
-                WHEN t.status IN ('accepted', 'finished') THEN 1 
-                ELSE 0 
-           END) AS accepted_or_finished
-    FROM team t
-    WHERE t.role = 'Team Member'
-    GROUP BY t.schedule_id
-    HAVING accepted_or_finished = 0
-";
-
-$stmt_team_status = $conn->prepare($sql_team_status);
-$stmt_team_status->execute();
-$stmt_team_status->store_result();
-$stmt_team_status->bind_result($schedule_id, $total_members, $accepted_or_finished);
-
-$schedules_with_unaccepted_members = [];
-while ($stmt_team_status->fetch()) {
-    // This schedule has no members with status 'accepted' or 'finished'
-    $schedules_with_unaccepted_members[] = $schedule_id;
-}
-$stmt_team_status->close();
-
 // Fetch existing assessments and summaries for the user
 $existing_assessments = [];
 $existing_summaries = [];
@@ -249,13 +224,12 @@ while ($row = $result_approved_assessments->fetch_assoc()) {
     $approved_assessments[] = $row['assessment_id'];
 }
 
-// Fetch team members and their assessment status, including the 'status' field
+// Fetch team members and their assessment status
 $team_members = [];
 $sql_team_members = "
     SELECT t.schedule_id, t.internal_users_id, iu.first_name, iu.middle_initial, iu.last_name, t.id AS team_id, 
-           t.status, t.role, 
-           (SELECT a.id FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_id, 
-           (SELECT a.assessment_file FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_file
+        (SELECT a.id FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_id, 
+        (SELECT a.assessment_file FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_file, t.role
     FROM team t
     JOIN internal_users iu ON t.internal_users_id = iu.user_id
     WHERE t.schedule_id IN (SELECT schedule_id FROM team WHERE internal_users_id = ?)
@@ -263,25 +237,13 @@ $sql_team_members = "
 $stmt_team_members = $conn->prepare($sql_team_members);
 $stmt_team_members->bind_param("s", $user_id);
 $stmt_team_members->execute();
-$stmt_team_members->bind_result(
-    $team_schedule_id, 
-    $team_member_id, 
-    $team_member_first_name, 
-    $team_member_middle_initial, 
-    $team_member_last_name, 
-    $team_member_team_id, 
-    $team_member_status, // Fetch the status field
-    $team_member_role, 
-    $team_member_assessment_id, 
-    $team_member_assessment_file
-);
+$stmt_team_members->bind_result($team_schedule_id, $team_member_id, $team_member_first_name, $team_member_middle_initial, $team_member_last_name, $team_member_team_id, $team_member_assessment_id, $team_member_assessment_file, $team_member_role);
 
 while ($stmt_team_members->fetch()) {
     $team_members[$team_schedule_id][] = [
         'user_id' => $team_member_id,
         'name' => $team_member_first_name . ' ' . $team_member_middle_initial . '. ' . $team_member_last_name,
         'team_id' => $team_member_team_id,
-        'status' => $team_member_status,  // Include the status in the array
         'assessment_id' => $team_member_assessment_id,
         'assessment_file' => $team_member_assessment_file,
         'role' => $team_member_role
@@ -616,7 +578,7 @@ if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2) {
         'Instruction', 
         'Extension',
         'Faculty Development',
-        'Consortia or linkages', 
+        'Consortia or linkages'
     )";
     $maxAreas = 5; // Maximum areas for level 4
 }
@@ -738,26 +700,6 @@ if ($result_areas) {
                                 <div style="height: 10px;"></div>
                                 <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button> 
                                 <?php elseif ($schedule['schedule_status'] == 'approved'): ?>
-        <!-- If the schedule is approved, then check team members' statuses -->
-        <?php
-        // Check if all team members are either 'accepted' or 'finished'
-        $all_team_members_accepted_or_finished = true;
-        if (isset($team_members[$schedule['schedule_id']])) {
-            foreach ($team_members[$schedule['schedule_id']] as $member) {
-                if ($member['role'] === 'Team Member' && !in_array($member['status'], ['accepted', 'finished'])) {
-                    // If any team member is not 'accepted' or 'finished', set the flag to false
-                    $all_team_members_accepted_or_finished = false;
-                    break;
-                }
-            }
-        }
-        ?>
-
-        <?php if (!$all_team_members_accepted_or_finished): ?>
-            <p>TEAM MEMBERS STATUS</p>
-                                <div style="height: 10px;"></div>
-            <p class="pending-assessments">PLEASE WAIT FOR ALL TEAM MEMBERS TO ACCEPT</p>
-                            <?php else: ?>
                                     <!-- Check if Areas are Assigned -->
                                     <?php
                                     // Check if all areas are assigned
@@ -900,7 +842,6 @@ if ($result_areas) {
                                             <?php endif; ?>
                                     <?php endif; ?>
                                 <?php endif; ?>
-                            <?php endif; ?>
                             <?php endif; ?>
                         <?php else: ?>
                             <?php if ($schedule['schedule_status'] == 'pending'): ?>
