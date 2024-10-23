@@ -224,7 +224,7 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
                 <div class="form-group">
                     <label for="zoom">MEETING LINK:</label>
-                    <input type="text" id="zoom" name="zoom" placeholder="OPTIONAL">
+                    <textarea type="text" id="zoom" name="zoom" cols="40" rows="1" placeholder="OPTIONAL"></textarea> 
                 </div>
                 <div class="form-group">
                     <label for="team-leader">TEAM LEADER:</label>
