@@ -44,12 +44,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    // Check if the same date and time already exists in the schedule
-$sql_check_status = "SELECT id FROM schedule WHERE schedule_date = ? AND schedule_time = ? AND schedule_status NOT IN ('cancelled', 'finished', 'failed', 'passed')";
-$stmt_check_date = $conn->prepare($sql_check_status);
-$stmt_check_date->bind_param("ss", $date, $time); // Bind both date and time
-$stmt_check_date->execute();
-$stmt_check_date->store_result();
+    // Check if the same date, time, and college already exists in the schedule (only block if it's a different college)
+    // Only consider schedules with 'approved' or 'pending' statuses
+    $sql_check_status = "SELECT id 
+    FROM schedule 
+    WHERE schedule_date = ? 
+    AND schedule_time = ? 
+    AND college_code != ? 
+    AND schedule_status IN ('approved', 'pending')";
+
+    $stmt_check_date = $conn->prepare($sql_check_status);
+    $stmt_check_date->bind_param("sss", $date, $time, $collegeId); // Bind date, time, and college_code
+    $stmt_check_date->execute();
+    $stmt_check_date->store_result();
 
 if ($stmt_check_date->num_rows > 0) {
     echo "<!DOCTYPE html>

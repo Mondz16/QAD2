@@ -522,44 +522,47 @@ if (!isset($_SESSION['user_id'])) {
             document.getElementById('member-count').textContent = content;
         }
 
-        // Function to check if the selected date and time have a conflict
-        function checkScheduleDate(callback) {
-            var date = document.getElementById('date').value;
-            var time = document.getElementById('time').value; // Get time value
-            var exclude_schedule_id = document.getElementById('exclude_schedule_id') ? document.getElementById('exclude_schedule_id').value : null;
+        function checkScheduleDate(callback) { 
+    var date = document.getElementById('date').value;
+    var time = document.getElementById('time').value; // Get time value
+    var college = document.getElementById('college').value; // Get the selected college (this is name)
+    var program = document.getElementById('program').value; // Get the selected program (this is name)
+    var exclude_schedule_id = document.getElementById('exclude_schedule_id') ? document.getElementById('exclude_schedule_id').value : null;
 
-            if (date && time) { // Ensure both date and time are selected
-                $.ajax({
-                    url: 'check_schedule.php',
-                    type: 'POST',
-                    data: {
-                        date: date,
-                        time: time,
-                        exclude_schedule_id: exclude_schedule_id
-                    }, // Include time in the request
-                    success: function(response) {
-                        var data = JSON.parse(response);
-                        if (data.status === 'exists') {
-                            // Check if the conflicting schedule status is 'approved' or 'pending'
-                            if (data.schedule_status === 'approved' || data.schedule_status === 'pending') {
-                                document.getElementById('errorPopup').style.display = 'block';
-                                if (callback) callback(false); // Date and time conflict with status, callback with false
-                            } else {
-                                if (callback) callback(true); // Date conflict but status is not approved/pending, callback with true
-                            }
-                        } else {
-                            if (callback) callback(true); // No conflict, callback with true
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        if (callback) callback(false); // Error occurred, callback with false
+    if (date && time && college && program) { // Ensure date, time, college, and program are selected
+        $.ajax({
+            url: 'check_schedule.php',
+            type: 'POST',
+            data: {
+                date: date,
+                time: time,
+                college: college, // Send selected college (name)
+                program: program, // Send selected program (name)
+                exclude_schedule_id: exclude_schedule_id
+            },
+            success: function(response) {
+                var data = JSON.parse(response);
+                if (data.status === 'exists') {
+                    // Check if the conflicting schedule status is 'approved' or 'pending'
+                    if (data.schedule_status === 'approved' || data.schedule_status === 'pending') {
+                        document.getElementById('errorPopup').style.display = 'block';
+                        if (callback) callback(false); // Date and time conflict with status, callback with false
+                    } else {
+                        if (callback) callback(true); // Date conflict but status is not approved/pending, callback with true
                     }
-                });
-            } else {
-                if (callback) callback(true); // No date or time selected, continue with submission
+                } else {
+                    if (callback) callback(true); // No conflict, callback with true
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                if (callback) callback(false); // Error occurred, callback with false
             }
-        }
+        });
+    } else {
+        if (callback) callback(true); // No date or time selected, continue with submission
+    }
+}
 
         // Event listener for date change
         document.getElementById('date').addEventListener('change', function() {

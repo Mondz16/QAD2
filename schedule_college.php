@@ -456,12 +456,13 @@ $result = $stmt->get_result();
 
         document.getElementById('new_date').addEventListener('change', function() {
     var newDate = this.value;
+    var newTime = document.getElementById('new_time').value;
     var scheduleId = document.getElementById('schedule_id').value;
 
-    if (newDate) {
+    if (newDate && newTime) {
         // Perform an AJAX request to check if the new date conflicts with an existing one
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'check_schedule.php', true);
+        xhr.open('POST', 'check_reschedule.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4 && xhr.status === 200) {
@@ -473,7 +474,7 @@ $result = $stmt->get_result();
                 }
             }
         };
-        xhr.send('date=' + encodeURIComponent(newDate) + '&exclude_schedule_id=' + encodeURIComponent(scheduleId));
+        xhr.send('new_date=' + encodeURIComponent(newDate) + '&new_time=' + encodeURIComponent(newTime) + '&exclude_schedule_id=' + encodeURIComponent(scheduleId));
     }
 });
 
@@ -483,28 +484,48 @@ document.getElementById('rescheduleForm').addEventListener('submit', function(ev
     var newDate = document.getElementById('new_date').value;
     var newTime = document.getElementById('new_time').value;
     var scheduleId = document.getElementById('schedule_id').value;
+    var college = '<?php echo htmlspecialchars($_GET['college']); ?>'; // Fetch the college name from the URL
 
     if (newDate && newTime) {
+        console.log("Sending AJAX request to check reschedule conflicts...");
+        
         // Perform an AJAX request to check if the new date conflicts with an existing one
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'check_schedule.php', true);
+        xhr.open('POST', 'check_reschedule.php', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                var response = JSON.parse(xhr.responseText);
+            if (xhr.readyState === 4) {
+                console.log("AJAX request completed. Status:", xhr.status);
+                if (xhr.status === 200) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        console.log("Response from server:", response);
 
-                if (response.status === 'exists') {
-                    // Show the error modal if a conflict is found
-                    document.getElementById('errorPopup').style.display = 'block';
+                        if (response.status === 'exists') {
+                            // Show the error modal if a conflict is found
+                            document.getElementById('errorPopup').style.display = 'block';
+                        } else {
+                            console.log("No conflict, submitting form...");
+                            // No conflict, submit the form
+                            document.getElementById('rescheduleForm').submit();
+                        }
+                    } catch (error) {
+                        console.error("Error parsing response:", xhr.responseText);
+                    }
                 } else {
-                    // No conflict, submit the form
-                    document.getElementById('rescheduleForm').submit();
+                    console.error("Request failed with status:", xhr.status);
                 }
             }
         };
-        xhr.send('date=' + encodeURIComponent(newDate) + '&exclude_schedule_id=' + encodeURIComponent(scheduleId));
+        // Ensure to send the college name
+        xhr.send('new_date=' + encodeURIComponent(newDate) + 
+                 '&new_time=' + encodeURIComponent(newTime) + 
+                 '&college=' + encodeURIComponent(college) + 
+                 '&exclude_schedule_id=' + encodeURIComponent(scheduleId));
     }
 });
+
+
 
 // Event listener for closing the error popup
 document.getElementById('closeErrorPopup').addEventListener('click', function() {

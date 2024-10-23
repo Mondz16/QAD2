@@ -590,8 +590,8 @@ if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2) {
     if (strpos($schedule['program_name'], 'Bachelor') === 0) {
         // Program name starts with "Bachelor"
         $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
-            'Curriculum and Instruction', 
-            'Extension and Community Development', 
+            'Instruction', 
+            'Extension', 
             'Faculty Development', 
             'Licensure Exam', 
             'Consortia or linkages', 
@@ -600,7 +600,7 @@ if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2) {
     } else {
         // Program name does NOT start with "Bachelor"
         $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
-            'Curriculum and Instruction', 
+            'Instruction', 
             'Research', 
             'Faculty Development', 
             'Licensure Exam', 
@@ -613,10 +613,10 @@ if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2) {
     // Level 4 areas
     $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
         'Research', 
-        'Curriculum and Instruction', 
-        'Extension and Community Development', 
+        'Instruction', 
+        'Extension',
+        'Faculty Development',
         'Consortia or linkages', 
-        'Administration'
     )";
     $maxAreas = 5; // Maximum areas for level 4
 }
