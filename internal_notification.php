@@ -289,8 +289,8 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
         <div class="modal-content1">
             <p id="confirmationMessage"></p>
             <div class="button-container">
-                <button type="button" class="" id="backButton" onclick="closeConfirmationModal()">BACK</button>
-                <button type="button" class="" id="confirmButton">CONFIRM</button>
+                <button type="button" class="" id="backButton" onclick="closeConfirmationModal()">NO</button>
+                <button type="button" class="" id="confirmButton">YES</button>
             </div>
         </div>
     </div>

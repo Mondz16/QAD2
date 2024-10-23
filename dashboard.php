@@ -208,14 +208,14 @@ $result = $conn->query($sql);
 
 
     #retain-button {
-        color:  #B73033;
-        border: 1px solid  #B73033;
+        color: #B73033;
+        border: 1px solid #B73033;
         transition: background-color .3s ease;
     }
 
     #retain-button:hover {
         color: #fff;
-        background-color:  #B73033;
+        background-color: #B73033;
         border: 1px solid #DC7171;
     }
 
@@ -234,7 +234,7 @@ $result = $conn->query($sql);
 
     #retain-button-active {
         color: #fff;
-        background-color:  #B73033;
+        background-color: #B73033;
         border: 1px solid #DC7171;
     }
 
@@ -256,8 +256,8 @@ $result = $conn->query($sql);
 
     .status-holder {
         display: inline-block;
-        color:  #B73033;
-        border: 1px solid  #B73033;
+        color: #B73033;
+        border: 1px solid #B73033;
         padding: 5px 10px;
         margin: 0;
         text-align: center;
@@ -362,7 +362,7 @@ $result = $conn->query($sql);
             <div class="container">
                 <div class="header">
                     <div class="headerLeft">
-                        <div class="USePData">  
+                        <div class="USePData">
                             <img class="USeP" src="images/USePLogo.png" height="36">
                             <div style="height: 0px; width: 16px;"></div>
                             <div style="height: 32px; width: 1px; background: #E5E5E5"></div>
@@ -652,7 +652,7 @@ $result = $conn->query($sql);
                                                                 {$row['level_applied']}
                                                             </div>";
 
-                                                                                        // Only show 'finished-buttons' if $is_admin is true
+                                            // Only show 'finished-buttons' if $is_admin is true
                                             if ($is_admin) {
                                                 echo "<div class='finished-buttons'>
                                                     <button type='none' id='retain-button-active' class='$hideFail' disabled='disabled'>FAILED</button>
@@ -683,52 +683,53 @@ $result = $conn->query($sql);
                     </div>
                 </div>
             </div>
-            <!-- Approve Modal -->
-            <div id="approveModal" class="modal">
-                <div class="modal-content">
-                    <h4 id="modalText">Are you sure you want to approve this registration?</h4>
-                    <form id="approveForm" action="dashboard_update_schedule_status.php" method="post">
-                        <input type="hidden" name="id" id="approveScheduleId">
-                        <input type="hidden" name="status" id="approveStatus">
-                        <div class="modal-buttons">
-                            <button type="button" class="no-btn" onclick="closeApproveModal()">NO</button>
-                            <button type="submit" class="yes-btn positive">YES</button>
-                        </div>
-                    </form>
-                </div>
+        </div>
+        <!-- Approve Modal -->
+        <div id="approveModal" class="modal">
+            <div class="modal-content">
+                <h4 id="modalText">Are you sure you want to approve this registration?</h4>
+                <form id="approveForm" action="dashboard_update_schedule_status.php" method="post">
+                    <input type="hidden" name="id" id="approveScheduleId">
+                    <input type="hidden" name="status" id="approveStatus">
+                    <div class="modal-buttons">
+                        <button type="button" class="no-btn" onclick="closeApproveModal()">NO</button>
+                        <button type="submit" class="yes-btn positive">YES</button>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('.finished-buttons button').forEach(function(button) {
-                    button.addEventListener('click', function() {
-                        const scheduleContainer = this.closest('.schedule-modal-container');
-                        if (scheduleContainer) {
-                            const scheduleId = scheduleContainer.dataset.scheduleId;
-                            const status = this.id === 'retain-button' ? 'failed' : 'passed';
-                            const actionText = status === 'failed' ? 'fail' : 'pass';
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.finished-buttons button').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const scheduleContainer = this.closest('.schedule-modal-container');
+                    if (scheduleContainer) {
+                        const scheduleId = scheduleContainer.dataset.scheduleId;
+                        const status = this.id === 'retain-button' ? 'failed' : 'passed';
+                        const actionText = status === 'failed' ? 'fail' : 'pass';
 
-                            // Set modal text and form data
-                            document.getElementById('modalText').textContent = `Are you sure you want to ${actionText} this program?`;
-                            document.getElementById('approveScheduleId').value = scheduleId;
-                            document.getElementById('approveStatus').value = status;
+                        // Set modal text and form data
+                        document.getElementById('modalText').textContent = `Are you sure you want to ${actionText} this program?`;
+                        document.getElementById('approveScheduleId').value = scheduleId;
+                        document.getElementById('approveStatus').value = status;
 
-                            // Open the modal
-                            document.getElementById('approveModal').style.display = 'block';
-                        } else {
-                            console.error('Schedule container not found');
-                        }
-                    });
+                        // Open the modal
+                        document.getElementById('approveModal').style.display = 'block';
+                    } else {
+                        console.error('Schedule container not found');
+                    }
                 });
             });
+        });
 
-            function closeApproveModal() {
-                document.getElementById('approveModal').style.display = 'none';
-            }
-        </script>
+        function closeApproveModal() {
+            document.getElementById('approveModal').style.display = 'none';
+        }
+    </script>
 
 </body>
 

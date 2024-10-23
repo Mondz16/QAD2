@@ -134,7 +134,7 @@ function displayRegistrations($conn, $tableName, $title)
 
             echo "<td class='action-buttons'>
                     <button class='btn btn-approve btn-sm' onclick='openApproveModal(\"{$row['user_id']}\")'>Approve</button>
-                    <button class='btn btn-reject btn-sm' onclick='openRejectModal(\"{$row['user_id']}\")'>Reject</button>
+                    <button class='btn btn-reject btn-sm' onclick='openRejectModal(\"{$row['user_id']}\")'>Disapprove</button>
                 </td>
             </tr>";
         }
@@ -371,10 +371,10 @@ function displayRegistrations($conn, $tableName, $title)
             </div>
         </div>
 
-        <!-- Reject Modal -->
+        <!-- disapprove Modal -->
         <div id="rejectModal" class="modal">
             <div class="modal-content">
-                <h4>Are you sure you want to reject this registration?</h4>
+                <h4>Are you sure you want to disapprove this registration?</h4>
                 <form id="rejectForm" action="registration_approval.php" method="post">
                     <input type="hidden" name="id" id="rejectUserId">
                     <input type="hidden" name="action" value="reject">

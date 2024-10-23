@@ -49,8 +49,8 @@ function sendEmailNotification($email, $userId, $action, $firstName, $reason = '
             $mail->Subject = 'Registration Approved';
             $mail->Body = "Dear $firstName,<br><br>Your registration has been approved.<br><br>User ID: $userId<br><br>Best regards,<br>USeP - Quality Assurance Division";
         } else if ($action == 'reject') {
-            $mail->Subject = 'Registration Rejected';
-            $mail->Body = "Dear $firstName,<br><br>Your registration has been rejected.<br><br>User ID: $userId<br><br>Reason: $reason<br><br>Best regards,<br>USeP - Quality Assurance Division";
+            $mail->Subject = 'Registration Disapproved';
+            $mail->Body = "Dear $firstName,<br><br>Your registration has been disapproved.<br><br>User ID: $userId<br><br>Reason: $reason<br><br>Best regards,<br>USeP - Quality Assurance Division";
         }
 
         $mail->send();
@@ -192,7 +192,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt_update_external->close();
                 }
                 $conn->commit();
-                $message = "User rejected with ID: " . $id;
+                $message = "User disapproved with ID: " . $id;
                 $message_class = "success";
             } else {
                 // Rollback the transaction if email fails

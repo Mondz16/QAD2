@@ -73,9 +73,9 @@ body {
     padding: 0;
     flex: 1;
     display: flex;
-    max-width: 1320px;
+    max-width: 1175px;
     margin: 0 auto 0 auto;
-    padding: 0 75px;
+    padding: 0;
 }
 
 a.sidebar-link {
@@ -92,7 +92,6 @@ a.sidebar-link {
     height: 50px;
     transition: .1s ease-in;
     border-radius: 10px;
-    border: 1px solid #E5E5E5;
     font-weight: bold;
 }
 
@@ -148,7 +147,7 @@ a.sidebar-link:hover, a.sidebar-link-active:hover {
 
 .sidebar-item, .sidebar-item1 {
     position: relative;
-    padding: 3px;
+    padding: 0;
     display: flex;
     align-items: center;
     flex: 1;

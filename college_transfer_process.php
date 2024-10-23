@@ -100,8 +100,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_user->close();
 
         $to = $email;
-        $subject = "College Transfer Rejected";
-        $message = "Dear " . $name . ",\n\nYour request for college transfer has been rejected.\nReason: " . $reject_reason . "\n\nBest regards,\nUSeP - Quality Assurance Division";
+        $subject = "College Transfer Disapproved";
+        $message = "Dear " . $name . ",\n\nYour request for college transfer has been disapproved.\nReason: " . $reject_reason . "\n\nBest regards,\nUSeP - Quality Assurance Division";
 
         if (sendEmail($to, $subject, $message)) {
             $conn->begin_transaction();
@@ -115,7 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 $conn->commit();
 
-                $message = "Transfer request rejected successfully.";
+                $message = "Transfer request disapproved successfully.";
                 $status = "success";
             } catch (Exception $e) {
                 $conn->rollback();

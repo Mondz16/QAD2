@@ -91,7 +91,8 @@ if (!isset($_SESSION['user_id'])) {
             width: 40px;
             height: 40px;
             border-width: 5px;
-            border-color: #B73033 !important; /* Enforce the custom color */
+            border-color: #B73033 !important;
+            /* Enforce the custom color */
             border-right-color: transparent !important;
         }
 
@@ -112,7 +113,8 @@ if (!isset($_SESSION['user_id'])) {
             z-index: 1000;
         }
 
-        input[type="date"], input[type="time"] {
+        input[type="date"],
+        input[type="time"] {
             cursor: pointer;
         }
 
@@ -219,10 +221,10 @@ if (!isset($_SESSION['user_id'])) {
                         <label for="time">TIME:</label>
                         <input type="time" id="time" name="time" required style="cursor: pointer;" onchange="checkScheduleDate()" onclick="openDatePicker('time')">
                     </div>
-                    <div class="form-group">
-                        <label for="zoom">ZOOM:</label>
-                        <input type="text" id="zoom" name="zoom" placeholder="OPTIONAL">
-                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="zoom">MEETING LINK:</label>
+                    <input type="text" id="zoom" name="zoom" placeholder="OPTIONAL">
                 </div>
                 <div class="form-group">
                     <label for="team-leader">TEAM LEADER:</label>
@@ -231,7 +233,7 @@ if (!isset($_SESSION['user_id'])) {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="team-members">TEAM MEMBER/S:</label>
+                    <label for="team-members" id="member-count">TEAM MEMBER/S:</label>
                     <div id="team-members-container">
                         <div class="team-member-input">
                             <select name="team_members[]" class="team-member-select" required onchange="updateDropdowns()" style="cursor: pointer;">
@@ -270,14 +272,14 @@ if (!isset($_SESSION['user_id'])) {
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-    let membersCount = 0;
-    
-    function addTeamMemberInput() {
-        const container = document.getElementById('team-members-container');
-        const newInputDiv = document.createElement('div');
-        newInputDiv.className = 'team-member-input';
+        let membersCount = 0;
 
-        newInputDiv.innerHTML = `
+        function addTeamMemberInput() {
+            const container = document.getElementById('team-members-container');
+            const newInputDiv = document.createElement('div');
+            newInputDiv.className = 'team-member-input';
+
+            newInputDiv.innerHTML = `
         <select name="team_members[]" class="team-member-select" required onchange="updateDropdowns()">
             <option value="">Select Team Member</option>
         </select>
@@ -288,330 +290,352 @@ if (!isset($_SESSION['user_id'])) {
             </svg>
         </button>
         `;
-        container.appendChild(newInputDiv);
-        fetchTeamMembersForNewDropdown(newInputDiv.querySelector('.team-member-select'));
-        checkAvailableLeadersAndMembers();
-    }
-
-    function removeTeamMemberInput(button) {
-        button.parentElement.remove();
-        updateDropdowns();
-        checkAvailableLeadersAndMembers();
-    }
-
-    function fetchPrograms() {
-        var collegeId = document.getElementById('college').value;
-        console.log(collegeId);
-        if (collegeId) {
-            $.ajax({
-                url: 'get_programs.php',
-                type: 'POST',
-                data: {
-                    college_id: collegeId
-                },
-                success: function(response) {
-                    console.log(response);
-                    $('#program').html(response);
-                    $('#program-level').html(''); // Clear the program level display
-                    $('#level').val(''); // Clear the program level display
-                    $('#level-acquired').val(''); // Clear the program level display
-                    $('#program-level-output').val('');
-                    $('#level-output').val('');
-                    $('#level-acquired').html(''); // Update the date received display
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                }
-            });
-        } else {
-            $('#program').html('<option value="">Select Program</option>');
-            $('#program-level').html(''); // Clear the program level display
-            $('#level').html(''); // Clear the program level display
-            $('#level-acquired').html(''); // Clear the program level display
-            $('#program-level-output').val('');
-            $('#level-output').val('');
-            $('#level-acquired').html(''); // Update the date received display
+            container.appendChild(newInputDiv);
+            fetchTeamMembersForNewDropdown(newInputDiv.querySelector('.team-member-select'));
+            checkAvailableLeadersAndMembers();
         }
-    }
 
-    function fetchProgramLevel() {
-        var programId = document.getElementById('program').value;
-        if (programId) {
-            $.ajax({
-                url: 'get_program_level.php',
-                type: 'POST',
-                data: {
-                    program_id: programId
-                },
-                success: function(response) {
-                    var data = JSON.parse(response);
-                    var currentLevel = data.program_level.trim();
-                    var dateReceived = data.date_received.trim();
-                    var levelApplied = 'NA';
-                    var currentLevelTextOutput = currentLevel;
-                    var levelAppliedTextOutput = levelApplied;
-
-                    if (currentLevel === 'Not Accreditable' || currentLevel === 'No Graduates Yet') {
-                        currentLevelTextOutput = 'NA';
-                        levelApplied = 'Candidate';
-                        levelAppliedTextOutput = 'CAN';
-                    } else if (currentLevel === 'Candidate') {
-                        currentLevelTextOutput = 'CAN';
-                        levelApplied = 'PSV';
-                        levelAppliedTextOutput = levelApplied;
-                    } else if (currentLevel === 'PSV') {
-                        levelApplied = 1;
-                        levelAppliedTextOutput = levelApplied;
-                    } else if (currentLevel < 4) {
-                        levelApplied = parseInt(currentLevel) + 1;
-                        levelAppliedTextOutput = levelApplied;
-                    } else {
-                        levelApplied = currentLevel;
-                        levelAppliedTextOutput = levelApplied;
-                    }
-
-                    // Update the readonly level input field
-                    $('#program-level').val(currentLevel);
-                    $('#level').val(levelApplied);
-
-                    $('#program-level-output').val(currentLevelTextOutput);
-                    $('#level-output').val(levelAppliedTextOutput);
-
-                    $('#year_validity').val(3);
-                    if (dateReceived !== 'N/A' && currentLevelTextOutput !== 'NA') {
-                        $('#level-acquired').html('AQUIRED IN ' + dateReceived); // Update the date received display
-                    }
-                }
-            });
-        } else {
-            // Clear both program level display and level dropdown
-            $('#program-level').val(''); // Clear the program level display
-            $('#level').val(''); // Clear the program level display
-            $('#level-acquired').html(''); // Clear the date received display
-            $('#program-level-output').val('');
-            $('#level-output').val('');
-            $('#level-acquired').html(''); // Update the date received display
+        function removeTeamMemberInput(button) {
+            button.parentElement.remove();
+            updateDropdowns();
+            checkAvailableLeadersAndMembers();
         }
-    }
 
-    function fetchTeamLeadersAndMembers() {
-        var collegeId = document.getElementById('college').value;
+        function fetchPrograms() {
+            var collegeId = document.getElementById('college').value;
+            console.log(collegeId);
+            if (collegeId) {
+                $.ajax({
+                    url: 'get_programs.php',
+                    type: 'POST',
+                    data: {
+                        college_id: collegeId
+                    },
+                    success: function(response) {
+                        console.log(response);
+                        $('#program').html(response);
+                        $('#program-level').html(''); // Clear the program level display
+                        $('#level').val(''); // Clear the program level display
+                        $('#level-acquired').val(''); // Clear the program level display
+                        $('#program-level-output').val('');
+                        $('#level-output').val('');
+                        $('#level-acquired').html(''); // Update the date received display
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            } else {
+                $('#program').html('<option value="">Select Program</option>');
+                $('#program-level').html(''); // Clear the program level display
+                $('#level').html(''); // Clear the program level display
+                $('#level-acquired').html(''); // Clear the program level display
+                $('#program-level-output').val('');
+                $('#level-output').val('');
+                $('#level-acquired').html(''); // Update the date received display
+            }
+        }
 
-        if (collegeId) {
-            $.ajax({
-                url: 'get_team.php',
-                type: 'POST',
-                data: {
-                    college_id: collegeId
-                },
-                success: function(response) {
-                    console.log('Response from get_team.php:', response); // Debugging log
-                    try {
+        function fetchProgramLevel() {
+            var programId = document.getElementById('program').value;
+            if (programId) {
+                $.ajax({
+                    url: 'get_program_level.php',
+                    type: 'POST',
+                    data: {
+                        program_id: programId
+                    },
+                    success: function(response) {
+                        var data = JSON.parse(response);
+                        var currentLevel = data.program_level.trim();
+                        var dateReceived = data.date_received.trim();
+                        var levelApplied = 'NA';
+                        var currentLevelTextOutput = currentLevel;
+                        var levelAppliedTextOutput = levelApplied;
+
+                        if (currentLevel === 'Not Accreditable' || currentLevel === 'No Graduates Yet') {
+                            currentLevelTextOutput = 'NA';
+                            levelApplied = 'Candidate';
+                            levelAppliedTextOutput = 'CAN';
+                        } else if (currentLevel === 'Candidate') {
+                            currentLevelTextOutput = 'CAN';
+                            levelApplied = 'PSV';
+                            levelAppliedTextOutput = levelApplied;
+                        } else if (currentLevel === 'PSV') {
+                            levelApplied = 1;
+                            levelAppliedTextOutput = levelApplied;
+                        } else if (currentLevel < 4) {
+                            levelApplied = parseInt(currentLevel) + 1;
+                            levelAppliedTextOutput = levelApplied;
+                        } else {
+                            levelApplied = currentLevel;
+                            levelAppliedTextOutput = levelApplied;
+                        }
+
+                        // Update the readonly level input field
+                        $('#program-level').val(currentLevel);
+                        $('#level').val(levelApplied);
+
+                        $('#program-level-output').val(currentLevelTextOutput);
+                        $('#level-output').val(levelAppliedTextOutput);
+
+                        $('#year_validity').val(3);
+                        if (dateReceived !== 'N/A' && currentLevelTextOutput !== 'NA') {
+                            $('#level-acquired').html('AQUIRED IN ' + dateReceived); // Update the date received display
+                        }
+                    }
+                });
+            } else {
+                // Clear both program level display and level dropdown
+                $('#program-level').val(''); // Clear the program level display
+                $('#level').val(''); // Clear the program level display
+                $('#level-acquired').html(''); // Clear the date received display
+                $('#program-level-output').val('');
+                $('#level-output').val('');
+                $('#level-acquired').html(''); // Update the date received display
+            }
+        }
+
+        function fetchTeamLeadersAndMembers() {
+            var collegeId = document.getElementById('college').value;
+
+            if (collegeId) {
+                $.ajax({
+                    url: 'get_team.php',
+                    type: 'POST',
+                    data: {
+                        college_id: collegeId
+                    },
+                    success: function(response) {
+                        console.log('Response from get_team.php:', response); // Debugging log
+                        try {
+                            const data = JSON.parse(response);
+                            console.log('Parsed data:', data); // Debugging log
+                            membersCount = data.teamMembers.length;
+                            populateDropdown('#team-leader', data.teamLeaders);
+                            populateAllTeamMemberDropdowns(data.teamMembers);
+                            updateDropdowns();
+                            checkAvailableLeadersAndMembers(); // Check after populating
+                        } catch (e) {
+                            console.error('Error parsing JSON response:', e);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            } else {
+                $('#team-leader').html('<option value="">Select Team Leader</option>');
+                $('.team-member-input select').html('<option value="">Select Team Member</option>');
+                checkAvailableLeadersAndMembers(); // Check after populating
+            }
+        }
+
+        function fetchTeamMembersForNewDropdown(dropdown) {
+            var collegeId = document.getElementById('college').value;
+            if (collegeId) {
+                $.ajax({
+                    url: 'get_team.php',
+                    type: 'POST',
+                    data: {
+                        college_id: collegeId
+                    },
+                    success: function(response) {
                         const data = JSON.parse(response);
-                        console.log('Parsed data:', data); // Debugging log
-                        membersCount = data.teamMembers.length;
-                        populateDropdown('#team-leader', data.teamLeaders);
-                        populateAllTeamMemberDropdowns(data.teamMembers);
+                        populateDropdown(dropdown, data.teamMembers);
                         updateDropdowns();
                         checkAvailableLeadersAndMembers(); // Check after populating
-                    } catch (e) {
-                        console.error('Error parsing JSON response:', e);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                }
-            });
-        } else {
-            $('#team-leader').html('<option value="">Select Team Leader</option>');
-            $('.team-member-input select').html('<option value="">Select Team Member</option>');
-            checkAvailableLeadersAndMembers(); // Check after populating
-        }
-    }
-
-    function fetchTeamMembersForNewDropdown(dropdown) {
-        var collegeId = document.getElementById('college').value;
-        if (collegeId) {
-            $.ajax({
-                url: 'get_team.php',
-                type: 'POST',
-                data: {
-                    college_id: collegeId
-                },
-                success: function(response) {
-                    const data = JSON.parse(response);
-                    populateDropdown(dropdown, data.teamMembers);
-                    updateDropdowns();
-                    checkAvailableLeadersAndMembers(); // Check after populating
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                }
-            });
-        }
-    }
-
-    function populateDropdown(selector, options) {
-        const dropdown = $(selector);
-        dropdown.empty();
-        dropdown.append($('<option>').text('Select').attr('value', ''));
-        options.forEach(function(option) {
-            const displayText = `${option.name} (${option.count} Schedules)`; // Combine name and count
-            dropdown.append($('<option>').text(displayText).attr('value', option.id));
-        });
-    }
-
-    function populateAllTeamMemberDropdowns(options) {
-        $('.team-member-input select').each(function() {
-            populateDropdown(this, options);
-        });
-    }
-
-    function updateDropdowns() {
-        const selectedTeamLeader = document.getElementById('team-leader').value;
-        const selectedTeamMembers = [];
-
-        // Collect all selected team members
-        document.querySelectorAll('.team-member-select').forEach(function (select) {
-            selectedTeamMembers.push(select.value);
-        });
-
-        // Enable all options first (reset any previous disables)
-        document.querySelectorAll('#team-leader option, .team-member-select option').forEach(function (option) {
-            option.disabled = false;
-        });
-
-        // Disable the selected team leader in all member dropdowns
-        if (selectedTeamLeader) {
-            document.querySelectorAll('.team-member-select option[value="' + selectedTeamLeader + '"]').forEach(function (option) {
-                option.disabled = true;
-            });
-        }
-
-        // Disable the selected team members in the leader dropdown and other team member dropdowns
-        selectedTeamMembers.forEach(function (member) {
-            if (member) {
-                document.querySelectorAll('#team-leader option[value="' + member + '"], .team-member-select option[value="' + member + '"]').forEach(function (option) {
-                    if (!option.selected) {
-                        option.disabled = true;
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
                     }
                 });
             }
-        });
+        }
 
-        // After updating dropdowns, check if the "ADD MEMBER" button should be enabled or disabled
-        checkAvailableLeadersAndMembers();
-    }
+        function populateDropdown(selector, options) {
+            const dropdown = $(selector);
+            dropdown.empty();
+            dropdown.append($('<option>').text('Select').attr('value', ''));
+            options.forEach(function(option) {
+                const displayText = `${option.name} (${option.count} Schedules)`; // Combine name and count
+                dropdown.append($('<option>').text(displayText).attr('value', option.id));
+            });
+        }
 
-    // Function to check if the selected date and time have a conflict
-    function checkScheduleDate(callback) {
-        var date = document.getElementById('date').value;
-        var time = document.getElementById('time').value; // Get time value
-        var exclude_schedule_id = document.getElementById('exclude_schedule_id') ? document.getElementById('exclude_schedule_id').value : null;
-        
-        if (date && time) { // Ensure both date and time are selected
-            $.ajax({
-                url: 'check_schedule.php',
-                type: 'POST',
-                data: { date: date, time: time, exclude_schedule_id: exclude_schedule_id }, // Include time in the request
-                success: function(response) {
-                    var data = JSON.parse(response);
-                    if (data.status === 'exists') {
-                        // Check if the conflicting schedule status is 'approved' or 'pending'
-                        if (data.schedule_status === 'approved' || data.schedule_status === 'pending') {
-                            document.getElementById('errorPopup').style.display = 'block';
-                            if (callback) callback(false); // Date and time conflict with status, callback with false
-                        } else {
-                            if (callback) callback(true); // Date conflict but status is not approved/pending, callback with true
+        function populateAllTeamMemberDropdowns(options) {
+            $('.team-member-input select').each(function() {
+                populateDropdown(this, options);
+            });
+        }
+
+        function updateDropdowns() {
+            const selectedTeamLeader = document.getElementById('team-leader').value;
+            const selectedTeamMembers = [];
+
+            // Collect all selected team members
+            document.querySelectorAll('.team-member-select').forEach(function(select) {
+                selectedTeamMembers.push(select.value);
+            });
+
+            // Enable all options first (reset any previous disables)
+            document.querySelectorAll('#team-leader option, .team-member-select option').forEach(function(option) {
+                option.disabled = false;
+            });
+
+            // Disable the selected team leader in all member dropdowns
+            if (selectedTeamLeader) {
+                document.querySelectorAll('.team-member-select option[value="' + selectedTeamLeader + '"]').forEach(function(option) {
+                    option.disabled = true;
+                });
+            }
+
+            // Disable the selected team members in the leader dropdown and other team member dropdowns
+            selectedTeamMembers.forEach(function(member) {
+                if (member) {
+                    document.querySelectorAll('#team-leader option[value="' + member + '"], .team-member-select option[value="' + member + '"]').forEach(function(option) {
+                        if (!option.selected) {
+                            option.disabled = true;
                         }
-                    } else {
-                        if (callback) callback(true); // No conflict, callback with true
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error:', error);
-                    if (callback) callback(false); // Error occurred, callback with false
+                    });
                 }
             });
-        } else {
-            if (callback) callback(true); // No date or time selected, continue with submission
+
+            // After updating dropdowns, check if the "ADD MEMBER" button should be enabled or disabled
+            checkAvailableLeadersAndMembers();
+
+            updateMemberCount();
         }
-    }
 
-    // Event listener for date change
-    document.getElementById('date').addEventListener('change', function() {
-        checkScheduleDate(); // Just check the date, no callback needed here
-    });
+        function updateMemberCount() {
+            // Get all select elements
+            const selects = document.querySelectorAll('.team-member-select');
+            let availableMembersCount = 0;
 
-    // Event listener for form submission
-    document.getElementById('schedule-form').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the form from submitting immediately
+            // Count non-disabled options for each select element
+            selects.forEach(function(select) {
+                availableMembersCount += 1;
+            });
 
-        // Check if the selected date is available
-        checkScheduleDate(function(isDateAvailable) {
-            if (isDateAvailable) {
-                // If date is available, show the loading spinner and submit the form
-                document.getElementById('loadingSpinner').classList.remove('spinner-hidden');
-                document.getElementById('schedule-form').submit();
+            // Display the count in the #member-count span
+            var content = availableMembersCount > 1 ? "TEAM MEMBER/S: " + availableMembersCount + " Members" : "TEAM MEMBER/S: " + availableMembersCount + " Member";
+            document.getElementById('member-count').textContent = content;
+        }
+
+        // Function to check if the selected date and time have a conflict
+        function checkScheduleDate(callback) {
+            var date = document.getElementById('date').value;
+            var time = document.getElementById('time').value; // Get time value
+            var exclude_schedule_id = document.getElementById('exclude_schedule_id') ? document.getElementById('exclude_schedule_id').value : null;
+
+            if (date && time) { // Ensure both date and time are selected
+                $.ajax({
+                    url: 'check_schedule.php',
+                    type: 'POST',
+                    data: {
+                        date: date,
+                        time: time,
+                        exclude_schedule_id: exclude_schedule_id
+                    }, // Include time in the request
+                    success: function(response) {
+                        var data = JSON.parse(response);
+                        if (data.status === 'exists') {
+                            // Check if the conflicting schedule status is 'approved' or 'pending'
+                            if (data.schedule_status === 'approved' || data.schedule_status === 'pending') {
+                                document.getElementById('errorPopup').style.display = 'block';
+                                if (callback) callback(false); // Date and time conflict with status, callback with false
+                            } else {
+                                if (callback) callback(true); // Date conflict but status is not approved/pending, callback with true
+                            }
+                        } else {
+                            if (callback) callback(true); // No conflict, callback with true
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        if (callback) callback(false); // Error occurred, callback with false
+                    }
+                });
             } else {
-                // If date is not available, ensure the loading spinner is hidden
-                document.getElementById('loadingSpinner').classList.add('spinner-hidden');
+                if (callback) callback(true); // No date or time selected, continue with submission
+            }
+        }
+
+        // Event listener for date change
+        document.getElementById('date').addEventListener('change', function() {
+            checkScheduleDate(); // Just check the date, no callback needed here
+        });
+
+        // Event listener for form submission
+        document.getElementById('schedule-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting immediately
+
+            // Check if the selected date is available
+            checkScheduleDate(function(isDateAvailable) {
+                if (isDateAvailable) {
+                    // If date is available, show the loading spinner and submit the form
+                    document.getElementById('loadingSpinner').classList.remove('spinner-hidden');
+                    document.getElementById('schedule-form').submit();
+                } else {
+                    // If date is not available, ensure the loading spinner is hidden
+                    document.getElementById('loadingSpinner').classList.add('spinner-hidden');
+                }
+            });
+        });
+
+        // Event listener for closing the error popup
+        document.getElementById('closeErrorPopup').addEventListener('click', function() {
+            document.getElementById('errorPopup').style.display = 'none';
+        });
+
+        // Close the error popup if the user clicks outside of it
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('errorPopup')) {
+                document.getElementById('errorPopup').style.display = 'none';
             }
         });
-    });
-    
-    // Event listener for closing the error popup
-    document.getElementById('closeErrorPopup').addEventListener('click', function() {
-        document.getElementById('errorPopup').style.display = 'none';
-    });
 
-    // Close the error popup if the user clicks outside of it
-    window.addEventListener('click', function(event) {
-        if (event.target == document.getElementById('errorPopup')) {
-            document.getElementById('errorPopup').style.display = 'none';
-        }
-    });
-
-    function openDatePicker(id) {
-        document.getElementById(id).showPicker();
-    }
-
-    document.getElementById('year_validity').addEventListener('input', function(e) {
-        let middleinitialInput = e.target.value;
-
-        // Remove any non-numeric characters
-        middleinitialInput = middleinitialInput.replace(/[^0-9]/g, '');
-
-        // Limit to 1 character
-        if (middleinitialInput.length > 1) {
-            middleinitialInput = middleinitialInput.slice(0, 1);
+        function openDatePicker(id) {
+            document.getElementById(id).showPicker();
         }
 
-        // Set the cleaned value back to the input
-        e.target.value = middleinitialInput;
-    });
+        document.getElementById('year_validity').addEventListener('input', function(e) {
+            let middleinitialInput = e.target.value;
 
-    function checkAvailableLeadersAndMembers() {
-        const teamMemberSelects = document.querySelectorAll('.team-member-select');
-        
-        const addButton = document.querySelector('.add-team-member-button');
+            // Remove any non-numeric characters
+            middleinitialInput = middleinitialInput.replace(/[^0-9]/g, '');
 
-        // Disable the "ADD MEMBER" button if no leaders or members are available
-        if (membersCount <= (teamMemberSelects.length + 1)) {
-            addButton.disabled = true;
-        } else {
-            addButton.disabled = false;
+            // Limit to 1 character
+            if (middleinitialInput.length > 1) {
+                middleinitialInput = middleinitialInput.slice(0, 1);
+            }
+
+            // Set the cleaned value back to the input
+            e.target.value = middleinitialInput;
+        });
+
+        function checkAvailableLeadersAndMembers() {
+            const teamMemberSelects = document.querySelectorAll('.team-member-select');
+
+            const addButton = document.querySelector('.add-team-member-button');
+
+            // Disable the "ADD MEMBER" button if no leaders or members are available
+            if (membersCount <= (teamMemberSelects.length + 1)) {
+                addButton.disabled = true;
+            } else {
+                addButton.disabled = false;
+            }
         }
-    }
 
-    // Event listeners to trigger the updateDropdowns function
-    document.getElementById('team-leader').addEventListener('change', updateDropdowns);
-    document.querySelectorAll('.team-member-select').forEach(function (select) {
-        select.addEventListener('change', updateDropdowns);
-    });
+        // Event listeners to trigger the updateDropdowns function
+        document.getElementById('team-leader').addEventListener('change', updateDropdowns);
+        document.querySelectorAll('.team-member-select').forEach(function(select) {
+            select.addEventListener('change', updateDropdowns);
+        });
 
-    // Call updateDropdowns to initialize the state
-    updateDropdowns();
-</script>
+        // Call updateDropdowns to initialize the state
+        updateDropdowns();
+    </script>
 </body>
+
 </html>

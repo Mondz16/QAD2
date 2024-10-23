@@ -276,7 +276,7 @@ $transfer_requests = array_filter($users, function ($group) {
                                                     <td><?php echo $new_college_name; ?></td>
                                                     <td class="action-buttons">
                                                         <button class="btn btn-approve btn-sm" onclick="openAcceptModal('<?php echo $new_user['user_id']; ?>', '<?php echo $previous_user['user_id']; ?>', '<?php echo $new_user['email']; ?>', '<?php echo $new_user['first_name'] . ' ' . $new_user['middle_initial'] . '. ' . $new_user['last_name']; ?>')">Accept</button>
-                                                        <button class="btn btn-reject btn-sm" onclick="openRejectModal('<?php echo $new_user['user_id']; ?>', '<?php echo $previous_user['user_id']; ?>')">Reject</button>
+                                                        <button class="btn btn-reject btn-sm" onclick="openRejectModal('<?php echo $new_user['user_id']; ?>', '<?php echo $previous_user['user_id']; ?>')">Disapprove</button>
                                                     </td>
                                                 </tr>
                                             <?php endif; ?>
@@ -311,7 +311,7 @@ $transfer_requests = array_filter($users, function ($group) {
         <!-- The Modal for Rejection -->
         <div id="rejectModal" class="modal">
             <div class="modal-content">
-                <h4>Are you sure you want to reject this registration?</h4>
+                <h4>Are you sure you want to disapprove this registration?</h4>
                 <form id="rejectForm" action="college_transfer_process.php" method="post">
                     <input type="hidden" name="action" value="reject">
                     <input type="hidden" name="new_user_id" id="reject_new_user_id">
