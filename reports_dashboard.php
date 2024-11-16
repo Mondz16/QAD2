@@ -243,7 +243,7 @@ $conn->close();
 
             <div class="button-container">
                 <div class="filter">
-                    <select id="programLevel" onchange="updateCharts()">
+                    <!-- <select id="programLevel" onchange="updateCharts()">
                         <option value="All">All Level</option>
                         <option value="Not Accreditable">Not Accreditable</option>
                         <option value="PSV">PSV</option>
@@ -255,7 +255,7 @@ $conn->close();
                     </select>
                     <select id="year" onchange="updateCharts()">
                         <option value="All">All Years</option>
-                    </select>
+                    </select> -->
                 </div>
                 <div>
                     <button type="button" id="exportPDF">EXPORT <img style="margin-left: 5px;" src="images/export.png"></button>
@@ -308,17 +308,17 @@ $conn->close();
             return data;
         }
 
-        async function fetchYears() {
-            const response = await fetch('fetch_years.php');
-            const years = await response.json();
-            const yearSelect = document.getElementById('year');
-            years.forEach(year => {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                yearSelect.appendChild(option);
-            });
-        }
+        // async function fetchYears() {
+        //     const response = await fetch('fetch_years.php');
+        //     const years = await response.json();
+        //     const yearSelect = document.getElementById('year');
+        //     years.forEach(year => {
+        //         const option = document.createElement('option');
+        //         option.value = year;
+        //         option.textContent = year;
+        //         yearSelect.appendChild(option);
+        //     });
+        // }
 
         function fetchProgramLevelHistoryData(campus, college, program) {
             fetch('fetch_program_level_history.php', {
@@ -366,66 +366,33 @@ $conn->close();
         }
 
         async function updateCharts() {
-            const programLevel = document.getElementById('programLevel').value;
-            const year = document.getElementById('year').value;
+            const programLevel = "All";
+            const year = "All";
 
             await updateBarChart(programLevel, year);
             updateRecentPrograms();
         }
 
-        async function updateBarChart(programLevel, year) {
+        async function updateBarChart(programLevel, year) { 
             const data = await fetchCollegeData(programLevel, year);
 
-            const labels = data.map(item => item.college_campus);
+            const campuses = data.map(item => item.college_campus);
+            const uniqueCampuses = [...new Set(campuses)];
 
-            let datasets = [];
-            if (programLevel === 'All') {
-                datasets = [{
-                        label: 'Not Accreditable',
-                        data: data.map(item => item['Not Accreditable'] || 0),
-                        backgroundColor: '#FF6262',
-                    },
-                    {
-                        label: 'PSV',
-                        data: data.map(item => item['PSV'] || 0),
-                        backgroundColor: '#818181',
-                    },
-                    {
-                        label: 'Candidate',
-                        data: data.map(item => item['Candidate'] || 0),
-                        backgroundColor: '#34C759',
-                    },
-                    {
-                        label: 'Level 1',
-                        data: data.map(item => item['1'] || 0),
-                        backgroundColor: '#DEFF81',
-                    },
-                    {
-                        label: 'Level 2',
-                        data: data.map(item => item['2'] || 0),
-                        backgroundColor: '#C8FFF8',
-                    },
-                    {
-                        label: 'Level 3',
-                        data: data.map(item => item['3'] || 0),
-                        backgroundColor: '#AA8CFF',
-                    },
-                    {
-                        label: 'Level 4',
-                        data: data.map(item => item['4'] || 0),
-                        backgroundColor: '#FEC269',
-                    }
-                ];
-            } else {
-                datasets = [{
-                    label: programLevel == "Not Accreditable" || programLevel == "PSV" || programLevel == "Candidate" ? programLevel : `Level ${programLevel}`,
-                    data: data.map(item => item.program_count || 0),
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                }];
-            }
+            const levels = ['Not Accreditable', 'PSV', 'Candidate', '1', '2', '3', '4'];
+            const colors = ['#FF6262', '#818181', '#34C759', '#DEFF81', '#C8FFF8', '#AA8CFF', '#FEC269'];
 
-            chart.data.labels = labels;
+            // Create datasets for each level
+            const datasets = levels.map((level, index) => ({
+                label: level === '1' || level === '2' || level === '3' || level === '4' ? `Level ${level}` : level,
+                data: uniqueCampuses.map(campus => {
+                    const campusData = data.find(item => item.college_campus === campus) || {};
+                    return campusData[level] || 0;
+                }),
+                backgroundColor: colors[index],
+            }));
+
+            chart.data.labels = uniqueCampuses;
             chart.data.datasets = datasets;
             chart.update();
         }
@@ -506,7 +473,7 @@ $conn->close();
             });
         }
 
-        const ctxBar = document.getElementById('collegeChart').getContext('2d');
+        const ctxBar = document.getElementById('collegeChart').getContext('2d'); 
         const chart = new Chart(ctxBar, {
             type: 'bar',
             data: {
@@ -533,7 +500,6 @@ $conn->close();
                 },
                 scales: {
                     x: {
-                        stacked: true,
                         grid: {
                             display: false
                         },
@@ -544,7 +510,6 @@ $conn->close();
                         }
                     },
                     y: {
-                        stacked: true,
                         beginAtZero: true,
                         grid: {
                             color: 'rgba(200, 200, 200, 0.2)'
@@ -617,19 +582,19 @@ $conn->close();
 
 
         window.addEventListener('DOMContentLoaded', async () => {
-            await fetchYears();
-            updateCharts();
+            // await fetchYears();
             updatePieChart();
             updateRecentPrograms();
             fetchProgramLevelHistoryData('Campus1', 'College1', 'Program1');
+            await updateCharts();
 
-            document.getElementById('programLevel').addEventListener('change', async () => {
-                await updateCharts();
-            });
+            // document.getElementById('programLevel').addEventListener('change', async () => {
+            //     await updateCharts();
+            // });
 
-            document.getElementById('year').addEventListener('change', async () => {
-                await updateCharts();
-            });
+            // document.getElementById('year').addEventListener('change', async () => {
+            //     await updateCharts();
+            // });
         });
 
         document.getElementById('exportPDF').addEventListener('click', function() {

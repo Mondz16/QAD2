@@ -61,7 +61,6 @@ function getSchedules($conn, $year)
               FROM schedule 
               INNER JOIN team ON schedule.id = team.schedule_id
               WHERE YEAR(schedule_date) = ? 
-                AND schedule_status IN ('passed', 'failed', 'finished')
               GROUP BY schedule_date";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('i', $year);
@@ -456,7 +455,6 @@ $conn->close();
                     </select>
                     <label for="campus">Campus:</label>
                     <select id="campus">
-                        <option value="">All Campuses</option>
                         <?php foreach ($campuses as $campus): ?>
                             <option value="<?= $campus['college_campus'] ?>"><?= $campus['college_campus'] ?></option>
                         <?php endforeach; ?>
@@ -477,18 +475,23 @@ $conn->close();
                             <tr>
                                 <th>Full Name</th>
                                 <th>Schedule Count</th>
+                                <th>Accepted Count</th>
+                                <th>Declined Count</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($members as $member):?>
+                            <?php foreach ($members as $member): ?>
                                 <tr>
                                     <td><?= $member['first_name'] . ' ' . $member['last_name'] ?></td>
                                     <td><?= $member['schedule_count'] ?></td>
+                                    <td><?= $member['accepted_count'] ?></td>
+                                    <td><?= $member['declined_count'] ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
+
                 <div class="charts-right">
                     <div class="chart-header">
                         <h3>Users Per Campus</h3>
@@ -600,7 +603,7 @@ $conn->close();
                 ajax: function(data, callback, settings) {
                     const campus = $('#campus').val();
                     const college = $('#college').val();
-                    const year = $('#year').val(); // Get the selected year
+                    const year = $('#year').val();
                     const search = data.search.value;
                     const offset = data.start;
 
@@ -610,19 +613,31 @@ $conn->close();
                         college: college,
                         search: search,
                         offset: offset,
-                        year: year // Pass the year to the server
+                        year: year
                     }, function(response) {
                         const members = JSON.parse(response);
                         callback({
                             draw: data.draw,
                             recordsTotal: members.recordsTotal,
                             recordsFiltered: members.recordsFiltered,
-                            data: members.data.map(member => [member.first_name + ' ' + member.last_name, member.schedule_count])
+                            data: members.data.map(member => [
+                                member.first_name + ' ' + member.last_name,
+                                member.schedule_count,
+                                member.accepted_count,
+                                member.declined_count
+                            ])
                         });
                     });
                 },
+                columns: [
+                    { title: "Full Name" },
+                    { title: "Schedules" },
+                    { title: "Accepted" },
+                    { title: "Declined" }
+                ],
                 pageLength: 10
             });
+
 
             $('#campus').change(function() {
                 const campus = $(this).val();
