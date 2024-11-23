@@ -86,6 +86,9 @@ $conn->close();
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
 </head>
 
 <body>
@@ -196,8 +199,8 @@ $conn->close();
                         <span style="margin-left: 8px;">Reports</span>
                     </a>
                     <div class="sidebar-dropdown">
-                        <a href="<?php echo $is_admin === false ? 'internal_assigned_schedule.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
-                            <span style="margin-left: 8px;">View Assigned Schedule</span></a>
+                        <a href="<?php echo $is_admin === false ? 'internal_assigned_schedule.php' : 'reports_program_schedule.php'; ?>" class="sidebar-link">
+                            <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
                         <a href="reports_dashboard.php" class="sidebar-link">
                             <span style="margin-left: 8px;">View Programs</span></a>
                         <a href="program_timeline.php" class="sidebar-link">
@@ -373,7 +376,7 @@ $conn->close();
             updateRecentPrograms();
         }
 
-        async function updateBarChart(programLevel, year) { 
+        async function updateBarChart(programLevel, year) {
             const data = await fetchCollegeData(programLevel, year);
 
             const campuses = data.map(item => item.college_campus);
@@ -446,6 +449,52 @@ $conn->close();
             pieChart.update();
         }
 
+
+        $(document).ready(function() {
+            const table = $('#programScheduleTable').DataTable({
+                serverSide: true,
+                ajax: function(data, callback, settings) {
+                    const search = data.search.value;
+                    const offset = data.start;
+
+                    $.post('analytics_get_program_schedules.php', {
+                        action: 'getProgramSchedule',
+                        search: search,
+                        offset: offset
+                    }, function(response) {
+                        const schedules = JSON.parse(response);
+                        callback({
+                            draw: data.draw,
+                            recordsTotal: schedules.recordsTotal,
+                            recordsFiltered: schedules.recordsFiltered,
+                            data: schedules.data.map(schedule => [
+                                schedule.program_name,
+                                schedule.total_schedule_count,
+                                schedule.approved_count,
+                                schedule.canceled_count
+                            ])
+                        });
+                    });
+                },
+                columns: [{
+                        title: "Program Name"
+                    },
+                    {
+                        title: "Total Schedules"
+                    },
+                    {
+                        title: "Approved"
+                    },
+                    {
+                        title: "Canceled"
+                    }
+                ],
+                pageLength: 10
+            });
+        });
+
+
+
         function formatDate(dateString) {
             const options = {
                 year: 'numeric',
@@ -473,7 +522,7 @@ $conn->close();
             });
         }
 
-        const ctxBar = document.getElementById('collegeChart').getContext('2d'); 
+        const ctxBar = document.getElementById('collegeChart').getContext('2d');
         const chart = new Chart(ctxBar, {
             type: 'bar',
             data: {

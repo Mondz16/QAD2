@@ -375,8 +375,8 @@ if (isset($_POST['export_pdf'])) {
                         <span style="margin-left: 8px;">Reports</span>
                     </a>
                     <div class="sidebar-dropdown">
-                        <a href="<?php echo $is_admin === false ? 'internal_assigned_schedule.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
-                            <span style="margin-left: 8px;">View Assigned Schedule</span></a>
+                        <a href="<?php echo $is_admin === false ? 'internal_assigned_schedule.php' : 'reports_program_schedule.php'; ?>" class="sidebar-link">
+                            <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
                         <a href="reports_dashboard.php" class="sidebar-link">
                             <span style="margin-left: 8px;">View Programs</span></a>
                         <a href="program_timeline.php" class="sidebar-link">

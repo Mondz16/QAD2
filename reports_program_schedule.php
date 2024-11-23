@@ -16,8 +16,8 @@ $is_admin = false;
 if ($user_id === 'admin') {
     $is_admin = true;
     // If current page is not admin.php, redirect
-    if (basename($_SERVER['PHP_SELF']) !== 'reports_member.php') {
-        header("Location: reports_member.php");
+    if (basename($_SERVER['PHP_SELF']) !== 'reports_program_schedule.php') {
+        header("Location: reports_program_schedule.php");
         exit();
     }
 } else {
@@ -25,7 +25,7 @@ if ($user_id === 'admin') {
 
     if ($user_type_code === '11') {
         // Internal user
-        if (basename($_SERVER['PHP_SELF']) !== 'reports_member.php') {
+        if (basename($_SERVER['PHP_SELF']) !== 'reports_program_schedule.php') {
             header("Location: internal.php");
             exit();
         }
@@ -232,17 +232,8 @@ $conn->close();
         }
 
         .charts-container {
-            display: flex;
-            justify-content: space-between;
+            display: block;
             margin-bottom: 20px;
-        }
-
-        .charts-left {
-            width: 65%;
-        }
-
-        .charts-right {
-            width: 30%;
         }
 
         .chart-header {
@@ -282,7 +273,7 @@ $conn->close();
         }
 
         table.dataTable thead th {
-            background-color:  #B73033;
+            background-color: #B73033;
             color: #fff;
         }
 
@@ -299,7 +290,7 @@ $conn->close();
         }
 
         #recentActivitiesTable thead th {
-            background-color:  #B73033;
+            background-color: #B73033;
             color: #fff;
         }
 
@@ -451,7 +442,8 @@ $conn->close();
                     <select id="year">
                         <?php foreach ($schedules as $schedule): ?>
                             <option value="<?= date('Y', strtotime($schedule['schedule_date'])) ?>"><?= date('Y', strtotime($schedule['schedule_date'])) ?></option>
-                        <?php echo strtotime($schedule['schedule_date']); endforeach; ?>
+                        <?php echo strtotime($schedule['schedule_date']);
+                        endforeach; ?>
                     </select>
                     <label for="campus">Campus:</label>
                     <select id="campus">
@@ -469,39 +461,18 @@ $conn->close();
                 </div>
             </div>
             <div class="charts-container">
-                <div class="charts-left">
-                    <table id="memberTable" class="display">
-                        <thead>
-                            <tr>
-                                <th>Full Name</th>
-                                <th>Schedule Count</th>
-                                <th>Accepted Count</th>
-                                <th>Declined Count</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($members as $member): ?>
-                                <tr>
-                                    <td><?= $member['first_name'] . ' ' . $member['last_name'] ?></td>
-                                    <td><?= $member['schedule_count'] ?></td>
-                                    <td><?= $member['accepted_count'] ?></td>
-                                    <td><?= $member['declined_count'] ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="charts-right">
-                    <div class="chart-header">
-                        <h3>Users Per Campus</h3>
-                    </div>
-                    <canvas id="userDistributionChart" height="200"></canvas>
-                    <div class="chart-header">
-                        <h3>User Status</h3>
-                    </div>
-                    <canvas id="userStatusChart" height="200"></canvas>
-                </div>
+                <table id="programScheduleTable" class="display">
+                    <thead>
+                        <tr>
+                            <th>Program Name</th>
+                            <th>Approved Schedules</th>
+                            <th>Canceled Schedules</th>
+                            <th>Total Schedules</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -510,138 +481,52 @@ $conn->close();
 
     <script>
         $(document).ready(function() {
-
-            const userDistributionCtx = document.getElementById('userDistributionChart').getContext('2d');
-            const userDistribution = <?= json_encode($userDistribution) ?>;
-            const userDistributionLabels = userDistribution.map(d => d.college_campus);
-            const userDistributionData = userDistribution.map(d => d.user_count);
-
-            const userDistributionChart = new Chart(userDistributionCtx, {
-                type: 'pie',
-                data: {
-                    labels: userDistributionLabels,
-                    datasets: [{
-                        label: 'Users Per Campus',
-                        data: userDistributionData,
-                        backgroundColor: [
-                            'rgba(255, 153, 152, .2)',
-                            'rgba(255, 99, 132, 0.2)',
-                            'rgba(54, 162, 235, 0.2)',
-                            'rgba(255, 206, 86, 0.2)',
-                            'rgba(153, 102, 255, 0.2)',
-                            'rgba(255, 159, 64, 0.2)'
-                        ],
-                        borderColor: [
-                            'rgba(255, 153, 152, 1)',
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(153, 102, 255, 1)',
-                            'rgba(255, 159, 64, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    return `${tooltipItem.label}: ${tooltipItem.raw} users`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            const userStatusCtx = document.getElementById('userStatusChart').getContext('2d');
-            const userStatusCount = <?= json_encode($userStatusCount) ?>;
-            const userStatusLabels = userStatusCount.map(d => d.status);
-            const userStatusData = userStatusCount.map(d => d.count);
-
-            const userStatusChart = new Chart(userStatusCtx, {
-                type: 'bar',
-                data: {
-                    labels: userStatusLabels,
-                    datasets: [{
-                        label: 'User Status',
-                        data: userStatusData,
-                        backgroundColor: 'rgba(255, 153, 152, .2)',
-                        borderColor: 'rgba(255, 153, 152, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    return `${tooltipItem.label}: ${tooltipItem.raw} users`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            const table = $('#memberTable').DataTable({
+            // Initialize DataTable
+            const table = $('#programScheduleTable').DataTable({
                 serverSide: true,
                 ajax: function(data, callback, settings) {
-                    const campus = $('#campus').val();
-                    const college = $('#college').val();
-                    const year = $('#year').val();
                     const search = data.search.value;
                     const offset = data.start;
 
-                    $.post('analytics_get_members.php', {
-                        action: 'getMembers',
-                        campus: campus,
-                        college: college,
+                    $.post('analytics_get_program_schedules.php', {
+                        action: 'getProgramSchedule',
                         search: search,
                         offset: offset,
-                        year: year
                     }, function(response) {
-                        const members = JSON.parse(response);
+                        const schedules = JSON.parse(response);
                         callback({
                             draw: data.draw,
-                            recordsTotal: members.recordsTotal,
-                            recordsFiltered: members.recordsFiltered,
-                            data: members.data.map(member => [
-                                member.first_name + ' ' + member.last_name,
-                                member.schedule_count,
-                                member.accepted_count,
-                                member.declined_count
+                            recordsTotal: schedules.recordsTotal,
+                            recordsFiltered: schedules.recordsFiltered,
+                            data: schedules.data.map(schedule => [
+                                schedule.program_name,
+                                schedule.total_schedule_count,
+                                schedule.approved_count,
+                                schedule.canceled_count
                             ])
                         });
                     });
                 },
-                columns: [
-                    { title: "Full Name" },
-                    { title: "Schedules" },
-                    { title: "Accepted" },
-                    { title: "Declined" }
+                columns: [{
+                        title: "Program Name"
+                    },
+                    {
+                        title: "Total Schedules"
+                    },
+                    {
+                        title: "Approved"
+                    },
+                    {
+                        title: "Canceled"
+                    }
                 ],
                 pageLength: 10
             });
 
-
+            // Update colleges dropdown when campus changes
             $('#campus').change(function() {
                 const campus = $(this).val();
-                $.post('analytics_get_members.php', {
+                $.post('analytics_get_program_schedules.php', {
                     action: 'getColleges',
                     campus: campus
                 }, function(response) {
@@ -650,31 +535,34 @@ $conn->close();
                     colleges.forEach(college => {
                         $('#college').append(`<option value="${college.code}">${college.college_name}</option>`);
                     });
-                    table.draw();
+                    table.draw(); // Redraw table with updated data
                 });
             });
 
-            $('#year, #campus, #college').change(function() {
+            // Redraw table when any filter changes
+            $('#college').change(function() {
                 table.draw();
             });
 
-            $('#year').change(function() {
-                const year = $(this).val();
-                $.post('analytics_get_members.php', {
-                    action: 'getSchedules',
-                    year: year
-                }, function(data) {
-                    const schedules = JSON.parse(data);
-                    const labels = schedules.map(s => s.schedule_date);
-                    const dataPoints = schedules.map(s => s.user_count);
+            // // Update chart when year changes
+            // $('#year').change(function () {
+            //     const year = $(this).val();
+            //     $.post('analytics_get_members.php', {
+            //         action: 'getSchedules',
+            //         year: year
+            //     }, function (data) {
+            //         const schedules = JSON.parse(data);
+            //         const labels = schedules.map(s => s.schedule_date);
+            //         const dataPoints = schedules.map(s => s.user_count);
 
-                    scheduleChart.data.labels = labels;
-                    scheduleChart.data.datasets[0].data = dataPoints;
-                    scheduleChart.update();
-                });
-            });
+            //         scheduleChart.data.labels = labels;
+            //         scheduleChart.data.datasets[0].data = dataPoints;
+            //         scheduleChart.update();
+            //     });
+            // });
         });
     </script>
+
 </body>
 
 </html>

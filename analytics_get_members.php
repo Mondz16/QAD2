@@ -67,7 +67,8 @@ function getMembers($conn, $campus, $college, $search, $offset, $year)
 }
 
 
-function getCollegesByCampus($conn, $campus) {
+function getCollegesByCampus($conn, $campus)
+{
     $query = "SELECT code, college_name FROM college WHERE college_campus = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('s', $campus);
@@ -81,4 +82,3 @@ function getCollegesByCampus($conn, $campus) {
 
     return $colleges;
 }
-?>
