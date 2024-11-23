@@ -2,14 +2,12 @@
 include 'connection.php';
 session_start();
 
-
 $user_id = $_SESSION['user_id'];
 $is_admin = false;
 
 // Check user type and redirect accordingly
 if ($user_id === 'admin') {
     $is_admin = true;
-    // If current page is not admin.php, redirect
     if (basename($_SERVER['PHP_SELF']) !== 'internal_assigned_schedule.php') {
         header("Location: admin_sidebar.php");
         exit();
@@ -18,23 +16,21 @@ if ($user_id === 'admin') {
     $user_type_code = substr($user_id, 3, 2);
 
     if ($user_type_code === '11') {
-        // Internal user
         if (basename($_SERVER['PHP_SELF']) !== 'internal_assigned_schedule.php') {
             header("Location: internal.php");
             exit();
         }
     } elseif ($user_type_code === '22') {
-        // External user
         if (basename($_SERVER['PHP_SELF']) !== 'external.php') {
             header("Location: external.php");
             exit();
         }
     } else {
-        // Handle unexpected user type, redirect to login or error page
         header("Location: login.php");
         exit();
     }
 }
+
 // Fetch colleges for the dropdown
 $college_query = "SELECT code, college_name FROM college";
 $college_result = $conn->query($college_query);
@@ -43,153 +39,8 @@ $college_result = $conn->query($college_query);
 $year_query = "SELECT DISTINCT YEAR(schedule_date) as year FROM schedule";
 $year_result = $conn->query($year_query);
 
-// Fetch distinct status for the status dropdown
-$status_options = ['pending', 'approved', 'cancelled', 'finished', 'failed'];
-
-// Function to fetch and display schedules (used for both AJAX and initial load)
-function display_schedules($conn, $user_id, $selected_college = '', $selected_year = '', $selected_status = '')
-{
-    $schedule_query = "
-        SELECT s.*, c.college_name, p.program_name
-        FROM schedule s
-        JOIN team t ON s.id = t.schedule_id
-        JOIN college c ON s.college_code = c.code
-        JOIN program p ON s.program_id = p.id
-        WHERE t.internal_users_id = ?";
-
-    // Apply filtering by college
-    if (!empty($selected_college)) {
-        $schedule_query .= " AND s.college_code = ?";
-    }
-
-    // Apply filtering by year
-    if (!empty($selected_year)) {
-        $schedule_query .= " AND YEAR(s.schedule_date) = ?";
-    }
-
-    // Apply filtering by status
-    if (!empty($selected_status)) {
-        $schedule_query .= " AND s.schedule_status = ?";
-    }
-
-    $stmt = $conn->prepare($schedule_query);
-
-    // Bind the parameters dynamically based on the filters
-    if (!empty($selected_college) && !empty($selected_year) && !empty($selected_status)) {
-        $stmt->bind_param("ssss", $user_id, $selected_college, $selected_year, $selected_status);
-    } elseif (!empty($selected_college) && !empty($selected_year)) {
-        $stmt->bind_param("sss", $user_id, $selected_college, $selected_year);
-    } elseif (!empty($selected_college)) {
-        $stmt->bind_param("ss", $user_id, $selected_college);
-    } elseif (!empty($selected_year)) {
-        $stmt->bind_param("ss", $user_id, $selected_year);
-    } elseif (!empty($selected_status)) {
-        $stmt->bind_param("ss", $user_id, $selected_status);
-    } else {
-        $stmt->bind_param("s", $user_id);
-    }
-
-    $stmt->execute();
-    $schedule_result = $stmt->get_result();
-
-    $output = "";
-    if ($schedule_result->num_rows > 0) {
-        while ($row = $schedule_result->fetch_assoc()) {
-            $schedule_date = date("F d, Y", strtotime($row['schedule_date'])); // Format as MM-DD-YYYY
-            $schedule_time = date("g:i a", strtotime($row['schedule_time'])); // Format as 11:00am
-            $output .= "<tr>
-                <td>{$schedule_date}</td>
-                <td>{$schedule_time}</td>
-                <td>{$row['college_name']}</td>
-                <td>{$row['program_name']}</td>
-                <td>{$row['schedule_status']}</td>
-            </tr>";
-        }
-    } else {
-        $output .= "<tr><td colspan='5'>No schedules found for the selected filters.</td></tr>";
-    }
-
-    $stmt->close();
-    return $output;
-}
-
-// Handle AJAX request
-if (isset($_POST['ajax']) && $_POST['ajax'] == 1) {
-    $selected_college = $_POST['college'];
-    $selected_year = $_POST['year'];
-    $selected_status = $_POST['status'];
-    echo display_schedules($conn, $user_id, $selected_college, $selected_year, $selected_status);
-    exit();
-}
-
-// PDF export function
-if (isset($_POST['export_pdf'])) {
-    // Include FPDF or TCPDF library
-    require('mc_table.php'); // Assuming you have FPDF installed in the project
-
-    $pdf = new PDF_MC_Table();
-    $pdf->AddPage();
-    $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, 'Schedule Report', 1, 1, 'C');
-
-    $pdf->SetFont('Arial', '', 10);
-    $pdf->Cell(30, 10, 'Date', 1);
-    $pdf->Cell(20, 10, 'Time', 1);
-    $pdf->Cell(50, 10, 'College', 1);
-    $pdf->Cell(60, 10, 'Program', 1);
-    $pdf->Cell(30, 10, 'Status', 1);
-    $pdf->Ln();
-
-    // Function to wrap text to a specified length
-    function wrapText($text, $length) {
-        return wordwrap($text, $length, "\n", true);
-    }
-
-    // Get the data to export
-    $schedules = display_schedules($conn, $user_id, $_POST['college'], $_POST['year'], $_POST['status']);
-    $schedules_array = explode('</tr>', $schedules);
-
-    foreach ($schedules_array as $row) {
-        $row_data = strip_tags($row);
-        $cells = explode("\t", $row_data);
-
-        foreach ($cells as $cell) {
-            $trimmedCell = trim($cell);
-            $data_cell = explode("\n", $trimmedCell);
-            if (count($data_cell) < 5) {
-                continue; // Skip rows that don't have enough data
-            }
-
-            // Prepare wrapped text for Time and College
-            $wrappedProgram = wrapText(trim($data_cell[3]), 35);
-            $wrappedCollege = wrapText(trim($data_cell[2]), 45);
-
-            // Calculate the number of lines for each wrapped text
-            $linesTime = count(explode("\n", $wrappedProgram));
-            $linesCollege = count(explode("\n", $wrappedCollege));
-
-            // Calculate the maximum height for the row
-            $rowHeight = max($linesTime, $linesCollege, 1) * 5; // 10 is the cell height
-
-            // // Add data to the PDF
-            // $pdf->Cell(30, $rowHeight, trim($data_cell[0]), 1); // Date
-            // $pdf->Cell(20, $rowHeight, trim($data_cell[1]), 1); // Time
-            // $pdf->MultiCell(50, $rowHeight / 2, $wrappedCollege, 1, 'C'); // College
-            // $pdf->MultiCell(60, 5, $wrappedProgram, 1); // Program
-            // $pdf->Cell(30, $rowHeight, trim($data_cell[4]), 1); // Status
-            
-            $pdf->SetWidths(array(30,20,50,60, 30));
-            $pdf->Row(array(trim($data_cell[0]),trim($data_cell[1]),trim($data_cell[2]),trim($data_cell[3]),trim($data_cell[4])));
-
-            $pdf->Ln($rowHeight); // Move to the next line after the row height
-        }
-    }
-
-    // Output PDF
-    $fileName = $user_id . '_schedules_report.pdf';
-    $pdf->Output('d', $fileName);
-    exit();
-}
+// Fetch distinct statuses for the status dropdown
+$status_options = ['pending', 'cancelled', 'finished'];
 
 ?>
 
@@ -204,6 +55,14 @@ if (isset($_POST['export_pdf'])) {
     <link rel="stylesheet" href="reports_dashboard_styles.css">
     <link rel="stylesheet" href="pagestyle.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.5/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.5/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
     <style>
         .edit-icon {
             display: inline-block;
@@ -233,23 +92,21 @@ if (isset($_POST['export_pdf'])) {
 
         table {
             width: 100%;
+            margin-top: 20px;
             border-collapse: collapse;
+            margin-top: 10px;
         }
 
-        table,
-        th,
-        td {
-            border: 1px solid black;
-        }
-
-        th,
-        td {
-            padding: 8px;
+        table th,
+        table td {
+            padding: 10px;
             text-align: left;
+            border: solid #E5E5E5 1px;
         }
 
-        th {
-            background-color: #f2f2f2;
+        table thead th {
+            background-color: #B73033;
+            color: #fff;
         }
 
         .filter-container {
@@ -407,8 +264,6 @@ if (isset($_POST['export_pdf'])) {
         <div style="height: 24px; width: 0px;"></div>
 
         <div class="dashboard-container">
-            <h2>View Assigned Schedules</h2>
-
             <div style="height: 24px; width: 0px;"></div>
             <div class="filter-container">
                 <label for="college">College:</label>
@@ -434,16 +289,9 @@ if (isset($_POST['export_pdf'])) {
                         <option value="<?php echo $status; ?>"><?php echo ucfirst($status); ?></option>
                     <?php } ?>
                 </select>
-                
-                <form method="post" action="" class="button-container">
-                    <input type="hidden" name="college" id="hidden-college">
-                    <input type="hidden" name="year" id="hidden-year">
-                    <input type="hidden" name="status" id="hidden-status">
-                    <button type="submit" name="export_pdf" class="export-btn">Export as PDF</button>
-                </form>
             </div>
 
-            <table>
+            <table id="scheduleTable" class="display nowrap" style="width:100%">
                 <thead>
                     <tr>
                         <th>Schedule Date</th>
@@ -453,42 +301,74 @@ if (isset($_POST['export_pdf'])) {
                         <th>Status</th>
                     </tr>
                 </thead>
-                <tbody id="schedule-table">
-                    <?php echo display_schedules($conn, $user_id); ?>
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // Function to fetch and update the schedule table
-        function fetchSchedules() {
-            const college = document.getElementById('college').value;
-            const year = document.getElementById('year').value;
-            const status = document.getElementById('status').value;
+        $(document).ready(function() {
+            const table = $('#scheduleTable').DataTable({
+                dom: 'Bfrtip',
+                buttons: [{
+                    extend: 'pdfHtml5',
+                    text: 'Export to PDF',
+                    className: 'btn btn-primary',
+                    title: 'Schedule Report',
+                    filename: function() {
+                        // Generate a dynamic filename with the current date and time
+                        const now = new Date();
+                        const formattedDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+                        const formattedTime = now
+                            .toLocaleTimeString('en-US', {
+                                hour12: false
+                            })
+                            .replace(/:/g, '-'); // HH-MM-SS
+                        return `Schedule_Report_${formattedDate}_${formattedTime}`;
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        modifier: {
+                            search: 'applied',
+                            order: 'applied'
+                        }
+                    },
+                    customize: function(doc) {
+                        doc.styles.tableHeader.fillColor = '#B73033';
+                        doc.styles.tableHeader.color = 'white';
+                    }
+                }],
+                serverSide: true,
+                ajax: {
+                    url: 'fetch_schedules.php',
+                    type: 'POST',
+                    data: function(d) {
+                        d.college = $('#college').val();
+                        d.year = $('#year').val();
+                        d.status = $('#status').val();
+                    }
+                },
+                columns: [{
+                        data: 'schedule_date'
+                    },
+                    {
+                        data: 'schedule_time'
+                    },
+                    {
+                        data: 'college_name'
+                    },
+                    {
+                        data: 'program_name'
+                    },
+                    {
+                        data: 'schedule_status'
+                    }
+                ]
+            });
 
-            // Send an AJAX request to fetch schedules based on filters
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", "", true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    document.getElementById('schedule-table').innerHTML = xhr.responseText;
-                }
-            };
-            xhr.send(`ajax=1&college=${college}&year=${year}&status=${status}`);
-        }
-
-        // Add event listeners to the dropdowns to trigger the fetch on change
-        document.getElementById('college').addEventListener('change', fetchSchedules);
-        document.getElementById('year').addEventListener('change', fetchSchedules);
-        document.getElementById('status').addEventListener('change', fetchSchedules);
-
-        // Set the hidden fields for PDF export
-        document.querySelector('.export-btn').addEventListener('click', function() {
-            document.getElementById('hidden-college').value = document.getElementById('college').value;
-            document.getElementById('hidden-year').value = document.getElementById('year').value;
-            document.getElementById('hidden-status').value = document.getElementById('status').value;
+            $('#college, #year, #status').change(function() {
+                table.draw();
+            });
         });
     </script>
 </body>

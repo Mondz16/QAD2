@@ -267,9 +267,14 @@ $conn->close();
         }
 
         table.dataTable th,
-        table.dataTable td {
+        table.dataTable td:first-child {
             padding: 10px;
             text-align: left;
+        }
+
+        table.dataTable td {
+            padding: 10px;
+            text-align: center;
         }
 
         table.dataTable thead th {
@@ -477,21 +482,31 @@ $conn->close();
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <!-- Add the required CSS and JS files in your HTML -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.5/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.5/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 
     <script>
         $(document).ready(function() {
-            // Initialize DataTable
+            // Initialize DataTable with export button and text alignment adjustment
             const table = $('#programScheduleTable').DataTable({
                 serverSide: true,
                 ajax: function(data, callback, settings) {
                     const search = data.search.value;
                     const offset = data.start;
+                    const collegeCode = $('#college').val();
+                    const year = $('#year').val();
 
+                    // Send AJAX request to fetch filtered data
                     $.post('analytics_get_program_schedules.php', {
                         action: 'getProgramSchedule',
                         search: search,
                         offset: offset,
+                        college_code: collegeCode,
+                        year: year
                     }, function(response) {
                         const schedules = JSON.parse(response);
                         callback({
@@ -520,7 +535,44 @@ $conn->close();
                         title: "Canceled"
                     }
                 ],
-                pageLength: 10
+                pageLength: 10,
+                dom: 'Bfrtip',
+                buttons: [{
+                    extend: 'pdfHtml5',
+                    text: 'Export to PDF',
+                    className: 'btn btn-primary',
+                    title: 'Program Schedules Report',
+                    filename: function() {
+                        // Generate a dynamic filename with the current date and time
+                        const now = new Date();
+                        const formattedDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+                        const formattedTime = now
+                            .toLocaleTimeString('en-US', {
+                                hour12: false
+                            })
+                            .replace(/:/g, '-'); // HH-MM-SS
+                        return `Program_Schedule_Report_${formattedDate}_${formattedTime}`;
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        modifier: {
+                            search: 'applied',
+                            order: 'applied'
+                        }
+                    },
+                    customize: function(doc) {
+                        doc.styles.tableHeader.fillColor = '#B73033';
+                        doc.styles.tableHeader.color = 'white';
+                        doc.content[1].table.widths = ['*', '*', '*', '*'];
+                    }
+                }],
+                createdRow: function(row, data, dataIndex) {
+                    // Align the first column's content to the left
+                    $('td', row).eq(0).css('text-align', 'left');
+
+                    // Align the rest of the columns' content to the center
+                    $('td', row).slice(1).css('text-align', 'center');
+                }
             });
 
             // Update colleges dropdown when campus changes
@@ -539,30 +591,12 @@ $conn->close();
                 });
             });
 
-            // Redraw table when any filter changes
-            $('#college').change(function() {
+            // Redraw table when college or year changes
+            $('#college, #year').change(function() {
                 table.draw();
             });
-
-            // // Update chart when year changes
-            // $('#year').change(function () {
-            //     const year = $(this).val();
-            //     $.post('analytics_get_members.php', {
-            //         action: 'getSchedules',
-            //         year: year
-            //     }, function (data) {
-            //         const schedules = JSON.parse(data);
-            //         const labels = schedules.map(s => s.schedule_date);
-            //         const dataPoints = schedules.map(s => s.user_count);
-
-            //         scheduleChart.data.labels = labels;
-            //         scheduleChart.data.datasets[0].data = dataPoints;
-            //         scheduleChart.update();
-            //     });
-            // });
         });
     </script>
-
 </body>
 
 </html>
