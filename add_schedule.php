@@ -188,8 +188,8 @@ if (!isset($_SESSION['user_id'])) {
                         ?>
                     </select>
                 </div>
-                <div id="programs-container">
-                    <!-- Program inputs will be dynamically added here -->
+                <div id="programs-container" class="selected-programs-list">
+
                 </div>
                 <button type="button" id="add-program-button" class="add-program-input-button" onclick="addProgramInput()" disable>Add Program</button>
 
@@ -215,6 +215,15 @@ if (!isset($_SESSION['user_id'])) {
                     <button type="submit" class="submit-button" disabled>SUBMIT</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="programModal" class="program-modal">
+        <div class="program-modal-content">
+            <h2>Add Program Schedule</h2>
+            <div id="program-form"></div>
+            <button type="button" class="save-program-btn">Save Schedule</button>
+            <button type="button" class="cancel-program-btn">Cancel</button>
         </div>
     </div>
 
@@ -263,7 +272,7 @@ if (!isset($_SESSION['user_id'])) {
         function updateSubmitButtonState() {
             const submitButton = document.querySelector('.submit-button');
             if (submitButton) {
-                submitButton.disabled = programCount === 0;
+                submitButton.disabled = programsData.length === 0;
                 // Optional: Add visual feedback for disabled state
                 if (programCount === 0) {
                     submitButton.classList.add('submit-button-disabled');
@@ -355,86 +364,229 @@ if (!isset($_SESSION['user_id'])) {
             programsContainer.insertAdjacentHTML('beforeend', ``);
         }
 
+        let programsData = [];
 
-        function addProgramInput() {
-            programCount++;
-            const programsContainer = document.getElementById('programs-container');
+        function showProgramModal() {
+            const modal = document.getElementById('programModal');
+            const programForm = document.getElementById('program-form');
 
+            // Clear previous content
+            programForm.innerHTML = '';
+
+            // Add the program form template
             const template = `
-        <div class="program-block" id="program-block-${programCount}">
+        <div class="program-block" id="program-block-temp">
             <div class="form-group">
-                <label for="program-${programCount}">PROGRAM:</label>
-                <select id="program-${programCount}" name="program[]" onchange="fetchProgramLevelDynamic(${programCount})" required class="select2" style="cursor: pointer;">
+                <label for="program-temp">PROGRAM:</label>
+                <select id="program-temp" name="program" onchange="fetchProgramLevelDynamic('temp')" required class="select2" style="cursor: pointer;">
                     <option value="" disabled selected hidden>Select Program</option>
                 </select>
             </div>
             <div>
                 <div class="level-header">
-                    <label for="level-${programCount}">CURRENT LEVEL:</label>
-                    <label class="level-applied" for="level-applied-${programCount}">LEVEL APPLIED:</label>
-                    <label for="level-validity-${programCount}">YEARS OF VALIDITY:</label>
+                    <label for="level-temp">CURRENT LEVEL:</label>
+                    <label class="level-applied" for="level-applied-temp">LEVEL APPLIED:</label>
+                    <label for="level-validity-temp">YEARS OF VALIDITY:</label>
                 </div>
                 <div class="level-input-holder">
-                    <input class="level-input" type="text" id="program-level-${programCount}" name="level[]" readonly>
+                    <input class="level-input" type="text" id="program-level-temp" name="level" readonly>
                     <div class="level-holder">
-                        <span id="level-acquired-${programCount}"></span>
+                        <span id="level-acquired-temp"></span>
                     </div>
-                    <input class="level-input highlight" type="text" id="level-output-${programCount}" name="level-output[]" readonly>
-                    <input class="level-input-validity" type="text" id="year-validity-${programCount}" name="level_validity[]" value="3" required>
+                    <input class="level-input highlight" type="text" id="level-output-temp" name="level-output" readonly>
+                    <input class="level-input-validity" type="text" id="year-validity-temp" name="level_validity" value="3" required>
                 </div>
             </div>
             <div class="dateTime-holder">
                 <div class="form-group">
-                    <label for="date-${programCount}">DATE:</label>
-                    <input type="date" id="date-${programCount}" name="date[]" required style="cursor: pointer;">
+                    <label for="date-temp">DATE:</label>
+                    <input type="date" id="date-temp" name="date" required style="cursor: pointer;">
                 </div>
                 <div class="form-group">
-                    <label for="time-${programCount}">TIME:</label>
-                    <input type="time" id="time-${programCount}" name="time[]" required style="cursor: pointer;">
+                    <label for="time-temp">TIME:</label>
+                    <input type="time" id="time-temp" name="time" required style="cursor: pointer;">
                 </div>
             </div>
             <div class="form-group">
-                <label for="zoom-${programCount}">MEETING LINK:</label>
-                <textarea id="zoom-${programCount}" name="zoom[]" cols="40" rows="1" placeholder="OPTIONAL"></textarea>
+                <label for="zoom-temp">MEETING LINK:</label>
+                <textarea id="zoom-temp" name="zoom" cols="40" rows="1" placeholder="OPTIONAL"></textarea>
             </div>
-            <button type="button" class="remove-program-btn" onclick="removeProgramInput(${programCount})">Remove Program</button>
         </div>
     `;
 
-            programsContainer.insertAdjacentHTML('beforeend', template);
+            programForm.insertAdjacentHTML('beforeend', template);
+            modal.style.display = "block";
 
             // Initialize select2 for the new dropdown
-            $(`#program-${programCount}`).select();
+            $("#program-temp").select({
+                dropdownParent: $('#programModal')
+            });
 
-            // Populate new program dropdown based on selected college
+            // Populate program dropdown
             updateSelectedPrograms();
-            updateNewProgramDropdown(`#program-${programCount}`);
             updateSubmitButtonState();
             clearScheduleErrors();
+            updateNewProgramDropdown("#program-temp");
         }
 
-        function removeProgramInput(id) {
-            const programBlock = document.getElementById(`program-block-${id}`);
+        function saveProgramData() {
+            // Gather input elements
+            const program = document.getElementById('program-temp');
+            const levelValidity = document.getElementById('year-validity-temp');
+            const date = document.getElementById('date-temp');
+            const time = document.getElementById('time-temp');
 
-            if (programBlock) {
-                // Destroy the Select2 instance if it exists
-                try {
-                    $(`#program-${id}`).select2('destroy');
-                } catch (e) {
-                    console.log('Select2 instance not found or already destroyed');
-                }
+            // Initialize validation flag and error messages
+            let isValid = true;
+            const errors = [];
 
-                // Remove the program block from the DOM
-                programBlock.remove();
-
-                // Reindex remaining programs
-                reindexPrograms();
-
-                // Update selected programs and dropdowns
-                updateSelectedPrograms();
+            // Check each required field
+            if (!program.value) {
+                isValid = false;
+                errors.push("Program is required.");
             }
 
-            clearScheduleErrors();
+            if (!levelValidity.value) {
+                isValid = false;
+                errors.push("Level validity is required.");
+            }
+
+            if (!date.value) {
+                isValid = false;
+                errors.push("Date is required.");
+            }
+
+            if (!time.value) {
+                isValid = false;
+                errors.push("Time is required.");
+            }
+
+            // If any validation fails, show errors and stop saving
+            if (!isValid) {
+                alert(`Fill in all the input required! \n\n${errors.join("\n")}`);
+                return;
+            }
+
+            // Proceed with saving if all fields are valid
+            checkScheduleDate((isScheduleValid) => {
+                if (isScheduleValid) {
+                    programCount++;
+                    const programData = {
+                        id: programCount,
+                        program: program.value,
+                        programName: program.options[program.selectedIndex].text,
+                        level: document.getElementById('program-level-temp').value,
+                        levelApplied: document.getElementById('level-output-temp').value,
+                        validity: levelValidity.value,
+                        date: date.value,
+                        time: time.value,
+                        zoom: document.getElementById('zoom-temp').value
+                    };
+
+                    programsData.push(programData);
+                    updateProgramsList();
+                    updateSubmitButtonState();
+                    closeModal();
+                }
+                // If not valid, the modal stays open with the error displayed
+            });
+        }
+
+
+        function updateProgramsList() {
+            const container = document.querySelector('.selected-programs-list');
+            container.innerHTML = '';
+
+            programsData.forEach(program => {
+                const programElement = `
+            <div class="program-wrapper" id="program-wrapper-${program.id}">
+                <div class="selected-program-item">
+                    <div class="program-info">
+                        <strong>${program.programName}</strong>
+                        <div>Date: ${program.date} Time: ${program.time}</div>
+                    </div>
+                    <div class="program-actions">
+                        <button type="button" onclick="editProgram(${program.id})" class="edit-btn">Edit</button>
+                        <button type="button" onclick="removeProgram(${program.id})" class="remove-btn">Remove</button>
+                    </div>
+                </div>
+                <div class="hidden-inputs-container">
+                    <input type="hidden" class="hidden-program-input" name="program[]" value="${program.program}">
+                    <input type="hidden" class="hidden-program-input" name="level[]" value="${program.level}">
+                    <input type="hidden" class="hidden-program-input" name="level-output[]" value="${program.levelApplied}">
+                    <input type="hidden" class="hidden-program-input" name="level_validity[]" value="${program.validity}">
+                    <input type="hidden" class="hidden-program-input" name="date[]" value="${program.date}">
+                    <input type="hidden" class="hidden-program-input" name="time[]" value="${program.time}">
+                    <input type="hidden" class="hidden-program-input" name="zoom[]" value="${program.zoom}">
+                </div>
+            </div>
+        `;
+                container.insertAdjacentHTML('beforeend', programElement);
+            });
+        }
+
+        function updateHiddenInputs() {
+            const form = document.getElementById('schedule-form');
+
+            // Remove existing hidden inputs
+            const existingInputs = form.querySelectorAll('.hidden-program-input');
+            existingInputs.forEach(input => input.remove());
+
+            // Add new hidden inputs
+            programsData.forEach(program => {
+                const hiddenInputs = `
+            <input type="hidden" class="hidden-program-input" name="program[]" value="${program.program}">
+            <input type="hidden" class="hidden-program-input" name="level[]" value="${program.level}">
+            <input type="hidden" class="hidden-program-input" name="level-output[]" value="${program.levelApplied}">
+            <input type="hidden" class="hidden-program-input" name="level_validity[]" value="${program.validity}">
+            <input type="hidden" class="hidden-program-input" name="date[]" value="${program.date}">
+            <input type="hidden" class="hidden-program-input" name="time[]" value="${program.time}">
+            <input type="hidden" class="hidden-program-input" name="zoom[]" value="${program.zoom}">
+        `;
+                form.insertAdjacentHTML('beforeend', hiddenInputs);
+            });
+        }
+
+        function editProgram(id) {
+            const program = programsData.find(p => p.id === id);
+            if (!program) return;
+
+            showProgramModal();
+
+            // Populate modal with program data
+            setTimeout(() => {
+                document.getElementById('program-temp').value = program.program;
+                document.getElementById('program-level-temp').value = program.level;
+                document.getElementById('level-output-temp').value = program.levelApplied;
+                document.getElementById('year-validity-temp').value = program.validity;
+                document.getElementById('date-temp').value = program.date;
+                document.getElementById('time-temp').value = program.time;
+                document.getElementById('zoom-temp').value = program.zoom;
+
+                // Remove the old program data
+                programsData = programsData.filter(p => p.id !== id);
+            }, 100);
+        }
+
+
+        function removeProgram(id) {
+            programsData = programsData.filter(program => program.id !== id);
+            updateProgramsList();
+            updateSubmitButtonState();
+        }
+
+        function closeModal() {
+            document.getElementById('programModal').style.display = "none";
+        }
+        document.querySelector('.cancel-program-btn').onclick = closeModal;
+        document.querySelector('.save-program-btn').onclick = saveProgramData;
+        document.getElementById('add-program-button').onclick = showProgramModal;
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('programModal');
+            if (event.target === modal) {
+                closeModal();
+            }
         }
 
         function reindexPrograms() {
@@ -507,9 +659,7 @@ if (!isset($_SESSION['user_id'])) {
                         college_id: collegeId
                     },
                     success: function(response) {
-                        for (let i = 1; i <= programCount; i++) {
-                            updateProgramDropdown(`#program-${i}`, response);
-                        }
+                        updateProgramDropdown(`#program-temp`, response);
                     },
                     error: function(xhr, status, error) {
                         console.error('Error:', error);
@@ -538,9 +688,13 @@ if (!isset($_SESSION['user_id'])) {
 
             // Add and disable options as needed
             programs.forEach(option => {
-                const isCurrentSelection = option.id.toString() === currentValue;
-                const isSelectedElsewhere = selectedPrograms.has(option.id.toString()) && !isCurrentSelection;
+                // Check if the current option ID exists in programsData
+                const isSelectedElsewhere = programsData.some(p => p.program === option.id.toString());
 
+                // Log for debugging purposes
+                console.log(`Option ID: ${option.id}, Is Selected Elsewhere: ${isSelectedElsewhere}`);
+
+                // Create the option element and disable it if already selected
                 const optionElement = $('<option>')
                     .text(option.name)
                     .attr('value', option.id)
@@ -549,11 +703,6 @@ if (!isset($_SESSION['user_id'])) {
                 dropdown.append(optionElement);
             });
 
-            // Restore the previous value if it existed
-            if (currentValue) {
-                console.log(`Restoring value ${currentValue} for ${selector}`);
-                dropdown.val(currentValue);
-            }
         }
 
         function updateSelectedPrograms() {
@@ -886,84 +1035,130 @@ if (!isset($_SESSION['user_id'])) {
         }
 
         function checkScheduleDate(callback) {
-            const programBlocks = document.querySelectorAll('.program-block');
-            const schedulesToCheck = [];
-            let hasAllRequiredFields = true;
+            // For modal validation (when adding/editing a program)
+            const modalDate = document.getElementById('date-temp');
+            const selectedCollege = document.getElementById('college');
 
-            // Collect all schedules data
-            programBlocks.forEach((block, index) => {
-                const date = block.querySelector('input[name="date[]"]').value;
-                const college = document.getElementById('college').options[document.getElementById('college').selectedIndex].text;
+            if (modalDate && modalDate.value && selectedCollege.value) {
+                // Check the date in the modal
+                const scheduleToCheck = [{
+                    date: modalDate.value,
+                    college: selectedCollege.options[selectedCollege.selectedIndex].text,
+                    index: 0
+                }];
 
-                if (date && college) {
-                    schedulesToCheck.push({
-                        date,
-                        college,
-                        index
+                // Also include existing programs' dates (excluding the one being edited if any)
+                programsData.forEach((program, index) => {
+                    scheduleToCheck.push({
+                        date: program.date,
+                        college: selectedCollege.options[selectedCollege.selectedIndex].text,
+                        index: index + 1
                     });
-                } else if (date || time || program) { // Only mark as incomplete if at least one field is filled
-                    hasAllRequiredFields = false;
-                }
-            });
+                });
 
-            // If no schedules to check or missing required fields, return
-            if (schedulesToCheck.length === 0) {
-                if (callback) callback(true);
-                return;
-            }
+                // Send all schedules to be checked at once
+                $.ajax({
+                    url: 'check_schedule.php',
+                    type: 'POST',
+                    data: {
+                        schedules: scheduleToCheck
+                    },
+                    success: function(response) {
+                        try {
+                            const data = JSON.parse(response);
 
-            if (!hasAllRequiredFields) {
-                if (callback) callback(false);
-                return;
-            }
+                            if (data.error) {
+                                showErrorMessage("Error: " + data.error);
+                                if (callback) callback(false);
+                                return;
+                            }
 
-            // Send all schedules to be checked at once
-            $.ajax({
-                url: 'check_schedule.php',
-                type: 'POST',
-                data: {
-                    schedules: schedulesToCheck
-                },
-                success: function(response) {
-                    try {
-                        const data = JSON.parse(response);
+                            const conflicts = data.conflicts.filter(conflict =>
+                                conflict.status === 'exists' || conflict.status === 'error'
+                            );
 
-                        if (data.error) {
-                            showErrorMessage("Error: " + data.error);
+                            if (conflicts.length > 0) {
+                                // Format and display all conflict messages
+                                const errorMessages = conflicts.map(conflict =>
+                                    `\nProgram ${conflict.index === 0 ? '(Current)' : conflict.index}: ${conflict.message}`
+                                ).join('\n');
+
+                                showErrorMessage(errorMessages);
+                                if (callback) callback(false);
+                            } else {
+                                hideErrorMessage();
+                                if (callback) callback(true);
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                            showErrorMessage('Error processing server response');
                             if (callback) callback(false);
-                            return;
                         }
-
-                        const conflicts = data.conflicts.filter(conflict =>
-                            conflict.status === 'exists' || conflict.status === 'error'
-                        );
-
-                        if (conflicts.length > 0) {
-                            // Format and display all conflict messages
-                            const errorMessages = conflicts.map(conflict =>
-                                `\nProgram ${conflict.index + 1}: ${conflict.message}`
-                            ).join('\n');
-
-                            showErrorMessage(errorMessages);
-                            if (callback) callback(false);
-                        } else {
-                            hideErrorMessage();
-                            if (callback) callback(true);
-                        }
-                    } catch (e) {
-                        console.error('Error parsing response:', e);
-                        showErrorMessage('Error processing server response');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error checking schedule:', error);
+                        showErrorMessage('Error checking schedule availability');
                         if (callback) callback(false);
                     }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error checking schedule:', error);
-                    showErrorMessage('Error checking schedule availability');
-                    if (callback) callback(false);
+                });
+            } else {
+                // When validating the entire form (for submission)
+                if (programsData.length === 0) {
+                    if (callback) callback(true);
+                    return;
                 }
-            });
 
-            console.log("Check Schedule!");
+                const schedulesToCheck = programsData.map((program, index) => ({
+                    date: program.date,
+                    college: selectedCollege.options[selectedCollege.selectedIndex].text,
+                    index: index + 1
+                }));
+
+                $.ajax({
+                    url: 'check_schedule.php',
+                    type: 'POST',
+                    data: {
+                        schedules: schedulesToCheck
+                    },
+                    success: function(response) {
+                        try {
+                            const data = JSON.parse(response);
+
+                            if (data.error) {
+                                showErrorMessage("Error: " + data.error);
+                                if (callback) callback(false);
+                                return;
+                            }
+
+                            const conflicts = data.conflicts.filter(conflict =>
+                                conflict.status === 'exists' || conflict.status === 'error'
+                            );
+
+                            if (conflicts.length > 0) {
+                                // Format and display all conflict messages
+                                const errorMessages = conflicts.map(conflict =>
+                                    `\nProgram ${conflict.index}: ${conflict.message}`
+                                ).join('\n');
+
+                                showErrorMessage(errorMessages);
+                                if (callback) callback(false);
+                            } else {
+                                hideErrorMessage();
+                                if (callback) callback(true);
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                            showErrorMessage('Error processing server response');
+                            if (callback) callback(false);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error checking schedule:', error);
+                        showErrorMessage('Error checking schedule availability');
+                        if (callback) callback(false);
+                    }
+                });
+            }
         }
 
         function showErrorMessage(message) {
@@ -981,7 +1176,7 @@ if (!isset($_SESSION['user_id'])) {
         }
 
         // Event listener for date changes on any program block
-        document.getElementById('programs-container').addEventListener('change', function(event) {
+        document.getElementById('programModal').addEventListener('change', function(event) {
             if (event.target.matches('input[type="date"]') ||
                 event.target.matches('select[name="program[]"]')) {
                 checkScheduleDate();
@@ -993,15 +1188,9 @@ if (!isset($_SESSION['user_id'])) {
             event.preventDefault();
 
             const loadingSpinner = document.getElementById('loadingSpinner');
+            loadingSpinner.classList.remove('spinner-hidden');
+            document.getElementById('schedule-form').submit();
 
-            checkScheduleDate(function(areSchedulesValid) {
-                if (areSchedulesValid) {
-                    loadingSpinner.classList.remove('spinner-hidden');
-                    document.getElementById('schedule-form').submit();
-                } else {
-                    loadingSpinner.classList.add('spinner-hidden');
-                }
-            });
         });
 
         // Optional: Add this helper function to clear error messages when adding/removing program blocks
