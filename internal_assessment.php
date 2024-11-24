@@ -271,8 +271,6 @@ $result_display = ($average_rating !== null) ? round($average_rating, 2) : 'N/A'
 // Add average rating to the schedule array
 $schedule['average_rating'] = $result_display;
 
-
-
 // Prepare to retrieve team members with areas assigned to them
 $team_members_with_areas = [];
 $sql_team_members_with_areas = "
@@ -297,7 +295,7 @@ while ($stmt_team_members_with_areas->fetch()) {
         'team_member_id' => $team_member_id,
         'name' => $team_member_first_name . ' ' . $team_member_middle_initial . '. ' . $team_member_last_name,
         'role' => $team_member_role,
-        'areas' => explode(',', $assigned_area_ids) // Convert the comma-separated area IDs into an array
+        'areas' => $assigned_area_ids ? explode(',', $assigned_area_ids) : [] // Handle null or empty area IDs
     ];
 }
 $stmt_team_members_with_areas->close();
@@ -819,6 +817,7 @@ if ($result_areas) {
                                                                         <button class="approve" onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">APPROVE</button>
                                                                     <?php endif; ?>
                                                                 </div>
+                                                            </div>
                                                         </li>
                                                     <?php endif; ?>
                                                 <?php endforeach; ?>
@@ -861,12 +860,38 @@ if ($result_areas) {
                                     <p>ASSESSMENT</p>
                                     <div style="height: 10px;"></div>
                                     <p class="pending-assessments">YOUR TEAM LEADER SHOULD ASSIGN AREA FIRST</p>
-                                <?php elseif (isset($existing_area_rating_files[$schedule['schedule_id']])): ?>
-                                    <?php if (in_array($schedule['team_id'], $existing_assessments)): ?>
-                                        <p>SUBMISSION STATUS</p>
-                                        <div style="height: 10px;"></div>
-                                        <p class="assessment-button-done">ALREADY SUBMITTED RATING AND ASSESSMENT</p>
-                                    <?php else: ?>
+                                    <?php elseif (isset($existing_area_rating_files[$schedule['schedule_id']])): ?>
+                                        <?php if (in_array($schedule['team_id'], $existing_assessments)): ?>
+                                            <p>SUBMISSION STATUS</p>
+                                            <div style="height: 10px;"></div>
+                                            <p class="assessment-button-done">ALREADY SUBMITTED RATING AND ASSESSMENT</p>
+                                            <?php 
+                                            // Query to fetch the logged-in user's assessment file
+                                            $sql_user_assessment = "
+                                            SELECT a.assessment_file
+                                            FROM assessment a
+                                            JOIN team t ON a.team_id = t.id
+                                            WHERE t.internal_users_id = ? 
+                                            AND t.schedule_id = ?
+                                            ";
+
+                                            $stmt_user_assessment = $conn->prepare($sql_user_assessment);
+                                            $stmt_user_assessment->bind_param("si", $user_id, $schedule_id); // Bind user_id and specific schedule_id
+                                            $stmt_user_assessment->execute();
+                                            $stmt_user_assessment->bind_result($assessment_file);
+
+                                            while ($stmt_user_assessment->fetch()): 
+                                                if ($assessment_file): ?><br>
+                                                <button class="approve" onclick="window.open('<?php echo htmlspecialchars($assessment_file); ?>', '_blank')">
+                                                <i class="bi bi-file-earmark-arrow-down"></i>
+                                                View Assessment File
+                                                </button>
+                                                <?php 
+                                                endif; 
+                                            endwhile;
+                                            $stmt_user_assessment->close();
+                                            ?>
+                                            <?php else: ?>
                                         <p>ASSESSMENT</p>
                                         <div style="height: 10px;"></div>
                                         <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
