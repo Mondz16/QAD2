@@ -171,27 +171,49 @@
                                 </div>
 
                                 <div style="height: 10px; width: 0px;"></div>
-                                <div class="name" id="college-field" style="display:none;">
-                                    <div class="college-company-college">
-                                        <select name="college">
-                                            <option value="" disabled selected hidden>College</option>
-                                            <?php
-                                            include_once 'connection.php';
+                                <div style="display: flex; width: 725px;">
+                                    <div class="name" id="college-field" style="display:none;">
+                                        <div class="college-company-college">
+                                            <select name="college">
+                                                <option value="" disabled selected hidden>College</option>
+                                                <?php
+                                                include_once 'connection.php';
 
-                                            $sql_colleges = "SELECT code, college_name FROM college ORDER BY college_name";
-                                            $result_colleges = $conn->query($sql_colleges);
+                                                $sql_colleges = "SELECT code, college_name FROM college ORDER BY college_name";
+                                                $result_colleges = $conn->query($sql_colleges);
 
-                                            if ($result_colleges && $result_colleges->num_rows > 0) {
-                                                while ($row_college = $result_colleges->fetch_assoc()) {
-                                                    echo "<option value='{$row_college['code']}'>{$row_college['college_name']}</option>";
+                                                if ($result_colleges && $result_colleges->num_rows > 0) {
+                                                    while ($row_college = $result_colleges->fetch_assoc()) {
+                                                        echo "<option value='{$row_college['code']}'>{$row_college['college_name']}</option>";
+                                                    }
+                                                } else {
+                                                    echo "<option value=''>No colleges found</option>";
                                                 }
-                                            } else {
-                                                echo "<option value=''>No colleges found</option>";
-                                            }
-                                            ?>
-                                        </select>
+                                                ?>
+                                            </select>
+                                        </div>
                                     </div>
+                                    <div class="company" id="company-field" style="display:none;">
+                                        <div class="college-company-college ">
+                                            <select name="company">
+                                                <option value="" disabled selected hidden>Company</option>
+                                                <?php
+                                                include_once 'connection.php';
 
+                                                $sql_companies = "SELECT code, company_name FROM company ORDER BY company_name";
+                                                $result_companies = $conn->query($sql_companies);
+
+                                                if ($result_companies && $result_companies->num_rows > 0) {
+                                                    while ($row_company = $result_companies->fetch_assoc()) {
+                                                        echo "<option value='{$row_company['code']}'>{$row_company['company_name']}</option>";
+                                                    }
+                                                } else {
+                                                    echo "<option value=''>No companies found</option>";
+                                                }
+                                                ?>
+                                            </select>
+                                        </div>
+                                    </div>
                                     <div class="gender" style="width: 325px;">
                                         <div class="college-company-gender">
                                             <select class="prefix" name="gender" id="genderSelect">
@@ -204,27 +226,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="company" id="company-field" style="display:none;">
-                                    <div class="college-company-gender">
-                                        <select name="company">
-                                            <option value="" disabled selected hidden>Company</option>
-                                            <?php
-                                            include_once 'connection.php';
 
-                                            $sql_companies = "SELECT code, company_name FROM company ORDER BY company_name";
-                                            $result_companies = $conn->query($sql_companies);
-
-                                            if ($result_companies && $result_companies->num_rows > 0) {
-                                                while ($row_company = $result_companies->fetch_assoc()) {
-                                                    echo "<option value='{$row_company['code']}'>{$row_company['company_name']}</option>";
-                                                }
-                                            } else {
-                                                echo "<option value=''>No companies found</option>";
-                                            }
-                                            ?>
-                                        </select>
-                                    </div>
-                                </div>
                                 <div style="height: 30px; width: 0px;"></div>
                                 <a href="login.php" class="signup signupregister" style="margin-left: 265px;">Log in instead</a>
                                 <button type="submit" class="login loginregister" id="registerButton">Register</button>
