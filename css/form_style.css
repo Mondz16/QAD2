@@ -133,6 +133,7 @@ button[type="remove"]:hover{
     color:  #B73033;
 }
 
+
 .cancel {
     background-color: #dc3545;
     color: #fff;
@@ -258,6 +259,15 @@ button[type="remove"]:hover{
     margin-right: 10px;
 }
 
+.bottom-button-holder .submit-button:disabled {
+    background-color: #34C759;
+    color: #fff;
+    flex: 2;
+    margin-left: 10px;
+    margin-right: 10px;
+    opacity: 50%;
+}
+
 .add-button {
     background-color: #fff;
     border: 1px solid #575757;
@@ -268,6 +278,29 @@ button[type="remove"]:hover{
 
 .add-button:hover{
     background-color: #bdbdbd;
+}
+
+#add-program-button  {
+    width: -webkit-fill-available;
+    background-color: #D4FFDF;
+    border: 1px solid #34C759;
+    color: #006118;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px;
+    margin-right: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#add-program-button:disabled {
+    background-color: #dbdbdb;
+    color: #0061185d;
+    border: 1px solid #dbdbdb;
+}
+#add-program-button:enabled:hover {
+    background-color: #34C759;
 }
 
 .remove-program-button{
@@ -343,4 +376,15 @@ button[type="remove"]:hover{
     max-height: 500px;
     overflow-x: auto;
     margin: 10px 0px;
+}
+
+
+.remove-program-btn {
+    background-color: #ff4444 !important;
+    color: white !important;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
 }

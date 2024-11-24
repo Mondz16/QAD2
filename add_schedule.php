@@ -52,7 +52,7 @@ if (!isset($_SESSION['user_id'])) {
         }
 
         .popup-text {
-            margin: 20px 50px;
+            margin: 20px 25px;
             font-size: 17px;
             font-weight: 500;
         }
@@ -188,44 +188,11 @@ if (!isset($_SESSION['user_id'])) {
                         ?>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="program">PROGRAM:</label>
-                    <select id="program" name="program" onchange="fetchProgramLevel()" required class="select2" style="cursor: pointer;">
-                        <option value="" disabled selected hidden>Select Program</option>
-                        <!-- Options will be dynamically populated based on college selection -->
-                    </select>
+                <div id="programs-container">
+                    <!-- Program inputs will be dynamically added here -->
                 </div>
-                <div>
-                    <div class="level-header">
-                        <label for="level">CURRENT LEVEL:</label>
-                        <label class="level-applied" for="level">LEVEL APPLIED:</label>
-                        <label for="level_validity">YEARS OF VALIDITY:</label>
-                    </div>
-                    <div class="level-input-holder">
-                        <input class="level-input" type="hidden" id="program-level" name="level" readonly>
-                        <input class="level-input" type="text" id="program-level-output" name="level-output" readonly>
-                        <div class="level-holder">
-                            <span id="level-acquired"></span>
-                        </div>
-                        <input class="level-input highlight" type="hidden" id="level" name="level" readonly>
-                        <input class="level-input highlight" type="text" id="level-output" name="level-output" readonly>
-                        <input class="level-input-validity" type="text" id="year_validity" name="level_validity" style="width:" required>
-                    </div>
-                </div>
-                <div class="dateTime-holder">
-                    <div class="form-group">
-                        <label for="date">DATE:</label>
-                        <input type="date" id="date" name="date" required style="cursor: pointer;" onchange="checkScheduleDate()" onclick="openDatePicker('date')">
-                    </div>
-                    <div class="form-group">
-                        <label for="time">TIME:</label>
-                        <input type="time" id="time" name="time" required style="cursor: pointer;" onchange="checkScheduleDate()" onclick="openDatePicker('time')">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="zoom">MEETING LINK:</label>
-                    <textarea type="text" id="zoom" name="zoom" cols="40" rows="1" placeholder="OPTIONAL"></textarea> 
-                </div>
+                <button type="button" id="add-program-button" class="add-program-input-button" onclick="addProgramInput()" disable>Add Program</button>
+
                 <div class="form-group">
                     <label for="team-leader">TEAM LEADER:</label>
                     <select id="team-leader" name="team_leader" required onchange="updateDropdowns()" style="cursor: pointer;">
@@ -245,7 +212,7 @@ if (!isset($_SESSION['user_id'])) {
                 </div>
                 <div class="bottom-button-holder">
                     <button type="button" class="discard-button" onclick="window.location.href='schedule.php'">DISCARD</button>
-                    <button type="submit" class="submit-button">SUBMIT</button>
+                    <button type="submit" class="submit-button" disabled>SUBMIT</button>
                 </div>
             </form>
         </div>
@@ -272,6 +239,402 @@ if (!isset($_SESSION['user_id'])) {
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
+        let programCount = 0;
+
+        document.getElementById('college').addEventListener('change', function() {
+            fetchPrograms();
+            clearProgramsOnCollegeChange();
+            updateSubmitButtonState();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the add program button
+            const addProgramButton = document.getElementById('add-program-button');
+
+            // Disable the button initially
+            if (addProgramButton) {
+                addProgramButton.disabled = true;
+                // Optional: Add a visual indication that the button is disabled
+                addProgramButton.style.cursor = 'not-allowed';
+                addProgramButton.style.opacity = '0.6';
+            }
+        });
+
+        function updateSubmitButtonState() {
+            const submitButton = document.querySelector('.submit-button');
+            if (submitButton) {
+                submitButton.disabled = programCount === 0;
+                // Optional: Add visual feedback for disabled state
+                if (programCount === 0) {
+                    submitButton.classList.add('submit-button-disabled');
+                } else {
+                    submitButton.classList.remove('submit-button-disabled');
+                }
+            }
+        }
+
+        function clearProgramsOnCollegeChange() {
+            const programsContainer = document.getElementById('programs-container');
+            const programBlocks = document.querySelectorAll('.program-block');
+
+            // Destroy all Select2 instances
+            programBlocks.forEach((block) => {
+                const blockId = block.id.split('-')[2];
+                try {
+                    $(`#program-${blockId}`).select2('destroy');
+                } catch (e) {
+                    console.log('Select2 instance not found or already destroyed');
+                }
+            });
+
+            // Clear all programs
+            programsContainer.innerHTML = '';
+
+            // Reset program count
+            programCount = 0;
+        }
+
+        function fetchPrograms() {
+            const collegeId = document.getElementById('college').value;
+            const addProgramButton = document.getElementById('add-program-button');
+
+            if (collegeId) {
+                $.ajax({
+                    url: 'get_programs.php',
+                    type: 'POST',
+                    data: {
+                        college_id: collegeId
+                    },
+                    success: function(response) {
+                        console.log('Raw response:', response);
+                        try {
+                            // Enable the add program button
+                            if (addProgramButton) {
+                                addProgramButton.disabled = false;
+                                addProgramButton.style.cursor = 'pointer';
+                                addProgramButton.style.opacity = '1';
+                            }
+
+                            populateProgramDropdown('#program-1', response);
+                        } catch (error) {
+                            console.error('Error processing response:', error);
+                            // Disable the button if there's an error
+                            if (addProgramButton) {
+                                addProgramButton.disabled = true;
+                                addProgramButton.style.cursor = 'not-allowed';
+                                addProgramButton.style.opacity = '0.6';
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        alert('Failed to fetch programs. Please try again.');
+                        // Disable the button on error
+                        if (addProgramButton) {
+                            addProgramButton.disabled = true;
+                            addProgramButton.style.cursor = 'not-allowed';
+                            addProgramButton.style.opacity = '0.6';
+                        }
+                    }
+                });
+            } else {
+                console.log("clear program dropdown");
+                // Disable the button when no college is selected
+                if (addProgramButton) {
+                    addProgramButton.disabled = true;
+                    addProgramButton.style.cursor = 'not-allowed';
+                    addProgramButton.style.opacity = '0.6';
+                }
+                clearDropdown('#program-1');
+            }
+        }
+
+        function clearAllProgram() {
+            programCount = 0;
+            const programsContainer = document.getElementById('programs-container');
+            programsContainer.insertAdjacentHTML('beforeend', ``);
+        }
+
+
+        function addProgramInput() {
+            programCount++;
+            const programsContainer = document.getElementById('programs-container');
+
+            const template = `
+        <div class="program-block" id="program-block-${programCount}">
+            <div class="form-group">
+                <label for="program-${programCount}">PROGRAM:</label>
+                <select id="program-${programCount}" name="program[]" onchange="fetchProgramLevelDynamic(${programCount})" required class="select2" style="cursor: pointer;">
+                    <option value="" disabled selected hidden>Select Program</option>
+                </select>
+            </div>
+            <div>
+                <div class="level-header">
+                    <label for="level-${programCount}">CURRENT LEVEL:</label>
+                    <label class="level-applied" for="level-applied-${programCount}">LEVEL APPLIED:</label>
+                    <label for="level-validity-${programCount}">YEARS OF VALIDITY:</label>
+                </div>
+                <div class="level-input-holder">
+                    <input class="level-input" type="text" id="program-level-${programCount}" name="level[]" readonly>
+                    <div class="level-holder">
+                        <span id="level-acquired-${programCount}"></span>
+                    </div>
+                    <input class="level-input highlight" type="text" id="level-output-${programCount}" name="level-output[]" readonly>
+                    <input class="level-input-validity" type="text" id="year-validity-${programCount}" name="level_validity[]" value="3" required>
+                </div>
+            </div>
+            <div class="dateTime-holder">
+                <div class="form-group">
+                    <label for="date-${programCount}">DATE:</label>
+                    <input type="date" id="date-${programCount}" name="date[]" required style="cursor: pointer;">
+                </div>
+                <div class="form-group">
+                    <label for="time-${programCount}">TIME:</label>
+                    <input type="time" id="time-${programCount}" name="time[]" required style="cursor: pointer;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="zoom-${programCount}">MEETING LINK:</label>
+                <textarea id="zoom-${programCount}" name="zoom[]" cols="40" rows="1" placeholder="OPTIONAL"></textarea>
+            </div>
+            <button type="button" class="remove-program-btn" onclick="removeProgramInput(${programCount})">Remove Program</button>
+        </div>
+    `;
+
+            programsContainer.insertAdjacentHTML('beforeend', template);
+
+            // Initialize select2 for the new dropdown
+            $(`#program-${programCount}`).select();
+
+            // Populate new program dropdown based on selected college
+            updateSelectedPrograms();
+            updateNewProgramDropdown(`#program-${programCount}`);
+            updateSubmitButtonState();
+            clearScheduleErrors();
+        }
+
+        function removeProgramInput(id) {
+            const programBlock = document.getElementById(`program-block-${id}`);
+
+            if (programBlock) {
+                // Destroy the Select2 instance if it exists
+                try {
+                    $(`#program-${id}`).select2('destroy');
+                } catch (e) {
+                    console.log('Select2 instance not found or already destroyed');
+                }
+
+                // Remove the program block from the DOM
+                programBlock.remove();
+
+                // Reindex remaining programs
+                reindexPrograms();
+
+                // Update selected programs and dropdowns
+                updateSelectedPrograms();
+            }
+
+            clearScheduleErrors();
+        }
+
+        function reindexPrograms() {
+            const programBlocks = document.querySelectorAll('.program-block');
+            let newIndex = 1;
+
+            programBlocks.forEach((block) => {
+                // Update the block ID
+                const oldId = block.id.split('-')[2];
+                block.id = `program-block-${newIndex}`;
+
+                // Update all internal IDs and names
+                const elements = block.querySelectorAll('[id*="-' + oldId + '"]');
+                elements.forEach((element) => {
+                    element.id = element.id.replace(oldId, newIndex);
+                    if (element.name) {
+                        element.name = element.name.replace(oldId, newIndex);
+                    }
+                });
+
+                // Update onclick handler for remove button
+                const removeButton = block.querySelector('.remove-program-btn');
+                if (removeButton) {
+                    removeButton.setAttribute('onclick', `removeProgramInput(${newIndex})`);
+                }
+
+                // Update onchange handler for program select
+                const programSelect = block.querySelector(`select[id^="program-"]`);
+                if (programSelect) {
+                    programSelect.setAttribute('onchange', `fetchProgramLevelDynamic(${newIndex})`);
+                }
+
+                newIndex++;
+            });
+
+            // Update the global programCount
+            programCount = programBlocks.length;
+        }
+
+        function updateNewProgramDropdown(selector) {
+            const collegeId = document.getElementById('college').value;
+            if (collegeId) {
+                $.ajax({
+                    url: 'get_programs.php',
+                    type: 'POST',
+                    data: {
+                        college_id: collegeId
+                    },
+                    success: function(response) {
+                        updateProgramDropdown(selector, response);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            } else {
+                for (let i = 1; i <= programCount; i++) {
+                    clearDropdown(`#program-${i}`);
+                }
+            }
+        }
+
+        function updateAllPrograms() {
+            const collegeId = document.getElementById('college').value;
+            if (collegeId) {
+                $.ajax({
+                    url: 'get_programs.php',
+                    type: 'POST',
+                    data: {
+                        college_id: collegeId
+                    },
+                    success: function(response) {
+                        for (let i = 1; i <= programCount; i++) {
+                            updateProgramDropdown(`#program-${i}`, response);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            } else {
+                for (let i = 1; i <= programCount; i++) {
+                    clearDropdown(`#program-${i}`);
+                }
+            }
+        }
+
+        let selectedPrograms = new Set();
+
+        // Update program selections and disable options accordingly
+        function updateProgramDropdown(selector, programs) {
+            const dropdown = $(selector);
+
+            // Store the current value before clearing
+            const currentValue = dropdown.val();
+            console.log(`Current value for ${selector}:`, currentValue);
+
+            // Clear and add default option
+            dropdown.empty();
+            dropdown.append($('<option>').text('Select Program').attr('value', ''));
+
+            // Add and disable options as needed
+            programs.forEach(option => {
+                const isCurrentSelection = option.id.toString() === currentValue;
+                const isSelectedElsewhere = selectedPrograms.has(option.id.toString()) && !isCurrentSelection;
+
+                const optionElement = $('<option>')
+                    .text(option.name)
+                    .attr('value', option.id)
+                    .prop('disabled', isSelectedElsewhere);
+
+                dropdown.append(optionElement);
+            });
+
+            // Restore the previous value if it existed
+            if (currentValue) {
+                console.log(`Restoring value ${currentValue} for ${selector}`);
+                dropdown.val(currentValue);
+            }
+        }
+
+        function updateSelectedPrograms() {
+            selectedPrograms.clear();
+            for (let i = 1; i <= programCount; i++) {
+                const value = $(`#program-${i}`).val();
+                if (value) {
+                    selectedPrograms.add(value.toString());
+                }
+            }
+
+            // Update all dropdowns to reflect new selections
+            updateAllPrograms();
+        }
+
+        // Helper Function: Populate Dropdown
+        function populateProgramDropdown(selector, options) {
+            console.log(selector);
+            const dropdown = $(selector);
+            dropdown.empty();
+            dropdown.append($('<option>').text('Select Program').attr('value', ''));
+            options.forEach(option => {
+                dropdown.append($('<option>').text(option.name).attr('value', option.id));
+            });
+        }
+
+        // Helper Function: Clear Dropdown
+        function clearDropdown(selector) {
+            const dropdown = $(selector);
+            dropdown.empty();
+            dropdown.append($('<option>').text('Select Program').attr('value', ''));
+        }
+
+        // Modified function to handle program selection change
+        function handleProgramChange(count) {
+            // Update selected programs
+            updateSelectedPrograms();
+
+            // Fetch program level
+            fetchProgramLevelDynamic(count);
+        }
+
+        // Fetch Program Level for a Specific Program
+        function fetchProgramLevelDynamic(count) {
+            const programId = document.getElementById(`program-${count}`).value;
+            if (programId) {
+                $.ajax({
+                    url: 'get_program_level.php',
+                    type: 'POST',
+                    data: {
+                        program_id: programId
+                    },
+                    success: function(response) {
+                        const data = JSON.parse(response);
+                        const currentLevel = data.program_level.trim();
+                        const dateReceived = data.date_received.trim();
+
+                        let levelApplied = 'NA';
+                        if (currentLevel === 'Candidate') {
+                            levelApplied = 'PSV';
+                        } else if (currentLevel < 4) {
+                            levelApplied = parseInt(currentLevel) + 1;
+                        } else {
+                            levelApplied = currentLevel;
+                        }
+
+                        document.getElementById(`program-level-${count}`).value = currentLevel;
+                        document.getElementById(`level-output-${count}`).value = levelApplied;
+
+                        if (dateReceived !== 'N/A' && currentLevel !== 'NA') {
+                            document.getElementById(`level-acquired-${count}`).innerText = `ACQUIRED IN ${dateReceived}`;
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+        }
+
+
         let membersCount = 0;
 
         function addTeamMemberInput() {
@@ -301,40 +664,40 @@ if (!isset($_SESSION['user_id'])) {
             checkAvailableLeadersAndMembers();
         }
 
-        function fetchPrograms() {
-            var collegeId = document.getElementById('college').value;
-            console.log(collegeId);
-            if (collegeId) {
-                $.ajax({
-                    url: 'get_programs.php',
-                    type: 'POST',
-                    data: {
-                        college_id: collegeId
-                    },
-                    success: function(response) {
-                        console.log(response);
-                        $('#program').html(response);
-                        $('#program-level').html(''); // Clear the program level display
-                        $('#level').val(''); // Clear the program level display
-                        $('#level-acquired').val(''); // Clear the program level display
-                        $('#program-level-output').val('');
-                        $('#level-output').val('');
-                        $('#level-acquired').html(''); // Update the date received display
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                    }
-                });
-            } else {
-                $('#program').html('<option value="">Select Program</option>');
-                $('#program-level').html(''); // Clear the program level display
-                $('#level').html(''); // Clear the program level display
-                $('#level-acquired').html(''); // Clear the program level display
-                $('#program-level-output').val('');
-                $('#level-output').val('');
-                $('#level-acquired').html(''); // Update the date received display
-            }
-        }
+        // function fetchPrograms() {
+        //     var collegeId = document.getElementById('college').value;
+        //     console.log(collegeId);
+        //     if (collegeId) {
+        //         $.ajax({
+        //             url: 'get_programs.php',
+        //             type: 'POST',
+        //             data: {
+        //                 college_id: collegeId
+        //             },
+        //             success: function(response) {
+        //                 console.log(response);
+        //                 $('#program').html(response);
+        //                 $('#program-level').html(''); // Clear the program level display
+        //                 $('#level').val(''); // Clear the program level display
+        //                 $('#level-acquired').val(''); // Clear the program level display
+        //                 $('#program-level-output').val('');
+        //                 $('#level-output').val('');
+        //                 $('#level-acquired').html(''); // Update the date received display
+        //             },
+        //             error: function(xhr, status, error) {
+        //                 console.error('Error:', error);
+        //             }
+        //         });
+        //     } else {
+        //         $('#program').html('<option value="">Select Program</option>');
+        //         $('#program-level').html(''); // Clear the program level display
+        //         $('#level').html(''); // Clear the program level display
+        //         $('#level-acquired').html(''); // Clear the program level display
+        //         $('#program-level-output').val('');
+        //         $('#level-output').val('');
+        //         $('#level-acquired').html(''); // Update the date received display
+        //     }
+        // }
 
         function fetchProgramLevel() {
             var programId = document.getElementById('program').value;
@@ -522,69 +885,136 @@ if (!isset($_SESSION['user_id'])) {
             document.getElementById('member-count').textContent = content;
         }
 
-        function checkScheduleDate(callback) { 
-    var date = document.getElementById('date').value;
-    var time = document.getElementById('time').value; // Get time value
-    var college = document.getElementById('college').value; // Get the selected college (this is name)
-    var program = document.getElementById('program').value; // Get the selected program (this is name)
-    var exclude_schedule_id = document.getElementById('exclude_schedule_id') ? document.getElementById('exclude_schedule_id').value : null;
+        function checkScheduleDate(callback) {
+            const programBlocks = document.querySelectorAll('.program-block');
+            const schedulesToCheck = [];
+            let hasAllRequiredFields = true;
 
-    if (date && time && college && program) { // Ensure date, time, college, and program are selected
-        $.ajax({
-            url: 'check_schedule.php',
-            type: 'POST',
-            data: {
-                date: date,
-                time: time,
-                college: college, // Send selected college (name)
-                program: program, // Send selected program (name)
-                exclude_schedule_id: exclude_schedule_id
-            },
-            success: function(response) {
-                var data = JSON.parse(response);
-                if (data.status === 'exists') {
-                    // Check if the conflicting schedule status is 'approved' or 'pending'
-                    if (data.schedule_status === 'approved' || data.schedule_status === 'pending') {
-                        document.getElementById('errorPopup').style.display = 'block';
-                        if (callback) callback(false); // Date and time conflict with status, callback with false
-                    } else {
-                        if (callback) callback(true); // Date conflict but status is not approved/pending, callback with true
-                    }
-                } else {
-                    if (callback) callback(true); // No conflict, callback with true
+            // Collect all schedules data
+            programBlocks.forEach((block, index) => {
+                const date = block.querySelector('input[name="date[]"]').value;
+                const college = document.getElementById('college').options[document.getElementById('college').selectedIndex].text;
+
+                if (date && college) {
+                    schedulesToCheck.push({
+                        date,
+                        college,
+                        index
+                    });
+                } else if (date || time || program) { // Only mark as incomplete if at least one field is filled
+                    hasAllRequiredFields = false;
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error:', error);
-                if (callback) callback(false); // Error occurred, callback with false
-            }
-        });
-    } else {
-        if (callback) callback(true); // No date or time selected, continue with submission
-    }
-}
+            });
 
-        // Event listener for date change
-        document.getElementById('date').addEventListener('change', function() {
-            checkScheduleDate(); // Just check the date, no callback needed here
+            // If no schedules to check or missing required fields, return
+            if (schedulesToCheck.length === 0) {
+                if (callback) callback(true);
+                return;
+            }
+
+            if (!hasAllRequiredFields) {
+                if (callback) callback(false);
+                return;
+            }
+
+            // Send all schedules to be checked at once
+            $.ajax({
+                url: 'check_schedule.php',
+                type: 'POST',
+                data: {
+                    schedules: schedulesToCheck
+                },
+                success: function(response) {
+                    try {
+                        const data = JSON.parse(response);
+
+                        if (data.error) {
+                            showErrorMessage("Error: " + data.error);
+                            if (callback) callback(false);
+                            return;
+                        }
+
+                        const conflicts = data.conflicts.filter(conflict =>
+                            conflict.status === 'exists' || conflict.status === 'error'
+                        );
+
+                        if (conflicts.length > 0) {
+                            // Format and display all conflict messages
+                            const errorMessages = conflicts.map(conflict =>
+                                `\nProgram ${conflict.index + 1}: ${conflict.message}`
+                            ).join('\n');
+
+                            showErrorMessage(errorMessages);
+                            if (callback) callback(false);
+                        } else {
+                            hideErrorMessage();
+                            if (callback) callback(true);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                        showErrorMessage('Error processing server response');
+                        if (callback) callback(false);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error checking schedule:', error);
+                    showErrorMessage('Error checking schedule availability');
+                    if (callback) callback(false);
+                }
+            });
+
+            console.log("Check Schedule!");
+        }
+
+        function showErrorMessage(message) {
+            const errorPopup = document.getElementById('errorPopup');
+            const errorContent = errorPopup.querySelector('.popup-text');
+            errorContent.textContent = message;
+            errorPopup.style.display = 'block';
+        }
+
+        function hideErrorMessage() {
+            const errorPopup = document.getElementById('errorPopup');
+            if (errorPopup) {
+                errorPopup.style.display = 'none';
+            }
+        }
+
+        // Event listener for date changes on any program block
+        document.getElementById('programs-container').addEventListener('change', function(event) {
+            if (event.target.matches('input[type="date"]') ||
+                event.target.matches('select[name="program[]"]')) {
+                checkScheduleDate();
+            }
         });
 
         // Event listener for form submission
         document.getElementById('schedule-form').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the form from submitting immediately
+            event.preventDefault();
 
-            // Check if the selected date is available
-            checkScheduleDate(function(isDateAvailable) {
-                if (isDateAvailable) {
-                    // If date is available, show the loading spinner and submit the form
-                    document.getElementById('loadingSpinner').classList.remove('spinner-hidden');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
+            checkScheduleDate(function(areSchedulesValid) {
+                if (areSchedulesValid) {
+                    loadingSpinner.classList.remove('spinner-hidden');
                     document.getElementById('schedule-form').submit();
                 } else {
-                    // If date is not available, ensure the loading spinner is hidden
-                    document.getElementById('loadingSpinner').classList.add('spinner-hidden');
+                    loadingSpinner.classList.add('spinner-hidden');
                 }
             });
         });
+
+        // Optional: Add this helper function to clear error messages when adding/removing program blocks
+        function clearScheduleErrors() {
+            const errorPopup = document.getElementById('errorPopup');
+            if (errorPopup) {
+                errorPopup.style.display = 'none';
+                const errorContent = errorPopup.querySelector('.error-content');
+                if (errorContent) {
+                    errorContent.textContent = '';
+                }
+            }
+        }
 
         // Event listener for closing the error popup
         document.getElementById('closeErrorPopup').addEventListener('click', function() {
@@ -602,20 +1032,20 @@ if (!isset($_SESSION['user_id'])) {
             document.getElementById(id).showPicker();
         }
 
-        document.getElementById('year_validity').addEventListener('input', function(e) {
-            let middleinitialInput = e.target.value;
+        // document.getElementById('year_validity').addEventListener('input', function(e) {
+        //     let middleinitialInput = e.target.value;
 
-            // Remove any non-numeric characters
-            middleinitialInput = middleinitialInput.replace(/[^0-9]/g, '');
+        //     // Remove any non-numeric characters
+        //     middleinitialInput = middleinitialInput.replace(/[^0-9]/g, '');
 
-            // Limit to 1 character
-            if (middleinitialInput.length > 1) {
-                middleinitialInput = middleinitialInput.slice(0, 1);
-            }
+        //     // Limit to 1 character
+        //     if (middleinitialInput.length > 1) {
+        //         middleinitialInput = middleinitialInput.slice(0, 1);
+        //     }
 
-            // Set the cleaned value back to the input
-            e.target.value = middleinitialInput;
-        });
+        //     // Set the cleaned value back to the input
+        //     e.target.value = middleinitialInput;
+        // });
 
         function checkAvailableLeadersAndMembers() {
             const teamMemberSelects = document.querySelectorAll('.team-member-select');

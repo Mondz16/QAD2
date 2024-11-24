@@ -1,4 +1,5 @@
 <?php
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -6,9 +7,10 @@ require 'vendor/autoload.php';
 include 'connection.php';
 
 // Function to display response popup
-function showResponsePopup($type, $message) {
+function showResponsePopup($type, $message)
+{
     $imageFile = ($type === 'success') ? 'Success.png' : 'Error.png';
-    
+
     echo <<<HTML
 <!DOCTYPE html>
 <html lang="en">
@@ -90,12 +92,12 @@ HTML;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $collegeId = mysqli_real_escape_string($conn, $_POST['college']);
-    $programId = mysqli_real_escape_string($conn, $_POST['program']);
-    $level = mysqli_real_escape_string($conn, $_POST['level']);
-    $level_validity = mysqli_real_escape_string($conn, $_POST['level_validity']);
-    $date = mysqli_real_escape_string($conn, $_POST['date']);
-    $time = mysqli_real_escape_string($conn, $_POST['time']);
-    $zoom = mysqli_real_escape_string($conn, $_POST['zoom']);
+    $programs = $_POST['program']; // Array of programs
+    $levels = $_POST['level-output']; // Array of levels
+    $level_validities = $_POST['level_validity']; // Array of validities
+    $dates = $_POST['date']; // Array of dates
+    $times = $_POST['time']; // Array of times
+    $zooms = isset($_POST['zoom']) ? $_POST['zoom'] : array(); // Array of zoom links with null check
     $team_leader_id = mysqli_real_escape_string($conn, $_POST['team_leader']);
     $team_members_ids = $_POST['team_members'];
 
@@ -110,39 +112,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (!$college_name) {
         showResponsePopup('error', 'Error: Invalid college selected.');
+        exit;
     }
 
-    // Check program exists
-    $sql_program = "SELECT program_name FROM program WHERE id = ? AND college_code = ?";
-    $stmt_program = $conn->prepare($sql_program);
-    $stmt_program->bind_param("is", $programId, $collegeId);
-    $stmt_program->execute();
-    $stmt_program->bind_result($program_name);
-    $stmt_program->fetch();
-    $stmt_program->close();
-
-    if (!$program_name) {
-        showResponsePopup('error', 'Error: Invalid program selected.');
-    }
-
-    // Check for schedule conflicts
-    $sql_check_status = "SELECT id FROM schedule 
-                        WHERE schedule_date = ? 
-                        AND schedule_time = ? 
-                        AND college_code != ? 
-                        AND schedule_status IN ('approved', 'pending')";
-    
-    $stmt_check_date = $conn->prepare($sql_check_status);
-    $stmt_check_date->bind_param("sss", $date, $time, $collegeId);
-    $stmt_check_date->execute();
-    $stmt_check_date->store_result();
-
-    if ($stmt_check_date->num_rows > 0) {
-        showResponsePopup('error', 'Schedule already exists for the selected date and time.');
-    }
-    $stmt_check_date->close();
-
-    // Set timezone and start transaction
+    // Set timezone
     date_default_timezone_set('Asia/Manila');
     $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
     $result = $currentDateTime->format('Y-m-d H:i:s');
@@ -150,41 +123,81 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->begin_transaction();
 
     try {
-        // Insert schedule
-        $sql_schedule = "INSERT INTO schedule (college_code, program_id, level_applied, level_validity, 
-                        schedule_date, schedule_time, zoom, status_date)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        $stmt_schedule = $conn->prepare($sql_schedule);
-        $stmt_schedule->bind_param("sissssss", $collegeId, $programId, $level, $level_validity, 
-                                 $date, $time, $zoom, $result);
-        $stmt_schedule->execute();
-        $schedule_id = $stmt_schedule->insert_id;
-        $stmt_schedule->close();
+        $schedule_ids = []; // Store all created schedule IDs
+        $email_content = []; // Store program details for email
 
-        // Insert team leader
-        $sql_insert_leader = "INSERT INTO team (schedule_id, internal_users_id, role, status)
-                            VALUES (?, ?, 'Team Leader', 'pending')";
-        $stmt_insert_leader = $conn->prepare($sql_insert_leader);
-        $stmt_insert_leader->bind_param("is", $schedule_id, $team_leader_id);
-        $stmt_insert_leader->execute();
-        $stmt_insert_leader->close();
+        // Process each program
+        for ($i = 0; $i < count($programs); $i++) {
+            $programId = mysqli_real_escape_string($conn, $programs[$i]);
+            $level = mysqli_real_escape_string($conn, $levels[$i]);
+            $level_validity = mysqli_real_escape_string($conn, $level_validities[$i]);
+            $date = mysqli_real_escape_string($conn, $dates[$i]);
+            $time = mysqli_real_escape_string($conn, $times[$i]);
+            echo "<script>console.log(`$programId | $level | $level_validity | $date | $time`)</script>";
+            
+            // Handle empty or null zoom values
+            $zoom = '';
+            if (isset($zooms[$i]) && $zooms[$i] !== null && trim($zooms[$i]) !== '') {
+                $zoom = mysqli_real_escape_string($conn, $zooms[$i]);
+            }
 
-        // Insert team members
-        $sql_insert_members = "INSERT INTO team (schedule_id, internal_users_id, role, status)
-                            VALUES (?, ?, 'Team Member', 'pending')";
-        
-        foreach ($team_members_ids as $member_id) {
-            $stmt_insert_members = $conn->prepare($sql_insert_members);
-            $stmt_insert_members->bind_param("is", $schedule_id, $member_id);
-            $stmt_insert_members->execute();
-            $stmt_insert_members->close();
+            // Check program exists
+            $sql_program = "SELECT program_name FROM program WHERE id = ? AND college_code = ?";
+            $stmt_program = $conn->prepare($sql_program);
+            $stmt_program->bind_param("is", $programId, $collegeId);
+            $stmt_program->execute();
+            $stmt_program->bind_result($program_name);
+            $stmt_program->fetch();
+            $stmt_program->close();
+
+            if (!$program_name) {
+                throw new Exception('Error: Invalid program selected.');
+            }
+
+            // Check for schedule conflicts
+            $sql_check_status = "SELECT id FROM schedule 
+                                WHERE schedule_date = ? 
+                                AND schedule_time = ? 
+                                AND college_code != ? 
+                                AND schedule_status IN ('approved', 'pending')";
+
+            $stmt_check_date = $conn->prepare($sql_check_status);
+            $stmt_check_date->bind_param("sss", $date, $time, $collegeId);
+            $stmt_check_date->execute();
+            $stmt_check_date->store_result();
+
+            if ($stmt_check_date->num_rows > 0) {
+                throw new Exception("Schedule conflict exists for program '$program_name' on selected date and time.");
+            }
+            $stmt_check_date->close();
+
+            // Insert schedule
+            $sql_schedule = "INSERT INTO schedule (college_code, program_id, level_applied, level_validity, 
+                            schedule_date, schedule_time, zoom, status_date)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            $stmt_schedule = $conn->prepare($sql_schedule);
+            $stmt_schedule->bind_param(
+                "sissssss",
+                $collegeId,
+                $programId,
+                $level,
+                $level_validity,
+                $date,
+                $time,
+                $zoom,
+                $result
+            );
+            $stmt_schedule->execute();
+            $schedule_id = $stmt_schedule->insert_id;
+            $schedule_ids[] = $schedule_id;
+            $stmt_schedule->close();
         }
 
-        // Get team details for email
+        // Get team details
         $sql_user_details = "SELECT email, CONCAT(first_name, ' ', middle_initial, '. ', last_name) AS name 
                             FROM internal_users WHERE user_id = ?";
-        
+
         // Get team leader details
         $stmt_user_details = $conn->prepare($sql_user_details);
         $stmt_user_details->bind_param("s", $team_leader_id);
@@ -194,76 +207,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt_user_details->close();
 
         // Get team members details
-        $team_members = [];
         foreach ($team_members_ids as $member_id) {
             $stmt_user_details = $conn->prepare($sql_user_details);
             $stmt_user_details->bind_param("s", $member_id);
             $stmt_user_details->execute();
             $stmt_user_details->bind_result($email, $name);
             $stmt_user_details->fetch();
-            $team_members[] = ['email' => $email, 'name' => $name];
             $stmt_user_details->close();
         }
 
-        // Send email notification
-        $mail = new PHPMailer(true);
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'usepqad@gmail.com';
-        $mail->Password = 'vmvf vnvq ileu tmev';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
-        $mail->SMTPOptions = array(
-            'ssl' => array(
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-                'allow_self_signed' => true
-            )
-        );
+        // Insert team assignments for each schedule
+        foreach ($schedule_ids as $schedule_id) {
+            // Insert team leader
+            $sql_insert_leader = "INSERT INTO team (schedule_id, internal_users_id, role, status)
+                                VALUES (?, ?, 'Team Leader', 'pending')";
+            $stmt_insert_leader = $conn->prepare($sql_insert_leader);
+            $stmt_insert_leader->bind_param("is", $schedule_id, $team_leader_id);
+            $stmt_insert_leader->execute();
+            $stmt_insert_leader->close();
 
-        // Add recipients
-        $mail->setFrom('usepqad@gmail.com', 'USeP - Quality Assurance Division');
-        $mail->addAddress($college_email);
-        $mail->addAddress($team_leader_email);
-        foreach ($team_members as $member) {
-            $mail->addAddress($member['email']);
+            // Insert team members
+            $sql_insert_members = "INSERT INTO team (schedule_id, internal_users_id, role, status)
+                                VALUES (?, ?, 'Team Member', 'pending')";
+
+            foreach ($team_members_ids as $member_id) {
+                $stmt_insert_members = $conn->prepare($sql_insert_members);
+                $stmt_insert_members->bind_param("is", $schedule_id, $member_id);
+                $stmt_insert_members->execute();
+                $stmt_insert_members->close();
+            }
         }
 
-        // Format email content
-        $formatted_date = date("F j, Y", strtotime($date));
-        $formatted_time = date("g:i A", strtotime($time));
-        $zoom_link_section = !empty($zoom) ? "<strong>Meeting Link:</strong> $zoom<br>" : "";
-        $team_members_list = '';
-        foreach ($team_members as $member) {
-            $team_members_list .= "<li>{$member['name']}</li>";
-        }
-
-        // Send email
-        $mail->isHTML(true);
-        $mail->Subject = 'New Schedule Notification';
-        $mail->Body = "Dear Team,<br><br>
-                      A new schedule has been added:<br><br>
-                      College: $college_name<br>
-                      Program: $program_name<br>
-                      Level Applied: $level<br>
-                      Date: $formatted_date<br>
-                      Time: $formatted_time<br>
-                      $zoom_link_section<br>
-                      <strong>Team Leader:</strong> $team_leader_name<br>
-                      <strong>Team Members:</strong><br><ul>$team_members_list</ul><br>
-                      Best regards,<br>USeP - Quality Assurance Division";
-
-        $mail->send();
         $conn->commit();
-        
-        showResponsePopup('success', 'New schedule and team members have been successfully created.<br> 
-                         Email notifications have been sent.');
 
+        showResponsePopup('success', 'New schedules and team members have been successfully created.');
     } catch (Exception $e) {
         $conn->rollback();
-        showResponsePopup('error', 'Schedule could not be added because there\'s an internet problem.<br>  
-                         Please try again.');
+        showResponsePopup('error', $e->getMessage());
     }
 
     $conn->close();
@@ -271,4 +251,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     header("Location: add_schedule.php");
     exit();
 }
-?>

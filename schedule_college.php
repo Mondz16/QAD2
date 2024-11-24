@@ -292,8 +292,8 @@ $result = $stmt->get_result();
                                     </svg>
                                 </button>";
 
-                        // Display the "UNLOCK" button if the schedule is marked as "done" and it's still within the 24-hour grace period
-                        if ($row['schedule_status'] === 'done' && $currentDateTime <= $gracePeriodEnd) {
+                        // Display the "UNLOCK" button if the schedule is marked as "done"
+                        if ($row['schedule_status'] === 'done') {
                             echo "<button class='button unlock mt-lg-0 mt-1' onclick='unlockSchedule(" . $row['id'] . ")'>UNLOCK</button>";
                         }
 
@@ -643,28 +643,28 @@ document.getElementById('closeErrorPopup').addEventListener('click', function() 
         }
 
         function unlockSchedule(scheduleId) {
-    if (confirm("Are you sure you want to unlock this schedule?")) {
-        // Send an AJAX request to unlock the schedule
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "unlock_schedule.php", true);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            if (confirm("Are you sure you want to unlock this schedule?")) {
+                // Send an AJAX request to unlock the schedule
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "unlock_schedule.php", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-        // Handle the response
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                // Success, notify the user
-                alert(xhr.responseText);
-                location.reload();  // Reload the page to show the updated status
-            } else if (xhr.readyState == 4) {
-                // Handle error responses
-                alert("An error occurred: " + xhr.responseText);
+                // Handle the response
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        // Success, notify the user
+                        alert(xhr.responseText);
+                        location.reload();  // Reload the page to show the updated status
+                    } else if (xhr.readyState == 4) {
+                        // Handle error responses
+                        alert("An error occurred: " + xhr.responseText);
+                    }
+                };
+
+                // Send the schedule ID to the server
+                xhr.send("id=" + scheduleId);
             }
-        };
-
-        // Send the schedule ID to the server
-        xhr.send("id=" + scheduleId);
-    }
-}
+        }
 
     </script>
 </body>
