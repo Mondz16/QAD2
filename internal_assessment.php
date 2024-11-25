@@ -865,6 +865,8 @@ if ($result_areas) {
                                             <p>SUBMISSION STATUS</p>
                                             <div style="height: 10px;"></div>
                                             <p class="assessment-button-done">ALREADY SUBMITTED RATING AND ASSESSMENT</p>
+                                            <div style="height: 10px;"></div>
+                                            <div class="">
                                             <?php 
                                             // Query to fetch the logged-in user's assessment file
                                             $sql_user_assessment = "
@@ -881,7 +883,8 @@ if ($result_areas) {
                                             $stmt_user_assessment->bind_result($assessment_file);
 
                                             while ($stmt_user_assessment->fetch()): 
-                                                if ($assessment_file): ?><br>
+                                                if ($assessment_file): ?>
+                                                
                                                 <button class="approve" onclick="window.open('<?php echo htmlspecialchars($assessment_file); ?>', '_blank')">
                                                 <i class="bi bi-file-earmark-arrow-down"></i>
                                                 View Assessment File
@@ -891,6 +894,28 @@ if ($result_areas) {
                                             endwhile;
                                             $stmt_user_assessment->close();
                                             ?>
+                                            </div>
+                                            <div style="height: 10px;"></div>
+                                            <div class="">
+                                            <?php
+                                            // Query to fetch the NDA file for the logged-in user based on full name
+                                            $sql_nda_file = "SELECT NDA_file FROM nda WHERE internal_accreditor = ?";
+                                            $stmt_nda_file = $conn->prepare($sql_nda_file);
+                                            $stmt_nda_file->bind_param("s", $full_name); // Bind the logged-in user's full name
+                                            $stmt_nda_file->execute();
+                                            $stmt_nda_file->bind_result($nda_file);
+                                            $stmt_nda_file->fetch();
+                                            $stmt_nda_file->close();
+
+                                            if ($nda_file): ?>
+                                                <button class="approve" onclick="window.open('<?php echo htmlspecialchars($nda_file); ?>', '_blank')">
+                                                    <i class="bi bi-file-earmark-arrow-down"></i> View Your NDA
+                                                </button>
+                                            <?php else: ?>
+                                                <p>No NDA file found for your account.</p>
+                                            <?php endif; ?>
+                                            
+                                            </div>
                                             <?php else: ?>
                                         <p>ASSESSMENT</p>
                                         <div style="height: 10px;"></div>

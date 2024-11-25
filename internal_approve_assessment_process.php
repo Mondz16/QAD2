@@ -31,6 +31,7 @@ function decryptData($data, $key) {
 
 $success = false; // To track if the process was successful
 $message = '';
+$imgnotif = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $team_id = $_POST['team_id'];
@@ -178,8 +179,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $stmt->close();
 
                         $success = true;
+                        $imgnotif = "images/success.png";
                         $message = 'Assessment approved successfully.';
                     } catch (Exception $e) {
+                        $imgnotif = "images/error.png";
                         $message = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
                         // Remove the approved assessment file if email fails
                         if (file_exists($approvedAssessmentFile)) {
@@ -192,9 +195,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         }
                     }
                 } else {
+                    $imgnotif = "images/error.png";
                     $message = "Error moving the uploaded file.";
                 }
             } else {
+                $imgnotif ="images/error.png";
                 $message = "Upload failed. Allowed file types: " . implode(',', $allowedfileExtensions);
             }
         }
@@ -236,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div id="successPopup" class="popup">
         <div class="popup-content">
             <div style="height: 50px; width: 0px;"></div>
-            <img class="Success" src="images/Success.png" height="100">
+            <img class="Success" src="<?php echo $imgnotif; ?>" height="100">
             <div style="height: 20px; width: 0px;"></div>
             <div class="popup-text"><?php echo $message; ?></div>
             <div style="height: 50px; width: 0px;"></div>
