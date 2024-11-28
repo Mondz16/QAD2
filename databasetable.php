@@ -195,6 +195,7 @@ $sql = "CREATE TABLE IF NOT EXISTS schedule (
     schedule_status ENUM('pending', 'approved', 'cancelled', 'finished', 'failed', 'passed', 'done') NOT NULL DEFAULT 'pending',
     manually_unlocked TINYINT(1) DEFAULT 0,
     status_date DATETIME NOT NULL,
+    reschedule_count INT(2) DEFAULT 0,
     FOREIGN KEY (college_code) REFERENCES college(code),
     FOREIGN KEY (program_id) REFERENCES program(id)
 )";

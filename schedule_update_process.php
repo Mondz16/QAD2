@@ -1,5 +1,6 @@
 <?php
 include 'connection.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -27,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
                      AND s.schedule_time = ? 
                      AND s.schedule_status IN ('pending', 'approved') 
                      AND s.id != ?";
-    
+
     $stmt_conflict = $conn->prepare($conflict_sql);
     $stmt_conflict->bind_param("ssi", $new_date, $new_time, $schedule_id);
     $stmt_conflict->execute();
@@ -140,13 +141,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
             window.location.href = '$redirect_url';
         });
     </script>";
-        
+
         // Stop further processing to avoid showing the success message
         exit();
     } else {
         // Proceed with updating the schedule if no conflict
         // Fetch the old date and time before updating
-        $sql_get_old_schedule = "SELECT schedule_date, schedule_time, zoom FROM schedule WHERE id = ?";
+        $sql_get_old_schedule = "SELECT schedule_date, schedule_time, zoom, reschedule_count FROM schedule WHERE id = ?";
         $stmt_get_old_schedule = $conn->prepare($sql_get_old_schedule);
         $stmt_get_old_schedule->bind_param("i", $schedule_id);
         $stmt_get_old_schedule->execute();
@@ -160,10 +161,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
         $conn->begin_transaction();
 
         try {
+            $newRescheduleCount = $old_schedule['reschedule_count'] + 1;
+            
             // Update schedule with new date and time
-            $sql_update_schedule = "UPDATE schedule SET schedule_date = ?, schedule_time = ? WHERE id = ?";
+            $sql_update_schedule = "UPDATE schedule SET schedule_date = ?, schedule_time = ?, reschedule_count = ? WHERE id = ?";
             $stmt_update_schedule = $conn->prepare($sql_update_schedule);
-            $stmt_update_schedule->bind_param("ssi", $new_date, $new_time, $schedule_id);
+            $stmt_update_schedule->bind_param("ssii", $new_date, $new_time, $newRescheduleCount , $schedule_id);
             $stmt_update_schedule->execute();
 
             // Update the Zoom link if provided
@@ -300,6 +303,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -325,7 +329,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.5);
         }
-        
+
         body {
             background-color: #f9f9f9;
             display: flex;
@@ -333,6 +337,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
             justify-content: center;
             height: 100vh;
         }
+
         h2 {
             font-size: 24px;
             color: #292D32;
@@ -343,6 +348,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
             margin-bottom: 20px;
             font-size: 18px;
         }
+
         .success {
             color: green;
         }
@@ -350,7 +356,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
         .error {
             color: red;
         }
-        .btn-hover{
+
+        .btn-hover {
             border: 1px solid #AFAFAF;
             text-decoration: none;
             color: black;
@@ -360,42 +367,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
             font-weight: bold;
             text-transform: uppercase;
         }
+
         .btn-hover:hover {
             background-color: #AFAFAF;
         }
     </style>
 </head>
+
 <body>
-<div id="successPopup" class="popup" style="display: none;">
-    <div class="popup-content">
-        <div style='height: 50px; width: 0px;'></div>
+    <div id="successPopup" class="popup" style="display: none;">
+        <div class="popup-content">
+            <div style='height: 50px; width: 0px;'></div>
 
-        <?php if (isset($email_success) && $email_success): ?>
-            <!-- Show success message -->
-            <img src="images/Success.png" height="100" alt="Success">
-            <div style="height: 20px; width: 0px;"></div>
-            <span>Schedule updated successfully.<br>Email notifications have been sent.</span>
-        
-        <?php elseif (isset($email_error) && $email_error): ?>
-            <!-- Show email error -->
-            <img src="images/Error.png" height="100" alt="Error">
-            <div style="height: 20px; width: 0px;"></div>
-            <span><?php echo $email_error; ?></span>
-        
-        <?php elseif (isset($error_message)): ?>
-            <!-- Show other errors -->
-            <img src="images/Error.png" height="100" alt="Error">
-            <div style="height: 20px; width: 0px;"></div>
-            <span><?php echo $error_message; ?></span>
-        
-        <?php endif; ?>
+            <?php if (isset($email_success) && $email_success): ?>
+                <!-- Show success message -->
+                <img src="images/Success.png" height="100" alt="Success">
+                <div style="height: 20px; width: 0px;"></div>
+                <span>Schedule updated successfully.<br>Email notifications have been sent.</span>
 
-        <div style="height: 50px; width: 0px;"></div>
-        <a href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($actual_college_code); ?>" class="btn-hover">OKAY</a>
-        <div style='height: 100px; width: 0px;'></div>
-        <div class='hairpop-up'></div>
+            <?php elseif (isset($email_error) && $email_error): ?>
+                <!-- Show email error -->
+                <img src="images/Error.png" height="100" alt="Error">
+                <div style="height: 20px; width: 0px;"></div>
+                <span><?php echo $email_error; ?></span>
+
+            <?php elseif (isset($error_message)): ?>
+                <!-- Show other errors -->
+                <img src="images/Error.png" height="100" alt="Error">
+                <div style="height: 20px; width: 0px;"></div>
+                <span><?php echo $error_message; ?></span>
+
+            <?php endif; ?>
+
+            <div style="height: 50px; width: 0px;"></div>
+            <a href="schedule_college.php?college=<?php echo urlencode($college_name); ?>&college_code=<?php echo urlencode($actual_college_code); ?>" class="btn-hover">OKAY</a>
+            <div style='height: 100px; width: 0px;'></div>
+            <div class='hairpop-up'></div>
+        </div>
     </div>
-</div>
 
 
     <script>
@@ -416,4 +425,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
         });
     </script>
 </body>
+
 </html>

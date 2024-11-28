@@ -471,6 +471,7 @@ $conn->close();
                         <tr>
                             <th>Program Name</th>
                             <th>Approved Schedules</th>
+                            <th>Rescheduled</th>
                             <th>Canceled Schedules</th>
                             <th>Total Schedules</th>
                         </tr>
@@ -489,22 +490,31 @@ $conn->close();
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.5/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 
+
     <script>
         $(document).ready(function() {
-            // Initialize DataTable with export button and text alignment adjustment
             const table = $('#programScheduleTable').DataTable({
                 serverSide: true,
+                processing: true,
                 ajax: function(data, callback, settings) {
                     const search = data.search.value;
                     const offset = data.start;
+                    const limit = data.length;
+                    const order = data.order[0];
+                    const orderColumnIndex = order.column;
+                    const orderDirection = order.dir;
+                    const columnName = data.columns[orderColumnIndex].data;
                     const collegeCode = $('#college').val();
                     const year = $('#year').val();
 
-                    // Send AJAX request to fetch filtered data
+                    // Send AJAX request to fetch filtered and sorted data
                     $.post('analytics_get_program_schedules.php', {
                         action: 'getProgramSchedule',
                         search: search,
                         offset: offset,
+                        limit: limit,
+                        sort_column: columnName,
+                        sort_direction: orderDirection,
                         college_code: collegeCode,
                         year: year
                     }, function(response) {
@@ -513,29 +523,35 @@ $conn->close();
                             draw: data.draw,
                             recordsTotal: schedules.recordsTotal,
                             recordsFiltered: schedules.recordsFiltered,
-                            data: schedules.data.map(schedule => [
-                                schedule.program_name,
-                                schedule.total_schedule_count,
-                                schedule.approved_count,
-                                schedule.canceled_count
-                            ])
+                            data: schedules.data
                         });
                     });
                 },
                 columns: [{
-                        title: "Program Name"
+                        title: "Program Name",
+                        data: "program_name"
                     },
                     {
-                        title: "Total Schedules"
+                        title: "Approved",
+                        data: "approved_count"
                     },
                     {
-                        title: "Approved"
+                        title: "Rescheduled",
+                        data: "total_reschedule_count"
                     },
                     {
-                        title: "Canceled"
+                        title: "Canceled",
+                        data: "canceled_count"
+                    },
+                    {
+                        title: "Total Schedules",
+                        data: "total_schedule_count"
                     }
                 ],
-                pageLength: 10,
+                pageLength: 15,
+                order: [
+                    [4, 'desc']
+                ],
                 dom: 'Bfrtip',
                 buttons: [{
                     extend: 'pdfHtml5',
@@ -543,14 +559,11 @@ $conn->close();
                     className: 'btn btn-primary',
                     title: 'Program Schedules Report',
                     filename: function() {
-                        // Generate a dynamic filename with the current date and time
                         const now = new Date();
-                        const formattedDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
-                        const formattedTime = now
-                            .toLocaleTimeString('en-US', {
-                                hour12: false
-                            })
-                            .replace(/:/g, '-'); // HH-MM-SS
+                        const formattedDate = now.toISOString().split('T')[0];
+                        const formattedTime = now.toLocaleTimeString('en-US', {
+                            hour12: false
+                        }).replace(/:/g, '-');
                         return `Program_Schedule_Report_${formattedDate}_${formattedTime}`;
                     },
                     exportOptions: {
@@ -561,18 +574,49 @@ $conn->close();
                         }
                     },
                     customize: function(doc) {
-                        doc.styles.tableHeader.fillColor = '#B73033';
-                        doc.styles.tableHeader.color = 'white';
-                        doc.content[1].table.widths = ['*', '*', '*', '*'];
-                    }
-                }],
-                createdRow: function(row, data, dataIndex) {
-                    // Align the first column's content to the left
-                    $('td', row).eq(0).css('text-align', 'left');
+                        // Set table styles
+                        doc.styles.tableHeader = {
+                            fillColor: '#B73033',
+                            color: 'white',
+                            alignment: 'center',
+                            bold: true,
+                            fontSize: 11
+                        };
+                        doc.styles.tableBodyOdd = {
+                            fillColor: '#F3F3F3'
+                        };
+                        doc.styles.tableBodyEven = {
+                            fillColor: '#FFF'
+                        };
+                        doc.styles.defaultStyle = {
+                            fontSize: 10
+                        };
 
-                    // Align the rest of the columns' content to the center
-                    $('td', row).slice(1).css('text-align', 'center');
-                }
+                        // Adjust column widths
+                        doc.content[1].table.widths = ['40%', '14%', '16%', '15%', '15%'];
+
+                        // Apply alignment and padding
+                        const body = doc.content[1].table.body;
+                        body.forEach((row, rowIndex) => {
+                            row.forEach((cell, colIndex) => {
+                                // Apply padding
+                                cell.margin = [5, 7, 5, 7];
+
+                                // Align first column to the left, others to the center
+                                cell.alignment = colIndex === 0 ? 'left' : 'center';
+                            });
+                        });
+
+                        doc.footer = function(currentPage, pageCount) {
+                            return {
+                                text: 'Page ' + currentPage.toString() + ' of ' + pageCount,
+                                alignment: 'center',
+                                fontSize: 10,
+                                margin: [0, 10, 0, 0]
+                            };
+                        };
+                    }
+                }]
             });
 
             // Update colleges dropdown when campus changes
