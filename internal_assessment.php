@@ -234,10 +234,12 @@ $team_members = [];
 $sql_team_members = "
     SELECT t.schedule_id, t.internal_users_id, iu.first_name, iu.middle_initial, iu.last_name, t.id AS team_id, 
         (SELECT a.id FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_id, 
-        (SELECT a.assessment_file FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_file, t.role
+        (SELECT a.assessment_file FROM assessment a WHERE a.team_id = t.id LIMIT 1) AS assessment_file, 
+        t.role
     FROM team t
     JOIN internal_users iu ON t.internal_users_id = iu.user_id
-    WHERE t.schedule_id IN (SELECT schedule_id FROM team WHERE internal_users_id = ?)
+    WHERE t.schedule_id IN (SELECT schedule_id FROM team WHERE internal_users_id = ?) 
+      AND t.status = 'accepted'  -- Include only members with 'accepted' status
 ";
 $stmt_team_members = $conn->prepare($sql_team_members);
 $stmt_team_members->bind_param("s", $user_id);
@@ -279,8 +281,9 @@ $schedule['average_rating'] = $result_display;
 // Prepare to retrieve team members with areas assigned to them
 $team_members_with_areas = [];
 $sql_team_members_with_areas = "
-    SELECT t.schedule_id, t.id AS team_member_id, t.role, iu.first_name, iu.middle_initial, iu.last_name,
-        GROUP_CONCAT(ta.area_id) AS area_ids
+    SELECT t.schedule_id, t.id AS team_member_id, t.role, t.status, 
+       iu.first_name, iu.middle_initial, iu.last_name,
+       GROUP_CONCAT(ta.area_id) AS area_ids
     FROM team t
     JOIN internal_users iu ON t.internal_users_id = iu.user_id
     LEFT JOIN team_areas ta ON t.id = ta.team_id
@@ -293,16 +296,17 @@ $sql_team_members_with_areas = "
 $stmt_team_members_with_areas = $conn->prepare($sql_team_members_with_areas);
 $stmt_team_members_with_areas->bind_param("s", $user_id); // Use the user_id to get all schedules they are part of
 $stmt_team_members_with_areas->execute();
-$stmt_team_members_with_areas->bind_result($team_schedule_id, $team_member_id, $team_member_role, $team_member_first_name, $team_member_middle_initial, $team_member_last_name, $assigned_area_ids);
+$stmt_team_members_with_areas->bind_result($team_schedule_id, $team_member_id, $team_member_role, $team_member_status, $team_member_first_name, $team_member_middle_initial, $team_member_last_name, $assigned_area_ids);
 
 while ($stmt_team_members_with_areas->fetch()) {
     $team_members_with_areas[$team_schedule_id][] = [
         'team_member_id' => $team_member_id,
         'name' => $team_member_first_name . ' ' . $team_member_middle_initial . '. ' . $team_member_last_name,
         'role' => $team_member_role,
+        'status' => $team_member_status, // Add the status here
         'areas' => $assigned_area_ids ? explode(',', $assigned_area_ids) : [] // Handle null or empty area IDs
     ];
-}
+    }
 $stmt_team_members_with_areas->close();
 
 // Check NDA status for each schedule
@@ -743,57 +747,63 @@ if ($result_areas) {
                                     }
                                     ?>
 
-                                    <?php if (!$all_areas_assigned): ?>
-                                        <!-- Display Team Leader and Team Members with Area Input if not all areas are assigned -->
-                                        <p>ASSIGN AREAS TO TEAM MEMBERS</p>
-                                        <div style="height: 10px;"></div>
-                                        <form method="post" action="assign_areas_process.php">
-                                            <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['schedule_id']); ?>">
+                                <?php if (!$all_areas_assigned): ?>
+                                    <!-- Display Team Leader and Team Members with Area Input if not all areas are assigned -->
+                                    <p>ASSIGN AREAS TO TEAM MEMBERS</p>
+                                    <div style="height: 10px;"></div>
+                                    <form method="post" action="assign_areas_process.php">
+                                        <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['schedule_id']); ?>">
 
-                                            <?php 
-                                            // Separate team leader and other members
-                                            $team_leader = null;
-                                            $other_members = [];
+                                        <?php 
+                                        // Separate team leader and other members
+                                        $team_leader = null;
+                                        $other_members = [];
 
-                                            foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
-                                                if ($member['role'] === 'Team Leader') {
-                                                    $team_leader = $member; // Store the Team Leader
-                                                } else {
-                                                    $other_members[] = $member; // Store other members
-                                                }
+                                        // Filter team members by "accepted" status
+                                        $accepted_members = array_filter($team_members_with_areas[$schedule['schedule_id']], function($member) {
+                                            return $member['status'] === 'accepted';
+                                        });
+
+                                        foreach ($accepted_members as $member) {
+                                            if ($member['role'] === 'Team Leader') {
+                                                $team_leader = $member; // Store the Team Leader
+                                            } else {
+                                                $other_members[] = $member; // Store other members
                                             }
+                                        }
 
-                                            // Display Team Leader
-                                            if ($team_leader): ?>
-                                                <div class="add-area" id="team-leader-area" style="display: flex; flex-direction: column; margin-bottom: 10px;">
-                                                <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)<button type="button" onclick="addAreaDropdown('team-leader-area', '<?php echo $team_leader['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
-            <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i> Add Area
-        </button></label>
-    
-                                                </div>
-                                            <?php endif; ?>
+                                        // Display Team Leader
+                                        if ($team_leader): ?>
+                                            <div class="add-area" id="team-leader-area" style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                                                <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)
+                                                    <button type="button" onclick="addAreaDropdown('team-leader-area', '<?php echo $team_leader['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
+                                                        <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i> Add Area
+                                                    </button>
+                                                </label>
+                                            </div>
+                                        <?php endif; ?>
 
-                                            <!-- Other members -->
-                                            <?php foreach ($other_members as $member): ?>
-                                                <div class="add-area" id="member-area-<?php echo $member['team_member_id']; ?>" style="display: flex; flex-direction: column; margin-bottom: 10px;">
-                                                    <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
-                                                    <div style="display: flex; align-items: center; margin-bottom: 10px;"> <!-- Add margin here -->
-                                                        <select class="area-select" name="area[<?php echo $member['team_member_id']; ?>][]" required onchange="updateAreaOptions()">
-                                                            <option value="" disabled selected>Select Area</option>
-                                                            <?php foreach ($areas as $id => $area_name): ?>
-                                                                <option value="<?php echo $id; ?>">
-                                                                    Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>
-                                                                </option>
-                                                            <?php endforeach; ?>
-                                                        </select>
-                                                        <button type="button" onclick="addAreaDropdown('member-area-<?php echo $member['team_member_id']; ?>', '<?php echo $member['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
-                                                            <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
-                                                        </button>
-                                                    </div>
+                                        <!-- Other members -->
+                                        <?php foreach ($other_members as $member): ?>
+                                            <div class="add-area" id="member-area-<?php echo $member['team_member_id']; ?>" style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                                                <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
+                                                <div style="display: flex; align-items: center; margin-bottom: 10px;"> <!-- Add margin here -->
+                                                    <select class="area-select" name="area[<?php echo $member['team_member_id']; ?>][]" required onchange="updateAreaOptions()">
+                                                        <option value="" disabled selected>Select Area</option>
+                                                        <?php foreach ($areas as $id => $area_name): ?>
+                                                            <option value="<?php echo $id; ?>">
+                                                                Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                    <button type="button" onclick="addAreaDropdown('member-area-<?php echo $member['team_member_id']; ?>', '<?php echo $member['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
+                                                        <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
+                                                    </button>
                                                 </div>
-                                            <?php endforeach; ?>
-                                            <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
-                                        </form>
+                                            </div>
+                                        <?php endforeach; ?>
+                                        <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
+                                    </form>
                                     <?php else: ?>
                                         <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
                                             <p>NON-DISCLOSURE AGREEMENT</p>

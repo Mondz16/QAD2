@@ -131,6 +131,7 @@ if (count($teamLeaders) > 0) {
     <link rel="stylesheet" href="css/sidebar_updated.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link href="css/pagestyle.css" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
     <style>
         .button-container {
             display: flex;
