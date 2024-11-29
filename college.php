@@ -89,7 +89,39 @@ while ($row_company = $result_companies->fetch_assoc()) {
         'company_name' => $row_company['company_name'],
         'company_email' => $row_company['company_email']
     ];
-}   
+}
+// Count the number of open notifications
+$sql_check = "
+    SELECT COUNT(*)
+    FROM team t
+    JOIN schedule s ON t.schedule_id = s.id
+    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status = 'pending'
+";
+
+$stmt_check = $conn->prepare($sql_check);
+$stmt_check->bind_param("s", $user_id);
+$stmt_check->execute();
+$stmt_check->bind_result($notification_count);
+$stmt_check->fetch();
+$stmt_check->close();
+
+// SQL query to count the number of open assessments (accepted status, excluding 'cancelled' and 'finished' schedules)
+$sql_assessment_count = "
+    SELECT COUNT(*) 
+    FROM team t
+    JOIN schedule s ON t.schedule_id = s.id
+    WHERE t.internal_users_id = ? 
+    AND t.status = 'accepted'
+    AND s.schedule_status NOT IN ('cancelled', 'finished')
+";
+
+$stmt_assessment_count = $conn->prepare($sql_assessment_count);
+$stmt_assessment_count->bind_param("s", $user_id);
+$stmt_assessment_count->execute();
+$stmt_assessment_count->bind_result($assessment_count);
+$stmt_assessment_count->fetch();
+$stmt_assessment_count->close();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -105,6 +137,7 @@ while ($row_company = $result_companies->fetch_assoc()) {
     <link href="css/navbar.css" rel="stylesheet">
     <link href="css/pagestyle.css" rel="stylesheet">
     <link href="college_style.css" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
     <style>
         .hidden {
             display: none;
@@ -138,6 +171,9 @@ while ($row_company = $result_companies->fetch_assoc()) {
         .scrollable-container {
             max-height: 650px;
             overflow-y: auto;
+        }
+        .notification-counter {
+    color: #E6A33E; /* Text color */
         }
     </style>
 </head>
@@ -219,10 +255,20 @@ while ($row_company = $result_companies->fetch_assoc()) {
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link">
                             <span style="margin-left: 8px;">Assessment</span>
+                            <?php if ($assessment_count > 0): ?>
+                            <span class="notification-counter">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                            </svg>
+                            </span>
+                        <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                                 <span style="margin-left: 8px;">View Assessments</span>
+                                <?php if ($assessment_count > 0): ?>
+                            <span class="notification-counter"><?php echo $assessment_count; ?></span>
+                            <?php endif; ?>
                             </a>
                             <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">UDAS Assessments</span>
@@ -263,6 +309,13 @@ while ($row_company = $result_companies->fetch_assoc()) {
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link">
                             <span style="margin-left: 8px;">Account</span>
+                            <?php if ($notification_count > 0): ?>
+                            <span class="notification-counter">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                            </svg>
+                            </span>
+                        <?php endif; ?>
                         </a>
 
                         <div class="sidebar-dropdown">
@@ -271,6 +324,9 @@ while ($row_company = $result_companies->fetch_assoc()) {
                             </a>
                             <a href="<?php echo $is_admin === false ? 'internal_notification.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">Notifications</span>
+                                <?php if ($notification_count > 0): ?>
+                                    <span class="notification-counter"><?php echo $notification_count; ?></span>
+                                <?php endif; ?>
                             </a>
                             <a href="logout.php" class="sidebar-link">
                                 <span style="margin-left: 8px;">Logout</span>

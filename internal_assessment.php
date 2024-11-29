@@ -108,6 +108,11 @@ $stmt_schedules = $conn->prepare($sql_schedules);
 $stmt_schedules->bind_param("s", $user_id);
 $stmt_schedules->execute();
 $stmt_schedules->store_result();
+
+// Get the number of assessments
+$assessment_count = $stmt_schedules->num_rows;
+
+// Bind result for later use
 $stmt_schedules->bind_result($schedule_id, $college_name, $program_name, $level_applied, $schedule_date, $schedule_time, $schedule_status, $team_id, $role, $area_names);
 
 $schedules = [];
@@ -355,6 +360,9 @@ function intToRoman($num) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
+        .notification-counter {
+    color: #E6A33E; /* Text color */
+        }
         .ndamodal1 {
             display: none; /* Hidden by default */
             position: fixed; /* Stay in place even when scrolling */
@@ -459,10 +467,20 @@ function intToRoman($num) {
                 <li class="sidebar-item has-dropdown">
                     <a href="#" class="sidebar-link-active">
                         <span style="margin-left: 8px;">Assessment</span>
+                        <?php if ($assessment_count > 0): ?>
+                            <span class="notification-counter">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                            </svg>
+                            </span>
+                        <?php endif; ?>
                     </a>
                     <div class="sidebar-dropdown">
                         <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                             <span style="margin-left: 8px;">View Assessments</span>
+                        <?php if ($assessment_count > 0): ?>
+                            <span class="notification-counter"><?php echo $assessment_count; ?></span>
+                        <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">UDAS Assessments</span>
@@ -501,8 +519,15 @@ function intToRoman($num) {
                     </div>
                 </li>
                 <li class="sidebar-item has-dropdown">
-                    <a href="#" class="sidebar-link">
+                <a class="sidebar-link">
                         <span style="margin-left: 8px;">Account</span>
+                        <?php if ($notification_count > 0): ?>
+                            <span class="notification-counter">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                            </svg>
+                            </span>
+                        <?php endif; ?>
                     </a>
 
                     <div class="sidebar-dropdown">
@@ -511,6 +536,9 @@ function intToRoman($num) {
                         </a>
                         <a href="<?php echo $is_admin === false ? 'internal_notification.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Notifications</span>
+                        <?php if ($notification_count > 0): ?>
+                            <span class="notification-counter"><?php echo $notification_count; ?></span>
+                        <?php endif; ?>
                         </a>
                         <a href="logout.php" class="sidebar-link">
                             <span style="margin-left: 8px;">Logout</span>

@@ -193,6 +193,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $schedule_ids[] = $schedule_id;
             $stmt_schedule->close();
         }
+                // Get team details
+                $sql_user_details = "SELECT email, CONCAT(first_name, ' ', middle_initial, '. ', last_name) AS name 
+                FROM internal_users WHERE user_id = ?";
+
+// Get team leader details
+$stmt_user_details = $conn->prepare($sql_user_details);
+$stmt_user_details->bind_param("s", $team_leader_id);
+$stmt_user_details->execute();
+$stmt_user_details->bind_result($team_leader_email, $team_leader_name);
+$stmt_user_details->fetch();
+$stmt_user_details->close();
+
+// Get team members details
+foreach ($team_members_ids as $member_id) {
+$stmt_user_details = $conn->prepare($sql_user_details);
+$stmt_user_details->bind_param("s", $member_id);
+$stmt_user_details->execute();
+$stmt_user_details->bind_result($email, $name);
+$stmt_user_details->fetch();
+$stmt_user_details->close();
+}
+
+// Insert team assignments for each schedule
+foreach ($schedule_ids as $schedule_id) {
+// Insert team leader
+$sql_insert_leader = "INSERT INTO team (schedule_id, internal_users_id, role, status)
+                    VALUES (?, ?, 'Team Leader', 'pending')";
+$stmt_insert_leader = $conn->prepare($sql_insert_leader);
+$stmt_insert_leader->bind_param("is", $schedule_id, $team_leader_id);
+$stmt_insert_leader->execute();
+$stmt_insert_leader->close();
+
+// Insert team members
+$sql_insert_members = "INSERT INTO team (schedule_id, internal_users_id, role, status)
+                    VALUES (?, ?, 'Team Member', 'pending')";
+
+foreach ($team_members_ids as $member_id) {
+    $stmt_insert_members = $conn->prepare($sql_insert_members);
+    $stmt_insert_members->bind_param("is", $schedule_id, $member_id);
+    $stmt_insert_members->execute();
+    $stmt_insert_members->close();
+}
+}
 
         // Get team details
         $sql_user_details = "SELECT email, CONCAT(first_name, ' ', middle_initial, '. ', last_name) AS name 

@@ -20,6 +20,7 @@ $stmt->fetch();
 $stmt->close();
 
 $is_admin = false;
+$hasOpenAssessment = false; // Initialize flag for open assessments
 
 // Check user type and redirect accordingly
 if ($user_id === 'admin') {
@@ -502,10 +503,16 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link-active">
                             <span style="margin-left: 8px;">Assessment</span>
+                            <?php if ($hasOpenAssessment): ?>
+                                <span class="red-dot-indicator"></span>
+                            <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                                 <span style="margin-left: 8px;">View Assessments</span>
+                                <?php if ($hasOpenAssessment): ?>
+                                    <span class="red-dot-indicator"></span>
+                                <?php endif; ?>
                             </a>
                             <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">UDAS Assessments</span>
@@ -568,36 +575,37 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                     <div class="scrollable-container">
 
                         <?php
-                        if (count($teamLeaders) > 0) {
-                            $counter = 1; // Counter for numbering assessments
-                            foreach ($teamLeaders as $leader) {
-                                $teamLeaderId = $leader['id'];
+                                // Existing logic to fetch team leaders
+                                if (count($teamLeaders) > 0) {
+                                    $counter = 1; // Counter for numbering assessments
+                                    foreach ($teamLeaders as $leader) {
+                                        $teamLeaderId = $leader['id'];
 
-                                // Fetch summaries for the team leader
-                                $summariesQuery = "SELECT id, summary_file, team_id FROM summary WHERE team_id = '$teamLeaderId'";
-                                $summariesResult = $conn->query($summariesQuery);
-                                $summaries = $summariesResult->fetch_all(MYSQLI_ASSOC);
+                                        // Fetch summaries for the team leader
+                                        $summariesQuery = "SELECT id, summary_file, team_id FROM summary WHERE team_id = '$teamLeaderId'";
+                                        $summariesResult = $conn->query($summariesQuery);
+                                        $summaries = $summariesResult->fetch_all(MYSQLI_ASSOC);
 
-                                if (count($summaries) > 0) {
-                                    foreach ($summaries as $summary) {
-                                        $teamId = $summary['team_id'];
-                                        $summaryFile = $summary['summary_file'];
-                                        $summaryId = $summary['id'];
+                                        if (count($summaries) > 0) {
+                                            foreach ($summaries as $summary) {
+                                                $teamId = $summary['team_id'];
+                                                $summaryId = $summary['id'];
 
-                                        // Fetch schedule details for the team
-                                        $scheduleQuery = "
-                    SELECT s.id, s.level_applied, s.schedule_date, s.schedule_time, 
-                        c.college_name, p.program_name
-                    FROM schedule s
-                    JOIN team t ON s.id = t.schedule_id
-                    JOIN college c ON s.college_code = c.code
-                    JOIN program p ON s.program_id = p.id
-                    WHERE t.id = '$teamId' AND (s.schedule_status = 'approved' OR s.schedule_status = 'pending')
-                ";
+                                                // Fetch schedule details for the team
+                                                $scheduleQuery = "
+                                                    SELECT s.id, s.schedule_status 
+                                                    FROM schedule s
+                                                    JOIN team t ON s.id = t.schedule_id
+                                                    WHERE t.id = '$teamId' AND s.schedule_status = 'approved'
+                                                ";
 
-                                        $scheduleResult = $conn->query($scheduleQuery);
-                                        $schedule = $scheduleResult->fetch_assoc();
+                                                $scheduleResult = $conn->query($scheduleQuery);
+                                                $schedule = $scheduleResult->fetch_assoc();
 
+                                                if ($schedule) {
+                                                    $hasOpenAssessment = true; // Set flag to true if an open assessment is found
+                                                    break 2; // Exit loops early
+                                                }
                                         if ($schedule) {
                                             // Check if the summary has been approved
                                             $approvedQuery = "SELECT id FROM approved_summary WHERE summary_id = '$summaryId'";
