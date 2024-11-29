@@ -50,7 +50,8 @@ if ($user_id === 'admin') {
         exit();
     }
 }
-
+$hasOpenAssessment = true;
+$assessments = [];
 // Fetch team leaders
 $teamLeadersQuery = "SELECT id FROM team WHERE role = 'team leader'";
 $teamLeadersResult = $conn->query($teamLeadersQuery);
@@ -112,6 +113,7 @@ if (count($teamLeaders) > 0) {
                     'is_approved' => $isApproved
                 ];
             }
+
         }
     }
 }
@@ -565,7 +567,7 @@ if (count($teamLeaders) > 0) {
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link-active">
                             <span style="margin-left: 8px;">Assessment</span>
-                            <?php if ($hasOpenAssessment): ?>
+                            <?php if (count($assessments) > 0): ?>
                                 <span class="notification-counter">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
                             <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>

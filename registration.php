@@ -94,56 +94,78 @@ function displayRegistrations($conn, $tableName, $title)
                 <th>MIDDLE INITIAL</th>
                 <th>LAST NAME</th>
                 <th>EMAIL</th>";
-
+    
         // Additional columns based on table type
         if ($tableName === 'internal_users') {
             echo "<th>COLLEGE</th>";
         } elseif ($tableName === 'external_users') {
             echo "<th>Company</th>";
         }
-
+    
         echo "<th>Actions</th>
             </tr>";
-
+    
+        $rowsDisplayed = false; // Flag to track if any valid rows are displayed
+    
         while ($row = $result->fetch_assoc()) {
             $trimmedUserId = substr($row['user_id'], 3);
-
+    
             // Skip rows with duplicate user_id
             if (isset($duplicateIds[$trimmedUserId])) {
                 continue;
             }
-
+    
             // Display only internal_users with status = 'pending'
             if ($tableName === 'internal_users' && $row['status'] !== 'pending') {
                 continue;
             }
-
+    
+            $rowsDisplayed = true; // Set the flag if at least one row is displayed
+    
             echo "<tr>
                 <td>{$row['user_id']}</td>
                 <td>{$row['first_name']}</td>
                 <td>{$row['middle_initial']}</td>
                 <td>{$row['last_name']}</td>
                 <td>{$row['email']}</td>";
-
+    
             // Display additional column data based on table type
             if ($tableName === 'internal_users') {
                 echo "<td>{$row['college_name']}</td>";
             } elseif ($tableName === 'external_users') {
                 echo "<td>{$row['company_name']}</td>";
             }
-
+    
             echo "<td class='action-buttons'>
                     <button class='btn btn-approve btn-sm' onclick='openApproveModal(\"{$row['user_id']}\")'>Approve</button>
                     <button class='btn btn-reject btn-sm' onclick='openRejectModal(\"{$row['user_id']}\")'>Disapprove</button>
                 </td>
             </tr>";
         }
-
+    
         echo "</table>";
+    
+        // If no valid rows were displayed, show the "NO PENDING REGISTRATIONS" message
+        if (!$rowsDisplayed) {
+            echo "<div class='no-schedule-prompt'><p>NO PENDING REGISTRATIONS</p></div>";
+        }
     } else {
+        // If no rows exist in the result set
         echo "<div class='no-schedule-prompt'><p>NO PENDING REGISTRATIONS</p></div>";
     }
 }
+// Query to count assessments
+$countQuery = "
+    SELECT COUNT(*) AS assessment_count
+    FROM summary s
+    JOIN team t ON s.team_id = t.id
+    JOIN schedule sch ON t.schedule_id = sch.id
+    WHERE sch.schedule_status IN ('approved', 'pending')
+";
+$Aresult = $conn->query($countQuery);
+$Arow = $Aresult->fetch_assoc();
+$assessmentCount = $Arow['assessment_count'];
+
 ?>
 
 
@@ -159,6 +181,7 @@ function displayRegistrations($conn, $tableName, $title)
     <link rel="stylesheet" href="css/sidebar_updated.css">
     <link rel="stylesheet" href="css/navbar.css">
     <link href="css/registration_pagestyle.css" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
     <style>
         .loading-spinner .spinner-border {
             width: 40px;
@@ -265,10 +288,20 @@ function displayRegistrations($conn, $tableName, $title)
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link">
                             <span style="margin-left: 8px;">Assessment</span>
+                            <?php if ($assessmentCount > 0): ?>
+                                <span class="notification-counter">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                            </svg>
+                            </span>
+                            <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                                 <span style="margin-left: 8px;">View Assessments</span>
+                                <?php if ($assessmentCount > 0): ?>
+                                    <span class="notification-counter"><?= $assessmentCount; ?></span>
+                                <?php endif; ?>
                             </a>
                             <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">UDAS Assessments</span>

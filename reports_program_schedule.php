@@ -196,6 +196,17 @@ $members = getMembers($conn, $campus, $college, $search, $offset, $year);
 
 $campuses = getDropdownOptions($conn, 'college', 'college_campus', 'college_campus');
 $colleges = getDropdownOptions($conn, 'college', 'code', 'college_name');
+// Query to count assessments
+$countQuery = "
+    SELECT COUNT(*) AS assessment_count
+    FROM summary s
+    JOIN team t ON s.team_id = t.id
+    JOIN schedule sch ON t.schedule_id = sch.id
+    WHERE sch.schedule_status IN ('approved', 'pending')
+";
+$Aresult = $conn->query($countQuery);
+$Arow = $Aresult->fetch_assoc();
+$assessmentCount = $Arow['assessment_count'];
 
 $conn->close();
 ?>
@@ -211,6 +222,7 @@ $conn->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/sidebar_updated.css">
     <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="index.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -380,10 +392,20 @@ $conn->close();
                 <li class="sidebar-item has-dropdown">
                     <a href="#" class="sidebar-link">
                         <span style="margin-left: 8px;">Assessment</span>
+                        <?php if ($assessmentCount > 0): ?>
+                                <span class="notification-counter">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                            </svg>
+                            </span>
+                            <?php endif; ?>
                     </a>
                     <div class="sidebar-dropdown">
                         <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                             <span style="margin-left: 8px;">View Assessments</span>
+                            <?php if ($assessmentCount > 0): ?>
+                                    <span class="notification-counter"><?= $assessmentCount; ?></span>
+                                <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">UDAS Assessments</span>

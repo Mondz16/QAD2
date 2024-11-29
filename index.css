@@ -1811,3 +1811,6 @@ a.sidebar-link:hover, a.sidebar-link-active:hover {
     background-color:  #B73033;
     color: #fff;
 }
+.notification-counter {
+    color: #E6A33E; /* Text color */
+        }
