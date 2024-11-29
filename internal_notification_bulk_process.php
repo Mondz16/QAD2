@@ -2,7 +2,7 @@
 include 'connection.php';
 session_start();
 
-// Check user session
+// Check if user is logged in and user ID is valid
 if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11') {
     header("Location: login.php");
     exit();
@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $bulk_action = $_POST['bulk_action'];
         $selected_schedules = $_POST['selected_schedules'];
 
-        // Determine the status based on the action
+        // Set the status based on the action
         if ($bulk_action === 'accept') {
             $status = 'accepted';
         } elseif ($bulk_action === 'decline') {
@@ -33,36 +33,62 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
         }
 
-        // Prepare the update statement
-        $sql_update = "UPDATE team SET status = ? WHERE schedule_id = ? AND status = 'pending'";
-        $stmt_update = $conn->prepare($sql_update);
-        $stmt_update->bind_param("si", $status, $schedule_id);
+        // Get the logged-in user's ID
+        $user_id = $_SESSION['user_id'];
 
-        // Process each selected schedule
-        foreach ($selected_schedules as $schedule_id) {
-            // Convert to integer for safety
-            $schedule_id = intval($schedule_id);
-            
-            if ($stmt_update->execute()) {
-                if ($stmt_update->affected_rows > 0) {
-                    $processed_count++;
+        // Query to get the logged-in user's team associations from the team table
+        $sql_user_team = "SELECT * FROM team WHERE internal_users_id = ?";
+        $stmt_user_team = $conn->prepare($sql_user_team);
+        $stmt_user_team->bind_param("s", $user_id);
+        $stmt_user_team->execute();
+        $team_result = $stmt_user_team->get_result();
+
+        if ($team_result->num_rows > 0) {
+            // Loop through each selected schedule and update the status if conditions are met
+            foreach ($selected_schedules as $schedule_id) {
+                $schedule_id = intval($schedule_id); // Convert to integer for safety
+
+                // Prepare query to check if the user is in the team for the selected schedule
+                $sql_team_check = "SELECT * FROM team WHERE internal_users_id = ? AND schedule_id = ?";
+                $stmt_team_check = $conn->prepare($sql_team_check);
+                $stmt_team_check->bind_param("si", $user_id, $schedule_id);
+                $stmt_team_check->execute();
+                $team_check_result = $stmt_team_check->get_result();
+
+                if ($team_check_result->num_rows > 0) {
+                    // Update the team status to the selected status
+                    $sql_update = "UPDATE team SET status = ? WHERE schedule_id = ? AND internal_users_id = ? AND status = 'pending' AND internal_users_id = ?";
+                    $stmt_update = $conn->prepare($sql_update);
+                    $stmt_update->bind_param("siss", $status, $schedule_id, $user_id, $user_id);
+
+                    if ($stmt_update->execute()) {
+                        if ($stmt_update->affected_rows > 0) {
+                            $processed_count++;
+                        }
+                    } else {
+                        $error_count++;
+                    }
+                } else {
+                    $error_count++; // If no matching team member for the schedule, count as error
+                }
+
+                $stmt_team_check->close();
+            }
+            $stmt_user_team->close();
+
+            // Set appropriate message based on results
+            if ($processed_count > 0) {
+                $message = "$processed_count schedule(s) successfully $status.";
+                if ($error_count > 0) {
+                    $message .= " However, $error_count schedule(s) could not be processed.";
                 }
             } else {
-                $error_count++;
-            }
-        }
-
-        $stmt_update->close();
-
-        // Set appropriate message based on results
-        if ($processed_count > 0) {
-            $message = "$processed_count schedule(s) successfully $status.";
-            if ($error_count > 0) {
-                $message .= " However, $error_count schedule(s) could not be processed.";
+                $status = "error";
+                $message = "No schedules were processed. They may have already been processed or you may not have permission.";
             }
         } else {
             $status = "error";
-            $message = "No schedules were processed. They may have already been processed or you may not have permission.";
+            $message = "User not found or not associated with any teams.";
         }
     }
 } else {

@@ -232,13 +232,15 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
         <div class="orientation2">
             <div class="notification-list">
                 <?php if ($stmt_notifications->num_rows > 0): ?>
-                    <form id="bulkActionForm" action="internal_notification_bulk_process.php" method="POST">
+                    <form id="bulkActionForm" action="internal_notification_bulk_process.php" method="POST" onsubmit="return false;">
+                        <input type="hidden" name="bulk_action" id="bulkAction" value="">
+                        <input type="hidden" name="user_id" value="<?php echo $_SESSION['user_id']; ?>">
                         <div class="bulk-actions-container">
                             <!-- Select Button -->
                             <button type="button" id="toggleSelectButton" onclick="toggleCheckboxVisibility()" style="padding: 10px 20px; font-size: 16px;">Select</button>
                             <!-- Bulk Accept and Decline Buttons -->
-                            <button type="submit" name="bulk_action" value="accept" class="accept-button" id="acceptSelected" style="display: none; padding: 10px 20px; font-size: 16px; margin-left: 5px;">ACCEPT SELECTED</button>
-                            <button type="submit" name="bulk_action" value="decline" class="decline-button" id="declineSelected" style="display: none; padding: 10px 20px; font-size: 16px; margin-left: 5px;">DECLINE SELECTED</button>
+                            <button type="button" name="bulk_action" value="accept" class="accept-button" id="acceptSelected" onclick="handleBulkAction('accept')" style="display: none; padding: 10px 20px; font-size: 16px; margin-left: 5px;">ACCEPT SELECTED</button>
+                            <button type="button" name="bulk_action" value="decline" class="decline-button" id="declineSelected" onclick="handleBulkAction('decline')" style="display: none; padding: 10px 20px; font-size: 16px; margin-left: 5px;">DECLINE SELECTED</button>
                         </div>
 
                         <div class="notifications-wrapper">
@@ -265,6 +267,7 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                                     <p><strong>Date:</strong> <?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i A'); ?></p><br>
                                     <div class="role-area">
                                         <p><strong>Role:</strong> <?php echo htmlspecialchars($role); ?><br><strong>Areas:</strong> <?php echo htmlspecialchars($assigned_area_names); ?></p>
+                                    </form>
                                         <div class="notification-actions">
                                             <?php if ($role === 'Team Leader'): ?>
                                                 <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
@@ -288,25 +291,66 @@ $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $s
                                 </div>
                             <?php endwhile; ?>
                         </div>
-                    </form>
-                    <script>
-                        // Function to toggle visibility of checkboxes and bulk action buttons
-                        function toggleCheckboxVisibility() {
-                            const checkboxes = document.querySelectorAll('.schedule-checkbox');
-                            const acceptButton = document.getElementById('acceptSelected');
-                            const declineButton = document.getElementById('declineSelected');
-                            const toggleButton = document.getElementById('toggleSelectButton');
+                        <div id="bulkConfirmationModal" style="display: none;">
+                            <div class="modal-content">
+                                <h3 id="bulkConfirmationMessage"></h3>
+                                <button id="confirmBulkActionButton">Confirm</button>
+                                <button id="cancelBulkActionButton" onclick="cancelBulkAction()">Cancel</button>
+                            </div>
+                        </div>
+                        <script>
+                            // Function to toggle visibility of checkboxes and bulk action buttons
+                            function toggleCheckboxVisibility() {
+                                const checkboxes = document.querySelectorAll('.schedule-checkbox');
+                                const acceptButton = document.getElementById('acceptSelected');
+                                const declineButton = document.getElementById('declineSelected');
+                                const toggleButton = document.getElementById('toggleSelectButton');
 
-                            // Toggle visibility
-                            const areCheckboxesVisible = checkboxes[0].style.display === 'inline-block';
-                            checkboxes.forEach(checkbox => checkbox.style.display = areCheckboxesVisible ? 'none' : 'inline-block');
-                            acceptButton.style.display = areCheckboxesVisible ? 'none' : 'inline-block';
-                            declineButton.style.display = areCheckboxesVisible ? 'none' : 'inline-block';
+                                // Toggle visibility
+                                const areCheckboxesVisible = checkboxes[0].style.display === 'inline-block';
+                                checkboxes.forEach(checkbox => checkbox.style.display = areCheckboxesVisible ? 'none' : 'inline-block');
+                                acceptButton.style.display = areCheckboxesVisible ? 'none' : 'inline-block';
+                                declineButton.style.display = areCheckboxesVisible ? 'none' : 'inline-block';
 
-                            // Change button text
-                            toggleButton.textContent = areCheckboxesVisible ? 'Select' : 'Cancel Selection';
-                        }
-                    </script>
+                                // Change button text
+                                toggleButton.textContent = areCheckboxesVisible ? 'Select' : 'Cancel Selection';
+                            }
+
+                            // Function to handle bulk actions (accept/decline)
+                            function handleBulkAction(action) {
+                                var confirmationMessage = "Are you sure you want to " + action + " the selected schedules?";
+                                document.getElementById('confirmationMessage').innerText = confirmationMessage;
+
+                                var confirmButton = document.getElementById('confirmButton');
+                                var backButton = document.getElementById('backButton');
+
+                                // Apply styles based on action
+                                if (action === 'accept') {
+                                    confirmButton.className = 'accept-confirm-button';
+                                    backButton.className = 'accept-back-button';
+                                } else if (action === 'decline') {
+                                    confirmButton.className = 'decline-confirm-button';
+                                    backButton.className = 'decline-back-button';
+                                }
+
+                                // Show confirmation modal
+                                document.getElementById('confirmationModal').style.display = 'block';
+
+                                // Handle confirmation action
+                                confirmButton.onclick = function() {
+                                    // Set the bulk action value before submitting the form
+                                    document.getElementById('bulkAction').value = action;
+
+                                    // Submit the bulk action form
+                                    document.getElementById('bulkActionForm').submit();
+                                };
+
+                                // Hide the modal when user clicks "No" or "Back"
+                                backButton.onclick = function() {
+                                    document.getElementById('confirmationModal').style.display = 'none';
+                                };
+                            }
+                        </script>
                 <?php else: ?>
                     <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ASSIGNED TO YOU</strong></p>
                 <?php endif; ?>                              

@@ -214,7 +214,7 @@ function sendEmailNotification($email, $collegeName, $programName, $status)
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
         $mail->Username = 'usepqad@gmail.com'; // SMTP username
-        $mail->Password = 'vmvf vnvq ileu tmev'; // SMTP password
+        $mail->Password = 'ofcx jwfa ghkv hsgz'; // SMTP password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 

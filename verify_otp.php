@@ -14,7 +14,7 @@ function sendOTPEmail($email, $otp) {
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
         $mail->Username = 'usepqad@gmail.com';
-        $mail->Password = 'vmvf vnvq ileu tmev';
+        $mail->Password = 'ofcx jwfa ghkv hsgz';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
@@ -48,7 +48,7 @@ function sendAccountApprovalEmail($email, $firstName , $user_id) {
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
         $mail->Username = 'usepqad@gmail.com';
-        $mail->Password = 'vmvf vnvq ileu tmev';
+        $mail->Password = 'ofcx jwfa ghkv hsgz';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 

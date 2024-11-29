@@ -229,7 +229,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id'])) {
                     $mail->Host = 'smtp.gmail.com'; // Set the SMTP server to send through
                     $mail->SMTPAuth = true;
                     $mail->Username = 'usepqad@gmail.com'; // SMTP username
-                    $mail->Password = 'vmvf vnvq ileu tmev'; // SMTP password (App Password if 2FA enabled)
+                    $mail->Password = 'ofcx jwfa ghkv hsgz'; // SMTP password (App Password if 2FA enabled)
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                     $mail->Port = 587;
 

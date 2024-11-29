@@ -1235,7 +1235,7 @@ input[type="radio"] {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    width: 100%;
+    width: 700px;
     align-items: center;
 }
 
