@@ -20,7 +20,6 @@ $stmt->fetch();
 $stmt->close();
 
 $is_admin = false;
-$hasOpenAssessment = false; // Initialize flag for open assessments
 
 // Check user type and redirect accordingly
 if ($user_id === 'admin') {
@@ -56,6 +55,66 @@ if ($user_id === 'admin') {
 $teamLeadersQuery = "SELECT id FROM team WHERE role = 'team leader'";
 $teamLeadersResult = $conn->query($teamLeadersQuery);
 $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
+
+// Fetch data logic
+$assessments = []; // To store all the assessment details
+$hasOpenAssessment = false;
+
+if (count($teamLeaders) > 0) {
+    $counter = 1; // Counter for numbering assessments
+    foreach ($teamLeaders as $leader) {
+        $teamLeaderId = $leader['id'];
+
+        // Fetch summaries for the team leader
+        $summariesQuery = "SELECT id, summary_file, team_id FROM summary WHERE team_id = '$teamLeaderId'";
+        $summariesResult = $conn->query($summariesQuery);
+        $summaries = $summariesResult->fetch_all(MYSQLI_ASSOC);
+
+        if (count($summaries) > 0) {
+            foreach ($summaries as $summary) {
+                $teamId = $summary['team_id'];
+                $summaryId = $summary['id'];
+
+                // Fetch schedule details for the team
+                $scheduleQuery = "
+                    SELECT s.id, s.schedule_status, s.schedule_date, s.schedule_time, 
+                           s.level_applied, c.college_name, p.program_name 
+                    FROM schedule s
+                    JOIN team t ON s.id = t.schedule_id
+                    JOIN college c ON c.id = t.college_id
+                    JOIN program p ON p.id = t.program_id
+                    WHERE t.id = '$teamId' AND s.schedule_status = 'approved'
+                ";
+
+                $scheduleResult = $conn->query($scheduleQuery);
+                $schedule = $scheduleResult->fetch_assoc();
+
+                if ($schedule) {
+                    $hasOpenAssessment = true; // Flag for open assessment
+                    $approvedQuery = "SELECT id FROM approved_summary WHERE summary_id = '$summaryId'";
+                    $approvedResult = $conn->query($approvedQuery);
+                    $isApproved = $approvedResult->num_rows > 0;
+
+                    // Fetch NDA Compilation
+                    $ndaQuery = "SELECT NDA_compilation_file FROM NDA_compilation WHERE team_id = '$teamId'";
+                    $ndaResult = $conn->query($ndaQuery);
+                    $ndaFile = $ndaResult->fetch_assoc()['NDA_compilation_file'];
+
+                    // Add assessment details
+                    $assessments[] = [
+                        'counter' => $counter,
+                        'schedule' => $schedule,
+                        'summaryFile' => $summary['summary_file'],
+                        'ndaFile' => $ndaFile,
+                        'isApproved' => $isApproved
+                    ];
+
+                    $counter++;
+                }
+            }
+        }
+    }
+}
 
 ?>
 <!DOCTYPE html>
@@ -424,6 +483,9 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             background-color: #43f770;
             color: black;
         }
+        .notification-counter {
+    color: #E6A33E; /* Text color */
+        }
     </style>
 </head>
 
@@ -504,14 +566,20 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
                         <a href="#" class="sidebar-link-active">
                             <span style="margin-left: 8px;">Assessment</span>
                             <?php if ($hasOpenAssessment): ?>
-                                <span class="red-dot-indicator"></span>
+                                <span class="notification-counter">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                            </svg>
+                            </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                                 <span style="margin-left: 8px;">View Assessments</span>
-                                <?php if ($hasOpenAssessment): ?>
-                                    <span class="red-dot-indicator"></span>
+                                <?php if (count($assessments) > 0): ?>
+                                    <span class="notification-counter">
+                                        <?= count($assessments) ?> <!-- Display the count of assessments -->
+                                    </span>
                                 <?php endif; ?>
                             </a>
                             <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
@@ -572,127 +640,58 @@ $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
             <div class="container text-center mt-4">
                 <h1 class="mt-5 mb-5">ASSESSMENTS</h1>
                 <div class="scrollable-container-holder">
-                    <div class="scrollable-container">
-
-                        <?php
-                                // Existing logic to fetch team leaders
-                                if (count($teamLeaders) > 0) {
-                                    $counter = 1; // Counter for numbering assessments
-                                    foreach ($teamLeaders as $leader) {
-                                        $teamLeaderId = $leader['id'];
-
-                                        // Fetch summaries for the team leader
-                                        $summariesQuery = "SELECT id, summary_file, team_id FROM summary WHERE team_id = '$teamLeaderId'";
-                                        $summariesResult = $conn->query($summariesQuery);
-                                        $summaries = $summariesResult->fetch_all(MYSQLI_ASSOC);
-
-                                        if (count($summaries) > 0) {
-                                            foreach ($summaries as $summary) {
-                                                $teamId = $summary['team_id'];
-                                                $summaryId = $summary['id'];
-
-                                                // Fetch schedule details for the team
-                                                $scheduleQuery = "
-                                                    SELECT s.id, s.schedule_status 
-                                                    FROM schedule s
-                                                    JOIN team t ON s.id = t.schedule_id
-                                                    WHERE t.id = '$teamId' AND s.schedule_status = 'approved'
-                                                ";
-
-                                                $scheduleResult = $conn->query($scheduleQuery);
-                                                $schedule = $scheduleResult->fetch_assoc();
-
-                                                if ($schedule) {
-                                                    $hasOpenAssessment = true; // Set flag to true if an open assessment is found
-                                                    break 2; // Exit loops early
-                                                }
-                                        if ($schedule) {
-                                            // Check if the summary has been approved
-                                            $approvedQuery = "SELECT id FROM approved_summary WHERE summary_id = '$summaryId'";
-                                            $approvedResult = $conn->query($approvedQuery);
-                                            $isApproved = $approvedResult->num_rows > 0;
-
-                                            $scheduleDate = date("F j, Y", strtotime($schedule['schedule_date']));
-                                            $scheduleTime = date("g:i A", strtotime($schedule['schedule_time']));
-
-                                            // Fetch NDA Compilation
-                                            $ndaQuery = "SELECT NDA_compilation_file FROM NDA_compilation WHERE team_id = '$teamId'";
-                                            $ndaResult = $conn->query($ndaQuery);
-                                            $ndaFile = $ndaResult->fetch_assoc()['NDA_compilation_file'];
-
-                                            // Render assessment details
-                                            echo "<div class='assessment-box'>";
-                                            echo "<h2>#" . $counter . "</h2>";
-                                            echo "<div class='assessment-details'>";
-                                            echo "<div class='assessment-holder-1'>
-                            <div class='assessment-college'>
-                                <p> COLLEGE:  <br><div class='assessment-values'>" . $schedule['college_name'] . "</div></p>
-                                <p> PROGRAM:  <br><div class='assessment-values'>" . $schedule['program_name'] . "</div></p>
-                            </div>
-                            <div class='assessment-level-applied'>
-                                <p> LEVEL APPLIED:  <br><h3>";
-
-                                            // Display level applied with abbreviations
-                                            switch ($schedule['level_applied']) {
-                                                case "Not Accreditable":
-                                                    echo "NA";
-                                                    break;
-                                                case "Candidate":
-                                                    echo "CAN";
-                                                    break;
-                                                default:
-                                                    echo $schedule['level_applied'];
-                                                    break;
-                                            }
-
-                                            echo "</h3></p>
-                            </div>
-                        </div>";
-
-                                            echo "<div class='assessment-holder-2'>
-                            <div class='assessment-dateTime'>
-                                <p> DATE:  <br><div class='assessment-values'>" . $scheduleDate . "</div></p>
-                            </div>
-                            <div class='assessment-dateTime'>
-                                <p> TIME:  <br><div class='assessment-values'>" . $scheduleTime . "</div></p>
-                            </div>
-                            <div class='assessment-udas'>
-                                <p> DOWNLOADABLE  <br><a href='$summaryFile' class='btn udas-button1' download>SUMMARY</a></p>
-                            </div>
-                            <div class='assessment-udas'>
-                                <p> FILES:  <br><a href='$ndaFile' class='btn udas-button1' download>NDA</a></p>
-                            </div>";
-
-                                            // Show approve button or check symbol based on approval status
-                                            if ($isApproved) {
-                                                echo "<div class='assessment-udas'>
-                                <p> Approve  <br><button class='assessment-button-done'>APPROVED</button></p>
-                            </div>";
-                                            } else {
-                                                echo "<div class='assessment-udas'>
-                                <p> Approve  <br><button class='btn approve-btn udas-button' data-summary-file='$summaryFile'>APPROVE</button></p>
-                            </div>";
-                                            }
-
-                                            echo "</div>"; // Close assessment-holder-2
-                                            echo "</div>"; // Close assessment-details
-                                            echo "</div>"; // Close assessment-box
-
-                                            $counter++; // Increment counter for next assessment
-                                        }
-                                    }
-                                }
-                            }
-
-                            if($counter == 1){
-                                echo "<div class='no-schedule-prompt'><p>NO ASSESSMENT SUMMARY FOUND</p></div>";
-                            }
-                        } else {
-                            echo "<div class='no-schedule-prompt'><p>NO ASSESSMENT SUMMARY FOUND</p></div>";
-                        }
-                        ?>
-
-
+                <div class="scrollable-container">
+                        <?php if (count($assessments) > 0): ?>
+                            <?php foreach ($assessments as $assessment): ?>
+                                <?php
+                                $schedule = $assessment['schedule'];
+                                $scheduleDate = date("F j, Y", strtotime($schedule['schedule_date']));
+                                $scheduleTime = date("g:i A", strtotime($schedule['schedule_time']));
+                                ?>
+                                <div class="assessment-box">
+                                    <h2>#<?= $assessment['counter'] ?></h2>
+                                    <div class="assessment-details">
+                                        <div class="assessment-holder-1">
+                                            <div class="assessment-college">
+                                                <p>COLLEGE: <br><div class="assessment-values"><?= $schedule['college_name'] ?></div></p>
+                                                <p>PROGRAM: <br><div class="assessment-values"><?= $schedule['program_name'] ?></div></p>
+                                            </div>
+                                            <div class="assessment-level-applied">
+                                                <p>LEVEL APPLIED: <br><h3>
+                                                    <?= $schedule['level_applied'] === "Not Accreditable" ? "NA" : 
+                                                        ($schedule['level_applied'] === "Candidate" ? "CAN" : $schedule['level_applied']) ?>
+                                                </h3></p>
+                                            </div>
+                                        </div>
+                                        <div class="assessment-holder-2">
+                                            <div class="assessment-dateTime">
+                                                <p>DATE: <br><div class="assessment-values"><?= $scheduleDate ?></div></p>
+                                            </div>
+                                            <div class="assessment-dateTime">
+                                                <p>TIME: <br><div class="assessment-values"><?= $scheduleTime ?></div></p>
+                                            </div>
+                                            <div class="assessment-udas">
+                                                <p>DOWNLOADABLE <br><a href="<?= $assessment['summaryFile'] ?>" class="btn udas-button1" download>SUMMARY</a></p>
+                                            </div>
+                                            <div class="assessment-udas">
+                                                <p>FILES: <br><a href="<?= $assessment['ndaFile'] ?>" class="btn udas-button1" download>NDA</a></p>
+                                            </div>
+                                            <div class="assessment-udas">
+                                                <p>Approve <br>
+                                                    <?php if ($assessment['isApproved']): ?>
+                                                        <button class="assessment-button-done">APPROVED</button>
+                                                    <?php else: ?>
+                                                        <button class="btn approve-btn udas-button" data-summary-file="<?= $assessment['summaryFile'] ?>">APPROVE</button>
+                                                    <?php endif; ?>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="no-schedule-prompt"><p>NO ASSESSMENT SUMMARY FOUND</p></div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
