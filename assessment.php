@@ -52,72 +52,101 @@ if ($user_id === 'admin') {
 }
 $hasOpenAssessment = true;
 $assessments = [];
+
 // Fetch team leaders
-$teamLeadersQuery = "SELECT id FROM team WHERE role = 'team leader'";
+$teamLeadersQuery = "
+    SELECT t.id AS team_id, t.schedule_id, 
+           CONCAT(iu.first_name, ' ', iu.middle_initial, '. ', iu.last_name) AS team_leader_name
+    FROM team t
+    JOIN internal_users iu ON t.internal_users_id = iu.user_id
+    WHERE t.role = 'team leader'
+";
 $teamLeadersResult = $conn->query($teamLeadersQuery);
 $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
 
 if (count($teamLeaders) > 0) {
     $counter = 1; // Counter for numbering assessments
     foreach ($teamLeaders as $leader) {
-        $teamLeaderId = $leader['id'];
+        $teamId = $leader['team_id'];
+        $scheduleId = $leader['schedule_id'];
 
-        // Fetch summaries for the team leader
-        $summariesQuery = "SELECT id, summary_file, team_id FROM summary WHERE team_id = '$teamLeaderId'";
-        $summariesResult = $conn->query($summariesQuery);
-        $summaries = $summariesResult->fetch_all(MYSQLI_ASSOC);
+        // Fetch schedule details
+        $scheduleQuery = "
+            SELECT s.id, s.level_applied, s.schedule_date, s.schedule_time, 
+                   c.college_name, p.program_name
+            FROM schedule s
+            JOIN college c ON s.college_code = c.code
+            JOIN program p ON s.program_id = p.id
+            WHERE s.id = '$scheduleId' 
+              AND (s.schedule_status = 'approved' OR s.schedule_status = 'pending')";
+        $scheduleResult = $conn->query($scheduleQuery);
+        $schedule = $scheduleResult->fetch_assoc();
 
-        if (count($summaries) > 0) {
-            foreach ($summaries as $summary) {
-                $teamId = $summary['team_id'];
-                $summaryFile = $summary['summary_file'];
-                $summaryId = $summary['id'];
+        if ($schedule) {
+            // Fetch team members
+            $teamMembersQuery = "
+                SELECT 
+                    t.id AS team_id, 
+                    CONCAT(iu.first_name, ' ', iu.middle_initial, '. ', iu.last_name) AS member_name
+                FROM team t
+                JOIN internal_users iu ON t.internal_users_id = iu.user_id
+                WHERE t.schedule_id = '$scheduleId'
+            ";
+            $teamMembersResult = $conn->query($teamMembersQuery);
+            $teamMembers = $teamMembersResult->fetch_all(MYSQLI_ASSOC);
 
-                // Fetch schedule details for the team
-                $scheduleQuery = "
-                    SELECT s.id, s.level_applied, s.schedule_date, s.schedule_time, 
-                    c.college_name, p.program_name
-                    FROM schedule s
-                    JOIN team t ON s.id = t.schedule_id
-                    JOIN college c ON s.college_code = c.code
-                    JOIN program p ON s.program_id = p.id
-                    WHERE t.id = '$teamId' AND (s.schedule_status = 'approved' OR s.schedule_status = 'pending')
-                    ";
+            // Initialize arrays to collect NDA data
+            $ndaIndividualFiles = [];
+            $ndaInternalAccreditors = [];
 
-                $scheduleResult = $conn->query($scheduleQuery);
-                $schedule = $scheduleResult->fetch_assoc();
+            // Fetch NDA details for each team member's team_id
+            foreach ($teamMembers as $teamMember) {
+                $teamMemberId = $teamMember['team_id'];
+                $ndaTeamMemberQuery = "
+                    SELECT internal_accreditor, NDA_file 
+                    FROM nda 
+                    WHERE team_id = '$teamMemberId'
+                ";
+                $ndaTeamMemberResult = $conn->query($ndaTeamMemberQuery);
+                $ndaTeamMembers = $ndaTeamMemberResult->fetch_all(MYSQLI_ASSOC);
 
-            if ($schedule) {
-                $hasOpenAssessment = true;
-
-                // Check if the summary has been approved
-                $approvedQuery = "SELECT id FROM approved_summary WHERE summary_id = '$summaryId'";
-                $approvedResult = $conn->query($approvedQuery);
-                $isApproved = $approvedResult->num_rows > 0;
-
-                // Fetch NDA Compilation
-                $ndaQuery = "SELECT NDA_compilation_file FROM NDA_compilation WHERE team_id = '$teamId'";
-                $ndaResult = $conn->query($ndaQuery);
-                $ndaFile = $ndaResult->fetch_assoc()['NDA_compilation_file'];
-
-                // Prepare assessment details
-                $assessments[] = [
-                    'counter' => $counter++,
-                    'college_name' => $schedule['college_name'],
-                    'program_name' => $schedule['program_name'],
-                    'level_applied' => $schedule['level_applied'],
-                    'schedule_date' => date("F j, Y", strtotime($schedule['schedule_date'])),
-                    'schedule_time' => date("g:i A", strtotime($schedule['schedule_time'])),
-                    'summary_file' => $summary['summary_file'],
-                    'nda_file' => $ndaFile,
-                    'is_approved' => $isApproved
-                ];
+                // Append NDA details
+                $ndaIndividualFiles = array_merge($ndaIndividualFiles, array_column($ndaTeamMembers, 'NDA_file'));
+                $ndaInternalAccreditors = array_merge($ndaInternalAccreditors, array_column($ndaTeamMembers, 'internal_accreditor'));
             }
 
+            // Fetch NDA Compilation
+            $ndaQuery = "SELECT NDA_compilation_file FROM nda_compilation WHERE team_id = '$teamId'";
+            $ndaResult = $conn->query($ndaQuery);
+            $ndaFile = $ndaResult->fetch_assoc();
+
+            // Check if there's a summary for this team
+            $summaryQuery = "SELECT id, summary_file FROM summary WHERE team_id = '$teamId'";
+            $summaryResult = $conn->query($summaryQuery);
+            $summary = $summaryResult->fetch_assoc();
+
+            // Prepare assessment details
+            $assessments[] = [
+                'counter' => $counter++,
+                'college_name' => $schedule['college_name'],
+                'program_name' => $schedule['program_name'],
+                'level_applied' => $schedule['level_applied'],
+                'schedule_date' => date("F j, Y", strtotime($schedule['schedule_date'])),
+                'schedule_time' => date("g:i A", strtotime($schedule['schedule_time'])),
+                'summary_file' => $summary['summary_file'] ?? null,
+                'nda_compilation_file' => $ndaFile['NDA_compilation_file'] ?? null,
+                'nda_individual_files' => $ndaIndividualFiles,
+                'nda_internal_accreditors' => $ndaInternalAccreditors,
+                'team_leader' => $leader['team_leader_name'],
+                'team_members' => array_column($teamMembers, 'member_name'),
+                'is_approved' => $summary ? (bool)$conn->query("SELECT id FROM approved_summary WHERE summary_id = '{$summary['id']}'")->num_rows : false
+            ];
         }
     }
 }
-}
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -330,7 +359,7 @@ if (count($teamLeaders) > 0) {
             border: 1px solid #006118;
         }
 
-        .assessment-udas .udas-button{
+        .assessment-udas .udas-button {
             background-color: #46C556;
             color: #fff;
         }
@@ -343,12 +372,12 @@ if (count($teamLeaders) > 0) {
             padding-top: 9px;
         }
 
-        .udas-button1:hover{
+        .udas-button1:hover {
             background-color: #D4FFDF;
             border: 1px solid #006118;
         }
 
-        .assessment-udas .udas-button:hover{
+        .assessment-udas .udas-button:hover {
             background-color: #46C556;
             border: 1px solid #006118;
             color: #fff;
@@ -486,8 +515,53 @@ if (count($teamLeaders) > 0) {
             background-color: #43f770;
             color: black;
         }
+
         .notification-counter {
-    color: #E6A33E; /* Text color */
+            color: #E6A33E;
+            /* Text color */
+        }
+
+        .nda-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .nda-modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 10px 30px 20px 30px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 550px;
+            position: relative;
+            border-radius: 10px;
+        }
+
+        .nda-modal-content h3 {
+            margin: 20px 0;
+        }
+
+        .nda-close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            margin-right: 10px;
+        }
+
+        .nda-close-modal:hover,
+        .nda-close-modal:focus {
+            color: black;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -570,10 +644,10 @@ if (count($teamLeaders) > 0) {
                             <span style="margin-left: 8px;">Assessment</span>
                             <?php if (count($assessments) > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -612,7 +686,7 @@ if (count($teamLeaders) > 0) {
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin === false ? 'internal_assigned_schedule.php' : 'reports_program_schedule.php'; ?>" class="sidebar-link">
-                            <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
+                                <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
                             <a href="reports_dashboard.php" class="sidebar-link">
                                 <span style="margin-left: 8px;">View Programs</span></a>
                             <a href="program_timeline.php" class="sidebar-link">
@@ -643,58 +717,96 @@ if (count($teamLeaders) > 0) {
             <div class="container text-center mt-4">
                 <h1 class="mt-5 mb-5">ASSESSMENTS</h1>
                 <div class="scrollable-container-holder">
-                <div class="scrollable-container">
-    <?php if (count($assessments) > 0): ?>
-        <?php foreach ($assessments as $assessment): ?>
-            <div class="assessment-box">
-                <h2>#<?= $assessment['counter']; ?></h2>
-                <div class="assessment-details">
-                    <div class="assessment-holder-1">
-                        <div class="assessment-college">
-                            <p>COLLEGE:<br><div class="assessment-values"><?= $assessment['college_name']; ?></div></p>
-                            <p>PROGRAM:<br><div class="assessment-values"><?= $assessment['program_name']; ?></div></p>
-                        </div>
-                        <div class="assessment-level-applied">
-                            <p>LEVEL APPLIED:<br><h3>
-                                <?= ($assessment['level_applied'] === 'Not Accreditable') ? 'NA' : 
-                                    (($assessment['level_applied'] === 'Candidate') ? 'CAN' : 
-                                    $assessment['level_applied']); ?>
-                            </h3></p>
-                        </div>
-                    </div>
-                    <div class="assessment-holder-2">
-                        <div class="assessment-dateTime">
-                            <p>DATE:<br><div class="assessment-values"><?= $assessment['schedule_date']; ?></div></p>
-                        </div>
-                        <div class="assessment-dateTime">
-                            <p>TIME:<br><div class="assessment-values"><?= $assessment['schedule_time']; ?></div></p>
-                        </div>
-                        <div class="assessment-udas">
-                            <p>DOWNLOADABLE:<br><a href="<?= $assessment['summary_file']; ?>" class="btn udas-button1" download>SUMMARY</a></p>
-                        </div>
-                        <div class="assessment-udas">
-                            <p>FILES:<br><a href="<?= $assessment['nda_file']; ?>" class="btn udas-button1" download>NDA</a></p>
-                        </div>
-                        <div class="assessment-udas">
-                            <p>APPROVE:<br>
-                                <?php if ($assessment['is_approved']): ?>
-                                    <button class="assessment-button-done">APPROVED</button>
-                                <?php else: ?>
-                                    <button class="btn approve-btn udas-button" data-summary-file="<?= $assessment['summary_file']; ?>">APPROVE</button>
-                                <?php endif; ?>
-                            </p>
-                        </div>
+                    <div class="scrollable-container">
+                        <?php if (count($assessments) > 0): ?>
+                            <?php foreach ($assessments as $assessment): ?>
+                                <div class="assessment-box">
+                                    <h2>#<?= $assessment['counter']; ?></h2>
+                                    <div class="assessment-details">
+                                        <div class="assessment-holder-1">
+                                            <div class="assessment-college">
+                                                <p>COLLEGE:<br>
+                                                <div class="assessment-values"><?= $assessment['college_name']; ?></div>
+                                                </p>
+                                                <p>PROGRAM:<br>
+                                                <div class="assessment-values"><?= $assessment['program_name']; ?></div>
+                                                </p>
+                                            </div>
+                                            <div class="assessment-level-applied">
+                                                <p>LEVEL APPLIED:<br>
+                                                <h3>
+                                                    <?= ($assessment['level_applied'] === 'Not Accreditable') ? 'NA' : (($assessment['level_applied'] === 'Candidate') ? 'CAN' :
+                                                        $assessment['level_applied']); ?>
+                                                </h3>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="assessment-holder-2">
+                                            <div class="assessment-dateTime">
+                                                <p>DATE:<br>
+                                                <div class="assessment-values"><?= $assessment['schedule_date']; ?></div>
+                                                </p>
+                                            </div>
+                                            <div class="assessment-dateTime">
+                                                <p>TIME:<br>
+                                                <div class="assessment-values"><?= $assessment['schedule_time']; ?></div>
+                                                </p>
+                                            </div>
+                                            <div class="assessment-udas">
+                                                <p>DOWNLOADABLE:<br>
+                                                    <?php if (!empty($assessment['summary_file'])): ?>
+                                                        <a href="<?= $assessment['summary_file']; ?>" class="btn udas-button1" download>SUMMARY</a>
+                                                    <?php else: ?>
+                                                        <button class="btn udas-button1" disabled>SUMMARY</button>
+                                                    <?php endif; ?>
+                                                </p>
+                                            </div>
+                                            <div class="assessment-udas">
+                                                <p>FILES:<br>
+                                                    <button class="btn udas-button1 open-team-details-modal"
+                                                        data-team-leader="<?= htmlspecialchars($assessment['team_leader'] ?? ''); ?>"
+                                                        data-team-members="<?= htmlspecialchars(implode(',', $assessment['team_members'] ?? [])); ?>"
+                                                        data-nda-compilation-file="<?= htmlspecialchars($assessment['nda_compilation_file'] ?? ''); ?>"
+                                                        data-nda-individual-files="<?= htmlspecialchars(implode(',', $assessment['nda_individual_files'] ?? [])); ?>"
+                                                        data-nda-internal-accreditors="<?= htmlspecialchars(implode(',', $assessment['nda_internal_accreditors'] ?? [])); ?>">
+                                                        NDA
+                                                    </button>
+                                                </p>
+                                            </div>
+                                            <div class="assessment-udas">
+                                                <p>APPROVE:<br>
+                                                    <?php if (!empty($assessment['summary_file']) && $assessment['is_approved']): ?>
+                                                        <button class="assessment-button-done">APPROVED</button>
+                                                    <?php elseif (!empty($assessment['summary_file'])): ?>
+                                                        <button class="btn approve-btn udas-button" data-summary-file="<?= $assessment['summary_file']; ?>">APPROVE</button>
+                                                    <?php else: ?>
+                                                        <button class="btn approve-btn udas-button" disabled>APPROVE</button>
+                                                    <?php endif; ?>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <div class="no-schedule-prompt">
+                                <p>NO ASSESSMENT SUMMARY FOUND</p>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <div class="no-schedule-prompt">
-            <p>NO ASSESSMENT SUMMARY FOUND</p>
         </div>
-    <?php endif; ?>
-</div>
-                </div>
+
+        <!-- Modal HTML -->
+        <div id="ndaModal" class="nda-modal">
+            <div class="nda-modal-content">
+                <span class="nda-close-modal">&times;</span>
+                <h3>NDA Submission:</h3>
+                <ul id="modal-team-members"></ul>
+                <p><strong>Compilation NDA:</strong></p>
+                <div id="modal-compilation-nda"></div>
+                <p id="no-nda-message" style="display: none;">No NDA file available</p>
             </div>
         </div>
 
@@ -730,26 +842,26 @@ if (count($teamLeaders) > 0) {
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
         <script>
+            function closeApprovalModalPopup() {
+                document.getElementById('approvalModal').style.display = 'none';
+            }
+
+
+            // Existing Modal Logic
             window.onclick = function(event) {
                 var modals = [
-                    document.getElementById('approvalModal')
+                    document.getElementById('approvalModal'),
+                    document.getElementById('ndaModal')
                 ];
 
                 modals.forEach(function(modal) {
-                    if (event.target == modal) {
+                    if (modal && event.target == modal) {
                         modal.style.display = "none";
                     }
                 });
             }
 
-            function closeApprovalModalPopup() {
-                document.getElementById('approvalModal').style.display = 'none';
-            }
-
-            document.querySelector('#approvalModal form').addEventListener('submit', function() {
-                document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
-            });
-
+            // File change handler
             function handleFileChange(inputElement, iconElement) {
                 inputElement.addEventListener('change', function() {
                     if (this.files && this.files.length > 0) {
@@ -762,15 +874,16 @@ if (count($teamLeaders) > 0) {
                 });
             }
 
-            handleFileChange(document.getElementById('qadOfficerSignature'), document.getElementById('upload-icon-nda'));
+            // Attach file change handler
+            const qadOfficerSignature = document.getElementById('qadOfficerSignature');
+            const uploadIconNda = document.getElementById('upload-icon-nda');
+            if (qadOfficerSignature && uploadIconNda) {
+                handleFileChange(qadOfficerSignature, uploadIconNda);
+            }
 
-            // Get modal element
+            // Approval Modal Logic
             var modal = document.getElementById("approvalModal");
-
-            // Get the <span> element that closes the modal
             var span = document.getElementsByClassName("close")[0];
-
-            // Get all approve buttons
             var approveBtns = document.getElementsByClassName("approve-btn");
 
             // Loop through approve buttons to add click event
@@ -778,23 +891,133 @@ if (count($teamLeaders) > 0) {
                 approveBtns[i].addEventListener("click", function() {
                     var summaryFile = this.getAttribute("data-summary-file");
 
-                    document.getElementById("summaryFile").value = summaryFile;
+                    var summaryFileInput = document.getElementById("summaryFile");
+                    if (summaryFileInput) {
+                        summaryFileInput.value = summaryFile;
+                    }
 
-                    modal.style.display = "block";
+                    if (modal) {
+                        modal.style.display = "block";
+                    }
                 });
             }
 
             // When the user clicks on <span> (x), close the modal
-            span.onclick = function() {
-                modal.style.display = "none";
-            }
-
-            // When the user clicks anywhere outside of the modal, close it
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
+            if (span) {
+                span.onclick = function() {
+                    if (modal) {
+                        modal.style.display = "none";
+                    }
                 }
             }
+
+            // Form submission loading overlay
+            var approvalForm = document.querySelector('#approvalModal form');
+            if (approvalForm) {
+                approvalForm.addEventListener('submit', function() {
+                    var loadingOverlay = document.getElementById('customLoadingOverlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.classList.remove('custom-spinner-hidden');
+                    }
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                // NDA Modal Logic
+                const ndaModal = document.getElementById('ndaModal');
+                const closeNdaModalBtn = ndaModal ? ndaModal.querySelector('.nda-close-modal') : null;
+                const modalTeamMembers = document.getElementById('modal-team-members');
+                const noNdaMessage = document.getElementById('no-nda-message');
+
+                // Function to open NDA modal
+                function openNdaModal() {
+                    if (ndaModal) {
+                        ndaModal.style.display = 'block';
+                    }
+                }
+
+                // Function to close NDA modal
+                function closeNdaModal() {
+                    if (ndaModal) {
+                        ndaModal.style.display = 'none';
+                    }
+                }
+
+                // Add close event listener to NDA modal close button
+                if (closeNdaModalBtn) {
+                    closeNdaModalBtn.addEventListener('click', closeNdaModal);
+                }
+
+                // Add event listeners to all NDA buttons
+                document.querySelectorAll('.open-team-details-modal').forEach(button => {
+                    button.addEventListener('click', function() {
+                        // Get team details from data attributes
+                        const teamLeaderString = this.getAttribute('data-team-leader') || '';
+                        const teamMembersString = this.getAttribute('data-team-members') || '';
+                        const teamMembers = teamMembersString ? teamMembersString.split(',') : [];
+                        const ndaCompilationFile = this.getAttribute('data-nda-compilation-file');
+                        const ndaIndividualFilesString = this.getAttribute('data-nda-individual-files') || '';
+                        const ndaIndividualFiles = ndaIndividualFilesString ? ndaIndividualFilesString.split(',').filter(file => file.trim() !== '') : [];
+                        const ndaInternalAccreditorsString = this.getAttribute('data-nda-internal-accreditors') || '';
+                        const ndaInternalAccreditors = ndaInternalAccreditorsString ? ndaInternalAccreditorsString.split(',') : [];
+
+                        // Populate team members with NDA download links or "No Submission"
+                        if (modalTeamMembers) {
+                            modalTeamMembers.innerHTML = ''; // Clear previous members
+                            teamMembers.forEach((member, index) => {
+                                if (member.trim()) {
+                                    const li = document.createElement('li');
+                                    if (member.trim() === teamLeaderString.trim()) {
+                                        li.textContent = member.trim() + " (Leader)";
+                                    } else {
+                                        li.textContent = member.trim();
+                                    }
+
+                                    // Check if this member has a corresponding NDA file
+                                    const ndaFileIndex = ndaInternalAccreditors.findIndex(acc => acc.trim() === member.trim());
+                                    if (ndaFileIndex !== -1 && ndaIndividualFiles[ndaFileIndex]) {
+                                        const downloadLink = document.createElement('a');
+                                        downloadLink.href = ndaIndividualFiles[ndaFileIndex];
+                                        downloadLink.textContent = 'Download NDA';
+                                        downloadLink.className = 'btn udas-button1 ml-2';
+                                        downloadLink.download = true;
+                                        li.appendChild(downloadLink);
+                                    } else {
+                                        const noSubmissionText = document.createElement('span');
+                                        noSubmissionText.textContent = ' - No Submission';
+                                        noSubmissionText.className = 'text-muted ml-2';
+                                        li.appendChild(noSubmissionText);
+                                    }
+
+                                    modalTeamMembers.appendChild(li);
+                                }
+                            });
+                        }
+
+                        // Handle compilation NDA file or "No Submission"
+                        const compilationNdaContainer = document.getElementById('modal-compilation-nda');
+                        if (compilationNdaContainer) {
+                            compilationNdaContainer.innerHTML = ''; // Clear previous content
+                            if (ndaCompilationFile) {
+                                const compilationDownloadLink = document.createElement('a');
+                                compilationDownloadLink.href = ndaCompilationFile;
+                                compilationDownloadLink.textContent = 'Download Compilation NDA';
+                                compilationDownloadLink.className = 'btn udas-button1';
+                                compilationDownloadLink.download = true;
+                                compilationNdaContainer.appendChild(compilationDownloadLink);
+                            } else {
+                                const noSubmissionText = document.createElement('span');
+                                noSubmissionText.textContent = 'No Submission';
+                                noSubmissionText.className = 'text-muted';
+                                compilationNdaContainer.appendChild(noSubmissionText);
+                            }
+                        }
+
+                        // Open NDA modal
+                        openNdaModal();
+                    });
+                });
+            });
         </script>
 </body>
 
