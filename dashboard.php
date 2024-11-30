@@ -397,9 +397,11 @@ $assessmentCount = $Arow['assessment_count'];
         background-color: white;
         text-decoration: underline;
     }
+
     .notification-counter {
-    color: #E6A33E; /* Text color */
-        }
+        color: #E6A33E;
+        /* Text color */
+    }
 </style>
 
 <body>
@@ -481,18 +483,18 @@ $assessmentCount = $Arow['assessment_count'];
                             <span style="margin-left: 8px;">Assessment</span>
                             <?php if ($assessmentCount > 0 && $is_admin): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                             <?php if ($assessment_count > 0): ?>
-                            <span class="notification-counter">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
-                        <?php endif; ?>
+                                <span class="notification-counter">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
+                            <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
@@ -501,8 +503,8 @@ $assessmentCount = $Arow['assessment_count'];
                                     <span class="notification-counter"><?= $assessmentCount; ?></span>
                                 <?php endif; ?>
                                 <?php if ($assessment_count > 0): ?>
-                            <span class="notification-counter"><?php echo $assessment_count; ?></span>
-                            <?php endif; ?>
+                                    <span class="notification-counter"><?php echo $assessment_count; ?></span>
+                                <?php endif; ?>
                             </a>
                             <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">UDAS Assessments</span>
@@ -531,7 +533,7 @@ $assessmentCount = $Arow['assessment_count'];
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin === false ? 'internal_assigned_schedule.php' : 'reports_program_schedule.php'; ?>" class="sidebar-link">
-                            <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
+                                <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
                             <a href="reports_dashboard.php" class="sidebar-link">
                                 <span style="margin-left: 8px;">View Programs</span></a>
                             <a href="program_timeline.php" class="sidebar-link">
@@ -544,12 +546,12 @@ $assessmentCount = $Arow['assessment_count'];
                         <a href="#" class="sidebar-link">
                             <span style="margin-left: 8px;">Account</span>
                             <?php if ($notification_count > 0): ?>
-                            <span class="notification-counter">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
-                        <?php endif; ?>
+                                <span class="notification-counter">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
+                            <?php endif; ?>
                         </a>
 
                         <div class="sidebar-dropdown">
@@ -690,7 +692,8 @@ $assessmentCount = $Arow['assessment_count'];
                                                             <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/>
                                                         </svg> {$schedule_time}</div>
                                                 </div>
-                                            </div>";
+                                            </div>
+                                        </div>";
                                         }
                                     }
                                 } else {

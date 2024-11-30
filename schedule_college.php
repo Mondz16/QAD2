@@ -12,7 +12,7 @@ $sql = "SELECT s.id, p.program_name, s.level_applied, s.schedule_date, s.schedul
         JOIN program p ON s.program_id = p.id
         JOIN college c ON s.college_code = c.code
         WHERE c.college_name = ? 
-        AND s.schedule_status NOT IN ('passed', 'failed')
+        AND s.schedule_status NOT IN ('finished','passed', 'failed')
         ORDER BY s.schedule_date, s.schedule_time";
 
 $stmt = $conn->prepare($sql);

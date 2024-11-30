@@ -15,8 +15,8 @@ if (isset($_POST['college_id'])) {
     $sql = "
         SELECT p.id, p.program_name 
         FROM program p
-        LEFT JOIN schedule s ON p.id = s.program_id AND s.schedule_status IN ('pending', 'approved')
-        WHERE p.college_code = ? AND (s.program_id IS NULL OR s.schedule_status NOT IN ('pending', 'approved'))
+        LEFT JOIN schedule s ON p.id = s.program_id AND s.schedule_status IN ('pending', 'approved', 'finished')
+        WHERE p.college_code = ? AND (s.program_id IS NULL OR s.schedule_status NOT IN ('pending', 'approved', 'finished'))
         ORDER BY p.program_name
     ";
 
