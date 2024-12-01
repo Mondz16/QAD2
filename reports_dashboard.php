@@ -68,20 +68,20 @@ $sql_users = "SELECT (SELECT COUNT(*) FROM internal_users) + (SELECT COUNT(*) FR
 $result_users = $conn->query($sql_users);
 $total_users = $result_users->fetch_assoc()['total_users'];
 
-// Count the number of open notifications
-$sql_check = "
-    SELECT COUNT(*)
+// Fetch notifications for the logged-in user
+$sql_notifications = "
+    SELECT COUNT(*) 
     FROM team t
     JOIN schedule s ON t.schedule_id = s.id
-    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status = 'pending'
+    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status NOT IN ('cancelled', 'finished')
 ";
 
-$stmt_check = $conn->prepare($sql_check);
-$stmt_check->bind_param("s", $user_id);
-$stmt_check->execute();
-$stmt_check->bind_result($notification_count);
-$stmt_check->fetch();
-$stmt_check->close();
+$stmt_notifications = $conn->prepare($sql_notifications);
+$stmt_notifications->bind_param("s", $user_id);
+$stmt_notifications->execute();
+$stmt_notifications->bind_result($notification_count);
+$stmt_notifications->fetch();
+$stmt_notifications->close();
 
 // SQL query to count the number of open assessments (accepted status, excluding 'cancelled' and 'finished' schedules)
 $sql_assessment_count = "

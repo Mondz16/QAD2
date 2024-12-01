@@ -86,21 +86,6 @@ while ($stmt_all_colleges->fetch()) {
 }
 $stmt_all_colleges->close();
 
-// Count the number of open notifications
-$sql_check = "
-    SELECT COUNT(*)
-    FROM team t
-    JOIN schedule s ON t.schedule_id = s.id
-    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status = 'pending'
-";
-
-$stmt_check = $conn->prepare($sql_check);
-$stmt_check->bind_param("s", $user_id);
-$stmt_check->execute();
-$stmt_check->bind_result($notification_count);
-$stmt_check->fetch();
-$stmt_check->close();
-
 // SQL query to count the number of open assessments (accepted status, excluding 'cancelled' and 'finished' schedules)
 $sql_assessment_count = "
     SELECT COUNT(*) 

@@ -81,20 +81,6 @@ $stmt_notifications->store_result();
 $notification_count = $stmt_notifications->num_rows;
 $stmt_notifications->bind_result($schedule_id, $program_name, $level_applied, $schedule_date, $schedule_time, $schedule_status, $team_id, $role, $team_status, $college_name, $assigned_area_names);
 
-// Count the number of open notifications
-$sql_check = "
-    SELECT COUNT(*)
-    FROM team t
-    JOIN schedule s ON t.schedule_id = s.id
-    WHERE t.internal_users_id = ? AND t.status = 'pending' AND s.schedule_status = 'pending'
-";
-
-$stmt_check = $conn->prepare($sql_check);
-$stmt_check->bind_param("s", $user_id);
-$stmt_check->execute();
-$stmt_check->bind_result($notification_count);
-$stmt_check->fetch();
-$stmt_check->close();
 
 // SQL query to count the number of open assessments (accepted status, excluding 'cancelled' and 'finished' schedules)
 $sql_assessment_count = "
