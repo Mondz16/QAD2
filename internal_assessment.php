@@ -1634,121 +1634,121 @@ function openNdaPopup(fullName) {
         });
 
         var totalSelectedAreas = 0; // Initial count of areas, will be updated dynamically
-    var maxAreas = <?php echo $maxAreas; ?>; // Set max areas based on the number of available areas
+        var maxAreas = <?php echo $maxAreas; ?>; // Set max areas based on the number of available areas
 
-    // Initialize totalSelectedAreas based on existing dropdowns (team members only)
-    document.addEventListener('DOMContentLoaded', function() {
-        // Count existing area dropdowns (for team members only, ignore team leader initially)
-        var existingDropdowns = document.querySelectorAll('.area-select');
-        totalSelectedAreas = existingDropdowns.length;
-    });
+        // Initialize totalSelectedAreas based on existing dropdowns (team members only)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Count existing area dropdowns (for team members only, ignore team leader initially)
+            var existingDropdowns = document.querySelectorAll('.area-select');
+            totalSelectedAreas = existingDropdowns.length;
+        });
 
-    // Function to add a new area dropdown
-    function addAreaDropdown(divId, teamMemberId) {
-        // Check if the total number of selected areas exceeds the max allowed areas
-        if (totalSelectedAreas >= maxAreas) {
-            alert("You cannot add more than " + maxAreas + " areas.");
-            return; // Exit if the limit is reached
+        // Function to add a new area dropdown
+        function addAreaDropdown(divId, teamMemberId) {
+            // Check if the total number of selected areas exceeds the max allowed areas
+            if (totalSelectedAreas >= maxAreas) {
+                alert("You cannot add more than " + maxAreas + " areas.");
+                return; // Exit if the limit is reached
+            }
+
+            var container = document.getElementById(divId);
+            var newDiv = document.createElement('div');
+            newDiv.classList.add('dropdown-container');
+            newDiv.style.display = 'flex';
+            newDiv.style.alignItems = 'center';
+            newDiv.style.marginBottom = '10px'; // Adds space between dropdowns
+
+            var newSelect = document.createElement('select');
+            newSelect.name = 'area[' + teamMemberId + '][]'; // Ensure array format
+            newSelect.classList.add('area-select');
+            newSelect.required = true;
+            newSelect.onchange = updateAreaOptions;
+
+            var defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.text = 'Select Area';
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            newSelect.appendChild(defaultOption);
+
+            <?php foreach ($areas as $id => $area_name): ?>
+                var option = document.createElement('option');
+                option.value = '<?php echo $id; ?>';
+                option.text = 'Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>';
+                newSelect.appendChild(option);
+            <?php endforeach; ?>
+
+            newDiv.appendChild(newSelect);
+
+            var removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.style.border = 'none';
+            removeButton.style.background = 'none';
+            removeButton.style.cursor = 'pointer';
+            removeButton.style.paddingLeft = '8px';
+
+            var removeIcon = document.createElement('i');
+            removeIcon.classList.add('fa-solid', 'fa-circle-minus');
+            removeIcon.style.color = 'red';
+            removeIcon.style.fontSize = '25px';
+
+            removeButton.appendChild(removeIcon);
+            removeButton.onclick = function() {
+                container.removeChild(newDiv);
+                totalSelectedAreas--; // Decrement total selected areas when a dropdown is removed
+                updateAreaOptions(); // Update options to make the removed area selectable again
+            };
+
+            newDiv.appendChild(removeButton);
+            container.appendChild(newDiv);
+
+            totalSelectedAreas++; // Increment the total number of selected areas
+            updateAreaOptions();
         }
 
-        var container = document.getElementById(divId);
-        var newDiv = document.createElement('div');
-        newDiv.classList.add('dropdown-container');
-        newDiv.style.display = 'flex';
-        newDiv.style.alignItems = 'center';
-        newDiv.style.marginBottom = '10px'; // Adds space between dropdowns
+        // Function to update area options dynamically
+        function updateAreaOptions() {
+            // Get all dropdowns with the class 'area-select'
+            var selects = document.querySelectorAll('.area-select');
 
-        var newSelect = document.createElement('select');
-        newSelect.name = 'area[' + teamMemberId + '][]'; // Ensure array format
-        newSelect.classList.add('area-select');
-        newSelect.required = true;
-        newSelect.onchange = updateAreaOptions;
+            // Get all selected values
+            var selectedValues = Array.from(selects).map(function(select) {
+                return select.value;
+            });
 
-        var defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.text = 'Select Area';
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        newSelect.appendChild(defaultOption);
-
-        <?php foreach ($areas as $id => $area_name): ?>
-            var option = document.createElement('option');
-            option.value = '<?php echo $id; ?>';
-            option.text = 'Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>';
-            newSelect.appendChild(option);
-        <?php endforeach; ?>
-
-        newDiv.appendChild(newSelect);
-
-        var removeButton = document.createElement('button');
-        removeButton.type = 'button';
-        removeButton.style.border = 'none';
-        removeButton.style.background = 'none';
-        removeButton.style.cursor = 'pointer';
-        removeButton.style.paddingLeft = '8px';
-
-        var removeIcon = document.createElement('i');
-        removeIcon.classList.add('fa-solid', 'fa-circle-minus');
-        removeIcon.style.color = 'red';
-        removeIcon.style.fontSize = '25px';
-
-        removeButton.appendChild(removeIcon);
-        removeButton.onclick = function() {
-            container.removeChild(newDiv);
-            totalSelectedAreas--; // Decrement total selected areas when a dropdown is removed
-            updateAreaOptions(); // Update options to make the removed area selectable again
-        };
-
-        newDiv.appendChild(removeButton);
-        container.appendChild(newDiv);
-
-        totalSelectedAreas++; // Increment the total number of selected areas
-        updateAreaOptions();
-    }
-
-    // Function to update area options dynamically
-    function updateAreaOptions() {
-        // Get all dropdowns with the class 'area-select'
-        var selects = document.querySelectorAll('.area-select');
-
-        // Get all selected values
-        var selectedValues = Array.from(selects).map(function(select) {
-            return select.value;
-        });
-
-        // Loop through each dropdown
-        selects.forEach(function(select) {
-            // Loop through each option in the dropdown
-            Array.from(select.options).forEach(function(option) {
-                // Disable the option if it's already selected in another dropdown, but allow it if it's selected in the current dropdown
-                if (selectedValues.includes(option.value) && option.value !== select.value && option.value !== '') {
-                    option.disabled = true;
+            // Loop through each dropdown
+            selects.forEach(function(select) {
+                // Loop through each option in the dropdown
+                Array.from(select.options).forEach(function(option) {
+                    // Disable the option if it's already selected in another dropdown, but allow it if it's selected in the current dropdown
+                    if (selectedValues.includes(option.value) && option.value !== select.value && option.value !== '') {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                });
+            });
+        }
+            
+            document.getElementById('agreeTermsCheckbox').addEventListener('change', function() {
+                var acceptButton = document.getElementById('acceptTerms');
+                if (this.checked) {
+                    acceptButton.disabled = false;
+                    acceptButton.classList.remove('disabled');
                 } else {
-                    option.disabled = false;
+                    acceptButton.disabled = true;
+                    acceptButton.classList.add('disabled');
                 }
             });
-        });
-    }
-        
-        document.getElementById('agreeTermsCheckbox').addEventListener('change', function() {
-            var acceptButton = document.getElementById('acceptTerms');
-            if (this.checked) {
-                acceptButton.disabled = false;
-                acceptButton.classList.remove('disabled');
-            } else {
-                acceptButton.disabled = true;
-                acceptButton.classList.add('disabled');
-            }
-        });
 
-        document.getElementById('closeTermsBtn').addEventListener('click', function() {
-                document.getElementById('termsModal').style.display = 'none';
-            });
+            document.getElementById('closeTermsBtn').addEventListener('click', function() {
+                    document.getElementById('termsModal').style.display = 'none';
+                });
 
-            document.getElementById('sign-button').addEventListener('click', function() {
-                document.getElementById('agreeTermsCheckbox').checked = false;
-                document.getElementById('termsModal').style.display = 'block';
-            });
-    </script>
-</body>
-</html>
+                document.getElementById('sign-button').addEventListener('click', function() {
+                    document.getElementById('agreeTermsCheckbox').checked = false;
+                    document.getElementById('termsModal').style.display = 'block';
+                });
+        </script>
+    </body>
+    </html>
