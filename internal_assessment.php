@@ -1643,92 +1643,123 @@ function openNdaPopup(fullName) {
             totalSelectedAreas = existingDropdowns.length;
         });
 
-        // Function to add a new area dropdown
         function addAreaDropdown(divId, teamMemberId) {
-            // Check if the total number of selected areas exceeds the max allowed areas
-            if (totalSelectedAreas >= maxAreas) {
-                alert("You cannot add more than " + maxAreas + " areas.");
-                return; // Exit if the limit is reached
-            }
+    // Prevent adding more areas if the maximum limit is reached
+    if (totalSelectedAreas >= maxAreas) {
+        alert("You cannot add more than " + maxAreas + " areas.");
+        return; // Exit if the limit is reached
+    }
 
-            var container = document.getElementById(divId);
-            var newDiv = document.createElement('div');
-            newDiv.classList.add('dropdown-container');
-            newDiv.style.display = 'flex';
-            newDiv.style.alignItems = 'center';
-            newDiv.style.marginBottom = '10px'; // Adds space between dropdowns
+    var container = document.getElementById(divId);
+    var newDiv = document.createElement('div');
+    newDiv.classList.add('dropdown-container');
+    newDiv.style.display = 'flex';
+    newDiv.style.alignItems = 'center';
+    newDiv.style.marginBottom = '10px';
 
-            var newSelect = document.createElement('select');
-            newSelect.name = 'area[' + teamMemberId + '][]'; // Ensure array format
-            newSelect.classList.add('area-select');
-            newSelect.required = true;
-            newSelect.onchange = updateAreaOptions;
+    var newSelect = document.createElement('select');
+    newSelect.name = `area[${teamMemberId}][]`;
+    newSelect.classList.add('area-select');
+    newSelect.required = true;
+    newSelect.onchange = updateAreaOptions;
 
-            var defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.text = 'Select Area';
-            defaultOption.disabled = true;
-            defaultOption.selected = true;
-            newSelect.appendChild(defaultOption);
+    var defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.text = 'Select Area';
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    newSelect.appendChild(defaultOption);
 
-            <?php foreach ($areas as $id => $area_name): ?>
-                var option = document.createElement('option');
-                option.value = '<?php echo $id; ?>';
-                option.text = 'Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>';
-                newSelect.appendChild(option);
-            <?php endforeach; ?>
+    // Populate area options dynamically
+    <?php foreach ($areas as $id => $area_name): ?>
+        var option = document.createElement('option');
+        option.value = '<?php echo $id; ?>';
+        option.text = 'Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>';
+        newSelect.appendChild(option);
+    <?php endforeach; ?>
 
-            newDiv.appendChild(newSelect);
+    newDiv.appendChild(newSelect);
 
-            var removeButton = document.createElement('button');
-            removeButton.type = 'button';
-            removeButton.style.border = 'none';
-            removeButton.style.background = 'none';
-            removeButton.style.cursor = 'pointer';
-            removeButton.style.paddingLeft = '8px';
+    // Add remove button
+    var removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.style.border = 'none';
+    removeButton.style.background = 'none';
+    removeButton.style.cursor = 'pointer';
+    removeButton.style.paddingLeft = '8px';
 
-            var removeIcon = document.createElement('i');
-            removeIcon.classList.add('fa-solid', 'fa-circle-minus');
-            removeIcon.style.color = 'red';
-            removeIcon.style.fontSize = '25px';
+    var removeIcon = document.createElement('i');
+    removeIcon.classList.add('fa-solid', 'fa-circle-minus');
+    removeIcon.style.color = 'red';
+    removeIcon.style.fontSize = '25px';
 
-            removeButton.appendChild(removeIcon);
-            removeButton.onclick = function() {
-                container.removeChild(newDiv);
-                totalSelectedAreas--; // Decrement total selected areas when a dropdown is removed
-                updateAreaOptions(); // Update options to make the removed area selectable again
-            };
+    removeButton.appendChild(removeIcon);
+    removeButton.onclick = function() {
+        container.removeChild(newDiv);
+        totalSelectedAreas--; // Decrement total selected areas when a dropdown is removed
+        updateAreaOptions(); // Update options to make the removed area selectable again
+    };
 
-            newDiv.appendChild(removeButton);
-            container.appendChild(newDiv);
+    newDiv.appendChild(removeButton);
+    container.appendChild(newDiv);
 
-            totalSelectedAreas++; // Increment the total number of selected areas
-            updateAreaOptions();
+    totalSelectedAreas++; // Increment the total number of selected areas
+    updateAreaOptions();
+}
+
+
+function updateAreaOptions() {
+    // Get all area select dropdowns
+    var areaSelects = document.querySelectorAll('.area-select');
+    var submitButton = document.querySelector('.assessment-button1');
+    
+    // Tracking variables
+    var validatedSelections = [];
+    var isValid = true;
+
+    // Collect selected values and validate uniqueness
+    areaSelects.forEach(function(select) {
+        var selectedValue = select.value.trim();
+
+        if (!selectedValue) {
+            isValid = false; // No selection in a dropdown
+            return;
         }
 
-        // Function to update area options dynamically
-        function updateAreaOptions() {
-            // Get all dropdowns with the class 'area-select'
-            var selects = document.querySelectorAll('.area-select');
-
-            // Get all selected values
-            var selectedValues = Array.from(selects).map(function(select) {
-                return select.value;
-            });
-
-            // Loop through each dropdown
-            selects.forEach(function(select) {
-                // Loop through each option in the dropdown
-                Array.from(select.options).forEach(function(option) {
-                    // Disable the option if it's already selected in another dropdown, but allow it if it's selected in the current dropdown
-                    if (selectedValues.includes(option.value) && option.value !== select.value && option.value !== '') {
-                        option.disabled = true;
-                    } else {
-                        option.disabled = false;
-                    }
-                });
-            });
+        if (validatedSelections.includes(selectedValue)) {
+            isValid = false; // Duplicate selection
+            return;
         }
+
+        validatedSelections.push(selectedValue);
+    });
+
+    // Ensure all areas are uniquely selected
+    var totalAreas = <?php echo $maxAreas; ?>; ; // Adjust to match your requirement dynamically
+    var isCorrectTotalSelections = validatedSelections.length === totalAreas;
+
+    // Disable already selected options in other dropdowns
+    areaSelects.forEach(function(select) {
+        Array.from(select.options).forEach(function(option) {
+            option.disabled = validatedSelections.includes(option.value) && option.value !== select.value;
+        });
+    });
+
+    // Update submit button state and provide feedback
+    if (submitButton) {
+        if (!isValid || !isCorrectTotalSelections) {
+            submitButton.disabled = true;
+            submitButton.style.opacity = '0.5';
+            submitButton.style.cursor = 'not-allowed';
+            submitButton.title = `Please ensure ${totalAreas} unique areas are assigned.`;
+        } else {
+            submitButton.disabled = false;
+            submitButton.style.opacity = '1';
+            submitButton.style.cursor = 'pointer';
+            submitButton.title = '';
+        }
+    }
+}
             
             document.getElementById('agreeTermsCheckbox').addEventListener('change', function() {
                 var acceptButton = document.getElementById('acceptTerms');
@@ -1749,6 +1780,11 @@ function openNdaPopup(fullName) {
                     document.getElementById('agreeTermsCheckbox').checked = false;
                     document.getElementById('termsModal').style.display = 'block';
                 });
+                // Add event listener to run validation when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial validation when page loads
+    updateAreaOptions();
+});
         </script>
     </body>
     </html>
