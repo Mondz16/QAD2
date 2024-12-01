@@ -759,12 +759,7 @@ if ($result_areas) {
                                         $team_leader = null;
                                         $other_members = [];
 
-                                        // Filter team members by "accepted" status
-                                        $accepted_members = array_filter($team_members_with_areas[$schedule['schedule_id']], function($member) {
-                                            return $member['status'] === 'accepted';
-                                        });
-
-                                        foreach ($accepted_members as $member) {
+                                        foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
                                             if ($member['role'] === 'Team Leader') {
                                                 $team_leader = $member; // Store the Team Leader
                                             } else {
@@ -776,10 +771,14 @@ if ($result_areas) {
                                         if ($team_leader): ?>
                                             <div class="add-area" id="team-leader-area" style="display: flex; flex-direction: column; margin-bottom: 10px;">
                                                 <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)
+                                                <?php if ($team_leader['status'] === 'accepted'): ?>
                                                     <button type="button" onclick="addAreaDropdown('team-leader-area', '<?php echo $team_leader['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
                                                         <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i> Add Area
                                                     </button>
                                                 </label>
+                                                <?php else: ?>
+                                                    <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
+                                                <?php endif; ?>
                                             </div>
                                         <?php endif; ?>
 
@@ -787,19 +786,23 @@ if ($result_areas) {
                                         <?php foreach ($other_members as $member): ?>
                                             <div class="add-area" id="member-area-<?php echo $member['team_member_id']; ?>" style="display: flex; flex-direction: column; margin-bottom: 10px;">
                                                 <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
-                                                <div style="display: flex; align-items: center; margin-bottom: 10px;"> <!-- Add margin here -->
-                                                    <select class="area-select" name="area[<?php echo $member['team_member_id']; ?>][]" required onchange="updateAreaOptions()">
-                                                        <option value="" disabled selected>Select Area</option>
-                                                        <?php foreach ($areas as $id => $area_name): ?>
-                                                            <option value="<?php echo $id; ?>">
-                                                                Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                    <button type="button" onclick="addAreaDropdown('member-area-<?php echo $member['team_member_id']; ?>', '<?php echo $member['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
-                                                        <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
-                                                    </button>
-                                                </div>
+                                                <?php if ($member['status'] === 'accepted'): ?>
+                                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                                        <select class="area-select" name="area[<?php echo $member['team_member_id']; ?>][]" required onchange="updateAreaOptions()">
+                                                            <option value="" disabled selected>Select Area</option>
+                                                            <?php foreach ($areas as $id => $area_name): ?>
+                                                                <option value="<?php echo $id; ?>">
+                                                                    Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                        <button type="button" onclick="addAreaDropdown('member-area-<?php echo $member['team_member_id']; ?>', '<?php echo $member['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
+                                                            <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
+                                                        </button>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
+                                                <?php endif; ?>
                                             </div>
                                         <?php endforeach; ?>
                                         <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
@@ -904,34 +907,33 @@ if ($result_areas) {
                                             <div style="height: 10px;"></div>
                                             <p class="assessment-button-done">ALREADY SUBMITTED RATING AND ASSESSMENT</p>
                                             <div style="height: 10px;"></div>
-                                            <div class="">
-                                            <?php 
-                                            // Query to fetch the logged-in user's assessment file
-                                            $sql_user_assessment = "
-                                            SELECT a.assessment_file
-                                            FROM assessment a
-                                            JOIN team t ON a.team_id = t.id
-                                            WHERE t.internal_users_id = ? 
-                                            AND t.schedule_id = ?
-                                            ";
-
-                                            $stmt_user_assessment = $conn->prepare($sql_user_assessment);
-                                            $stmt_user_assessment->bind_param("si", $user_id, $schedule_id); // Bind user_id and specific schedule_id
-                                            $stmt_user_assessment->execute();
-                                            $stmt_user_assessment->bind_result($assessment_file);
-
-                                            while ($stmt_user_assessment->fetch()): 
-                                                if ($assessment_file): ?>
-                                                
-                                                <button class="approve" onclick="window.open('<?php echo htmlspecialchars($assessment_file); ?>', '_blank')">
-                                                <i class="bi bi-file-earmark-arrow-down"></i>
-                                                View Assessment File
-                                                </button>
+                                            <div>
                                                 <?php 
-                                                endif; 
-                                            endwhile;
-                                            $stmt_user_assessment->close();
-                                            ?>
+                                                // Query to fetch the logged-in user's assessment file
+                                                $sql_user_assessment = "
+                                                SELECT a.assessment_file
+                                                FROM assessment a
+                                                JOIN team t ON a.team_id = t.id
+                                                WHERE t.internal_users_id = ? 
+                                                AND t.schedule_id = ?
+                                                ";
+
+                                                $stmt_user_assessment = $conn->prepare($sql_user_assessment);
+                                                $stmt_user_assessment->bind_param("si", $user_id, $schedule_id); // Bind user_id and specific schedule_id
+                                                $stmt_user_assessment->execute();
+                                                $stmt_user_assessment->bind_result($assessment_file);
+                                                $stmt_user_assessment->fetch(); // Fetch the result
+                                                
+                                                if ($assessment_file): ?>
+                                                    <button class="approve" onclick="window.open('<?php echo htmlspecialchars($assessment_file); ?>', '_blank')">
+                                                        <i class="bi bi-file-earmark-arrow-down"></i> View Assessment File
+                                                    </button>
+                                                <?php else: ?>
+                                                    <p>No assessment file found for your account.</p>
+                                                <?php 
+                                                endif;
+                                                $stmt_user_assessment->close();
+                                                ?>
                                             </div>
                                             <div style="height: 10px;"></div>
                                             <div class="">
