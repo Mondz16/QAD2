@@ -733,19 +733,23 @@ if ($result_areas) {
                                     <!-- Check if Areas are Assigned -->
                                     <?php
                                     // Check if all areas are assigned
-                                    $all_areas_assigned = true;
-                                    if (isset($team_members_with_areas[$schedule['schedule_id']])) {
-                                        foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
-                                            // Check if non-team leaders have no areas assigned
-                                            if ($member['role'] !== 'Team Leader' && empty($member['areas'][0])) {
-                                                $all_areas_assigned = false;
-                                                break;
+                                        $all_areas_assigned = false; // Default to false
+                                        if (isset($team_members_with_areas[$schedule['schedule_id']])) {
+                                            $leader_assigned = false;
+
+                                            foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
+                                                if ($member['role'] === 'Team Leader' && !empty($member['areas'][0])) {
+                                                    $leader_assigned = true; // Leader has at least one area assigned
+                                                }
                                             }
+
+                                            // If the leader is assigned at least one area, consider all areas assigned
+                                            $all_areas_assigned = $leader_assigned;
+                                        } else {
+                                            $all_areas_assigned = false; // No members found for this schedule, so areas can't be assigned
                                         }
-                                    } else {
-                                        $all_areas_assigned = false; // No members found for this schedule, so areas can't be assigned
-                                    }
-                                    ?>
+                                        ?>
+
 
                                 <?php if (!$all_areas_assigned): ?>
                                     <!-- Display Team Leader and Team Members with Area Input if not all areas are assigned -->
