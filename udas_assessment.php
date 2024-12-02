@@ -54,15 +54,14 @@ if ($user_id === 'admin') {
 
 // Query to count assessments
 $countQuery = "
-    SELECT COUNT(*) AS assessment_count
-    FROM summary s
-    JOIN team t ON s.team_id = t.id
-    JOIN schedule sch ON t.schedule_id = sch.id
-    WHERE sch.schedule_status IN ('approved', 'pending')
+    SELECT COUNT(DISTINCT s.id) AS assessment_count
+        FROM schedule s
+        JOIN team t ON s.id = t.schedule_id
+        WHERE s.schedule_status IN ('approved', 'pending')
 ";
-$result = $conn->query($countQuery);
-$row = $result->fetch_assoc();
-$assessmentCount = $row['assessment_count'];
+$Aresult = $conn->query($countQuery);
+$Arow = $Aresult->fetch_assoc();
+$assessmentCount = $Arow['assessment_count'];
 
 // Fetch approved schedules
 $approvedSchedulesQuery = "
