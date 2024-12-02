@@ -89,8 +89,21 @@ $sqlExternalPendingCount = "
 $externalResult = $conn->query($sqlExternalPendingCount);
 $externalPendingCount = $externalResult->fetch_assoc()['external_pending_count'] ?? 0;
 
+// SQL query to count unique transfer requests based on bb-cccc part of user_id
+$sqlTransferRequestCount = "
+    SELECT COUNT(DISTINCT bb_cccc) AS transfer_request_count
+    FROM (
+        SELECT SUBSTRING(user_id, 4) AS bb_cccc
+        FROM internal_users
+        GROUP BY bb_cccc
+        HAVING COUNT(*) > 1
+    ) AS transfer_groups
+";
+$Tresult = $conn->query($sqlTransferRequestCount);
+$transferRequestCount = $Tresult->fetch_assoc()['transfer_request_count'] ?? 0;
+
 // Total pending users count
-$totalPendingUsers = $internalPendingCount + $externalPendingCount;
+$totalPendingUsers = $internalPendingCount + $externalPendingCount - $transferRequestCount;
 
 ?>
 <!DOCTYPE html>
@@ -221,7 +234,7 @@ $totalPendingUsers = $internalPendingCount + $externalPendingCount;
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link-active">
                             <span style="margin-left: 8px;">Administrative</span>
-                            <?php if ($totalPendingUsers > 0): ?>
+                            <?php if ($totalPendingUsers > 0 || $transferRequestCount > 0): ?>
                                 <span class="notification-counter">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
                             <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
@@ -241,6 +254,10 @@ $totalPendingUsers = $internalPendingCount + $externalPendingCount;
                             </a>
                             <a href="<?php echo $is_admin ? 'college_transfer.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">College Transfer</span>
+                                
+                                <?php if ($transferRequestCount > 0): ?>
+                                    <span class="notification-counter"><?= $transferRequestCount; ?></span>
+                                <?php endif; ?>
                             </a>
                         </div>
                     </li>
@@ -329,7 +346,7 @@ $totalPendingUsers = $internalPendingCount + $externalPendingCount;
                                                     <td><?php echo $previous_college_name; ?></td>
                                                     <td><?php echo $new_college_name; ?></td>
                                                     <td class="action-buttons">
-                                                        <button class="btn btn-approve btn-sm" onclick="openAcceptModal('<?php echo $new_user['user_id']; ?>', '<?php echo $previous_user['user_id']; ?>', '<?php echo $new_user['email']; ?>', '<?php echo $new_user['first_name'] . ' ' . $new_user['middle_initial'] . '. ' . $new_user['last_name']; ?>')">Accept</button>
+                                                        <button class="btn btn-approve btn-sm" onclick="openAcceptModal('<?php echo $new_user['user_id']; ?>', '<?php echo $previous_user['user_id']; ?>', '<?php echo $new_user['email']; ?>', '<?php echo $new_user['first_name'] . ' ' . $new_user['middle_initial'] . '. ' . $new_user['last_name']; ?>')">Approve</button>
                                                         <button class="btn btn-reject btn-sm" onclick="openRejectModal('<?php echo $new_user['user_id']; ?>', '<?php echo $previous_user['user_id']; ?>')">Disapprove</button>
                                                     </td>
                                                 </tr>
