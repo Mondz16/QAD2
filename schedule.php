@@ -87,6 +87,15 @@ $transferRequestCount = $Tresult->fetch_assoc()['transfer_request_count'] ?? 0;
 // Total pending users count
 $totalPendingUsers = $internalPendingCount + $externalPendingCount - $transferRequestCount;
 
+$sqlPendingSchedulesCount = "
+    SELECT COUNT(*) AS total_pending_schedules
+    FROM schedule s
+    WHERE s.schedule_status ='pending'
+";
+$Sresult = $conn->query($sqlPendingSchedulesCount);
+$Srow = $Sresult->fetch_assoc();
+$totalPendingSchedules = $Srow['total_pending_schedules'];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -289,6 +298,13 @@ $totalPendingUsers = $internalPendingCount + $externalPendingCount - $transferRe
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link-active">
                             <span style="margin-left: 8px;">Schedule</span>
+                            <?php if ($totalPendingSchedules > 0): ?>
+                                <span class="notification-counter">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                            </svg>
+                            </span>
+                            <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="dashboard.php" class="sidebar-link">
@@ -296,6 +312,9 @@ $totalPendingUsers = $internalPendingCount + $externalPendingCount - $transferRe
                             </a>
                             <a href="<?php echo $is_admin ? 'schedule.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">Add Schedule</span>
+                                <?php if ($totalPendingSchedules > 0): ?>
+                                    <span class="notification-counter"><?= $totalPendingSchedules; ?></span>
+                                <?php endif; ?>
                             </a>
                             <a href="<?php echo $is_admin ? 'orientation.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">View Orientation</span>
@@ -432,18 +451,18 @@ $totalPendingUsers = $internalPendingCount + $externalPendingCount - $transferRe
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- PHP code for generating table rows goes here -->
                                 <?php
                                 include 'connection.php';
 
-                                $sql = "SELECT c.college_name, c.code as college_code, 
-                                        COUNT(CASE WHEN s.schedule_status NOT IN ('passed', 'failed', 'finished') THEN s.id END) AS total_schedules, 
-                                        MAX(s.schedule_date) AS recent_schedule_date 
+                                // Query to fetch schedule data for colleges
+                                $sql = "SELECT c.college_name, c.code AS college_code, 
+                                            COUNT(CASE WHEN s.schedule_status = 'pending' THEN s.id END) AS pending_schedules, 
+                                            COUNT(CASE WHEN s.schedule_status NOT IN ('passed', 'failed', 'finished') THEN s.id END) AS total_schedules, 
+                                            MAX(s.schedule_date) AS recent_schedule_date 
                                         FROM college c 
                                         LEFT JOIN schedule s ON c.code = s.college_code 
                                         GROUP BY c.college_name, c.code 
                                         ORDER BY recent_schedule_date DESC, c.college_name";
-
 
                                 $result = $conn->query($sql);
 
@@ -452,16 +471,26 @@ $totalPendingUsers = $internalPendingCount + $externalPendingCount - $transferRe
                                         echo "<tr>";
                                         echo "<td>" . htmlspecialchars($row["college_name"]) . "</td>";
                                         echo "<td>" . htmlspecialchars($row["total_schedules"]) . "</td>";
-                                        echo "<td><button class='btn-view' onclick=\"location.href='schedule_college.php?college=" . urlencode($row["college_name"]) . "&college_code=" . htmlspecialchars($row["college_code"]) . "'\">VIEW</button></td>";
+                                        // Display pending schedules count next to the view button
+                                        echo "<td>
+                                            <button class='btn-view' onclick=\"location.href='schedule_college.php?college=" . urlencode($row["college_name"]) . "&college_code=" . htmlspecialchars($row["college_code"]) . "'\">VIEW ";
+                                            
+                                            // Only show the notification counter if pending_schedules is greater than 0
+                                            if ($row["pending_schedules"] > 0) {
+                                                echo "<span class='notification-counter'>" . htmlspecialchars($row["pending_schedules"]) . "</span>";
+                                            }
+
+                                        echo "</button></td>";
                                         echo "</tr>";
                                     }
                                 } else {
-                                    echo "<tr><td colspan='2'>No colleges found</td></tr>";
+                                    echo "<tr><td colspan='3'>No colleges found</td></tr>";
                                 }
 
                                 $conn->close();
                                 ?>
                             </tbody>
+
                         </table>
                         <table id="sucTable" class="custom-table hidden">
                             <thead>
