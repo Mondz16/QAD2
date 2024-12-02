@@ -75,6 +75,29 @@ $approvedSchedulesQuery = "
 ";
 $approvedSchedulesResult = $conn->query($approvedSchedulesQuery);
 $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
+// Query to count pending internal users
+$sqlInternalPendingCount = "
+    SELECT COUNT(*) AS internal_pending_count
+    FROM internal_users i
+    LEFT JOIN college c ON i.college_code = c.code
+    WHERE i.status = 'pending' AND i.otp = 'verified'
+";
+$internalResult = $conn->query($sqlInternalPendingCount);
+$internalPendingCount = $internalResult->fetch_assoc()['internal_pending_count'] ?? 0;
+
+// Query to count pending external users
+$sqlExternalPendingCount = "
+    SELECT COUNT(*) AS external_pending_count
+    FROM external_users e
+    LEFT JOIN company c ON e.company_code = c.code
+    WHERE e.status = 'pending'
+";
+$externalResult = $conn->query($sqlExternalPendingCount);
+$externalPendingCount = $externalResult->fetch_assoc()['external_pending_count'] ?? 0;
+
+// Total pending users count
+$totalPendingUsers = $internalPendingCount + $externalPendingCount;
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -564,6 +587,13 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link">
                             <span style="margin-left: 8px;">Administrative</span>
+                            <?php if ($totalPendingUsers > 0): ?>
+                                <span class="notification-counter">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                            </svg>
+                            </span>
+                            <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin ? 'area.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
@@ -571,6 +601,9 @@ $approvedSchedules = $approvedSchedulesResult->fetch_all(MYSQLI_ASSOC);
                             </a>
                             <a href="<?php echo $is_admin ? 'registration.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">Register Verification</span>
+                                <?php if ($totalPendingUsers > 0): ?>
+                                    <span class="notification-counter"><?= $totalPendingUsers; ?></span>
+                                <?php endif; ?>
                             </a>
                             <a href="<?php echo $is_admin ? 'college_transfer.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">College Transfer</span>
