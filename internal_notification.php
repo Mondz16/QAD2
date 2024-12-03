@@ -276,125 +276,107 @@ $stmt_assessment_count->close();
         <div class="orientation2">
             <div class="notification-list">
                 <?php if ($stmt_notifications->num_rows > 0): ?>
-                    <form id="bulkActionForm" action="internal_notification_bulk_process.php" method="POST" onsubmit="return false;">
-                        <input type="hidden" name="bulk_action" id="bulkAction" value="">
-                        <input type="hidden" name="user_id" value="<?php echo $_SESSION['user_id']; ?>">
-                        <div class="bulk-actions-container">
-                            <!-- Select Button -->
-                            <button type="button" id="toggleSelectButton" onclick="toggleCheckboxVisibility()" style="padding: 10px 20px; font-size: 16px;">Select</button>
-                            <!-- Bulk Accept and Decline Buttons -->
-                            <button type="button" name="bulk_action" value="accept" class="accept-button" id="acceptSelected" onclick="handleBulkAction('accept')" style="display: none; padding: 10px 20px; font-size: 16px; margin-left: 5px;">ACCEPT SELECTED</button>
-                            <button type="button" name="bulk_action" value="decline" class="decline-button" id="declineSelected" onclick="handleBulkAction('decline')" style="display: none; padding: 10px 20px; font-size: 16px; margin-left: 5px;">DECLINE SELECTED</button>
-                        </div>
-
                         <div class="notifications-wrapper">
+                        <div class="bulk-actions-container">
+                            <button type="button" id="toggleSelectButton" onclick="openBulkModal()" style="padding: 10px 20px; font-size: 16px;">Select</button>
+                        </div>
                             <?php while ($stmt_notifications->fetch()): ?>
-                                <?php
-                                // Format the schedule date and time
-                                $date = new DateTime($schedule_date);
-                                $time = new DateTime($schedule_time);
-                                
-                                // Determine status color
-                                $status_color = '';
-                                if ($schedule_status === 'pending') {
-                                    $status_color = '#E6A33E'; // Pending color
+                            <?php
+                            $date = new DateTime($schedule_date);
+                            $time = new DateTime($schedule_time);
+                            
+                            $status_color = '';
+                            if ($schedule_status === 'pending') {
+                                $status_color = '#E6A33E'; // Pending color
                                 } elseif ($schedule_status === 'approved') {
                                     $status_color = '#34C759'; // Approved color
-                                }
-                                ?>
-                                <div class="notification" style="position: relative; padding-right: 50px;">
-                                    <!-- Checkbox for Selecting the Schedule -->
-                                    <input type="checkbox" name="selected_schedules[]" value="<?php echo $schedule_id; ?>" class="schedule-checkbox" style="display: none; width: 20px; height: 20px; position: absolute; right: 10px; top: 10px;">
-                                    <p><strong>College:</strong> <strong class="status" style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($schedule_status); ?></strong><br><?php echo htmlspecialchars($college_name); ?></p><br>
-                                    <p><strong>Program:</strong><br><?php echo htmlspecialchars($program_name); ?></p><br>
-                                    <p><strong>Level Applied:</strong> <?php echo htmlspecialchars($level_applied); ?></p><br>
-                                    <p><strong>Date:</strong> <?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i A'); ?></p><br>
-                                    <div class="role-area">
-                                        <p><strong>Role:</strong> <?php echo htmlspecialchars($role); ?><br><strong>Areas:</strong> <?php echo htmlspecialchars($assigned_area_names); ?></p>
-                                    </form>
-                                        <div class="notification-actions">
-                                            <?php if ($role === 'Team Leader'): ?>
-                                                <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
-                                                    <input type="hidden" name="team_id" value="<?php echo $team_id; ?>">
-                                                    <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
-                                                    <input type="hidden" name="action" id="action-<?php echo $team_id; ?>" value="">
-                                                    <button type="button" class="decline-button" onclick="confirmAction('<?php echo $team_id; ?>', 'decline')">DECLINE</button>
-                                                    <button type="button" class="accept-button" onclick="confirmAction('<?php echo $team_id; ?>', 'accept')">ACCEPT</button>
-                                                </form>
-                                            <?php else: ?>
-                                                <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
-                                                    <input type="hidden" name="team_id" value="<?php echo $team_id; ?>">
-                                                    <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
-                                                    <input type="hidden" name="action" id="action-<?php echo $team_id; ?>" value="">
-                                                    <button type="button" class="decline-button" onclick="confirmAction('<?php echo $team_id; ?>', 'decline')">DECLINE</button>
-                                                    <button type="button" class="accept-button" onclick="confirmAction('<?php echo $team_id; ?>', 'accept')">ACCEPT</button>
-                                                </form>
-                                            <?php endif; ?>
+                                    }
+                                    ?>
+                                    
+                                    <div class="notification" style="position: relative; padding-right: 50px;">
+                                        <input type="checkbox" name="selected_schedules[]" value="<?php echo $schedule_id; ?>" class="schedule-checkbox" style="display: none; width: 20px; height: 20px; position: absolute; right: 10px; top: 10px;">
+                                        <p><strong>College:</strong> <strong class="status" style="color: <?php echo $status_color; ?>;"><?php echo htmlspecialchars($schedule_status); ?></strong><br><?php echo htmlspecialchars($college_name); ?></p><br>
+                                        <p><strong>Program:</strong><br><?php echo htmlspecialchars($program_name); ?></p><br>
+                                        <p><strong>Level Applied:</strong> <?php echo htmlspecialchars($level_applied); ?></p><br>
+                                        <p><strong>Date:</strong> <?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i A'); ?></p><br>
+                                        
+                                        <div class="role-area">
+                                            <p><strong>Role:</strong> <?php echo htmlspecialchars($role); ?><br><strong>Areas:</strong> <?php echo htmlspecialchars($assigned_area_names); ?></p>
+                                            <div class="notification-actions">
+                                                <?php if ($role === 'Team Leader'): ?>
+                                                    <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
+                                                        <input type="hidden" name="team_id" value="<?php echo $team_id; ?>">
+                                                        <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
+                                                        <input type="hidden" name="action" id="action-<?php echo $team_id; ?>" value="">
+                                                        <button type="button" class="decline-button" onclick="confirmAction('<?php echo $team_id; ?>', 'decline')">DECLINE</button>
+                                                        <button type="button" class="accept-button" onclick="confirmAction('<?php echo $team_id; ?>', 'accept')">ACCEPT</button>
+                                                    </form>
+                                                <?php else: ?>
+                                                    <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
+                                                        <input type="hidden" name="team_id" value="<?php echo $team_id; ?>">
+                                                        <input type="hidden" name="schedule_id" value="<?php echo $schedule_id; ?>">
+                                                        <input type="hidden" name="action" id="action-<?php echo $team_id; ?>" value="">
+                                                        <button type="button" class="decline-button" onclick="confirmAction('<?php echo $team_id; ?>', 'decline')">DECLINE</button>
+                                                        <button type="button" class="accept-button" onclick="confirmAction('<?php echo $team_id; ?>', 'accept')">ACCEPT</button>
+                                                    </form>
+                                                <?php endif; ?>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            <?php endwhile; ?>
+                                <?php endwhile; ?>
                         </div>
-                        <div id="bulkConfirmationModal" style="display: none;">
-                            <div class="modal-content">
-                                <h3 id="bulkConfirmationMessage"></h3>
-                                <button id="confirmBulkActionButton">Confirm</button>
-                                <button id="cancelBulkActionButton" onclick="cancelBulkAction()">Cancel</button>
+
+                        <div id="bulkActionModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; width: 70%; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 10px;">
+                            <div style="padding: 40px;">
+                                <!-- Title Section -->
+                                <h3 style="margin-bottom: 20px; text-align: center; font-size: 50px;">Select Schedules</h3>
+
+                                <!-- Schedule List Section -->
+                                <form method="POST" action="internal_notification_bulk_process.php" id="bulkActionForm">
+                                                <input type="hidden" name="bulk_action" id="bulkAction" value="">
+                                                <input type="hidden" name="user_id" value="<?php echo $_SESSION['user_id']; ?>">
+                                    <div style="max-height: 400px; overflow-y: auto;">
+                                        <?php $stmt_notifications->data_seek(0); ?>
+                                        
+                                        <?php while ($stmt_notifications->fetch()): ?>
+                                            <?php
+                                            $date = new DateTime($schedule_date);
+                                            $time = new DateTime($schedule_time);
+                                            ?>
+                                            
+                                            <div class="schedule-item" onclick="toggleCheckbox(this)" style="display: flex; justify-content: space-between; padding: 20px; margin-bottom: 15px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease;">
+                                                <!-- Left Section: Program & College -->
+                                                <div style="flex: 1; display: flex; flex-direction: column;">
+                                                    <p><strong>College:</strong> <?php echo htmlspecialchars($college_name); ?></p>
+                                                    <p><strong>Program:</strong> <?php echo htmlspecialchars($program_name); ?></p>
+                                                </div>
+                                                
+                                                <!-- Right Section: Level Applied & Date/Time -->
+                                                <div style="flex: 1; display: flex; flex-direction: column; margin-left: 20px;">
+                                                    <p><strong>Level Applied:</strong> <?php echo htmlspecialchars($level_applied); ?></p>
+                                                    <p><strong>Date:</strong> <?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i A'); ?></p>
+                                                </div>
+                                                
+                                                <!-- Checkbox Section -->
+                                                <div style="flex: 0 0 auto; align-self: center;">
+                                                    <input type="checkbox" name="selected_schedules[]" value="<?php echo $schedule_id; ?>" style="margin-top: 20px; width: 20px; height: 20px;">
+                                                </div>
+                                            </div>
+                                        <?php endwhile; ?>
+                                    </div>
+                                    
+                                    <!-- Modal Action Buttons -->
+                                    <div style="padding: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                                        <button type="button" onclick="handleBulkAction('accept')" class="accept-button">Accept</button>
+                                        <button type="button" onclick="handleBulkAction('decline')" class="decline-button">Decline</button>
+                                        <button type="button" onclick="closeBulkModal()" style="cursor: pointer; padding: 10px 20px; font-size: 16px; background-color: #ccc; border: none; border-radius: 5px;">Cancel</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-                        <script>
-                            // Function to toggle visibility of checkboxes and bulk action buttons
-                            function toggleCheckboxVisibility() {
-                                const checkboxes = document.querySelectorAll('.schedule-checkbox');
-                                const acceptButton = document.getElementById('acceptSelected');
-                                const declineButton = document.getElementById('declineSelected');
-                                const toggleButton = document.getElementById('toggleSelectButton');
 
-                                // Toggle visibility
-                                const areCheckboxesVisible = checkboxes[0].style.display === 'inline-block';
-                                checkboxes.forEach(checkbox => checkbox.style.display = areCheckboxesVisible ? 'none' : 'inline-block');
-                                acceptButton.style.display = areCheckboxesVisible ? 'none' : 'inline-block';
-                                declineButton.style.display = areCheckboxesVisible ? 'none' : 'inline-block';
-
-                                // Change button text
-                                toggleButton.textContent = areCheckboxesVisible ? 'Select' : 'Cancel Selection';
-                            }
-
-                            // Function to handle bulk actions (accept/decline)
-                            function handleBulkAction(action) {
-                                var confirmationMessage = "Are you sure you want to " + action + " the selected schedules?";
-                                document.getElementById('confirmationMessage').innerText = confirmationMessage;
-
-                                var confirmButton = document.getElementById('confirmButton');
-                                var backButton = document.getElementById('backButton');
-
-                                // Apply styles based on action
-                                if (action === 'accept') {
-                                    confirmButton.className = 'accept-confirm-button';
-                                    backButton.className = 'accept-back-button';
-                                } else if (action === 'decline') {
-                                    confirmButton.className = 'decline-confirm-button';
-                                    backButton.className = 'decline-back-button';
-                                }
-
-                                // Show confirmation modal
-                                document.getElementById('confirmationModal').style.display = 'block';
-
-                                // Handle confirmation action
-                                confirmButton.onclick = function() {
-                                    // Set the bulk action value before submitting the form
-                                    document.getElementById('bulkAction').value = action;
-
-                                    // Submit the bulk action form
-                                    document.getElementById('bulkActionForm').submit();
-                                };
-
-                                // Hide the modal when user clicks "No" or "Back"
-                                backButton.onclick = function() {
-                                    document.getElementById('confirmationModal').style.display = 'none';
-                                };
-                            }
-                        </script>
+            <div id="modalBackground" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 999;" onclick="closeBulkModal()"></div>
+            </form>
                 <?php else: ?>
                     <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ASSIGNED TO YOU</strong></p>
                 <?php endif; ?>                              
@@ -425,6 +407,76 @@ $stmt_assessment_count->close();
     </div>
 
     <script>
+        function toggleCheckbox(scheduleItem) {
+            // Find the checkbox within the clicked schedule item
+            const checkbox = scheduleItem.querySelector('input[type="checkbox"]');
+            // Toggle the checked state of the checkbox
+            checkbox.checked = !checkbox.checked;
+            
+            // Add or remove the "checked" class to change the background color
+            if (checkbox.checked) {
+                scheduleItem.classList.add('checked');
+            } else {
+                scheduleItem.classList.remove('checked');
+            }
+        }
+
+        function handleBulkAction(action) {
+            // Remove onsubmit="return false;" from the form
+            var selectedSchedules = document.querySelectorAll('input[name="selected_schedules[]"]:checked');
+
+            if (selectedSchedules.length === 0) {
+                alert("No schedules were selected.");
+                return;
+            }
+
+            var confirmationMessage = "Are you sure you want to " + action + " the selected schedules?";
+            document.getElementById('confirmationMessage').innerText = confirmationMessage;
+
+            var confirmButton = document.getElementById('confirmButton');
+            var backButton = document.getElementById('backButton');
+
+            // Apply styles based on action
+            if (action === 'accept') {
+                confirmButton.className = 'accept-confirm-button';
+                backButton.className = 'accept-back-button';
+            } else if (action === 'decline') {
+                confirmButton.className = 'decline-confirm-button';
+                backButton.className = 'decline-back-button';
+            }
+
+            // Show confirmation modal
+            document.getElementById('confirmationModal').style.display = 'block';
+
+            // Handle confirmation action
+            confirmButton.onclick = function() {
+                // Dynamically set the bulk action value
+                document.getElementById('bulkAction').value = action;
+
+                // Remove onsubmit="return false;" 
+                document.getElementById('bulkActionForm').onsubmit = null;
+                
+                // Submit the form
+                document.getElementById('bulkActionForm').submit();
+            };
+
+            // Hide the modal when user clicks "No" or "Back"
+            backButton.onclick = function() {
+                document.getElementById('confirmationModal').style.display = 'none';
+            };
+        }
+
+
+        function openBulkModal() {
+            document.getElementById('bulkActionModal').style.display = 'block';
+            document.getElementById('modalBackground').style.display = 'block';
+        }
+
+        function closeBulkModal() {
+            document.getElementById('bulkActionModal').style.display = 'none';
+            document.getElementById('modalBackground').style.display = 'none';
+        }
+
         function openLogoutModal() {
             document.getElementById('logoutModal').style.display = 'block'; // Show the modal
         }

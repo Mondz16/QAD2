@@ -8,6 +8,16 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
     exit();
 }
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Add these debug lines
+file_put_contents('debug.log', print_r($_POST, true), FILE_APPEND);
+
+if (!isset($_POST['selected_schedules']) || empty($_POST['selected_schedules'])) {
+    file_put_contents('debug.log', "No schedules selected\n", FILE_APPEND);
+}
+
 // Initialize variables for status and message
 $status = '';
 $message = '';

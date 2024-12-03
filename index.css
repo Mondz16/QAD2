@@ -1026,7 +1026,7 @@ input[type="radio"] {
 .modal1 {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place even when scrolling */
-    z-index: 1; /* Sit on top */
+    z-index: 1000; /* Sit on top */
     left: 0; /* Start from the left */
     top: 0; /* Start from the top */
     width: 100%; /* Cover the full width */
@@ -1220,7 +1220,6 @@ input[type="radio"] {
 .bulk-actions-container {
     width: 100%;
     padding: 0 20px;
-    margin-bottom: 20px;
     display: flex;
     gap: 10px;
     align-items: center;
@@ -1229,6 +1228,20 @@ input[type="radio"] {
 .bulk-action-button {
     padding: 10px 20px;
     font-size: 16px;
+}
+
+.schedule-item:hover {
+    border: 5px solid #34C759;
+    background-color: #d4ffdf;
+}
+
+.schedule-item.checked {
+    border: 5px solid #34C759;
+    background-color: #d4ffdf;
+}
+
+.schedule-item {
+    transition: background-color 0.3s ease;
 }
 
 .notifications-wrapper {
