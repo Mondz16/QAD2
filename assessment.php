@@ -738,7 +738,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                     <span class="notification-counter"><?= $totalPendingUsers; ?></span>
                                 <?php endif; ?>                            </a>
                             <a href="<?php echo $is_admin ? 'college_transfer.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
-                                <span style="margin-left: 8px;">College Transfer</span>\
+                                <span style="margin-left: 8px;">College Transfer</span>
                                 <?php if ($transferRequestCount > 0): ?>
                                     <span class="notification-counter"><?= $transferRequestCount; ?></span>
                                 <?php endif; ?>
