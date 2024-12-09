@@ -128,8 +128,10 @@ $stmt_assessment_count->close();
             color: #000;
             /* Change icon color if needed */
         }
+
         .notification-counter {
-    color: #E6A33E; /* Text color */
+            color: #E6A33E;
+            /* Text color */
         }
     </style>
 </head>
@@ -209,12 +211,12 @@ $stmt_assessment_count->close();
                 </li>
                 <li class="sidebar-item has-dropdown">
                     <a href="#" class="sidebar-link">
-                    <span style="margin-left: 8px;">Assessment</span>
+                        <span style="margin-left: 8px;">Assessment</span>
                         <?php if ($assessment_count > 0): ?>
                             <span class="notification-counter">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                    <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                </svg>
                             </span>
                         <?php endif; ?>
                     </a>
@@ -222,11 +224,14 @@ $stmt_assessment_count->close();
                         <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                             <span style="margin-left: 8px;">View Assessments</span>
                             <?php if ($assessment_count > 0): ?>
-                            <span class="notification-counter"><?php echo $assessment_count; ?></span>
-                        <?php endif; ?>
+                                <span class="notification-counter"><?php echo $assessment_count; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">UDAS Assessments</span>
+                        </a>
+                        <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">Assessment History</span>
                         </a>
                     </div>
                 </li>
@@ -262,13 +267,13 @@ $stmt_assessment_count->close();
                     </div>
                 </li>
                 <li class="sidebar-item has-dropdown">
-                <a href="#" class="sidebar-link-active">
+                    <a href="#" class="sidebar-link-active">
                         <span style="margin-left: 8px;">Account</span>
                         <?php if ($notification_count > 0): ?>
                             <span class="notification-counter">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                    <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                </svg>
                             </span>
                         <?php endif; ?>
                     </a>
@@ -279,9 +284,9 @@ $stmt_assessment_count->close();
                         </a>
                         <a href="<?php echo $is_admin === false ? 'internal_notification.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Notifications</span>
-                        <?php if ($notification_count > 0): ?>
-                            <span class="notification-counter"><?php echo $notification_count; ?></span>
-                        <?php endif; ?>
+                            <?php if ($notification_count > 0): ?>
+                                <span class="notification-counter"><?php echo $notification_count; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="logout.php" class="sidebar-link">
                             <span style="margin-left: 8px;">Logout</span>

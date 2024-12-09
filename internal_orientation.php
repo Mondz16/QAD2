@@ -175,6 +175,7 @@ $stmt_assessment_count->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -202,17 +203,24 @@ $stmt_assessment_count->close();
 
         /* Modal overlay style */
         .orientationmodal {
-            position: fixed; /* Stay in place even when scrolling */
-            z-index: 100; /* Sit on top */
+            position: fixed;
+            /* Stay in place even when scrolling */
+            z-index: 100;
+            /* Sit on top */
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-            display: flex; /* Use flexbox to center content */
-            align-items: center; /* Center content vertically */
-            justify-content: center; /* Center content horizontally */
-            overflow: auto; /* Enable scrolling if content is too large */
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Semi-transparent background */
+            display: flex;
+            /* Use flexbox to center content */
+            align-items: center;
+            /* Center content vertically */
+            justify-content: center;
+            /* Center content horizontally */
+            overflow: auto;
+            /* Enable scrolling if content is too large */
         }
 
         /* Modal content style */
@@ -220,11 +228,14 @@ $stmt_assessment_count->close();
             background-color: #fefefe;
             padding: 20px;
             border: 1px solid #AFAFAF;
-            width: 80%; /* Could be more or less, depending on screen size */
+            width: 80%;
+            /* Could be more or less, depending on screen size */
             max-width: 500px;
             border-radius: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Optional: Adds a subtle shadow */
-            z-index: 10000; /* Ensures the content is above the overlay */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            /* Optional: Adds a subtle shadow */
+            z-index: 10000;
+            /* Ensures the content is above the overlay */
         }
 
         /* Centered heading inside modal */
@@ -232,11 +243,14 @@ $stmt_assessment_count->close();
             text-align: center;
             margin: 20px;
         }
+
         .notification-counter {
-    color: #E6A33E; /* Text color */
+            color: #E6A33E;
+            /* Text color */
         }
     </style>
 </head>
+
 <body>
     <div class="wrapper">
         <div class="hair" style="height: 15px; background: #9B0303;"></div>
@@ -253,7 +267,8 @@ $stmt_assessment_count->close();
                                 <h><span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
                                     <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">Data.</span>
                                     <span class="one" style="color: rgb(229, 156, 36); font-weight: 600; font-size: 18px;">One</span>
-                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span></h>
+                                    <span class="datausep" style="color: rgb(151, 57, 57); font-weight: 600; font-size: 18px;">USeP.</span>
+                                </h>
                             </div>
                             <h>Accreditor Portal</h>
                         </div>
@@ -314,9 +329,9 @@ $stmt_assessment_count->close();
                         <span style="margin-left: 8px;">Assessment</span>
                         <?php if ($assessment_count > 0): ?>
                             <span class="notification-counter">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                    <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                </svg>
                             </span>
                         <?php endif; ?>
                     </a>
@@ -324,11 +339,14 @@ $stmt_assessment_count->close();
                         <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                             <span style="margin-left: 8px;">View Assessments</span>
                             <?php if ($assessment_count > 0): ?>
-                            <span class="notification-counter"><?php echo $assessment_count; ?></span>
+                                <span class="notification-counter"><?php echo $assessment_count; ?></span>
                             <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">UDAS Assessments</span>
+                        </a>
+                        <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">Assessment History</span>
                         </a>
                     </div>
                 </li>
@@ -368,9 +386,9 @@ $stmt_assessment_count->close();
                         <span style="margin-left: 8px;">Account</span>
                         <?php if ($notification_count > 0): ?>
                             <span class="notification-counter">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                    <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                </svg>
                             </span>
                         <?php endif; ?>
                     </a>
@@ -382,8 +400,8 @@ $stmt_assessment_count->close();
                         <a href="<?php echo $is_admin === false ? 'internal_notification.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Notifications</span>
                             <?php if ($notification_count > 0): ?>
-                                    <span class="notification-counter"><?php echo $notification_count; ?></span>
-                                <?php endif; ?>
+                                <span class="notification-counter"><?php echo $notification_count; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="logout.php" class="sidebar-link">
                             <span style="margin-left: 8px;">Logout</span>
@@ -399,118 +417,119 @@ $stmt_assessment_count->close();
             <?php if (!empty($schedules)): ?>
                 <?php foreach ($schedules as $schedule_id => $schedule): ?>
                     <?php if ($schedule['schedule_status'] === 'approved' || $schedule['schedule_status'] === 'pending'): ?>
-                    <div class="notification-list1">
-                        <div class="orientation3">
-                            <?php
-                            $status_color = '';
-                            if ($schedule['schedule_status'] === 'pending') {
-                                $status_color = '#E6A33E'; // Pending color
-                            } elseif ($schedule['schedule_status'] === 'approved') {
-                                $status_color = '#34C759'; // Approved color
-                            }
-                            ?>
-                            <?php if (empty($schedule['orientation_id'])): ?>
-                    <!-- No orientation request exists, show the request orientation button -->
-                    <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> 
-                    <button class="orientation-button" onclick="openModal(<?php echo $schedule_id; ?>)">REQUEST ORIENTATION</button></p>
-                <?php else: ?>
-                                <?php if ($schedule['orientation_status'] === 'pending'): ?>
-                                    <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF;">REQUEST PENDING</button> </p>
-                                <?php elseif ($schedule['orientation_status'] === 'approved'): ?>
-                                    <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="assessment-button-done">REQUEST APPROVED</button> </p>
-                                <?php elseif ($schedule['orientation_status'] === 'denied'): ?>
-                                    <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="assessment-button-done" style="background-color: red; color: white; border: 1px solid red;">REQUEST DENIED</button></p>
+                        <div class="notification-list1">
+                            <div class="orientation3">
+                                <?php
+                                $status_color = '';
+                                if ($schedule['schedule_status'] === 'pending') {
+                                    $status_color = '#E6A33E'; // Pending color
+                                } elseif ($schedule['schedule_status'] === 'approved') {
+                                    $status_color = '#34C759'; // Approved color
+                                }
+                                ?>
+                                <?php if (empty($schedule['orientation_id'])): ?>
+                                    <!-- No orientation request exists, show the request orientation button -->
+                                    <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong>
+                                        <button class="orientation-button" onclick="openModal(<?php echo $schedule_id; ?>)">REQUEST ORIENTATION</button>
+                                    </p>
+                                <?php else: ?>
+                                    <?php if ($schedule['orientation_status'] === 'pending'): ?>
+                                        <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF;">REQUEST PENDING</button> </p>
+                                    <?php elseif ($schedule['orientation_status'] === 'approved'): ?>
+                                        <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="assessment-button-done">REQUEST APPROVED</button> </p>
+                                    <?php elseif ($schedule['orientation_status'] === 'denied'): ?>
+                                        <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong> <button class="assessment-button-done" style="background-color: red; color: white; border: 1px solid red;">REQUEST DENIED</button></p>
+                                    <?php endif; ?>
                                 <?php endif; ?>
-                            <?php endif; ?>
-                            <div class="container">
-                                <div class="body3">
-                                <div class="bodyLeft2">
-                            <p>COLLEGE <br>
-                                <div style="height: 10px;"></div>
-                                <div class="orientationname">
-                                    <div class="nameContainer">
-                                        <?php echo htmlspecialchars($schedule['college_name']); ?>
+                                <div class="container">
+                                    <div class="body3">
+                                        <div class="bodyLeft2">
+                                            <p>COLLEGE <br>
+                                            <div style="height: 10px;"></div>
+                                            <div class="orientationname">
+                                                <div class="nameContainer">
+                                                    <?php echo htmlspecialchars($schedule['college_name']); ?>
+                                                </div>
+                                            </div>
+                                            </p>
+                                            <div style="height: 20px;"></div>
+                                            <p>PROGRAM <br>
+                                            <div style="height: 10px;"></div>
+                                            <div class="orientationname">
+                                                <div class="nameContainer">
+                                                    <?php echo htmlspecialchars($schedule['program_name']); ?>
+                                                </div>
+                                            </div>
+                                            </p>
+                                            <div class="orientationname">
+                                                <div class="titleContainer">
+                                                    <p>LEVEL APPLIED</p>
+                                                </div>
+                                                <div class="titleContainer">
+                                                    <p>DATE</p>
+                                                </div>
+                                                <div class="titleContainer">
+                                                    <p>TIME</p>
+                                                </div>
+                                            </div>
+                                            <div class="orientationname">
+                                                <div class="nameContainer orientationContainer1">
+                                                    <?php echo htmlspecialchars($schedule['level_applied']); ?>
+                                                </div>
+                                                <div class="nameContainer orientationContainer">
+                                                    <?php
+                                                    $date = new DateTime($schedule['schedule_date']);
+                                                    echo $date->format('F j, Y');
+                                                    ?>
+                                                </div>
+                                                <div class="nameContainer orientationContainer">
+                                                    <?php
+                                                    $time = new DateTime($schedule['schedule_time']);
+                                                    echo $time->format('g:i A');
+                                                    ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="bodyRight2">
+                                            <?php
+                                            $team_leaders = array_filter($schedule['team'], fn($member) => $member['role'] === 'Team Leader');
+                                            $team_members = array_filter($schedule['team'], fn($member) => $member['role'] !== 'Team Leader');
+                                            ?>
+                                            <p>TEAM LEADER</p>
+                                            <div style="height: 20px;"></div>
+                                            <ul style="list-style-type: none; margin-left: 30px; font-size: 18px">
+                                                <?php if (!empty($team_leaders)): ?>
+                                                    <?php foreach ($team_leaders as $team_leader): ?>
+                                                        <li style="font-weight: bold"><?php echo htmlspecialchars($team_leader['name']); ?></li>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <li>NO TEAM LEADER ASSIGNED</li>
+                                                <?php endif; ?>
+                                            </ul>
+                                            <div style="height: 35px;"></div>
+                                            <p>TEAM MEMBERS</p>
+                                            <div style="height: 20px;"></div>
+                                            <ul style="list-style-type: none; margin-left: 30px; font-size: 18px">
+                                                <?php if (!empty($team_members)): ?>
+                                                    <?php foreach ($team_members as $team_member): ?>
+                                                        <li style="margin-bottom: 20px"><?php echo htmlspecialchars($team_member['name']); ?></li>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <li>NO TEAM MEMBERS ASSIGNED</li>
+                                                <?php endif; ?>
+                                            </ul>
+
+                                        </div>
                                     </div>
-                                </div>
-                            </p>
-                            <div style="height: 20px;"></div>
-                            <p>PROGRAM <br>
-                                <div style="height: 10px;"></div>
-                                <div class="orientationname">
-                                    <div class="nameContainer">
-                                        <?php echo htmlspecialchars($schedule['program_name']); ?>
-                                    </div>
-                                </div>
-                            </p>
-                            <div class="orientationname">
-                                    <div class="titleContainer">
-                                        <p>LEVEL APPLIED</p>
-                                    </div>
-                                    <div class="titleContainer">
-                                        <p>DATE</p>
-                                    </div>
-                                <div class="titleContainer">
-                                            <p>TIME</p>
                                 </div>
                             </div>
-                            <div class="orientationname">
-                                    <div class="nameContainer orientationContainer1">
-                                        <?php echo htmlspecialchars($schedule['level_applied']); ?>
-                                    </div>
-                                    <div class="nameContainer orientationContainer">
-                                        <?php 
-                                            $date = new DateTime($schedule['schedule_date']);
-                                            echo $date->format('F j, Y'); 
-                                        ?>
-                                    </div>
-                                <div class="nameContainer orientationContainer">
-                                            <?php 
-                                        $time = new DateTime($schedule['schedule_time']);
-                                        echo $time->format('g:i A'); 
-                                    ?>
-                                </div>
-                            </div>
                         </div>
-                        <div class="bodyRight2">
-                            <?php 
-                            $team_leaders = array_filter($schedule['team'], fn($member) => $member['role'] === 'Team Leader');
-                            $team_members = array_filter($schedule['team'], fn($member) => $member['role'] !== 'Team Leader');
-                            ?>
-                            <p>TEAM LEADER</p>
-                            <div style="height: 20px;"></div>
-                            <ul style="list-style-type: none; margin-left: 30px; font-size: 18px">
-                                <?php if (!empty($team_leaders)): ?>
-                                    <?php foreach ($team_leaders as $team_leader): ?>
-                                        <li style="font-weight: bold"><?php echo htmlspecialchars($team_leader['name']); ?></li>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <li>NO TEAM LEADER ASSIGNED</li>
-                                <?php endif; ?>
-                            </ul>
-                            <div style="height: 35px;"></div>
-                            <p>TEAM MEMBERS</p>
-                            <div style="height: 20px;"></div>
-                            <ul style="list-style-type: none; margin-left: 30px; font-size: 18px">
-                                <?php if (!empty($team_members)): ?>
-                                    <?php foreach ($team_members as $team_member): ?>
-                                        <li style="margin-bottom: 20px"><?php echo htmlspecialchars($team_member['name']); ?></li>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <li>NO TEAM MEMBERS ASSIGNED</li>
-                                <?php endif; ?>
-                            </ul>
-                            
-                        </div>
-                    </div>
-                    </div>
-                        </div>
-                    </div>
                     <?php endif; ?>
                 <?php endforeach; ?>
             <?php else: ?>
                 <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ASSIGNED TO YOUR COLLEGE</strong></p>
             <?php endif; ?>
-    </div>
+        </div>
     </div>
     <div id="orientationModal" class="orientationmodal" style="display: none;">
         <div class="orientationmodal-content">
@@ -626,13 +645,14 @@ $stmt_assessment_count->close();
             var dropdown = document.getElementById('notificationDropdown');
             dropdown.classList.toggle('show');
         }
+
         function openModal(scheduleId) {
             // Set the schedule ID for the form (if needed)
             document.getElementById('modal_schedule_id').value = scheduleId;
-            
+
             // Get the modal element
             const modal = document.getElementById('orientationModal');
-            
+
             // Make the modal visible by changing its display to 'flex'
             modal.style.display = 'flex';
         }
@@ -640,7 +660,7 @@ $stmt_assessment_count->close();
         function closeModal() {
             // Get the modal element
             const modal = document.getElementById('orientationModal');
-            
+
             // Hide the modal by setting its display to 'none'
             modal.style.display = 'none';
         }
@@ -694,4 +714,5 @@ $stmt_assessment_count->close();
         });
     </script>
 </body>
+
 </html>

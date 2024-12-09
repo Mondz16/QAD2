@@ -349,6 +349,9 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">UDAS Assessments</span>
                             </a>
+                            <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                                <span style="margin-left: 8px;">Assessment History</span>
+                            </a>
                         </div>
                     </li>
                     <li class="sidebar-item has-dropdown">

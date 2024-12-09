@@ -25,8 +25,8 @@ $is_admin = false;
 if ($user_id === 'admin') {
     $is_admin = true;
     // If current page is not admin.php, redirect
-    if (basename($_SERVER['PHP_SELF']) !== 'assessment.php') {
-        header("Location: assessment.php");
+    if (basename($_SERVER['PHP_SELF']) !== 'assessment_history.php') {
+        header("Location: assessment_history.php");
         exit();
     }
 } else {
@@ -59,7 +59,7 @@ $teamLeadersQuery = "
            CONCAT(iu.first_name, ' ', iu.middle_initial, '. ', iu.last_name) AS team_leader_name
     FROM team t
     JOIN internal_users iu ON t.internal_users_id = iu.user_id
-    WHERE t.role = 'team leader'
+    WHERE t.role = 'team leader' AND t.status = 'finished'
 ";
 $teamLeadersResult = $conn->query($teamLeadersQuery);
 $teamLeaders = $teamLeadersResult->fetch_all(MYSQLI_ASSOC);
@@ -78,7 +78,7 @@ if (count($teamLeaders) > 0) {
             JOIN college c ON s.college_code = c.code
             JOIN program p ON s.program_id = p.id
             WHERE s.id = '$scheduleId' 
-              AND (s.schedule_status = 'approved' OR s.schedule_status = 'pending')";
+              AND s.schedule_status NOT IN ('approved', 'pending', 'cancelled')";
         $scheduleResult = $conn->query($scheduleQuery);
         $schedule = $scheduleResult->fetch_assoc();
 
@@ -204,6 +204,9 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
     <link rel="stylesheet" href="css/navbar.css">
     <link href="css/pagestyle.css" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
     <style>
         .button-container {
             display: flex;
@@ -606,6 +609,30 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             color: black;
             text-decoration: none;
         }
+
+        table.dataTable {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table.dataTable th,
+        table.dataTable td:first-child {
+            padding: 10px;
+            text-align: left;
+        }
+
+        table.dataTable td {
+            padding: 10px;
+            text-align: center;
+            vertical-align:middle;
+        }
+
+        table.dataTable thead th {
+            background-color: #B73033;
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -655,10 +682,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Schedule</span>
                             <?php if ($totalPendingSchedules > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -725,10 +752,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Administrative</span>
                             <?php if ($totalPendingUsers > 0 || $transferRequestCount > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -739,7 +766,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                 <span style="margin-left: 8px;">Register Verification</span>
                                 <?php if ($totalPendingUsers > 0): ?>
                                     <span class="notification-counter"><?= $totalPendingUsers; ?></span>
-                                <?php endif; ?>                            </a>
+                                <?php endif; ?> </a>
                             <a href="<?php echo $is_admin ? 'college_transfer.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">College Transfer</span>
                                 <?php if ($transferRequestCount > 0): ?>
@@ -783,87 +810,67 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 </ul>
             </nav>
             <div class="container text-center mt-4">
-                <h1 class="mt-5 mb-5">ASSESSMENTS</h1>
-                <div class="scrollable-container-holder">
-                    <div class="scrollable-container">
-                        <?php if (count($assessments) > 0): ?>
-                            <?php foreach ($assessments as $assessment): ?>
-                                <div class="assessment-box">
-                                    <h2>#<?= $assessment['counter']; ?></h2>
-                                    <div class="assessment-details">
-                                        <div class="assessment-holder-1">
-                                            <div class="assessment-college">
-                                                <p>COLLEGE:<br>
-                                                <div class="assessment-values"><?= $assessment['college_name']; ?></div>
-                                                </p>
-                                                <p>PROGRAM:<br>
-                                                <div class="assessment-values"><?= $assessment['program_name']; ?></div>
-                                                </p>
-                                            </div>
-                                            <div class="assessment-level-applied">
-                                                <p>LEVEL APPLIED:<br>
-                                                <h3>
-                                                    <?= ($assessment['level_applied'] === 'Not Accreditable') ? 'NA' : (($assessment['level_applied'] === 'Candidate') ? 'CAN' :
-                                                        $assessment['level_applied']); ?>
-                                                </h3>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="assessment-holder-2">
-                                            <div class="assessment-dateTime">
-                                                <p>DATE:<br>
-                                                <div class="assessment-values"><?= $assessment['schedule_date']; ?></div>
-                                                </p>
-                                            </div>
-                                            <div class="assessment-dateTime">
-                                                <p>TIME:<br>
-                                                <div class="assessment-values"><?= $assessment['schedule_time']; ?></div>
-                                                </p>
-                                            </div>
-                                            <div class="assessment-udas">
-                                                <p>DOWNLOADABLE:<br>
-                                                    <?php if (!empty($assessment['summary_file'])): ?>
-                                                        <a href="<?= $assessment['summary_file']; ?>" class="btn udas-button1" download>SUMMARY</a>
-                                                    <?php else: ?>
-                                                        <button class="btn udas-button1" disabled>SUMMARY</button>
-                                                    <?php endif; ?>
-                                                </p>
-                                            </div>
-                                            <div class="assessment-udas">
-                                                <p>FILES:<br>
-                                                    <button class="btn udas-button1 open-team-details-modal"
-                                                        data-team-leader="<?= htmlspecialchars($assessment['team_leader'] ?? ''); ?>"
-                                                        data-team-members="<?= htmlspecialchars(implode(',', $assessment['team_members'] ?? [])); ?>"
-                                                        data-nda-compilation-file="<?= htmlspecialchars($assessment['nda_compilation_file'] ?? ''); ?>"
-                                                        data-nda-individual-files="<?= htmlspecialchars(implode(',', $assessment['nda_individual_files'] ?? [])); ?>"
-                                                        data-nda-internal-accreditors="<?= htmlspecialchars(implode(',', $assessment['nda_internal_accreditors'] ?? [])); ?>">
-                                                        NDA
-                                                    </button>
-                                                </p>
-                                            </div>
-                                            <div class="assessment-udas">
-                                                <p>APPROVE:<br>
-                                                    <?php if (!empty($assessment['summary_file']) && $assessment['is_approved']): ?>
-                                                        <button class="assessment-button-done">APPROVED</button>
-                                                    <?php elseif (!empty($assessment['summary_file'])): ?>
-                                                        <button class="btn approve-btn udas-button" data-summary-file="<?= $assessment['summary_file']; ?>">APPROVE</button>
-                                                    <?php else: ?>
-                                                        <button class="btn approve-btn udas-button" disabled>APPROVE</button>
-                                                    <?php endif; ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="no-schedule-prompt">
-                                <p>NO ASSESSMENT SUMMARY FOUND</p>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+                <h1 class="mt-5 mb-5">ASSESSMENT HISTORY</h1>
+                <div class="table-responsive">
+                    <table id="assessmentTable" class="table table-bordered display">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>College</th>
+                                <th>Program</th>
+                                <th>Level Applied</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Assessment</th>
+                                <th>NDA</th>
+                                <th>Approve</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (count($assessments) > 0): ?>
+                                <?php foreach ($assessments as $assessment): ?>
+                                    <tr>
+                                        <td><?= $assessment['counter']; ?></td>
+                                        <td><?= htmlspecialchars($assessment['college_name']); ?></td>
+                                        <td><?= htmlspecialchars($assessment['program_name']); ?></td>
+                                        <td>
+                                            <?= ($assessment['level_applied'] === 'Not Accreditable') ? 'NA' : (($assessment['level_applied'] === 'Candidate') ? 'CAN' :
+                                                htmlspecialchars($assessment['level_applied'])); ?>
+                                        </td>
+                                        <td><?= htmlspecialchars($assessment['schedule_date']); ?></td>
+                                        <td><?= htmlspecialchars($assessment['schedule_time']); ?></td>
+                                        <td>
+                                            <?php if (!empty($assessment['summary_file'])): ?>
+                                                <a href="<?= htmlspecialchars($assessment['summary_file']); ?>" class="btn udas-button1" download>Summary</a>
+                                            <?php else: ?>
+                                                <button class="btn btn-sm btn-secondary" disabled>Summary</button>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <button class="btn udas-button1 open-team-details-modal"
+                                                data-team-leader="<?= htmlspecialchars($assessment['team_leader'] ?? ''); ?>"
+                                                data-team-members="<?= htmlspecialchars(implode(',', $assessment['team_members'] ?? [])); ?>"
+                                                data-nda-compilation-file="<?= htmlspecialchars($assessment['nda_compilation_file'] ?? ''); ?>"
+                                                data-nda-individual-files="<?= htmlspecialchars(implode(',', $assessment['nda_individual_files'] ?? [])); ?>"
+                                                data-nda-internal-accreditors="<?= htmlspecialchars(implode(',', $assessment['nda_internal_accreditors'] ?? [])); ?>">
+                                                VIEW
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <button class="assessment-button-done">APPROVED</button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <button class="assessment-button-done">APPROVED</button>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
         </div>
 
         <!-- Modal HTML -->
@@ -910,6 +917,17 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
         <script>
+            $(document).ready(function() {
+                $('#assessmentTable').DataTable({
+                    "paging": true, // Enable pagination
+                    "searching": true, // Enable search
+                    "ordering": true, // Enable column sorting
+                    "info": true, // Show table info
+                    "lengthChange": true, // Allow user to change page size
+                    "pageLength": 10 // Default number of rows per page
+                });
+            });
+
             function closeApprovalModalPopup() {
                 document.getElementById('approvalModal').style.display = 'none';
             }

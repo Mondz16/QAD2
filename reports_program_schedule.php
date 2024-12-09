@@ -405,12 +405,12 @@ $conn->close();
                     <a href="#" class="sidebar-link">
                         <span style="margin-left: 8px;">Schedule</span>
                         <?php if ($totalPendingSchedules > 0): ?>
-                                <span class="notification-counter">
+                            <span class="notification-counter">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
+                                    <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                </svg>
                             </span>
-                            <?php endif; ?>
+                        <?php endif; ?>
                     </a>
                     <div class="sidebar-dropdown">
                         <a href="dashboard.php" class="sidebar-link">
@@ -419,8 +419,8 @@ $conn->close();
                         <a href="<?php echo $is_admin ? 'schedule.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Add Schedule</span>
                             <?php if ($totalPendingSchedules > 0): ?>
-                                    <span class="notification-counter"><?= $totalPendingSchedules; ?></span>
-                                <?php endif; ?>
+                                <span class="notification-counter"><?= $totalPendingSchedules; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'orientation.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">View Orientation</span>
@@ -447,22 +447,25 @@ $conn->close();
                     <a href="#" class="sidebar-link">
                         <span style="margin-left: 8px;">Assessment</span>
                         <?php if ($assessmentCount > 0): ?>
-                                <span class="notification-counter">
+                            <span class="notification-counter">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
+                                    <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                </svg>
                             </span>
-                            <?php endif; ?>
+                        <?php endif; ?>
                     </a>
                     <div class="sidebar-dropdown">
                         <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                             <span style="margin-left: 8px;">View Assessments</span>
                             <?php if ($assessmentCount > 0): ?>
-                                    <span class="notification-counter"><?= $assessmentCount; ?></span>
-                                <?php endif; ?>
+                                <span class="notification-counter"><?= $assessmentCount; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">UDAS Assessments</span>
+                        </a>
+                        <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">Assessment History</span>
                         </a>
                     </div>
                 </li>
@@ -472,10 +475,10 @@ $conn->close();
                         <?php if ($totalPendingUsers > 0 || $transferRequestCount > 0): ?>
                             <span class="notification-counter">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
+                                    <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                </svg>
                             </span>
-                            <?php endif; ?>
+                        <?php endif; ?>
                     </a>
                     <div class="sidebar-dropdown">
                         <a href="<?php echo $is_admin ? 'area.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
@@ -484,14 +487,14 @@ $conn->close();
                         <a href="<?php echo $is_admin ? 'registration.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Register Verification</span>
                             <?php if ($totalPendingUsers > 0): ?>
-                                    <span class="notification-counter"><?= $totalPendingUsers; ?></span>
-                                <?php endif; ?>
+                                <span class="notification-counter"><?= $totalPendingUsers; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'college_transfer.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">College Transfer</span>
                             <?php if ($transferRequestCount > 0): ?>
-                                    <span class="notification-counter"><?= $transferRequestCount; ?></span>
-                                <?php endif; ?>
+                                <span class="notification-counter"><?= $transferRequestCount; ?></span>
+                            <?php endif; ?>
                         </a>
                     </div>
                 </li>

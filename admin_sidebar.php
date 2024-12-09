@@ -302,10 +302,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Schedule</span>
                             <?php if ($totalPendingSchedules > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -344,10 +344,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Assessment</span>
                             <?php if ($assessmentCount > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -360,6 +360,9 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">UDAS Assessments</span>
                             </a>
+                            <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                                <span style="margin-left: 8px;">Assessment History</span>
+                            </a>
                         </div>
                     </li>
                     <li class="sidebar-item has-dropdown">
@@ -367,10 +370,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Administrative</span>
                             <?php if ($totalPendingUsers > 0 || $transferRequestCount > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -397,7 +400,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin === false ? 'internal_assigned_schedule.php' : 'reports_program_schedule.php'; ?>" class="sidebar-link">
-                            <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
+                                <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
                             <a href="reports_dashboard.php" class="sidebar-link">
                                 <span style="margin-left: 8px;">View Programs</span></a>
                             <a href="program_timeline.php" class="sidebar-link">
