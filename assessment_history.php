@@ -72,7 +72,7 @@ if (count($teamLeaders) > 0) {
 
         // Fetch schedule details
         $scheduleQuery = "
-            SELECT s.id, s.level_applied, s.schedule_date, s.schedule_time, 
+            SELECT s.id, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status,
                    c.college_name, p.program_name
             FROM schedule s
             JOIN college c ON s.college_code = c.code
@@ -139,7 +139,8 @@ if (count($teamLeaders) > 0) {
                 'nda_internal_accreditors' => $ndaInternalAccreditors,
                 'team_leader' => $leader['team_leader_name'],
                 'team_members' => array_column($teamMembers, 'member_name'),
-                'is_approved' => $summary ? (bool)$conn->query("SELECT id FROM approved_summary WHERE summary_id = '{$summary['id']}'")->num_rows : false
+                'is_approved' => $summary ? (bool)$conn->query("SELECT id FROM approved_summary WHERE summary_id = '{$summary['id']}'")->num_rows : false,
+                'schedule_status' => $schedule['schedule_status']
             ];
         }
     }
@@ -626,12 +627,28 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
         table.dataTable td {
             padding: 10px;
             text-align: center;
-            vertical-align:middle;
+            vertical-align: middle;
         }
 
         table.dataTable thead th {
             background-color: #B73033;
             color: #fff;
+        }
+
+        .btn-approve {
+            background-color: #E5E5E5;
+            color: #575757;
+            border-color: #E5E5E5;
+        }
+
+        .btn-passed {
+            background-color: #46C556;
+            color: white;
+        }
+
+        .btn-failed {
+            background-color: #B73033 !important;
+            color: white;
         }
     </style>
 </head>
@@ -823,7 +840,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                 <th>Time</th>
                                 <th>Assessment</th>
                                 <th>NDA</th>
-                                <th>Approve</th>
+                                <th>Result</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -857,7 +874,16 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                             </button>
                                         </td>
                                         <td>
-                                            <button class="assessment-button-done">APPROVED</button>
+                                            <button class="assessment-button-done <?php
+                                                                                    if ($assessment['schedule_status'] == 'finished') {
+                                                                                        echo 'btn-approve';
+                                                                                    } elseif ($assessment['schedule_status'] == 'passed') {
+                                                                                        echo 'btn-passed';
+                                                                                    } elseif ($assessment['schedule_status'] == 'failed') {
+                                                                                        echo 'btn-failed';
+                                                                                    }
+                                                                                    ?>">
+                                                <?= $assessment['schedule_status'] == 'finished' ? "APPROVED" : strtoupper(htmlspecialchars($assessment['schedule_status'])); ?></button>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
