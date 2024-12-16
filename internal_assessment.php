@@ -730,68 +730,83 @@ if ($result_areas) {
                                 <div style="height: 10px;"></div>
                                 <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button> 
                                 <?php elseif ($schedule['schedule_status'] == 'approved'): ?>
-                                    <!-- Check if Areas are Assigned -->
-                                    <?php
-                                    // Check if all areas are assigned for members who have accepted the schedule
-                                    $all_areas_assigned = true;
-
-                                    if (isset($team_members_with_areas[$schedule['schedule_id']])) {
-                                        foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
-                                            // Only consider members with 'accepted' status and exclude the Team Leader
-                                            if ($member['role'] !== 'Team Leader' && $member['status'] === 'accepted') {
-                                                // Check if the member has no assigned areas
-                                                if (empty($member['areas'][0])) {
-                                                    $all_areas_assigned = false;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        $all_areas_assigned = false; // No members found for this schedule, so areas can't be assigned
-                                    }
-                                    ?>
-
-
-                                <?php if (!$all_areas_assigned): ?>
-                                    <!-- Display Team Leader and Team Members with Area Input if not all areas are assigned -->
-                                    <p>ASSIGN AREAS TO TEAM MEMBERS</p>
+                                                                    <!-- Existing code for NDA and further steps -->
+                                <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
+                                    <p>NON-DISCLOSURE AGREEMENT</p>
                                     <div style="height: 10px;"></div>
-                                    <form method="post" action="assign_areas_process.php">
-                                        <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['schedule_id']); ?>">
+                                    <button class="assessment-button" onclick="openTermsModal(<?php echo htmlspecialchars(json_encode($schedule)); ?>)" id="sign-button">SIGN</button>
 
-                                        <?php 
-                                        // Separate team leader and other members
-                                        $team_leader = null;
-                                        $other_members = [];
+                            <?php else: ?>
+                                <!-- Check if Areas are Assigned -->
+                            <?php
+                            // Modify the area assignment check logic
+                            $all_areas_assigned = true;
+                            $has_accepted_members = false;
 
-                                        foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
-                                            if ($member['role'] === 'Team Leader') {
-                                                $team_leader = $member; // Store the Team Leader
-                                            } else {
-                                                $other_members[] = $member; // Store other members
+                            if (isset($team_members_with_areas[$schedule['schedule_id']])) {
+                                foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
+                                    // Skip Team Leader
+                                    if ($member['role'] !== 'Team Leader') {
+                                        // Check if any member has accepted
+                                        if ($member['status'] === 'accepted') {
+                                            $has_accepted_members = true;
+                                            
+                                            // Check if the accepted member has no assigned areas
+                                            if (empty($member['areas'][0])) {
+                                                $all_areas_assigned = false;
+                                                break;
                                             }
                                         }
+                                    }
+                                }
+                            } else {
+                                $all_areas_assigned = false;
+                            }
 
-                                        // Display Team Leader
-                                        if ($team_leader): ?>
-                                            <div class="add-area" id="team-leader-area" style="display: flex; flex-direction: column; margin-bottom: 10px;">
-                                                <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)
-                                                <?php if ($team_leader['status'] === 'accepted'): ?>
-                                                    <button type="button" onclick="addAreaDropdown('team-leader-area', '<?php echo $team_leader['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
-                                                        <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i> Add Area
-                                                    </button>
-                                                </label>
-                                                <?php else: ?>
-                                                    <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
-                                                <?php endif; ?>
-                                            </div>
-                                        <?php endif; ?>
+                            // If no members have accepted, still show area assignment but hide the submit button
+                            $show_assign_areas = (!$has_accepted_members || !$all_areas_assigned);
+                            ?>
 
-                                        <!-- Other members -->
-                                        <?php foreach ($other_members as $member): ?>
-                                            <div class="add-area" id="member-area-<?php echo $member['team_member_id']; ?>" style="display: flex; flex-direction: column; margin-bottom: 10px;">
-                                                <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
-                                                <?php if ($member['status'] === 'accepted'): ?>
+                            <?php if ($show_assign_areas): ?>
+                                <p>ASSIGN AREAS TO TEAM MEMBERS</p>
+                                <div style="height: 10px;"></div>
+                                <form method="post" action="assign_areas_process.php">
+                                    <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['schedule_id']); ?>">
+
+                                    <?php 
+                                    // Separate team leader and other members
+                                    $team_leader = null;
+                                    $other_members = [];
+
+                                    foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
+                                        if ($member['role'] === 'Team Leader') {
+                                            $team_leader = $member;
+                                        } else {
+                                            $other_members[] = $member;
+                                        }
+                                    }
+
+                                    // Display Team Leader
+                                    if ($team_leader): ?>
+                                        <div class="add-area" id="team-leader-area" style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                                            <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)
+                                            <?php if ($team_leader['status'] === 'accepted'): ?>
+                                                <button type="button" onclick="addAreaDropdown('team-leader-area', '<?php echo $team_leader['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
+                                                    <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i> Add Area
+                                                </button>
+                                            </label>
+                                            <?php else: ?>
+                                                <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <!-- Other members -->
+                                    <?php foreach ($other_members as $member): ?>
+                                        <div class="add-area" id="member-area-<?php echo $member['team_member_id']; ?>" style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                                            <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
+                                            
+                                            <?php if ($member['status'] === 'accepted'): ?>
                                                     <div style="display: flex; align-items: center; margin-bottom: 10px;">
                                                         <select class="area-select" name="area[<?php echo $member['team_member_id']; ?>][]" required onchange="updateAreaOptions()">
                                                             <option value="" disabled selected>Select Area</option>
@@ -808,33 +823,33 @@ if ($result_areas) {
                                                 <?php else: ?>
                                                     <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
                                                 <?php endif; ?>
-                                            </div>
-                                        <?php endforeach; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+
+                                    <?php if ($has_accepted_members): ?>
                                         <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
-                                    </form>
                                     <?php else: ?>
-                                        <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
-                                            <p>NON-DISCLOSURE AGREEMENT</p>
-                                            <div style="height: 10px;"></div>
-                                            <button class="assessment-button" onclick="openTermsModal(<?php echo htmlspecialchars(json_encode($schedule)); ?>)" id="sign-button">SIGN</button>
-                                        <?php else: ?>
-                                        <!-- Proceed with checking team members' submission and approval status -->
-                                        <?php
-                                        $team_member_count = 0;
-                                        $submitted_count = 0;
-                                        $approved_count = 0;
-                                        foreach ($team_members[$schedule['schedule_id']] as $member) {
-                                            if ($member['role'] !== 'Team Leader') {
-                                                $team_member_count++;
-                                                if ($member['assessment_file']) {
-                                                    $submitted_count++;
-                                                }
-                                                if (in_array($member['assessment_id'], $approved_assessments)) {
-                                                    $approved_count++;
-                                                }
+                                        <p style="color: red;"><br><br>No members have accepted the schedule yet. Areas can be assigned once members accept.</p>
+                                    <?php endif; ?>
+                                </form>
+                                <?php else: ?>
+                                    <!-- Existing team member submission and approval status check -->
+                                    <?php
+                                    $team_member_count = 0;
+                                    $submitted_count = 0;
+                                    $approved_count = 0;
+                                    foreach ($team_members[$schedule['schedule_id']] as $member) {
+                                        if ($member['role'] !== 'Team Leader') {
+                                            $team_member_count++;
+                                            if ($member['assessment_file']) {
+                                                $submitted_count++;
+                                            }
+                                            if (in_array($member['assessment_id'], $approved_assessments)) {
+                                                $approved_count++;
                                             }
                                         }
-                                        ?>
+                                    }
+                                    ?>
                                         <p>MEMBER SUBMISSION STATUS</p>
                                             <div style="height: 10px;"></div>
                                             <div class="assessmentname2">
