@@ -622,7 +622,7 @@ if ($result_areas) {
 }
 ?>
 
-                    <div class="notification-list1">
+                    <div class="notification-list1" id="assessment-<?php echo $schedule['schedule_id']; ?>">
                         <div class="orientation3">
                             <div class="container">
                                 <div class="body4">
@@ -767,71 +767,71 @@ if ($result_areas) {
                             $show_assign_areas = (!$has_accepted_members || !$all_areas_assigned);
                             ?>
 
-                            <?php if ($show_assign_areas): ?>
-                                <p>ASSIGN AREAS TO TEAM MEMBERS</p>
-                                <div style="height: 10px;"></div>
-                                <form method="post" action="assign_areas_process.php">
-                                    <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['schedule_id']); ?>">
+                                <?php if ($show_assign_areas): ?>
+                                        <p>ASSIGN AREAS TO TEAM MEMBERS</p>
+                                        <div style="height: 10px;"></div>
+                                        <form method="post" action="assign_areas_process.php">
+                                            <input type="hidden" name="schedule_id" value="<?php echo htmlspecialchars($schedule['schedule_id']); ?>">
 
-                                    <?php 
-                                    // Separate team leader and other members
-                                    $team_leader = null;
-                                    $other_members = [];
+                                            <?php 
+                                            // Separate team leader and other members
+                                            $team_leader = null;
+                                            $other_members = [];
 
-                                    foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
-                                        if ($member['role'] === 'Team Leader') {
-                                            $team_leader = $member;
-                                        } else {
-                                            $other_members[] = $member;
-                                        }
-                                    }
+                                            foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
+                                                if ($member['role'] === 'Team Leader') {
+                                                    $team_leader = $member;
+                                                } else {
+                                                    $other_members[] = $member;
+                                                }
+                                            }
 
-                                    // Display Team Leader
-                                    if ($team_leader): ?>
-                                        <div class="add-area" id="team-leader-area" style="display: flex; flex-direction: column; margin-bottom: 10px;">
-                                            <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)
-                                            <?php if ($team_leader['status'] === 'accepted'): ?>
-                                                <button type="button" onclick="addAreaDropdown('team-leader-area', '<?php echo $team_leader['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
-                                                    <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i> Add Area
-                                                </button>
-                                            </label>
-                                            <?php else: ?>
-                                                <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php endif; ?>
-
-                                    <!-- Other members -->
-                                    <?php foreach ($other_members as $member): ?>
-                                        <div class="add-area" id="member-area-<?php echo $member['team_member_id']; ?>" style="display: flex; flex-direction: column; margin-bottom: 10px;">
-                                            <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
-                                            
-                                            <?php if ($member['status'] === 'accepted'): ?>
-                                                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                                                        <select class="area-select" name="area[<?php echo $member['team_member_id']; ?>][]" required onchange="updateAreaOptions()">
-                                                            <option value="" disabled selected>Select Area</option>
-                                                            <?php foreach ($areas as $id => $area_name): ?>
-                                                                <option value="<?php echo $id; ?>">
-                                                                    Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>
-                                                                </option>
-                                                            <?php endforeach; ?>
-                                                        </select>
-                                                        <button type="button" onclick="addAreaDropdown('member-area-<?php echo $member['team_member_id']; ?>', '<?php echo $member['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
-                                                            <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
+                                            // Display Team Leader
+                                            if ($team_leader): ?>
+                                                <div class="add-area" id="team-leader-area-<?php echo $schedule['schedule_id']; ?>" style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                                                    <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)
+                                                    <?php if ($team_leader['status'] === 'accepted'): ?>
+                                                        <button type="button" onclick="addAreaDropdown('<?php echo $schedule['schedule_id']; ?>', 'team-leader-area-<?php echo $schedule['schedule_id']; ?>', '<?php echo $team_leader['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
+                                                            <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i> Add Area
                                                         </button>
-                                                    </div>
-                                                <?php else: ?>
-                                                    <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
-                                                <?php endif; ?>
-                                        </div>
-                                    <?php endforeach; ?>
+                                                    </label>
+                                                    <?php else: ?>
+                                                        <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php endif; ?>
 
-                                    <?php if ($has_accepted_members): ?>
-                                        <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
-                                    <?php else: ?>
-                                        <p style="color: red;"><br><br>No members have accepted the schedule yet. Areas can be assigned once members accept.</p>
-                                    <?php endif; ?>
-                                </form>
+                                            <!-- Other members -->
+                                            <?php foreach ($other_members as $member): ?>
+                                                <div class="add-area" id="member-area-<?php echo $member['team_member_id']; ?>" style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                                                    <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
+                                                    <?php if ($member['status'] === 'accepted'): ?>
+                                                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                                            <select class="area-select" name="area[<?php echo $member['team_member_id']; ?>][]" required onchange="updateAreaOptions('<?php echo $schedule['schedule_id']; ?>')">
+                                                                <option value="" disabled selected>Select Area</option>
+                                                                <?php foreach ($areas as $id => $area_name): ?>
+                                                                    <option value="<?php echo $id; ?>">
+                                                                        Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>
+                                                                    </option>
+                                                                <?php endforeach; ?>
+                                                            </select>
+                                                            <button type="button" onclick="addAreaDropdown('<?php echo $schedule['schedule_id']; ?>', 'member-area-<?php echo $member['team_member_id']; ?>', '<?php echo $member['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
+                                                                <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
+                                                            </button>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php endforeach; ?>
+
+                                            <?php if ($has_accepted_members): ?>
+                                                <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
+                                            <?php else: ?>
+                                                <p style="color: red;"><br><br>No members have accepted the schedule yet. Areas can be assigned once members accept.</p>
+                                            <?php endif; ?>
+                                        </form>
+                                </div>
                                 <?php else: ?>
                                     <!-- Existing team member submission and approval status check -->
                                     <?php
@@ -1653,20 +1653,35 @@ function openNdaPopup(fullName) {
             <?php endforeach; ?>
         });
 
-        var totalSelectedAreas = 0; // Initial count of areas, will be updated dynamically
-        var maxAreas = <?php echo $maxAreas; ?>; // Set max areas based on the number of available areas
+        var assessmentsData = {}; // To store data for each assessment
 
-        // Initialize totalSelectedAreas based on existing dropdowns (team members only)
-        document.addEventListener('DOMContentLoaded', function() {
-            // Count existing area dropdowns (for team members only, ignore team leader initially)
-            var existingDropdowns = document.querySelectorAll('.area-select');
-            totalSelectedAreas = existingDropdowns.length;
-        });
+// Initialize totalSelectedAreas based on existing dropdowns (team members only) for each assessment
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize assessments data
+    document.querySelectorAll('.notification-list1').forEach(function(assessmentDiv) {
+        var scheduleId = assessmentDiv.id.replace('assessment-', ''); // Get the schedule_id
+        assessmentsData[scheduleId] = {
+            totalSelectedAreas: document.querySelectorAll(`#assessment-${scheduleId} .area-select`).length,
+            maxAreas: <?php echo $maxAreas; ?>, // Ensure this value is dynamically adjusted per schedule if needed
+            selectedAreas: [] // To track the areas already selected for this assessment
+        };
+    });
 
-        function addAreaDropdown(divId, teamMemberId) {
+    // Initialize areas to be disabled for each assessment based on current selections
+    document.querySelectorAll('.area-select').forEach(function(select) {
+        var selectedValue = select.value;
+        var scheduleId = select.closest('.notification-list1').id.replace('assessment-', '');
+        if (selectedValue) {
+            assessmentsData[scheduleId].selectedAreas.push(selectedValue);
+        }
+    });
+});
+
+// Add Area Dropdown for a specific assessment
+function addAreaDropdown(scheduleId, divId, teamMemberId) {
     // Prevent adding more areas if the maximum limit is reached
-    if (totalSelectedAreas >= maxAreas) {
-        alert("You cannot add more than " + maxAreas + " areas.");
+    if (assessmentsData[scheduleId].totalSelectedAreas >= assessmentsData[scheduleId].maxAreas) {
+        alert("You cannot add more than " + assessmentsData[scheduleId].maxAreas + " areas.");
         return; // Exit if the limit is reached
     }
 
@@ -1681,7 +1696,7 @@ function openNdaPopup(fullName) {
     newSelect.name = `area[${teamMemberId}][]`;
     newSelect.classList.add('area-select');
     newSelect.required = true;
-    newSelect.onchange = updateAreaOptions;
+    newSelect.onchange = function() { updateAreaOptions(scheduleId); };
 
     var defaultOption = document.createElement('option');
     defaultOption.value = '';
@@ -1690,11 +1705,17 @@ function openNdaPopup(fullName) {
     defaultOption.selected = true;
     newSelect.appendChild(defaultOption);
 
-    // Populate area options dynamically
+    // Populate area options dynamically and disable already selected areas
     <?php foreach ($areas as $id => $area_name): ?>
         var option = document.createElement('option');
         option.value = '<?php echo $id; ?>';
         option.text = 'Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>';
+
+        // Disable already selected areas
+        if (assessmentsData[scheduleId].selectedAreas.includes('<?php echo $id; ?>')) {
+            option.disabled = true;
+        }
+
         newSelect.appendChild(option);
     <?php endforeach; ?>
 
@@ -1716,22 +1737,21 @@ function openNdaPopup(fullName) {
     removeButton.appendChild(removeIcon);
     removeButton.onclick = function() {
         container.removeChild(newDiv);
-        totalSelectedAreas--; // Decrement total selected areas when a dropdown is removed
-        updateAreaOptions(); // Update options to make the removed area selectable again
+        assessmentsData[scheduleId].totalSelectedAreas--; // Decrement total selected areas when a dropdown is removed
+        updateAreaOptions(scheduleId); // Update options to make the removed area selectable again
     };
 
     newDiv.appendChild(removeButton);
     container.appendChild(newDiv);
 
-    totalSelectedAreas++; // Increment the total number of selected areas
-    updateAreaOptions();
+    assessmentsData[scheduleId].totalSelectedAreas++; // Increment the total number of selected areas
+    updateAreaOptions(scheduleId);
 }
 
-
-function updateAreaOptions() {
-    // Get all area select dropdowns
-    var areaSelects = document.querySelectorAll('.area-select');
-    var submitButton = document.querySelector('.assessment-button1');
+// Update area options based on selections for a specific assessment
+function updateAreaOptions(scheduleId) {
+    var areaSelects = document.querySelectorAll(`#assessment-${scheduleId} .area-select`);
+    var submitButton = document.querySelector(`#assessment-${scheduleId} .assessment-button1`);
     
     // Tracking variables
     var validatedSelections = [];
@@ -1755,8 +1775,7 @@ function updateAreaOptions() {
     });
 
     // Ensure all areas are uniquely selected
-    var totalAreas = <?php echo $maxAreas; ?>; ; // Adjust to match your requirement dynamically
-    var isCorrectTotalSelections = validatedSelections.length === totalAreas;
+    var isCorrectTotalSelections = validatedSelections.length === assessmentsData[scheduleId].maxAreas;
 
     // Disable already selected options in other dropdowns
     areaSelects.forEach(function(select) {
@@ -1765,13 +1784,13 @@ function updateAreaOptions() {
         });
     });
 
-    // Update submit button state and provide feedback
+    // Enable or disable submit button based on validity
     if (submitButton) {
         if (!isValid || !isCorrectTotalSelections) {
             submitButton.disabled = true;
             submitButton.style.opacity = '0.5';
             submitButton.style.cursor = 'not-allowed';
-            submitButton.title = `Please ensure ${totalAreas} unique areas are assigned.`;
+            submitButton.title = `Please ensure ${assessmentsData[scheduleId].maxAreas} unique areas are assigned.`;
         } else {
             submitButton.disabled = false;
             submitButton.style.opacity = '1';
@@ -1780,6 +1799,7 @@ function updateAreaOptions() {
         }
     }
 }
+
             
             document.getElementById('agreeTermsCheckbox').addEventListener('change', function() {
                 var acceptButton = document.getElementById('acceptTerms');
