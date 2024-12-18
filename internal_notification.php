@@ -278,7 +278,7 @@ $stmt_assessment_count->close();
                 <?php if ($stmt_notifications->num_rows > 0): ?>
                         <div class="notifications-wrapper">
                         <div class="bulk-actions-container">
-                            <button type="button" id="toggleSelectButton" onclick="openBulkModal()" style="padding: 10px 20px; font-size: 16px;">Select</button>
+                        <button type="button" id="toggleSelectButton" onclick="openBulkModal()" style="padding: 10px 20px;font-size: 16px;border-radius: 10px;border: none;background-color: #34C759;color: white;">Open Multiple Selection</button>
                         </div>
                             <?php while ($stmt_notifications->fetch()): ?>
                             <?php
@@ -326,10 +326,10 @@ $stmt_assessment_count->close();
                                 <?php endwhile; ?>
                         </div>
 
-                        <div id="bulkActionModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; width: 70%; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 10px;">
+                        <div id="bulkActionModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; width: 50%; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 10px;">
                             <div style="padding: 40px;">
                                 <!-- Title Section -->
-                                <h3 style="margin-bottom: 20px; text-align: center; font-size: 50px;">Select Schedules</h3>
+                                <h3 style="margin-bottom: 20px; text-align: center; font-size: 30px;">Select Schedules</h3>
 
                                 <!-- Schedule List Section -->
                                 <form method="POST" action="internal_notification_bulk_process.php" id="bulkActionForm">

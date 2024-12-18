@@ -495,10 +495,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Schedule</span>
                             <?php if ($totalPendingSchedules > 0 && $is_admin): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -571,13 +571,13 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link">
                             <span style="margin-left: 8px;">Administrative</span>
-                            <?php if (($transferRequestCount > 0) && $is_admin|| ($totalPendingUsers > 0 && $is_admin)): ?>
+                            <?php if (($transferRequestCount > 0) && $is_admin || ($totalPendingUsers > 0 && $is_admin)): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                                    <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                                </svg>
-                            </span>
-                        <?php endif; ?>                        </a>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
+                            <?php endif; ?> </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin ? 'area.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">View Area</span>
@@ -586,7 +586,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                 <span style="margin-left: 8px;">Register Verification</span>
                                 <?php if ($totalPendingUsers > 0 && $is_admin): ?>
                                     <span class="notification-counter"><?= $totalPendingUsers; ?></span>
-                                <?php endif; ?>                            </a>
+                                <?php endif; ?> </a>
                             <a href="<?php echo $is_admin ? 'college_transfer.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">College Transfer</span>
                                 <?php if ($transferRequestCount > 0 && $is_admin): ?>
@@ -821,6 +821,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                                             <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/>
                                                         </svg> {$schedule_time}</div>
                                                 </div>
+                                            </div>
                                             </div>";
                                         }
                                     }

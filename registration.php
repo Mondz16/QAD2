@@ -461,7 +461,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
 
         <!-- Approve Modal -->
         <div id="approveModal" class="modal">
-            <div class="modal-content">
+            <div class="approved-modal-content">
                 <h4>Are you sure you want to approve this registration?</h4>
                 <form id="approveForm" action="registration_approval.php" method="post">
                     <input type="hidden" name="id" id="approveUserId">
@@ -476,7 +476,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
 
         <!-- disapprove Modal -->
         <div id="rejectModal" class="modal">
-            <div class="modal-content">
+            <div class="approved-modal-content">
                 <h4>Are you sure you want to disapprove this registration?</h4>
                 <form id="rejectForm" action="registration_approval.php" method="post">
                     <input type="hidden" name="id" id="rejectUserId">

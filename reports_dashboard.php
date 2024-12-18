@@ -411,9 +411,9 @@ $conn->close();
                         <option value="All">All Years</option>
                     </select> -->
                 </div>
-                <div>
+                <!-- <div>
                     <button type="button" id="exportPDF">EXPORT <img style="margin-left: 5px;" src="images/export.png"></button>
-                </div>
+                </div> -->
             </div>
 
             <div class="charts-container">
@@ -797,25 +797,25 @@ $conn->close();
             // });
         });
 
-        document.getElementById('exportPDF').addEventListener('click', function() {
-            const charts = document.querySelectorAll('canvas');
+        // document.getElementById('exportPDF').addEventListener('click', function() {
+        //     const charts = document.querySelectorAll('canvas');
 
-            const images = [];
-            let count = 0;
+        //     const images = [];
+        //     let count = 0;
 
-            charts.forEach((chart, index) => {
-                html2canvas(chart).then(canvas => {
-                    images.push({
-                        data: canvas.toDataURL('image/png')
-                    });
-                    count++;
-                    if (count === charts.length) {
-                        console.log('All charts captured, sending to server');
-                        sendImagesToServer(images);
-                    }
-                }).catch(err => console.error('Error capturing canvas:', err));
-            });
-        });
+        //     charts.forEach((chart, index) => {
+        //         html2canvas(chart).then(canvas => {
+        //             images.push({
+        //                 data: canvas.toDataURL('image/png')
+        //             });
+        //             count++;
+        //             if (count === charts.length) {
+        //                 console.log('All charts captured, sending to server');
+        //                 sendImagesToServer(images);
+        //             }
+        //         }).catch(err => console.error('Error capturing canvas:', err));
+        //     });
+        // });
 
         function sendImagesToServer(images) {
             const xhr = new XMLHttpRequest();

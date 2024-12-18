@@ -1083,6 +1083,26 @@ input[type="radio"] {
     background-color: #f9f9f9;
 }
 
+.approved-modal-content 
+{
+    display: block;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    top:40%;
+    transform: translate(-50%, 0);
+    width: 80%;
+    max-width: 500px;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+.approved-modal-content textarea{
+    padding: 5px;
+    border-radius: 5px;
+}
+
 .edit-form input[type="text"],
 .edit-form input[type="email"],
 .edit-form select {

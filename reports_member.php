@@ -541,10 +541,18 @@ $conn->close();
                 <div>
                     <label for="year">Year:</label>
                     <select id="year">
-                        <?php foreach ($schedules as $schedule): ?>
-                            <option value="<?= date('Y', strtotime($schedule['schedule_date'])) ?>"><?= date('Y', strtotime($schedule['schedule_date'])) ?></option>
-                        <?php echo strtotime($schedule['schedule_date']);
-                        endforeach; ?>
+                        <?php
+                        $unique_years = [];
+                        foreach ($schedules as $schedule):
+                            $current_year = date('Y', strtotime($schedule['schedule_date']));
+                            if (!in_array($current_year, $unique_years)):
+                                $unique_years[] = $current_year;
+                        ?>
+                                <option value="<?= $current_year ?>"><?= $current_year ?></option>
+                        <?php
+                            endif;
+                        endforeach;
+                        ?>
                     </select>
                     <label for="campus">Campus:</label>
                     <select id="campus">
