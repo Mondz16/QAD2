@@ -165,18 +165,19 @@ $sqlExternalPendingCount = "
 $externalResult = $conn->query($sqlExternalPendingCount);
 $externalPendingCount = $externalResult->fetch_assoc()['external_pending_count'] ?? 0;
 
-// SQL query to count unique transfer requests based on bb-cccc part of user_id
 $sqlTransferRequestCount = "
     SELECT COUNT(DISTINCT bb_cccc) AS transfer_request_count
     FROM (
-        SELECT SUBSTRING(user_id, 4) AS bb_cccc
+        SELECT SUBSTRING(user_id, 4) AS bb_cccc, status
         FROM internal_users
+        WHERE status = 'pending'
         GROUP BY bb_cccc
         HAVING COUNT(*) > 1
     ) AS transfer_groups
 ";
 $Tresult = $conn->query($sqlTransferRequestCount);
 $transferRequestCount = $Tresult->fetch_assoc()['transfer_request_count'] ?? 0;
+
 
 // Total pending users count
 $totalPendingUsers = $internalPendingCount + $externalPendingCount - $transferRequestCount;

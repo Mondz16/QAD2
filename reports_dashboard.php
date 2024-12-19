@@ -134,8 +134,9 @@ $externalPendingCount = $externalResult->fetch_assoc()['external_pending_count']
 $sqlTransferRequestCount = "
     SELECT COUNT(DISTINCT bb_cccc) AS transfer_request_count
     FROM (
-        SELECT SUBSTRING(user_id, 4) AS bb_cccc
+        SELECT SUBSTRING(user_id, 4) AS bb_cccc, status
         FROM internal_users
+        WHERE status = 'pending'
         GROUP BY bb_cccc
         HAVING COUNT(*) > 1
     ) AS transfer_groups
