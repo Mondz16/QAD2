@@ -345,6 +345,7 @@ $stmt_assessment_count->close();
                                             ?>
                                             
                                             <div class="schedule-item" onclick="toggleCheckbox(this)" style="display: flex; justify-content: space-between; padding: 20px; margin-bottom: 15px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease;">
+
                                                 <!-- Left Section: Program & College -->
                                                 <div style="flex: 1; display: flex; flex-direction: column;">
                                                     <p><strong>College:</strong> <?php echo htmlspecialchars($college_name); ?></p>
@@ -352,12 +353,14 @@ $stmt_assessment_count->close();
                                                 </div>
                                                 
                                                 <!-- Right Section: Level Applied & Date/Time -->
+                                                
                                                 <div style="flex: 1; display: flex; flex-direction: column; margin-left: 20px;">
                                                     <p><strong>Level Applied:</strong> <?php echo htmlspecialchars($level_applied); ?></p>
                                                     <p><strong>Date:</strong> <?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i A'); ?></p>
                                                 </div>
                                                 
                                                 <!-- Checkbox Section -->
+                                                
                                                 <div style="flex: 0 0 auto; align-self: center;">
                                                     <input type="checkbox" name="selected_schedules[]" value="<?php echo $schedule_id; ?>" style="margin-top: 20px; width: 20px; height: 20px;">
                                                 </div>

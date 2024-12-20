@@ -137,6 +137,21 @@ $result = $stmt->get_result();
         .view-user-modal {
         margin: 5% auto !important;
         }
+
+        .accept-button {
+            background-color: #34C759 !important;
+            color: white !important;
+            padding: 10px 25px !important;
+            margin: 0 5px !important;
+            cursor: pointer !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-size: 14px !important;
+        }
+
+        .accept-button:hover {
+            opacity: 0.9 !important;
+        }
     </style>
 </head>
 
@@ -216,60 +231,71 @@ $result = $stmt->get_result();
                 <tbody>
 
                 <?php
+                // Set the time zone to Asia/Manila
                 date_default_timezone_set('Asia/Manila');
+                $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
 
+                // Database connection and query execution
+                $query = "SELECT s.*, p.program_name
+                FROM schedule s
+                LEFT JOIN program p ON s.program_id = p.id"; // Replace this with your actual SQL query
+                $result = $conn->query($query);
+
+                // Check if there are rows returned from the query
                 if ($result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
+
+                        // Check if the schedule is manually unlocked
+                        if ($row['manually_unlocked'] == 1 && !empty($row['unlock_expiration'])) {
+                            // Validate unlock_expiration date format
+                            $unlockExpiration = DateTime::createFromFormat('Y-m-d H:i:s', $row['unlock_expiration'], new DateTimeZone('Asia/Manila'));
+
+                            if (!$unlockExpiration) {
+                                // If date format is invalid, skip this row and log the error
+                                echo "Invalid unlock_expiration format for ID: " . $row['id'] . "<br>";
+                                continue; // Skip to next iteration
+                            }
+
+                            // Check if the unlock period has expired
+                            if ($currentDateTime > $unlockExpiration) {
+
+                                // Prepare the update query
+                                $updateSql = "UPDATE schedule 
+                                            SET schedule_status = 'done', 
+                                                manually_unlocked = 0, 
+                                                unlock_expiration = NULL, 
+                                                status_date = NOW() 
+                                            WHERE id = ?";
+                                $updateStmt = $conn->prepare($updateSql);
+
+                                if ($updateStmt) {
+                                    // Bind parameters and execute
+                                    $updateStmt->bind_param("i", $row['id']);
+                                    if ($updateStmt->execute()) {
+                                        // Log successful update and affected rows
+                                        if ($updateStmt->affected_rows > 0) {
+                                        } else {
+                                            echo "No changes made for schedule ID: " . $row['id'] . ". It might already be updated.<br>";
+                                        }
+                                    } else {
+                                        // Log error if execution fails
+                                        echo "Execution failed for ID " . $row['id'] . ": " . $conn->error . "<br>";
+                                    }
+                                    // Close statement
+                                    $updateStmt->close();
+                                } else {
+                                    // Log error if preparing the statement fails
+                                    echo "Prepare failed: (" . $conn->errno . ") " . $conn->error . "<br>";
+                                }
+                            } else {
+                            }
+                        }
+
+                        // Format schedule date and time for display
                         $schedule_date = date("F-d-Y", strtotime($row['schedule_date']));
                         $schedule_time = date("h:i A", strtotime($row['schedule_time']));
 
-                        // Create DateTime objects with the Asia/Manila timezone
-                        $scheduleDateTime = new DateTime($row['schedule_date'] . ' ' . $row['schedule_time'], new DateTimeZone('Asia/Manila'));
-                        $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
-
-                        // Create date-only and time-only objects for the current and schedule dates
-                        $currentDate = new DateTime($currentDateTime->format('Y-m-d'), new DateTimeZone('Asia/Manila'));
-                        $scheduleDate = new DateTime($scheduleDateTime->format('Y-m-d'), new DateTimeZone('Asia/Manila'));
-                        $currentTime = $currentDateTime->format('H:i');  // Get the current time in 24-hour format
-
-                        // Set a grace period (24 hours after the schedule date and time)
-                        $gracePeriodEnd = clone $scheduleDateTime;
-                        $gracePeriodEnd->modify('+24 hours');
-
-                        // Automatically mark as done if the current date matches the schedule date and time is 5 PM or later, 
-                        // or if the current date is after the schedule date, but only if it hasn't been manually unlocked
-                        if (($currentDate == $scheduleDate && $currentTime >= '17:00') || $currentDate > $scheduleDate) {
-                            
-                            // Check if the grace period has passed
-                            if ($currentDateTime > $gracePeriodEnd) {
-                                // Reset the manually_unlocked flag if the grace period has passed and it was manually unlocked
-                                if ($row['manually_unlocked'] == 1) {
-                                    $reset_sql = "UPDATE schedule SET manually_unlocked = 0 WHERE id = ?";
-                                    $reset_stmt = $conn->prepare($reset_sql);
-                                    $reset_stmt->bind_param("i", $row['id']);
-                                    $reset_stmt->execute();
-                                    $reset_stmt->close();
-                                    
-                                    // Update the flag in the current row so it doesn't need to be done again in this iteration
-                                    $row['manually_unlocked'] = 0;
-                                }
-                            }
-
-                            // Automatically mark as done if it hasn't been manually unlocked or if the grace period has passed
-                            if ($row['schedule_status'] === 'approved' && $row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'done' && $row['manually_unlocked'] == 0) {
-                                // Update the schedule status to "done" in the database
-                                $update_sql = "UPDATE schedule SET schedule_status = 'done' WHERE id = ?";
-                                $update_stmt = $conn->prepare($update_sql);
-                                $update_stmt->bind_param("i", $row['id']);
-                                $update_stmt->execute();
-                                $update_stmt->close();
-
-                                // Update the status in the current row data
-                                $row['schedule_status'] = 'done';
-                            }
-                        }                        
-
-                        // Start displaying the table row
+                        // Display the table row
                         echo "<tr class='schedule-row' data-status='" . htmlspecialchars($row['schedule_status']) . "'>";
                         echo "<td>" . htmlspecialchars($row['program_name']) . "</td>";
                         echo "<td>" . htmlspecialchars($row['level_applied']) . "</td>";
@@ -287,12 +313,12 @@ $result = $stmt->get_result();
 
                         // Always show the "View Team" button
                         echo "<button class='button view-team' onclick='openTeamModal(" . $row['id'] . ")'>
-                                    <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-people' viewBox='0 0 16 16'>
-                                        <path d='M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4'/>
-                                    </svg>
-                                </button>";
+                                <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-people' viewBox='0 0 16 16'>
+                                    <path d='M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4'/>
+                                </svg>
+                            </button>";
 
-                        // Display the "UNLOCK" button if the schedule is marked as "done"
+                        // Show the "UNLOCK" button if the schedule is marked as "done"
                         if ($row['schedule_status'] === 'done') {
                             echo "<button class='button unlock mt-lg-0 mt-1' onclick='unlockSchedule(" . $row['id'] . ")'>UNLOCK</button>";
                         }
@@ -311,6 +337,7 @@ $result = $stmt->get_result();
                     echo "<tr><td colspan='6'>No schedules found for this college</td></tr>";
                 }
 
+                // Close database connection
                 $stmt->close();
                 $conn->close();
                 ?>
@@ -318,6 +345,28 @@ $result = $stmt->get_result();
                 </tbody>
             </table>
         </div>
+
+        <div id="unlockModal" class="modal" onclick="closeModal(event)">
+            <div class="modal-content">
+                <h4>Unlock Schedule</h4>
+                <p>Enter the duration to keep the schedule unlocked:</p>
+                <form id="unlockForm">
+                    <label for="hours">Hours:</label>
+                    <input type="number" id="hours" name="hours" min="0" max="24" value="0" required>
+                    <label for="minutes">Minutes:</label>
+                    <input type="number" id="minutes" name="minutes" min="0" max="59" value="0" required>
+
+                    <input type="hidden" id="scheduleId" name="scheduleId">
+
+                    <!-- Buttons below the input fields -->
+                    <div class="modal-footer">
+                        <button type="button" onclick="closeModal1()" id="cancelBtn">Cancel</button>
+                        <button type="submit" id="confirmBtn" class="accept-button">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
 
         <!-- Cancel Modal -->
         <div id="cancelModal" class="modal">
@@ -643,28 +692,88 @@ document.getElementById('closeErrorPopup').addEventListener('click', function() 
         }
 
         function unlockSchedule(scheduleId) {
-            if (confirm("Are you sure you want to unlock this schedule?")) {
-                // Send an AJAX request to unlock the schedule
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", "unlock_schedule.php", true);
-                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-                // Handle the response
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                        // Success, notify the user
-                        alert(xhr.responseText);
-                        location.reload();  // Reload the page to show the updated status
-                    } else if (xhr.readyState == 4) {
-                        // Handle error responses
-                        alert("An error occurred: " + xhr.responseText);
-                    }
-                };
-
-                // Send the schedule ID to the server
-                xhr.send("id=" + scheduleId);
-            }
+            document.getElementById('scheduleId').value = scheduleId;
+            document.getElementById('unlockModal').style.display = 'block';
         }
+
+        document.getElementById('unlockForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const scheduleId = document.getElementById('scheduleId').value;
+            const hours = parseInt(document.getElementById('hours').value);
+            const minutes = parseInt(document.getElementById('minutes').value);
+
+            fetch('unlock_schedule.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ scheduleId, hours, minutes }),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                alert(data.message);
+                document.getElementById('unlockModal').style.display = 'none';
+                location.reload(); // Reload to reflect the changes
+            })
+            .catch((error) => console.error('Error:', error));
+        });
+
+        // JavaScript to enforce the restrictions
+
+document.getElementById('unlockModal').addEventListener('show', function() {
+    // Set default values to 0 when modal opens
+    document.getElementById('hours').value = 0;
+    document.getElementById('minutes').value = 0;
+});
+
+// Prevent typing values greater than 24 for hours and greater than 59 for minutes
+document.getElementById('hours').addEventListener('input', function(event) {
+    let value = parseInt(event.target.value);
+    if (value > 24) {
+        event.target.value = 24;
+    }
+    if (value < 0) {
+        event.target.value = 0;
+    }
+});
+
+document.getElementById('minutes').addEventListener('input', function(event) {
+    let value = parseInt(event.target.value);
+    if (value > 59) {
+        event.target.value = 59;
+    }
+    if (value < 0) {
+        event.target.value = 0;
+    }
+});
+
+// Form validation to ensure that user actually changes the time
+document.getElementById('unlockForm').addEventListener('submit', function(event) {
+    const hours = document.getElementById('hours').value;
+    const minutes = document.getElementById('minutes').value;
+
+    if (hours == 0 && minutes == 0) {
+        // Prevent form submission if no change has been made
+        alert('Please enter a valid duration.');
+        event.preventDefault();
+    }
+});
+
+// Function to close the modal when clicking outside
+function closeModal(event) {
+    // Check if the click was outside the modal content
+    if (event.target === document.getElementById('unlockModal')) {
+        document.getElementById('unlockModal').style.display = 'none';
+    }
+}
+
+// Function to open the modal (you can call this from other parts of your code)
+function openModal() {
+    document.getElementById('unlockModal').style.display = 'block';
+}
+
+function closeModal1() {
+    document.getElementById('unlockModal').style.display = 'none';
+}
 
     </script>
 </body>

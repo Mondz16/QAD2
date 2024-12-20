@@ -1,39 +1,34 @@
 <?php
-include 'connection.php';  // Adjust the path if needed
+header('Content-Type: application/json');
+include 'connection.php';
 
-// Check if the 'id' parameter is passed
-if (isset($_POST['id'])) {
-    $scheduleId = intval($_POST['id']);  // Ensure it's an integer to prevent SQL injection
+$data = json_decode(file_get_contents('php://input'), true);
 
-    // Prepare the SQL query to update the schedule status and manually unlock flag
-    $sql = "UPDATE schedule 
-            SET schedule_status = 'approved', manually_unlocked = 1, status_date = NOW() 
-            WHERE id = ?";
+if (isset($data['scheduleId'], $data['hours'], $data['minutes'])) {
+    $scheduleId = $data['scheduleId'];
+    $hours = $data['hours'];
+    $minutes = $data['minutes'];
 
-    if ($stmt = $conn->prepare($sql)) {
-        // Bind the schedule ID parameter to the query
-        $stmt->bind_param("i", $scheduleId);
-        
-        // Execute the query
-        if ($stmt->execute()) {
-            // If successful, return a success message
-            echo "Schedule unlocked successfully!";
-        } else {
-            // If the query failed, return an error message
-            echo "Error unlocking the schedule: " . $stmt->error;
-        }
+    // Calculate unlock expiration time
+    $unlockExpiration = new DateTime('now', new DateTimeZone('Asia/Manila'));
+    $unlockExpiration->modify("+$hours hours +$minutes minutes");
+    $unlockExpirationStr = $unlockExpiration->format('Y-m-d H:i:s');
 
-        // Close the statement
-        $stmt->close();
+    // Update the schedule in the database
+    $updateSql = "UPDATE schedule SET schedule_status = 'approved' , status_date = NOW(), manually_unlocked = 1, unlock_expiration = ? WHERE id = ?";
+    $stmt = $conn->prepare($updateSql);
+    $stmt->bind_param('si', $unlockExpirationStr, $scheduleId);
+    $stmt->execute();   
+
+    if ($stmt->affected_rows > 0) {
+        echo json_encode(['message' => 'Schedule unlocked successfully.']);
     } else {
-        // If the SQL query preparation failed, return an error message
-        echo "Error preparing the SQL query: " . $conn->error;
+        echo json_encode(['message' => 'Failed to unlock the schedule.']);
     }
 
-    // Close the database connection
+    $stmt->close();
     $conn->close();
 } else {
-    // If no ID is passed, return an error message
-    echo "No schedule ID provided.";
+    echo json_encode(['message' => 'Invalid input.']);
 }
 ?>
