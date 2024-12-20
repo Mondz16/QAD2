@@ -2,58 +2,114 @@
 include 'connection.php';
 session_start();
 
+// Check user session
 if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11') {
     header("Location: login.php");
     exit();
 }
 
+// Initialize variables for status and message
+$status = '';
+$message = '';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['notification_id']) && isset($_POST['action'])) {
-        $notification_id = $_POST['notification_id'];
-        $action = $_POST['action'];
-        
-        if ($action == 'accept') {
-            // Update team status to accepted
-            $sql_update_status = "UPDATE team t 
-                                  INNER JOIN internal_users i ON t.fname = i.first_name AND t.mi = i.middle_initial AND t.lname = i.last_name
-                                  SET t.status = 'accepted' 
-                                  WHERE i.user_id = ?";
-            $stmt_update_status = $conn->prepare($sql_update_status);
-            $stmt_update_status->bind_param("s", $_SESSION['user_id']);
-            $stmt_update_status->execute();
-            $stmt_update_status->close();
-            
-            // Retrieve schedule details for the logged-in user
-            $sql_schedule = "SELECT s.college, s.program, s.level_applied, s.schedule_date, s.schedule_time 
-                             FROM schedule s
-                             INNER JOIN team t ON s.id = t.schedule_id
-                             INNER JOIN internal_users i ON t.fname = i.first_name AND t.mi = i.middle_initial AND t.lname = i.last_name
-                             WHERE i.user_id = ?";
-            $stmt_schedule = $conn->prepare($sql_schedule);
-            $stmt_schedule->bind_param("s", $_SESSION['user_id']);
-            $stmt_schedule->execute();
-            $stmt_schedule->bind_result($college, $program, $level_applied, $schedule_date, $schedule_time);
-            $stmt_schedule->fetch();
-            $stmt_schedule->close();
-            
-            // Delete the accepted notification
-            $sql_delete_notification = "DELETE FROM notifications WHERE id = ?";
-            $stmt_delete_notification = $conn->prepare($sql_delete_notification);
-            $stmt_delete_notification->bind_param("i", $notification_id);
-            $stmt_delete_notification->execute();
-            $stmt_delete_notification->close();
-            
-            // Redirect to assessment page with schedule details
-            header("Location: internal_assessment.php?college=$college&program=$program&level=$level_applied&date=$schedule_date&time=$schedule_time");
-            exit();
-        } elseif ($action == 'decline') {
-            // Handle decline action if needed
-            // Redirect back to notifications page or handle as per your application logic
-        }
+    $team_id = intval($_POST['team_id']);
+    $schedule_id = intval($_POST['schedule_id']);
+    $action = $_POST['action'];
+
+    if ($action === 'accept') {
+        $status = 'accepted';
+    } elseif ($action === 'decline') {
+        $status = 'declined';
+    } else {
+        header("Location: internal_notification.php");
+        exit();
     }
+
+    $sql_update = "UPDATE team SET status = ? WHERE id = ? AND schedule_id = ?";
+    $stmt_update = $conn->prepare($sql_update);
+    $stmt_update->bind_param("sii", $status, $team_id, $schedule_id);
+
+    if ($stmt_update->execute()) {
+        $message = "Schedule $status successfully.";
+    } else {
+        $status = "error";
+        $message = "Error updating notification: " . $conn->error;
+    }
+
+    $stmt_update->close();
+} else {
+    header("Location: internal_notification.php");
+    exit();
 }
 
-// Redirect back to notifications page if action was not handled properly
-header("Location: internal_notification.php");
-exit();
+$conn->close();
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation Result</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="index.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Quicksand", sans-serif;
+        }
+        body {
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h2 {
+            font-size: 24px;
+            color: #292D32;
+            margin-bottom: 20px;
+        }
+        .message {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .btn-hover{
+            border: 1px solid #AFAFAF;
+            text-decoration: none;
+            color: black;
+            border-radius: 10px;
+            padding: 20px 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .btn-hover:hover {
+            background-color: #AFAFAF;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-content">
+        <div style='height: 50px; width: 0px;'></div>
+        <img src="images/Success.png" style=height:100px;">
+        <div style="height: 25px; width: 0px;"></div>
+        <div class="message <?php echo $status; ?>">
+            <?php echo $message; ?>
+        </div>
+        <div style="height: 50px; width: 0px;"></div>
+        <a href="internal_notification.php" class="btn-hover">OKAY</a>
+        <div style='height: 100px; width: 0px;'></div>
+        <div class='hairpop-up'></div>
+    </div>
+</body>
+</html>

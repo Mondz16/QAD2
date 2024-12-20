@@ -1,0 +1,624 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap');
+
+body {
+    font-family: "Quicksand", sans-serif;
+}
+
+.content {
+    margin-top: 50px;
+}
+
+.form-control {
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.form-control::placeholder {
+    font-size: 0.9em;
+}
+
+.form-select {
+    font-size: 0.9em;
+}
+
+.form-check-label {
+    margin-left: 5px;
+}
+
+.header .one,
+.header .datausep {
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.header .one {
+    color: rgb(229, 156, 36);
+}
+
+.header .datausep {
+    color: rgb(151, 57, 57);
+}
+
+.divider {
+    height: 0px;
+    width: 16px;
+    display: block;
+}
+
+.vertical-line {
+    height: 32px;
+    width: 1px;
+    background: #E5E5E5;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .header img {
+        height: 72px;
+        margin: 0 auto;
+    }
+
+    .header .text {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .divider,
+    .vertical-line {
+        display: none;
+    }
+
+    .header .col-12 {
+        text-align: center;
+    }
+}
+
+.account-type-selection {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.account-type-option {
+    border: 1px solid #ced4da;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s, color 0.3s;
+    position: relative;
+}
+
+.account-type-option input {
+    display: none;
+}
+
+.account-type-option::before {
+    content: '';
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid #ced4da;
+    background-color: white;
+    margin-right: 10px;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.account-type-option.selected {
+    background: linear-gradient(275.52deg, #973939 0.28%, #B26F6F 100%);
+    color: white;
+}
+
+.account-type-option.selected::before {
+    background: linear-gradient(275.52deg, #973939 0.28%, #B26F6F 100%);
+    border-color: white;
+}
+
+.account-type-option.selected .circle {
+    background-color: white;
+}
+
+.btn-wte {
+    color: white;
+    background: linear-gradient(275.52deg, #973939 0.28%, #B26F6F 100%);
+    border: 1px solid #ced4da;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s, color 0.3s;
+    position: relative;
+}
+
+.btn-wte:hover {
+    background: linear-gradient(275.52deg, #972929 0.28%, #B22F6F 100%);
+}
+
+.btn-back {
+    color: black;
+    text-decoration: none;
+    font-size: 1rem;
+    margin-right: 300px;
+}
+
+.btn-back:hover {
+    text-decoration: underline;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.table th,
+.table td {
+    padding: 5px;
+    text-align: left;
+    font-size: 1rem;
+    border-bottom: 1px solid #AFAFAF;
+    vertical-align: middle;
+    max-width: 300px;
+}
+
+.table th {
+    background-color: #fff;
+    font-weight: bold;
+}
+
+
+.table tr td:last-child {
+    padding-right: 0px;
+}
+
+.button {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.3s;
+    margin: 0px 2px;
+}
+
+.view-team {
+    background-color: #666;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.view-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 15px;
+}
+
+.view-team:hover {
+    background-color: #4b4b4b;
+}
+
+.approve {
+    background-color: #76FA97;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.approve:hover {
+    background-color: rgb(49, 204, 85);
+}
+
+.reschedule {
+    background-color: #FFB366;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+.reschedule:hover {
+    background-color: #e7a25e;
+}
+.cancel {
+    background-color: #FF6666;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+.cancel:hover {
+    background-color: #eb5f5f;
+}
+
+.filter-container {
+    display: flex;
+    justify-content: flex-end;
+    margin: 20px 0;
+}
+
+.filter-container .dropbtn {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.filter-container .dropbtn:hover {
+    background-color: #f0f0f0;
+}
+
+.filter-container .dropdown-content a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: #000;
+    border-bottom: 1px solid #ddd;
+}
+
+.filter-container .dropdown-content a:hover {
+    background-color: #f0f0f0;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: max-content;
+    border-radius: 10px;
+}
+
+.modal-content th, .modal-content td {
+    padding: 5px 10px;
+    width: 150px;
+}   
+
+#teamModal .modal-content td:first-child{
+    width: 250px;
+}
+
+#teamModal .modal-content td:last-child{
+    width: 190px;
+}
+
+.modal-content button{
+    background-color: transparent;
+    border: 1px solid #ced4da;
+    border-radius: 7px;
+    padding: 5px 15px;
+    color: black;
+    margin-right: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button{
+    background-color: transparent;
+    border: 1px solid #ced4da;
+    border-radius: 7px;
+    padding: 5px 15px;
+    color: black;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
+    background-color: #ced4da;
+}
+
+.modal-content textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    resize: none;
+}
+
+.modal-content input {
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.modal-content label {
+    margin-right: 5px;
+}
+
+.modal .close {
+    color: #aaa;
+    font-size: 40px;
+    font-weight: bold;
+    position: absolute;
+    right: 30px;
+    top: 0px;
+}
+
+.modal .header {    
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 10px;
+    margin-bottom: 10px;
+}
+
+.modal h2{
+    font-size: 20px !important;
+    font-weight: bold;
+}
+
+#approveModal h2{
+    width: 380px;
+    font-size: 1.5rem !important;
+    font-weight: 500 !important;
+    text-align: center;
+}
+
+.modal .close:hover,
+.modal .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-buttons,
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.modal-buttons button,
+.modal-footer button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modal-buttons .yes-btn {
+    background-color:  rgb(49, 204, 85);
+    color: white;
+}
+
+.modal-buttons .yes-btn:hover {
+    background-color:  #28a745;
+    color: white;
+}
+
+.modal-buttons .rejection{
+    background-color: #e74c3c !important; 
+}
+
+
+.modal-buttons .no-btn {
+    background-color: white;
+    color:#888;
+}
+
+.modal-buttons .no-btn:hover {
+    background-color: white;
+    text-decoration: underline;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.controls button {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.refresh {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.refresh button {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.refresh button:hover {
+    background-color: #218838;
+}
+
+.refresh {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+}
+
+.refresh:hover {
+    background-color: #218838;
+}
+
+.controls .add {
+    background-color: #fff;
+    color: #000;
+}
+
+.controls .add:hover {
+    background-color: #f0f0f0;
+}
+
+.nebtn {
+    color: black;
+    border-radius: 10px;
+    outline: unset;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 16px;
+    font-size: 16px;
+}
+
+.pobtn {
+    color: white;
+    background: linear-gradient(275.52deg, #B73033 0%, #CD7E7E 96%);
+    border: unset;
+    outline: unset;
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 16px;
+}
+
+.nebtn:hover {
+    border: 1px solid black;
+}
+
+.pobtn:hover {
+    color: white;
+}
+
+.btn-view {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-edit {
+    background-color: #6c757d;
+    color: white;
+}
+
+.card {
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: none;
+    padding: 0.5rem 1rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.value {
+    font-size: 1rem;
+}
+
+.level-applied {
+    background-color: #FFF1C0;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7rem;
+    font-weight: bold;
+    border-radius: 10px;
+    border: 1px solid #E6A33E;
+}
+
+.download-btn {
+    background-color: #D4FFDF;
+    color: #34C759;
+    border: 1px solid #34C759;
+    border-radius: 10px;
+    padding: 0.375rem 0.75rem;
+}
+
+.ccy {
+    border: 1px solid #E6A33E;
+    background-color: #FFF1C0;
+}
+
+.luspad {
+    background-color: #fff;
+    color: #666;
+    font-size: 0.8rem;
+}
+
+
+.hidden {
+display: none;
+}
+/* Dropdown Button */
+.dropbtn {
+    background-color: #888;
+    color: #888;
+    padding: 10px 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+display: none;
+position: absolute;
+background-color: #f9f9f9;
+min-width: 160px;
+box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+display: block;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+background-color: #dc3545;
+color: white;
+}
+
+.container h2{
+    font-weight: 600;
+    font-size: 1.5rem;
+}

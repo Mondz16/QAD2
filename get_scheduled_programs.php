@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['college_id'])) {
     $sql = "SELECT DISTINCT p.id, p.program
             FROM program p
             JOIN schedule s ON p.id = s.program_id
-            WHERE s.college_id = $collegeId";
+            WHERE s.college_code = $collegeId";
     
     $result = $conn->query($sql);
     

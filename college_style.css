@@ -1,0 +1,471 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Quicksand", sans-serif;
+}
+
+.container {
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 10px;
+}
+
+.header {
+    background-color: white;
+    color: black;
+    padding: 10px 0;
+}
+
+.headerLeft {
+    order: unset;
+    flex: unset;
+    align-self: unset;
+}
+
+.USePData {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    place-content: unset;
+    align-items: center;
+    overflow: unset;
+}
+
+.headerLeftText {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: unset;
+    place-content: unset;
+    align-items: unset;
+    overflow: unset;
+    font-size: 18px;
+}
+
+.headerRight {
+    order: unset;
+    flex: unset;
+    align-self: unset;
+}
+
+.SDMD {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: unset;
+    place-content: unset;
+    align-items: center;
+    overflow: unset;
+}
+
+.headerRightText {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: unset;
+    place-content: unset;
+    align-items: flex-end;
+    overflow: unset;
+    text-align: right;
+}
+
+.headerLeftText h1, .headerLeftText h2 {
+    margin: 0;
+    padding: 0;
+}
+
+.headerRight .btn {
+    background-color: #dc3545;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-left: -500px;
+    transition: background-color 0.3s ease;
+}
+
+.headerRight .btn:hover {
+    background-color: #b82c3b;
+}
+
+.pageHeader{
+    display: flex;
+    max-width: 1920px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 50px;
+    margin-bottom: 30px;
+}
+
+.custom-btn-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 10px;
+    border: 1px solid #AFAFAF;
+    border-radius: 10px;
+}
+
+.custom-btn-group .btn-toggle {
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 160px;
+    height: 50px;
+    font-size: 18px;
+    background-color: white;
+}
+
+.custom-btn-group .btn-colleges {
+    background-color: #B73033;
+    color: white;
+    border: none;
+}
+
+.btn-add-schedule {
+    background-color: #2CB84F;
+    color: white;
+    border: none;
+    padding: 10px 0px;
+    display: flex;
+    align-items: center;
+    font-weight: lighter;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    width: 170px;
+    height: 50px;
+    justify-content: center;
+}
+
+.btn-add-schedule:hover {
+    background-color: #28a745;
+}
+
+.btn-import{
+    background-color: #fff;
+    border: 1px solid #AFAFAF;
+    padding: 10px 0px;
+    display: flex;
+    align-items: center;
+    font-weight: lighter;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    width: 140px;
+    height: 50px;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.btn-import:hover {
+    background-color: #ced4da;
+}
+
+.btn-company {
+    transition: background-color 0.3s ease;
+    background-color: #f8f9fa;
+    color: #888;
+    border: 1px solid #ced4da;
+    font-weight: lighter !important;
+}
+
+.btn-company:hover {
+    background-color: #B73033;
+    color: white;
+    font-weight: bold !important;
+}
+
+.container2{
+    max-width: 1500px;
+    padding: 0 24px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+h2 {
+    text-align: center;
+    margin: 20px 0;
+    color: #333;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0px 0;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table_header {
+    background-color: #f8f9fa;
+    padding: 10px;
+    font-size: 1.5em;
+    color: #dc3545;
+    justify-content: center;
+    align-items: center;
+}
+
+.button-container{
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: end;
+    justify-content: end;
+    padding-right: 20px;
+}
+
+.button-container button{
+    padding: 10px 15px;
+    background-color: #2cb84f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button-container button:hover{
+    background-color: #259b42;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    font-size: 16px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+th {
+    background-color: #f1f1f1;
+}
+
+tr td:first-child{
+    max-width: 600px;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+.button {
+    background-color: #2CB84F;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding-top: 60px;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 0% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 1200px;
+    border-radius: 8px;
+    text-align: center;
+    max-height: 90vh; /* Adjust this value based on your needs */
+    overflow: auto; /* Enable scrolling */
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+}
+
+.modal-header-holder {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header-holder h2{
+    margin-top: 0;
+}
+
+.modal-content .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.modal-content .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.modal-content .form-group input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.modal-content .modal-btn-group {
+    display: flex;
+    justify-content: space-between;
+}
+
+.modal-content .modal-btn-group .btn {
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    width: 45%;
+}
+
+.modal-content .modal-btn-group .btn-secondary {
+    background-color: #e9ecef;
+    border: none;
+    color: black;
+}
+
+.modal-content .modal-btn-group .btn-primary {
+    background-color: #28a745;
+    border: none;
+    color: white;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: end;
+    margin-right: 30px;
+    margin-bottom: 15px;
+}
+
+.close:hover, .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.import-modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 10px 30px 20px 30px;
+    border: 1px solid #888;
+    max-width: 400px;
+    border-radius: 10px;
+}
+
+.import-modal-content h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    margin-bottom: 10px;
+}
+
+.form-group input {
+    padding: 10px;
+    font-size: 16px;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn-cancel,
+.btn-add-program {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background-color: #fff;
+    transition: background-color 0.3s ease;
+    color: #888;
+    border: 1px solid #aaa;
+    width: 150px;
+}
+
+.btn-cancel:hover{
+    background-color: #ced4da;
+}
+
+.btn-add-program {
+    background-color: #2cb84f;
+    transition: background-color 0.3s ease;
+    color: white;
+    width: 180px;
+}
+
+.btn-add-program:hover{
+    background-color: #28a745;
+}
+
+.custom-table{
+    margin-top: 5px;
+}
+
+.custom-table th, .custom-table td {
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid #AFAFAF;
+    background-color: #fff;
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+.view-button{
+    padding: 10px 15px;
+    border: 1px solid #aaa;
+    background-color: #fff;
+    border-radius: 7px;
+    transition: background-color 0.3s ease;
+}
+
+.view-button:hover{
+    background-color: #ced4da;
+}
+
+.edit-button{
+    padding: 10px 15px;
+    border: 1px solid #aaa;
+    background-color: #fff;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.edit-button:hover{
+    background-color: #ced4da;
+}
+
+.sort-buttons {
+    border: none;
+}
