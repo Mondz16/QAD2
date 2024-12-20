@@ -245,6 +245,60 @@ $result = $stmt->get_result();
                 if ($result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
 
+                        $scheduleDate = $row['schedule_date'];
+                        $scheduleTime = $row['schedule_time'];
+
+                        // Ensure both schedule_date and schedule_time are valid
+                        if (empty($scheduleDate) || empty($scheduleTime)) {
+                            echo "Missing schedule_date or schedule_time for ID: " . $row['id'] . "<br>";
+                            continue; // Skip this record
+                        }
+
+                        // Combine schedule_date and schedule_time into a single DateTime object
+                        $scheduleDateTime = DateTime::createFromFormat('Y-m-d H:i:s', $scheduleDate . ' ' . $scheduleTime, new DateTimeZone('Asia/Manila'));
+
+                        // Check if the schedule_date and schedule_time are valid
+                        if (!$scheduleDateTime) {
+                            echo "Invalid schedule_date or schedule_time format for ID: " . $row['id'] . "<br>";
+                            continue; // Skip this record
+                        }
+
+                        // Check if the schedule matches the current date, the time is 5 PM or later, and manually_unlocked = 0
+                        if ($currentDateTime->format('Y-m-d') === $scheduleDateTime->format('Y-m-d') && 
+                            $currentDateTime >= $scheduleDateTime->setTime(17, 0, 0) && 
+                            $row['manually_unlocked'] == 0) {
+                            
+                            // Check if the schedule is not already marked as done
+                            if ($row['schedule_status'] !== 'done') {
+                                // Prepare the update query
+                                $updateDoneSql = "UPDATE schedule 
+                                                SET schedule_status = 'done', 
+                                                    status_date = NOW() 
+                                                WHERE id = ?";
+                                $updateDoneStmt = $conn->prepare($updateDoneSql);
+
+                                if ($updateDoneStmt) {
+                                    // Bind parameters and execute
+                                    $updateDoneStmt->bind_param("i", $row['id']);
+                                    if ($updateDoneStmt->execute()) {
+                                        // Log successful update
+                                        if ($updateDoneStmt->affected_rows > 0) {
+                                            echo "Schedule ID " . $row['id'] . " marked as 'done' automatically.<br>";
+                                        } else {
+                                            echo "No changes made for schedule ID: " . $row['id'] . ".<br>";
+                                        }
+                                    } else {
+                                        // Log error if execution fails
+                                        echo "Execution failed for ID " . $row['id'] . ": " . $conn->error . "<br>";
+                                    }
+                                    // Close statement
+                                    $updateDoneStmt->close();
+                                } else {
+                                    // Log error if preparing the statement fails
+                                    echo "Prepare failed: (" . $conn->errno . ") " . $conn->error . "<br>";
+                                }
+                            }
+                        }
                         // Check if the schedule is manually unlocked
                         if ($row['manually_unlocked'] == 1 && !empty($row['unlock_expiration'])) {
                             // Validate unlock_expiration date format
