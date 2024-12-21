@@ -745,7 +745,6 @@ if (!isset($_SESSION['user_id'])) {
             fetchProgramLevelDynamic(count);
         }
 
-        // Fetch Program Level for a Specific Program
         function fetchProgramLevelDynamic(count) {
             const programId = document.getElementById(`program-${count}`).value;
             if (programId) {

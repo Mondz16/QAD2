@@ -192,6 +192,14 @@ body {
     margin: 0px 2px;
 }
 
+.unlock {
+    background-color: #007BFF;
+    color: white;
+}
+
+.unlock:hover {
+    opacity: 0.9;
+}
 .view-team {
     background-color: #666;
     color: white;
