@@ -54,33 +54,62 @@ if ($result->num_rows > 0) {
 
 // Handle AJAX requests
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['college_code'])) {
-        // Fetch distinct programs for a specific college
-        $college_code = $_POST['college_code'];
-
-        $sql = "SELECT DISTINCT program_name FROM program WHERE college_code = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $college_code);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
+    if (isset($_POST['college_codes'])) {
+        $collegeCodes = json_decode($_POST['college_codes'], true);
         $options = "";
-
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                $options .= "<div class='select-item' data-value='" . htmlspecialchars($row['program_name']) . "'>" . htmlspecialchars($row['program_name']) . "</div>";
+        $programsGroupedByCollege = [];
+    
+        if (!empty($collegeCodes)) {
+            $placeholders = implode(',', array_fill(0, count($collegeCodes), '?'));
+            $sql = "SELECT p.program_name, p.college_code, plh.program_level, plh.date_received
+                    FROM program p
+                    LEFT JOIN program_level_history plh ON p.id = plh.program_id
+                    WHERE p.college_code IN ($placeholders)
+                    ORDER BY p.college_code ASC, p.program_name ASC, plh.date_received ASC";
+            $stmt = $conn->prepare($sql);
+    
+            $types = str_repeat('s', count($collegeCodes));
+            $stmt->bind_param($types, ...$collegeCodes);
+            $stmt->execute();
+            $result = $stmt->get_result();
+    
+            if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    $programName = htmlspecialchars($row['program_name']);
+                    $collegeCode = $row['college_code'];
+                    $programLevel = htmlspecialchars($row['program_level'] ?? 'N/A');
+                    $dateReceived = htmlspecialchars($row['date_received'] ?? 'N/A');
+    
+                    // Populate the program dropdown options
+                    $options .= "<div class='select-item' data-value='{$programName}'>{$programName}</div>";
+    
+                    // Group programs by college code
+                    if (!isset($programsGroupedByCollege[$collegeCode])) {
+                        $programsGroupedByCollege[$collegeCode] = [];
+                    }
+                    $programsGroupedByCollege[$collegeCode][] = [
+                        'program_name' => $programName,
+                        'program_level' => $programLevel,
+                        'date_received' => $dateReceived
+                    ];
+                }
+            } else {
+                $options .= "<div class='select-item'>No programs available</div>";
             }
-        } else {
-            $options .= "<div class='select-item'>No programs available</div>";
+    
+            $stmt->close();
         }
-
-        echo $options;
-        $stmt->close();
-        exit;  // Exit to prevent further HTML output
+    
+        echo json_encode([
+            'options' => $options,
+            'programs' => $programsGroupedByCollege
+        ]);
+        exit;
     }
+    
 
     if (isset($_POST['program_names'])) {
-        // Fetch program level history for specific programs
+        // Existing code to fetch program level history
         $program_names = json_decode($_POST['program_names'], true);
         $events = []; // Array to store events for the timeline
 
@@ -232,7 +261,7 @@ $conn->close();
             display: inline-block;
         }
 
-        .select-items {
+        .select-items, .college-select-items {
             position: absolute;
             background-color: #f9f9f9;
             top: 100%;
@@ -246,13 +275,13 @@ $conn->close();
             display: none;
         }
 
-        .select-item {
+        .select-item, .college-select-item {
             padding: 10px;
             cursor: pointer;
             font-weight: bold;
         }
 
-        .select-item:hover {
+        .select-item:hover, .college-select-item:hover {
             background: #9B0303;
             color: white;
         }
@@ -601,16 +630,17 @@ $conn->close();
                 <p style="text-align: center; font-size: 30px"><strong>PROGRAM LEVEL HISTORY TIMELINE</strong></p>
                 <div style="height: 30px;"></div>
                 <div class="college-program">
-                    <div class="college-program-history">
-                        <select id="collegeSelect" onchange="loadPrograms(this.value)">
-                            <option value="">SELECT COLLEGE</option>
+                <div class="college-program-history">
+                    <div class="college-select-selected">SELECT COLLEGE/S</div>
+                        <div class="college-select-items">
                             <?php
                             foreach ($colleges as $college) {
-                                echo "<option value='" . $college['code'] . "'>" . htmlspecialchars($college['college_name']) . "</option>";
+                                echo "<div class='college-select-item' data-value='" . $college['code'] . "'>" . htmlspecialchars($college['college_name']) . "</div>";
                             }
                             ?>
-                        </select>
+                        </div>
                     </div>
+
                     <div class="college-program-history">
                         <div class="select-selected">SELECT PROGRAM/S</div>
                         <div class="select-items">
@@ -660,374 +690,782 @@ $conn->close();
 
 
     <script>
-        function loadPrograms(collegeCode) {
-            if (collegeCode === "") {
-                document.querySelector('.select-items').innerHTML = "<div>Select programs</div>";
-                document.getElementById('programHistory').innerHTML = "";
-                return;
+        let currentSelectionType = 'college';
+    // Function to generate acronym from a full program name
+    function getAcronym(fullName) {
+    const smallWords = ['in', 'and', 'with', 'of', 'the', 'for', 'at', 'by'];
+    const acronym = fullName
+        .split(/\s+/) // Split by any whitespace
+        .filter(word => !smallWords.includes(word.toLowerCase()))
+        .map(word => word.replace(/[^A-Za-z]/g, '').charAt(0).toUpperCase()) // Remove non-letters and get first letter
+        .join('');
+    console.log(`Program: ${fullName}, Acronym: ${acronym}`); // Debug log
+    return acronym;
+}
+
+
+    
+    // Function to handle multi-select for colleges
+function setupCollegeMultiSelect() {
+    const selectItems = document.querySelector('.college-program-history .college-select-items');
+    const selectedDiv = document.querySelector('.college-program-history .college-select-selected');
+    const items = selectItems.getElementsByClassName('college-select-item');
+    const programDropdown = document.querySelector('.college-program-history .select-selected'); // Program dropdown element
+
+    Array.from(items).forEach(function (item) {
+        item.addEventListener('click', function (e) {
+            e.stopPropagation();
+            item.classList.toggle('same-as-selected');
+
+            // Get selected values and names
+            let selectedValues = Array.from(selectItems.getElementsByClassName('same-as-selected')).map(function (selectedItem) {
+                return {
+                    code: selectedItem.dataset.value, // College code
+                    name: selectedItem.textContent.trim() // College name
+                };
+            });
+
+            // Update display
+            if (selectedValues.length > 0) {
+                const displayedText = selectedValues.length > 1 
+                    ? `${selectedValues[0].name} and ${selectedValues.length - 1} more` 
+                    : selectedValues[0].name;
+                selectedDiv.textContent = displayedText;
+            } else {
+                selectedDiv.textContent = 'SELECT COLLEGE/S';
             }
 
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "", true); // Send POST request to the same page
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    document.querySelector('.select-items').innerHTML = xhr.responseText;
-                    setupCustomSelect();
-                }
-            };
-            xhr.send("college_code=" + encodeURIComponent(collegeCode));
-        }
-
-        function setupCustomSelect() {
-            const selectItems = document.querySelector('.select-items');
-            const selectedDiv = document.querySelector('.select-selected');
-            const items = selectItems.getElementsByClassName('select-item');
-            const maxSelection = 5; // Maximum number of selectable programs
-
-            Array.from(items).forEach(function(item) {
-                item.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    item.classList.toggle('same-as-selected');
-
-                    // Get selected values
-                    let selectedValues = Array.from(selectItems.getElementsByClassName('same-as-selected')).map(function(selectedItem) {
-                        return selectedItem.dataset.value;
-                    });
-
-                    // Limit selection to maxSelection
-                    if (selectedValues.length > maxSelection) {
-                        alert(`You can only select up to ${maxSelection} programs.`);
-                        item.classList.remove('same-as-selected');
-                        return;
-                    }
-
-                    // Update display
-                    if (selectedValues.length > 0) {
-                        const displayedText = selectedValues.length > 1 ? `${selectedValues[0]} and ${selectedValues.length - 1} more` : selectedValues[0];
-                        selectedDiv.textContent = displayedText;
-                    } else {
-                        selectedDiv.textContent = 'Select programs';
-                    }
-
-                    loadProgramHistories(selectedValues);
-                });
-            });
-
-            // Toggle dropdown
-            selectedDiv.addEventListener('click', function(e) {
-                e.stopPropagation();
-                closeAllSelect();
-                selectItems.style.display = selectItems.style.display === 'block' ? 'none' : 'block';
-            });
-        }
-
-
-        function loadProgramHistories(selectedPrograms) {
-            if (selectedPrograms.length === 0) {
-                document.getElementById('chartContainer').innerHTML = "";
-                return;
+            // Disable program dropdown if more than one college is selected
+            if (selectedValues.length > 1) {
+                programDropdown.classList.add('disabled'); // Add a class to indicate it's disabled
+                programDropdown.style.pointerEvents = 'none'; // Disable user interaction
+                programDropdown.style.opacity = '0.5'; // Make it visually appear disabled
+            } else {
+                programDropdown.classList.remove('disabled'); // Remove the disabled class
+                programDropdown.style.pointerEvents = 'auto'; // Enable user interaction
+                programDropdown.style.opacity = '1'; // Restore opacity
             }
 
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "", true); // Send POST request to the same page
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    try {
-                        const allEvents = JSON.parse(xhr.responseText);
-                        renderTimelineCharts(allEvents, selectedPrograms);
-                    } catch (e) {
-                        console.error("Failed to parse JSON response", e);
-                        document.getElementById('programHistory').innerHTML = xhr.responseText;
-                    }
-                }
-            };
-            xhr.send("program_names=" + encodeURIComponent(JSON.stringify(selectedPrograms)));
-        }
+            // Extract only the college codes for backend processing
+            const selectedCollegeCodes = selectedValues.map(college => college.code);
 
-        function renderTimelineCharts(eventsGroupedByProgram, selectedPrograms) {
-            const chartContainer = document.getElementById('chartContainer');
+            // Load programs for selected colleges and pass selectedValues
+            loadProgramsForColleges(selectedCollegeCodes, selectedValues);
+        });
+    });
 
-            // Clear previous charts
-            chartContainer.innerHTML = '';
+    // Toggle dropdown
+    selectedDiv.addEventListener('click', function (e) {
+        e.stopPropagation();
+        closeAllSelect();
+        selectItems.style.display = selectItems.style.display === 'block' ? 'none' : 'block';
+    });
+}
 
-            Object.keys(eventsGroupedByProgram).forEach((programName, programIndex) => {
-                const events = eventsGroupedByProgram[programName];
 
-                // Create a container div for each program
-                const programContainer = document.createElement('div');
-                programContainer.classList.add('orientation4');
 
-                // Create a label for each program
-                const programLabel = document.createElement('h3');
-                programLabel.textContent = `${programName}`;
-                programContainer.appendChild(programLabel);
+function createTimeline(programsGroupedByCollege, selectedColleges) {
+    const chartContainer = document.getElementById('chartContainer');
 
-                // Create a new canvas element for each program
-                const canvas = document.createElement('canvas');
-                canvas.id = `timelineChart${programIndex}`;
-                canvas.style.height = '200px';
-                canvas.style.width = '100%';
-                programContainer.appendChild(canvas);
+    // Clear previous content in chartContainer
+    chartContainer.innerHTML = '';
 
-                // Append the program container to the chart container
-                chartContainer.appendChild(programContainer);
+    // Iterate through each selected college
+    selectedColleges.forEach(selectedCollege => {
+        const collegeCode = selectedCollege.code;
+        const collegeName = selectedCollege.name;
+        const programs = programsGroupedByCollege[collegeCode] || [];
 
-                // Create a chart for each canvas
-                if (events.length === 0) {
-                    return;
-                }
+        // Create a section for the college
+        const collegeSection = document.createElement('div');
+        collegeSection.classList.add('college-timeline-section');
+        collegeSection.style.marginBottom = '40px'; // Add space between sections
 
-                // Convert date strings to Date objects
-                events.forEach(event => {
-                    event.x = new Date(event.date);
-                    event.y = 0;
-                    event.label = `${event.label}; ${new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-                });
+        // Add the college name as a heading
+        const collegeHeading = document.createElement('h2');
+        collegeHeading.textContent = `${collegeName}`;
+        collegeHeading.style.textAlign = 'center';
+        collegeHeading.style.marginBottom = '20px';
+        collegeSection.appendChild(collegeHeading);
 
-                // Determine the timeline range
-                const dates = events.map(event => event.x);
-                const minDate = new Date(Math.min.apply(null, dates));
-                const maxDate = new Date(Math.max.apply(null, dates));
-                minDate.setFullYear(minDate.getFullYear() - 1);
-                maxDate.setFullYear(maxDate.getFullYear() + 6);
+        // Create a canvas for the timeline chart
+        const canvas = document.createElement('canvas');
+        canvas.id = `timelineChart-${collegeCode}`;
+        collegeSection.appendChild(canvas);
 
-                // Prepare the dataset for Chart.js
-                const dataset = {
-                    datasets: [{
-                        label: 'Program Timeline',
-                        data: events,
-                        backgroundColor: 'blue',
-                        pointRadius: 0, // Hide the scatter points
-                        pointHoverRadius: 0,
-                        showLine: false
-                    }]
-                };
+        chartContainer.appendChild(collegeSection);
 
-                // Get the context of the new canvas element
-                const ctx = canvas.getContext('2d');
+        // Prepare data for the timeline chart
+        const acronymsSet = new Set();
+        const dataPoints = [];
+        const datesSet = new Set();
 
-                // Define colors for each level
-                const levelColors = {
-                    'Not Accreditable': ' #B73033', // Red
-                    'Candidate': '#76FA97', // Green
-                    'PSV': '#CCCCCC', // Grey
-                    '1': '#FDC879', // Yellow
-                    '2': '#FDC879', // Yellow
-                    '3': '#FDC879', // Yellow
-                    '4': '#FDC879' // Yellow
-                };
+        programs.forEach(program => {
+            const acronym = getAcronym(program.program_name); // Generate acronym
+            const level = program.program_level;
+            const date = new Date(program.date_received);
+            const year = date.getFullYear();
+            const month = date.getMonth(); // 0-based (0 = January)
+            const fractionalYear = year + (month + 1) / 12; // Proper fractional year for proportional spacing
 
-                // Define abbreviations for each level
-                const levelAbbreviations = {
-                    'Not Accreditable': 'NA',
-                    'Candidate': 'CAN',
-                    'PSV': 'PSV',
-                    '1': 'LVL 1',
-                    '2': 'LVL 2',
-                    '3': 'LVL 3',
-                    '4': 'LVL 4'
-                };
-
-                // Function to draw rounded rectangles with border
-                function drawRoundedRectWithBorder(ctx, x, y, width, height, radius, borderColor) {
-                    ctx.beginPath();
-                    ctx.moveTo(x + radius, y);
-                    ctx.lineTo(x + width - radius, y);
-                    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-                    ctx.lineTo(x + width, y + height - radius);
-                    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-                    ctx.lineTo(x + radius, y + height);
-                    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-                    ctx.lineTo(x, y + radius);
-                    ctx.quadraticCurveTo(x, y, x + radius, y);
-                    ctx.closePath();
-
-                    // Fill the rectangle
-                    ctx.fill();
-
-                    // Draw the border
-                    ctx.strokeStyle = borderColor;
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-                }
-
-                // Define a plugin to draw vertical lines with labels and borders
-                const verticalLinePlugin = {
-                    id: 'verticalLinePlugin',
-                    beforeDraw: chart => {
-                        const {
-                            ctx,
-                            chartArea: {
-                                top,
-                                bottom
-                            },
-                            scales: {
-                                x,
-                                y
-                            }
-                        } = chart;
-                        ctx.save();
-
-                        events.forEach(event => {
-                            const level = event.label.split(';')[0]; // Extract the level from the label
-                            ctx.fillStyle = levelColors[level] || 'black'; // Use black as default color if not found
-
-                            const xPosition = x.getPixelForValue(event.x);
-                            const lineWidth = 60;
-                            const lineHeight = bottom - y.getPixelForValue(0);
-                            const lineTop = y.getPixelForValue(0);
-
-                            // Define margins
-                            const marginBetweenLines = 10; // Space between the first and second vertical lines
-                            const marginBelowSecondLine = 5; // Space below the second vertical line
-
-                            // Calculate the offset for the first rectangle
-                            const offset = lineHeight / 2 + marginBetweenLines; // Increase offset to move the first rectangle up
-
-                            // Draw the first rectangle for the level, adjusted upward, with border
-                            ctx.fillStyle = levelColors[level] || 'black';
-                            drawRoundedRectWithBorder(ctx, xPosition - lineWidth / 2, lineTop - offset, lineWidth, 70, 5, '#AFAFAF');
-
-                            // Draw the level abbreviation inside the first rectangle
-                            ctx.fillStyle = 'black'; // Text color
-                            ctx.font = 'bold 16px Arial'; // Bold font style
-                            ctx.textAlign = 'center'; // Center the text
-                            ctx.textBaseline = 'middle';
-                            ctx.fillText(levelAbbreviations[level] || '', xPosition, lineTop - offset + 35); // Centered at 35 pixels
-
-                            const secondRectOffset = -5; // Increase or decrease this value to move the rectangle
-
-                            // Draw the second rectangle for the date with margin below, with border
-                            const dateHeight = lineHeight * 0.6; // Increase the height of the second vertical line
-                            ctx.fillStyle = '#FFFFFF'; // White background
-                            drawRoundedRectWithBorder(ctx, xPosition - lineWidth / 2, lineTop + lineHeight / 2 - marginBelowSecondLine + secondRectOffset, lineWidth, dateHeight - marginBelowSecondLine, 5, '#AFAFAF');
-
-                            // Draw the date inside the second rectangle, centered vertically
-                            ctx.fillStyle = 'black'; // Text color
-                            ctx.font = 'bold 14px Arial'; // Bold font style for date
-                            ctx.textBaseline = 'middle'; // Center the text vertically
-                            ctx.fillText(
-                                new Date(event.date).toLocaleDateString('en-US', {
-                                    month: 'short',
-                                    day: 'numeric'
-                                }),
-                                xPosition,
-                                lineTop + lineHeight / 2 - marginBelowSecondLine + secondRectOffset + (dateHeight - marginBelowSecondLine) / 2
-                            );
-                        });
-
-                        ctx.restore();
-                    }
-                };
-
-                // Render the chart on the new canvas
-                new Chart(ctx, {
-                    type: 'scatter',
-                    data: dataset,
-                    options: {
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'year', // Set unit to year
-                                    displayFormats: {
-                                        year: 'YYYY' // Format the year
-                                    }
-                                },
-                                min: minDate,
-                                max: maxDate,
-                                title: {
-                                    display: true,
-                                    text: 'Year'
-                                }
-                            },
-                            y: {
-                                display: false,
-                                min: -1,
-                                max: 1
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                enabled: false // Disable default tooltips
-                            },
-                            datalabels: {
-                                display: false // Hide default data labels
-                            }
-                        }
-                    },
-                    plugins: [verticalLinePlugin] // Add the vertical line plugin
-                });
+            acronymsSet.add(acronym);
+            dataPoints.push({
+                x: fractionalYear, // Use fractional year for X-axis
+                y: acronym,        // Use acronym directly for Y-axis
+                level: level,
+                formattedDate: `${date.toLocaleString('default', { month: 'short' })} ${date.getDate()}`
             });
-        }
 
-
-
-
-
-
-
-
-        function closeAllSelect() {
-            var selectItems = document.querySelector('.select-items');
-            selectItems.style.display = 'none';
-        }
-
-        document.addEventListener('click', closeAllSelect);
-
-        document.getElementById('exportPdfButton').addEventListener('click', function() {
-            const charts = document.querySelectorAll('canvas');
-            const programNames = document.querySelectorAll('#chartContainer h3');
-
-            const images = [];
-            let count = 0;
-
-            charts.forEach((chart, index) => {
-                html2canvas(chart).then(canvas => {
-                    images.push({
-                        name: programNames[index].innerText,
-                        data: canvas.toDataURL('image/png')
-                    });
-                    count++;
-                    if (count === charts.length) {
-                        console.log('All charts captured, sending to server');
-                        sendImagesToServer(images);
-                    }
-                }).catch(err => console.error('Error capturing canvas:', err));
-            });
+            datesSet.add(fractionalYear);
         });
 
-        function sendImagesToServer(images) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'program_timeline_pdf.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4) {
-                    if (xhr.status == 200) {
-                        console.log('PDF generated:', xhr.responseText);
-                        downloadFile(xhr.responseText);
+        const sortedAcronyms = Array.from(acronymsSet).sort();
+        const sortedFractionalYears = Array.from(datesSet).sort((a, b) => a - b);
+
+        const mappedDataPoints = dataPoints.map(point => {
+            const yIndex = sortedAcronyms.indexOf(point.y);
+            return {
+                x: point.x,
+                y: yIndex,
+                level: point.level,
+                formattedDate: point.formattedDate
+            };
+        });
+
+        // Render the timeline chart for the college
+        new Chart(canvas.getContext('2d'), {
+            type: 'scatter',
+            data: {
+                labels: sortedAcronyms,
+                datasets: [
+                    {
+                        label: `Timeline for ${collegeName}`,
+                        data: mappedDataPoints,
+                        pointBackgroundColor: 'blue',
+                        borderColor: 'blue',
+                        showLine: false,
+                        pointRadius: 0,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                layout: {
+                    padding: {
+                        top: 20, // Add padding to the top
+                        bottom: 40, // Add padding to the bottom
+                    },
+                },
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: {
+                            display: true,
+                            text: 'Year',
+                        },
+                        ticks: {
+                            stepSize: 1,
+                            callback: function (value) {
+                                return Math.floor(value); // Display integer years only
+                            },
+                            min: Math.floor(Math.min(...sortedFractionalYears)) - 0.1, // Add padding before the first year
+                            max: Math.ceil(Math.max(...sortedFractionalYears)) + 0.1, // Add padding after the last year
+                            padding: 10, // Add spacing for X-axis labels
+                        },
+                    },
+                    y: {
+                        type: 'category',
+                        title: {
+                            display: false,
+                        },
+                        labels: sortedAcronyms,
+                        ticks: {
+                            padding: 10, // Add spacing for Y-axis labels
+                        },
+                    },
+                },
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    tooltip: {
+                        enabled: false,
+                    },
+                },
+                animation: false,
+            },
+            plugins: [
+                {
+                    id: 'customBoxes',
+                    afterDraw: (chart) => {
+                        const ctx = chart.ctx;
+                        const xAxis = chart.scales.x;
+                        const yAxis = chart.scales.y;
+
+                        chart.data.datasets.forEach((dataset) => {
+                            dataset.data.forEach((dataPoint) => {
+                                const x = xAxis.getPixelForValue(dataPoint.x);
+                                const y = yAxis.getPixelForValue(dataPoint.y);
+
+                                // Determine the level short code and color
+                                let levelShort = '';
+                                let levelColor = '';
+
+                                switch (dataPoint.level.toUpperCase()) {
+                                    case 'NOT ACCREDITABLE':
+                                        levelShort = 'NA';
+                                        levelColor = '#B73033';
+                                        break;
+                                    case 'CANDIDATE':
+                                        levelShort = 'CAN';
+                                        levelColor = '#76FA97';
+                                        break;
+                                    case 'PRE-SURVEY VISIT':
+                                        levelShort = 'PSV';
+                                        levelColor = '#CCCCCC';
+                                        break;
+                                    case '1':
+                                        levelShort = 'LVL 1';
+                                        levelColor = '#FDC879';
+                                        break;
+                                    case '2':
+                                        levelShort = 'LVL 2';
+                                        levelColor = '#FDC879';
+                                        break;
+                                    case '3':
+                                        levelShort = 'LVL 3';
+                                        levelColor = '#FDC879';
+                                        break;
+                                    case '4':
+                                        levelShort = 'LVL 4';
+                                        levelColor = '#FDC879';
+                                        break;
+                                    default:
+                                        levelShort = 'UNK';
+                                        levelColor = '#000000';
+                                }
+
+                                // Define box dimensions
+                                const boxWidth = 60;
+                                const boxHeight = 40;
+                                const borderRadius = 10;
+
+                                // Calculate box top-left corner
+                                const boxX = x - boxWidth / 2;
+                                const boxY = y - boxHeight / 2;
+
+                                // Draw the box with rounded corners
+                                ctx.beginPath();
+                                ctx.moveTo(boxX + borderRadius, boxY);
+                                ctx.lineTo(boxX + boxWidth - borderRadius, boxY);
+                                ctx.quadraticCurveTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + borderRadius);
+                                ctx.lineTo(boxX + boxWidth, boxY + boxHeight - borderRadius);
+                                ctx.quadraticCurveTo(boxX + boxWidth, boxY + boxHeight, boxX + boxWidth - borderRadius, boxY + boxHeight);
+                                ctx.lineTo(boxX + borderRadius, boxY + boxHeight);
+                                ctx.quadraticCurveTo(boxX, boxY + boxHeight, boxX, boxY + boxHeight - borderRadius);
+                                ctx.lineTo(boxX, boxY + borderRadius);
+                                ctx.quadraticCurveTo(boxX, boxY, boxX + borderRadius, boxY);
+                                ctx.closePath();
+
+                                ctx.strokeStyle = '#000000';
+                                ctx.lineWidth = 1;
+                                ctx.stroke();
+
+                                // Draw the top half (level)
+                                ctx.beginPath();
+                                ctx.rect(boxX, boxY, boxWidth, boxHeight / 2);
+                                ctx.fillStyle = levelColor;
+                                ctx.fill();
+
+                                // Draw the bottom half (date)
+                                ctx.beginPath();
+                                ctx.rect(boxX, boxY + boxHeight / 2, boxWidth, boxHeight / 2);
+                                ctx.fillStyle = '#FFFFFF';
+                                ctx.fill();
+                                ctx.strokeStyle = '#000000';
+                                ctx.strokeRect(boxX, boxY + boxHeight / 2, boxWidth, boxHeight / 2);
+
+                                // Add level text
+                                ctx.fillStyle = 'white';
+                                ctx.font = '12px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText(levelShort, x, boxY + boxHeight / 4);
+
+                                // Add date text
+                                ctx.fillStyle = 'black';
+                                ctx.font = '12px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText(dataPoint.formattedDate, x, boxY + (3 * boxHeight) / 4);
+                            });
+                        });
+                    },
+                },
+            ],
+        });
+    });
+}
+
+
+function loadProgramsForColleges(collegeCodes, selectedValues) {
+    if (collegeCodes.length === 0) {
+        document.querySelector('.select-items').innerHTML = "<div>Select programs</div>";
+        document.getElementById('chartContainer').innerHTML =
+            "<p style='text-align: center; font-size: 20px'><strong>PLEASE SELECT COLLEGE AND PROGRAM/S</strong></p>";
+        return;
+    }
+
+    const xhr1 = new XMLHttpRequest();
+    xhr1.open("POST", "", true);
+    xhr1.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+    xhr1.onreadystatechange = function () {
+        if (xhr1.readyState === 4 && xhr1.status === 200) {
+            try {
+                const response = JSON.parse(xhr1.responseText);
+
+                // Populate programs in the dropdown
+                document.querySelector('.select-items').innerHTML = response.options;
+
+                const chartContainer = document.getElementById('chartContainer');
+                chartContainer.innerHTML = ''; // Clear previous content
+
+                // Dynamically create sections for selected colleges
+                selectedValues.forEach(selectedCollege => {
+                    const collegeCode = selectedCollege.code;
+                    const collegeName = selectedCollege.name;
+                    const programs = response.programs[collegeCode] || [];
+
+                    let collegeSection = document.createElement('div');
+                    collegeSection.classList.add('college-section');
+
+                    let collegeHeading = document.createElement('h3');
+                    collegeHeading.classList.add('college-name');
+                    collegeHeading.textContent = collegeName;
+                    collegeSection.appendChild(collegeHeading);
+
+                    if (programs.length > 0) {
+                        let programsList = document.createElement('ul');
+
+                        programs.forEach(program => {
+                            const acronym = getAcronym(program.program_name);
+                            let listItem = document.createElement('li');
+                            listItem.innerHTML = `
+                                <strong>${acronym}</strong>
+                                <br><em>Level: ${program.program_level}</em>
+                                <br>Date: ${program.date_received}
+                            `;
+                            listItem.title = program.program_name;
+                            programsList.appendChild(listItem);
+                        });
+
+                        collegeSection.appendChild(programsList);
                     } else {
-                        console.error('Failed to generate PDF:', xhr.statusText);
+                        let noProgramsMsg = document.createElement('p');
+                        noProgramsMsg.textContent = 'No programs available.';
+                        collegeSection.appendChild(noProgramsMsg);
                     }
+
+                    chartContainer.appendChild(collegeSection);
+                });
+
+                // Call the function to generate the timeline chart
+                createTimeline(response.programs, selectedValues);
+
+                // Reinitialize any custom dropdown functionality
+                setupCustomSelect();
+            } catch (e) {
+                console.error('Failed to parse JSON response:', e, xhr1.responseText);
+            }
+        }
+    };
+
+    // Send selected college codes to the backend
+    xhr1.send("college_codes=" + encodeURIComponent(JSON.stringify(collegeCodes)));
+}
+
+
+
+    // Function to close all select dropdowns
+    function closeAllSelect() {
+        const selectItems = document.querySelectorAll('.college-select-items, .select-items');
+        selectItems.forEach(items => (items.style.display = 'none'));
+    }
+    
+
+    // Initialize multi-select for colleges and programs
+    document.addEventListener('DOMContentLoaded', function () {
+        setupCollegeMultiSelect();
+        setupCustomSelect(); // Already existing for programs
+    });
+
+    // Function to handle multi-select for programs
+    function setupCustomSelect() {
+    const selectItems = document.querySelector('.select-items');
+    const selectedDiv = document.querySelector('.select-selected');
+    const items = selectItems.getElementsByClassName('select-item');
+
+    Array.from(items).forEach(function (item) {
+        item.addEventListener('click', function (e) {
+            e.stopPropagation();
+            item.classList.toggle('same-as-selected');
+
+            // Get selected values
+            let selectedValues = Array.from(selectItems.getElementsByClassName('same-as-selected')).map(function (selectedItem) {
+                return selectedItem.dataset.value;
+            });
+
+            // **Removed the maxSelection check here**
+
+            // Update display
+            if (selectedValues.length > 0) {
+                const displayedText = selectedValues.length > 1 
+                    ? `${selectedValues[0]} and ${selectedValues.length - 1} more` 
+                    : selectedValues[0];
+                selectedDiv.textContent = displayedText;
+            } else {
+                selectedDiv.textContent = 'Select programs';
+            }
+
+            // Load program histories based on selected programs
+            loadProgramHistories(selectedValues);
+        });
+    });
+
+    // Update the currentSelectionType to 'program' on dropdown click
+    selectedDiv.addEventListener('click', function (e) {
+        e.stopPropagation();
+        closeAllSelect();
+        selectItems.style.display = selectItems.style.display === 'block' ? 'none' : 'block';
+
+        // Update the current selection type to 'program'
+        currentSelectionType = 'program';
+        console.log('Selection type set to: program'); // Debug log
+    });
+}
+
+
+
+    // Function to load program histories and render timelines
+    function loadProgramHistories(selectedPrograms) {
+        if (selectedPrograms.length === 0) {
+            document.getElementById('chartContainer').innerHTML = "";
+            return;
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "", true); // Send POST request to the same page
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                try {
+                    const allEvents = JSON.parse(xhr.responseText);
+                    renderTimelineCharts(allEvents, selectedPrograms);
+                } catch (e) {
+                    console.error("Failed to parse JSON response", e);
+                    document.getElementById('chartContainer').innerHTML = xhr.responseText;
+                }
+            }
+        };
+        xhr.send("program_names=" + encodeURIComponent(JSON.stringify(selectedPrograms)));
+    }
+
+    // Function to render timeline charts using Chart.js
+    function renderTimelineCharts(eventsGroupedByProgram, selectedPrograms) {
+        const chartContainer = document.getElementById('chartContainer');
+
+        // Clear previous charts
+        chartContainer.innerHTML = '';
+
+        Object.keys(eventsGroupedByProgram).forEach((programName, programIndex) => {
+            const events = eventsGroupedByProgram[programName];
+
+            // Create a container div for each program
+            const programContainer = document.createElement('div');
+            programContainer.classList.add('orientation4');
+
+            // Create a label for each program
+            const programLabel = document.createElement('h3');
+            programLabel.textContent = `${programName}`;
+            programContainer.appendChild(programLabel);
+
+            // Create a new canvas element for each program
+            const canvas = document.createElement('canvas');
+            canvas.id = `timelineChart${programIndex}`;
+            canvas.style.height = '200px';
+            canvas.style.width = '100%';
+            programContainer.appendChild(canvas);
+
+            // Append the program container to the chart container
+            chartContainer.appendChild(programContainer);
+
+            // Create a chart for each canvas
+            if (events.length === 0) {
+                return;
+            }
+
+            // Convert date strings to Date objects and prepare data for Chart.js
+            const chartData = events.map(event => ({
+                x: new Date(event.date),
+                y: 0, // y-axis is not used meaningfully here
+                label: event.label
+            }));
+
+            // Determine the timeline range
+            const dates = chartData.map(event => event.x);
+            const minDate = new Date(Math.min.apply(null, dates));
+            const maxDate = new Date(Math.max.apply(null, dates));
+            minDate.setFullYear(minDate.getFullYear() - 1);
+            maxDate.setFullYear(maxDate.getFullYear() + 1); // Adjust as needed
+
+            // Prepare the dataset for Chart.js
+            const dataset = {
+                datasets: [{
+                    label: 'Program Timeline',
+                    data: chartData,
+                    backgroundColor: 'blue',
+                    pointRadius: 0, // Hide the scatter points
+                    pointHoverRadius: 0,
+                    showLine: false
+                }]
+            };
+
+            // Get the context of the new canvas element
+            const ctx = canvas.getContext('2d');
+
+            // Define colors and abbreviations for each level
+            const levelColors = {
+                'Not Accreditable': '#B73033', // Red
+                'Candidate': '#76FA97', // Green
+                'PSV': '#CCCCCC', // Grey
+                '1': '#FDC879', // Yellow
+                '2': '#FDC879',
+                '3': '#FDC879',
+                '4': '#FDC879'
+            };
+
+            const levelAbbreviations = {
+                'Not Accreditable': 'NA',
+                'Candidate': 'CAN',
+                'PSV': 'PSV',
+                '1': 'LVL 1',
+                '2': 'LVL 2',
+                '3': 'LVL 3',
+                '4': 'LVL 4'
+            };
+
+            // Function to draw rounded rectangles with borders
+            function drawRoundedRectWithBorder(ctx, x, y, width, height, radius, borderColor) {
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + width - radius, y);
+                ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+                ctx.lineTo(x + width, y + height - radius);
+                ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                ctx.lineTo(x + radius, y + height);
+                ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.closePath();
+
+                // Fill the rectangle
+                ctx.fill();
+
+                // Draw the border
+                ctx.strokeStyle = borderColor;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Define a plugin to draw custom vertical lines with labels and borders
+            const verticalLinePlugin = {
+                id: 'verticalLinePlugin',
+                beforeDraw: chart => {
+                    const {
+                        ctx,
+                        chartArea: { top, bottom },
+                        scales: { x, y }
+                    } = chart;
+                    ctx.save();
+
+                    chartData.forEach(event => {
+                        const level = event.label; // Assuming label contains the program level
+                        ctx.fillStyle = levelColors[level] || 'black'; // Default color
+
+                        const xPosition = x.getPixelForValue(event.x);
+                        const lineWidth = 60;
+                        const lineHeight = bottom - y.getPixelForValue(0);
+                        const lineTop = y.getPixelForValue(0);
+
+                        // Define margins
+                        const marginBetweenLines = 10; // Space between the first and second vertical lines
+                        const marginBelowSecondLine = 5; // Space below the second vertical line
+
+                        // Calculate the offset for the first rectangle
+                        const offset = lineHeight / 2 + marginBetweenLines; // Adjust as needed
+
+                        // Draw the first rectangle for the level, adjusted upward, with border
+                        ctx.fillStyle = levelColors[level] || 'black';
+                        drawRoundedRectWithBorder(ctx, xPosition - lineWidth / 2, lineTop - offset, lineWidth, 70, 5, '#AFAFAF');
+
+                        // Draw the level abbreviation inside the first rectangle
+                        ctx.fillStyle = 'black'; // Text color
+                        ctx.font = 'bold 16px Arial'; // Bold font style
+                        ctx.textAlign = 'center'; // Center the text
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(levelAbbreviations[level] || '', xPosition, lineTop - offset + 35); // Centered at 35 pixels
+
+                        const secondRectOffset = -5; // Adjust to move the rectangle
+
+                        // Draw the second rectangle for the date with margin below, with border
+                        const dateHeight = lineHeight * 0.6; // Adjust as needed
+                        ctx.fillStyle = '#FFFFFF'; // White background
+                        drawRoundedRectWithBorder(ctx, xPosition - lineWidth / 2, lineTop + lineHeight / 2 - marginBelowSecondLine + secondRectOffset, lineWidth, dateHeight - marginBelowSecondLine, 5, '#AFAFAF');
+
+                        // Draw the date inside the second rectangle, centered vertically
+                        ctx.fillStyle = 'black'; // Text color
+                        ctx.font = 'bold 14px Arial'; // Bold font style for date
+                        ctx.textBaseline = 'middle'; // Center the text vertically
+                        ctx.fillText(
+                            new Date(event.x).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric'
+                            }),
+                            xPosition,
+                            lineTop + lineHeight / 2 - marginBelowSecondLine + secondRectOffset + (dateHeight - marginBelowSecondLine) / 2
+                        );
+                    });
+
+                    ctx.restore();
                 }
             };
-            xhr.send(JSON.stringify(images));
-        }
 
-        function downloadFile(fileName) {
-            const link = document.createElement('a');
-            link.href = 'program_timeline_download.php?file=' + encodeURIComponent(fileName);
-            link.download = 'program_history.pdf';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Render the chart on the new canvas
+            new Chart(ctx, {
+                type: 'scatter',
+                data: dataset,
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'year', // Set unit to year
+                                displayFormats: {
+                                    year: 'YYYY' // Format the year
+                                }
+                            },
+                            min: minDate,
+                            max: maxDate,
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        },
+                        y: {
+                            display: false,
+                            min: -1,
+                            max: 1
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false // Disable default tooltips
+                        },
+                        datalabels: {
+                            display: false // Hide default data labels
+                        }
+                    }
+                },
+                plugins: [verticalLinePlugin] // Add the vertical line plugin
+            });
+        });
+    }
+
+    document.addEventListener('click', closeAllSelect);
+
+// Export charts to PDF
+function sendImagesToServer(images, selectionType) {
+    console.log("Sending images with selectionType:", selectionType); // Debug log
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'program_timeline_pdf.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            console.log('PDF generated:', xhr.responseText);
+            downloadFile(xhr.responseText);
+        } else if (xhr.readyState === 4) {
+            console.error('Failed to generate PDF:', xhr.statusText);
         }
-    </script>
+    };
+
+    const payload = {
+        images: images,
+        selectionType: selectionType
+    };
+    console.log("Payload:", payload); // Debug log
+    xhr.send(JSON.stringify(payload));
+}
+
+
+// Update the event listener to pass the selection type
+document.getElementById('exportPdfButton').addEventListener('click', function () {
+    const charts = document.querySelectorAll('canvas'); // All chart elements
+    const chartSections = document.querySelectorAll('#chartContainer > div'); // Each section containing a chart
+
+    const images = [];
+    let count = 0;
+
+    charts.forEach((chart, index) => {
+        html2canvas(chart).then(canvas => {
+            const section = chartSections[index];
+            const collegeName = section.querySelector('h2') && section.querySelector('h2').innerText.trim() !== '' 
+                ? section.querySelector('h2').innerText.trim() 
+                : null;
+            const programName = section.querySelector('h3') && section.querySelector('h3').innerText.trim() !== '' 
+                ? section.querySelector('h3').innerText.trim() 
+                : null;
+
+            if (collegeName || programName) {
+                const chartName = collegeName && programName 
+                    ? `${collegeName} - ${programName}` 
+                    : programName || collegeName;
+
+                images.push({
+                    name: chartName,
+                    data: canvas.toDataURL('image/png')
+                });
+            }
+
+            count++;
+            if (count === charts.length) {
+                if (images.length === 0) {
+                    alert('No valid charts to export. Ensure all required data is selected.');
+                } else {
+                    console.log('All charts captured, sending to server');
+                    sendImagesToServer(images, currentSelectionType);
+                }
+            }
+        }).catch(err => console.error('Error capturing canvas:', err));
+    });
+});
+
+
+// Function to trigger file download
+function downloadFile(fileName) {
+    const link = document.createElement('a');
+    link.href = 'program_timeline_download.php?file=' + encodeURIComponent(fileName);
+    link.download = 'program_history.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+</script>
 </body>
-
 </html>

@@ -1,63 +1,76 @@
 <?php
 session_start();
 require 'connection.php';
-require 'vendor/autoload.php'; // Ensure the autoload file is correctly referenced
+require 'vendor/autoload.php';
 
 use setasign\Fpdi\Fpdi;
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 
-// Directory where PDFs will be saved
-$pdfDir = './Program Level History/';  // Make sure this directory exists and is writable
-
-// Ensure directory exists
+$pdfDir = './Program Level History/';
 if (!is_dir($pdfDir)) {
-    mkdir($pdfDir, 0777, true);  // Create the directory if it doesn't exist
+    mkdir($pdfDir, 0777, true);
 }
 
-// Get the JSON data sent via AJAX
 $data = json_decode(file_get_contents('php://input'), true);
 
-if (!$data) {
+if (!$data || !isset($data['images']) || !isset($data['selectionType'])) {
     http_response_code(400);
     echo 'Invalid input';
     exit;
 }
 
+$images = $data['images'];
+$selectionType = $data['selectionType'];
+
 $pdf = new FPDF();
-$pdf->AddPage();
 $pdf->SetFont('Arial', 'B', 16);
 
-$programNames = []; // Collect program names
+$programNames = [];
+$timelineCountPerPageCollege = 2; // Maximum timelines per page for college
+$timelineCountPerPageProgram = 5; // Maximum timelines per page for program
+$currentTimelineCount = 0; // Count timelines added to the current page
 
-foreach ($data as $item) {
+foreach ($images as $item) {
     if (!isset($item['name']) || !isset($item['data'])) {
-        continue; // Skip this item if it doesn't have the required fields
+        continue;
+    }
+
+    // Determine timeline limit and logic based on selection type
+    if ($selectionType === 'college') {
+        // Apply multi-page logic for college
+        if ($currentTimelineCount === 0 || $currentTimelineCount >= $timelineCountPerPageCollege) {
+            $pdf->AddPage();
+            $currentTimelineCount = 0; // Reset the count for the new page
+        }
+    } elseif ($selectionType === 'program') {
+        // Apply multi-page logic for program
+        if ($currentTimelineCount === 0 || $currentTimelineCount >= $timelineCountPerPageProgram) {
+            $pdf->AddPage();
+            $currentTimelineCount = 0; // Reset the count for the new page
+        }
     }
 
     $programNames[] = $item['name'];
-    $pdf->SetFont('Arial', 'B', 12);  // Set title font
-    
-    $titleWidth = 160;  // Set the desired width in mm
-    $x = ($pdf->GetPageWidth() - $titleWidth) / 2;  // Center the title on the page
-    
-    // Use MultiCell to wrap the program name with specified width
-    $lineHeight = 5;  // Set line height
-    $pdf->SetX($x);  // Set the X position for centered text
-    $pdf->MultiCell($titleWidth, $lineHeight, $item['name'], 0, 'C');  // Wrap text and center it
 
+    // Add the timeline title
+    $pdf->SetFont('Arial', 'B', 12);
+    $titleWidth = 160;
+    $x = ($pdf->GetPageWidth() - $titleWidth) / 2;
+    $lineHeight = 5;
+    $pdf->SetX($x);
+    $pdf->MultiCell($titleWidth, $lineHeight, $item['name'], 0, 'C');
     $pdf->Ln(5);
 
-    // Calculate width to maintain aspect ratio
+    // Dynamically set $imgHeight based on selectionType
     $imgWidth = 180;
-    $x = ($pdf->GetPageWidth() - $imgWidth) / 2;  // Center the image
+    $x = ($pdf->GetPageWidth() - $imgWidth) / 2;
+    $imgHeight = $selectionType === 'college' ? 100 : 30;
 
-    // Calculate the image height dynamically based on your aspect ratio
-    // Here we assume a fixed height for demonstration purposes; adjust as needed
-    $imgHeight = 30; // Adjust the height based on your canvas size and desired output
-
+    // Add the timeline image
     $pdf->Image($item['data'], $x, $pdf->GetY(), $imgWidth, $imgHeight, 'PNG');
-    $pdf->Ln($imgHeight + 10); // Add space after each chart
+    $pdf->Ln($imgHeight + 10);
+
+    // Increment the timeline count for the current page
+    $currentTimelineCount++;
 }
 
 if (empty($programNames)) {
@@ -67,23 +80,17 @@ if (empty($programNames)) {
 }
 
 // Generate filename based on program names
-// Remove special characters and limit the filename length
 $programNamesString = implode('_', $programNames);
 $programNamesString = preg_replace('/[^a-zA-Z0-9_]/', '', $programNamesString);
-$programNamesString = substr($programNamesString, 0, 50); // Limit length to 50 characters
+$programNamesString = substr($programNamesString, 0, 50);
 
 $pdfFileName = 'program_history_' . $programNamesString . '.pdf';
 $pdfFilePath = $pdfDir . $pdfFileName;
 $pdf->Output($pdfFilePath, 'F');
 
-// Debugging: Log the file path
-error_log("PDF file created at: " . $pdfFilePath);
-
-// Return the relative file path to the client
 if (file_exists($pdfFilePath)) {
-    echo $pdfFileName;  // Send the file name back to the client
+    echo $pdfFileName;
 } else {
     http_response_code(500);
     echo 'Error: File not created';
 }
-?>
