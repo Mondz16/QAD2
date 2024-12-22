@@ -238,7 +238,7 @@
     background: #ff7070;
 }
 
-.signup, .approve, .approve1, .okay, .resend, .apply, .cancel, .loginstead, .profile1, .orientation1, .assessment1, .logout, .google {
+.signup, .approve, .approve1, .okay, .resend, .apply, .cancel, .loginstead, .profile1, .orientation1, .assessment1, .logout, .google, .download {
     color: black;
     text-decoration: none;
     white-space: unset;
@@ -458,6 +458,10 @@
     border: 1px solid #76FA97;
 }
 
+.download {
+    padding: 5px 25px;
+    border: 1px solid #38c65f;
+}
 .fa-check {
     color: #006118;
 }

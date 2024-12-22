@@ -80,25 +80,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_area->close();
 
             // Insert or update the rating in team_areas
-            // Insert or update the rating in team_areas
-$sql_rating = "INSERT INTO team_areas (team_id, area_id, rating) VALUES (?, ?, ?) 
-ON DUPLICATE KEY UPDATE rating = ?";
-
-// Prepare the SQL statement
-$stmt_rating = $conn->prepare($sql_rating);
-
-// Assign the rating to another variable for the update
-$updated_rating = $rating;  // Ensure it's a separate variable
-
-// Bind the variables to the prepared statement
-$stmt_rating->bind_param("iidd", $team_id, $area_id, $rating, $updated_rating);
-
-// Execute the statement
-$stmt_rating->execute();
-
-// Close the statement
-$stmt_rating->close();
-
+            $sql_rating = "INSERT INTO team_areas (team_id, area_id, rating) VALUES (?, ?, ?) 
+                          ON DUPLICATE KEY UPDATE rating = ?";
+            $stmt_rating = $conn->prepare($sql_rating);
+            $updated_rating = $rating;  // Ensure it's a separate variable
+            $stmt_rating->bind_param("iidd", $team_id, $area_id, $rating, $updated_rating);
+            $stmt_rating->execute();
+            $stmt_rating->close();
 
             // Prepare for the PDF
             $areas[] = $area_name;
@@ -125,12 +113,32 @@ $stmt_rating->close();
         $pdf->SetXY(50, 116);
         $pdf->Write(0, $_POST['level']);
 
-        // Add areas and their ratings to the PDF
-        $pdf->SetXY(12, 141);
-        $pdf->MultiCell(37, 5, implode("\n", $areas));
+        $pdf->SetXY(12, 141); // Starting position for area names
+        $pdf->MultiCell(37, 5, implode("\n", $areas)); // Print all area names, line by line
 
-        $pdf->SetXY(50, 145);
-        $pdf->MultiCell(148, 5, implode("\n", $results));
+        $pdf->SetXY(50, 145); // Starting position for ratings
+        $pdf->MultiCell(148, 5, implode("\n", $results)); // Print all ratings, line by line
+
+        // Calculate interpretation based on ratings
+        $greater_than_3_5_count = count(array_filter($results, fn($r) => $r > 3.5));
+        $total_ratings = count($results);
+        $less_than_3_5_count = count(array_filter($results, fn($r) => $r < 3.5)); // Strictly less than 3.5
+
+        if ($less_than_3_5_count === $total_ratings && $total_ratings > 0) {
+            $interpretation = "Revisit"; // All ratings are strictly less than 3.5
+        } elseif ($greater_than_3_5_count === $total_ratings && $total_ratings > 0) {
+            $interpretation = "Ready"; // All ratings are greater than 3.5
+        } elseif ($less_than_3_5_count >= 2 && $less_than_3_5_count <= 3) {
+            $interpretation = "Needs Improvement"; // 2-3 ratings are strictly less than 3.5
+        } else {
+            $interpretation = "Needs Improvement"; // Default case
+        }
+
+        // Add interpretation below the last rating
+        $last_result_y = 145 + (count($results) * 5); // Calculate Y position dynamically based on the number of ratings
+        $pdf->SetXY(50, $last_result_y + 10); // Add some spacing after the last rating
+        $pdf->SetFont('Arial', 'B', 12); // Bold font for emphasis
+        $pdf->Write(0, "$interpretation");
 
         // Add evaluator's signature and name
         $centerTextX = 65;
@@ -147,6 +155,7 @@ $stmt_rating->close();
         $signature_image = imagecreatefromstring($decrypted_signature_data);
         if ($signature_image === false) {
             $message = "Error: Failed to create an image from the decrypted signature data.";
+            $success = false;
         } else {
             $temp_image_path = 'temp_signature.png';
             imagesavealpha($signature_image, true);
@@ -170,75 +179,109 @@ $stmt_rating->close();
         $pdf->Output('F', $output_path);
 
         // Prepare the SQL query for inserting summary details into the database
-$sql_insert = "INSERT INTO summary (team_id, areas, results, evaluator, evaluator_signature, summary_file) VALUES (?, ?, ?, ?, ?, ?)";
+        $sql_insert = "INSERT INTO summary (team_id, areas, results, evaluator, evaluator_signature, summary_file) VALUES (?, ?, ?, ?, ?, ?) 
+                       ON DUPLICATE KEY UPDATE areas = VALUES(areas), results = VALUES(results), evaluator = VALUES(evaluator), 
+                       evaluator_signature = VALUES(evaluator_signature), summary_file = VALUES(summary_file)";
 
-// Prepare the statement
-$stmt_insert = $conn->prepare($sql_insert);
+        // Prepare the statement
+        $stmt_insert = $conn->prepare($sql_insert);
 
-// Assign the results of implode() to variables before passing them to bind_param()
-$areas_imploded = implode("\n", $areas);
-$results_imploded = implode("\n", $results);
+        // Assign the results of implode() to variables before passing them to bind_param()
+        $areas_imploded = implode("\n", $areas);
+        $results_imploded = implode("\n", $results);
 
-// Bind the variables to the statement
-$stmt_insert->bind_param("isssss", $team_id, $areas_imploded, $results_imploded, $evaluator, $encrypted_signature_data, $output_path);
+        // Bind the variables to the statement
+        $stmt_insert->bind_param("isssss", $team_id, $areas_imploded, $results_imploded, $evaluator, $encrypted_signature_data, $output_path);
 
-// Execute the statement
-$stmt_insert->execute();
+        // Execute the statement
+        $stmt_insert->execute();
 
-// Close the statement
-$stmt_insert->close();
+        // Close the statement
+        $stmt_insert->close();
 
-// New Logic to Combine NDA Files
-$nda_pdf = new FPDI(); // Create a new FPDI instance for NDA compilation
+        // === New Logic to Combine NDA Files and Approved Assessments ===
 
-// Retrieve all team IDs for the specific schedule_id
-$sql_all_teams = "SELECT id FROM team WHERE schedule_id = ?";
-$stmt_all_teams = $conn->prepare($sql_all_teams);
-$stmt_all_teams->bind_param("i", $schedule_id);
-$stmt_all_teams->execute();
-$result_all_teams = $stmt_all_teams->get_result();
+        // Initialize FPDI for NDA and Approved Assessments compilation
+        $compiled_pdf = new FPDI();
 
-$nda_files = [];
-while ($row = $result_all_teams->fetch_assoc()) {
-    $team_ids[] = $row['id'];
-}
-$stmt_all_teams->close();
+        // === Step 1: Add the Summary PDF as the first page ===
+        $compiled_pdf->AddPage();
+        $compiled_pdf->setSourceFile($output_path);
+        $tplIdx = $compiled_pdf->importPage(1);
+        $compiled_pdf->useTemplate($tplIdx);
 
-// Find NDA files for these team IDs
-foreach ($team_ids as $tid) {
-    $sql_nda = "SELECT NDA_file FROM nda WHERE team_id = ?";
-    $stmt_nda = $conn->prepare($sql_nda);
-    $stmt_nda->bind_param("i", $tid);
-    $stmt_nda->execute();
-    $stmt_nda->bind_result($nda_file);
-    while ($stmt_nda->fetch()) {
-        $nda_files[] = $nda_file;
-    }
-    $stmt_nda->close();
-}
+        // === Step 2: Retrieve all team IDs associated with the schedule_id ===
+        $sql_all_teams = "SELECT id FROM team WHERE schedule_id = ?";
+        $stmt_all_teams = $conn->prepare($sql_all_teams);
+        $stmt_all_teams->bind_param("i", $schedule_id);
+        $stmt_all_teams->execute();
+        $result_all_teams = $stmt_all_teams->get_result();
 
-// Combine all NDA files into one PDF
-foreach ($nda_files as $file) {
-    $nda_pdf->AddPage();
-    $nda_pdf->setSourceFile($file);
-    $tplIdx = $nda_pdf->importPage(1);
-    $nda_pdf->useTemplate($tplIdx);
-}
+        $team_ids = [];
+        while ($row = $result_all_teams->fetch_assoc()) {
+            $team_ids[] = $row['id'];
+        }
+        $stmt_all_teams->close();
 
-// Save the combined NDA PDF
-$nda_output_path = 'NDA Compilation/' . $team_id . '_nda_compilation.pdf';
-$nda_pdf->Output('F', $nda_output_path);
+        if (!empty($team_ids)) {
+            // Prepare statements outside the loop for efficiency
+            $sql_assessment = "SELECT id FROM assessment WHERE team_id = ?";
+            $stmt_assessment = $conn->prepare($sql_assessment);
 
-// Insert NDA compilation details into the database
-$sql_insert_nda = "INSERT INTO NDA_compilation (team_id, NDA_compilation_file) VALUES (?, ?)";
-$stmt_insert_nda = $conn->prepare($sql_insert_nda);
-$stmt_insert_nda->bind_param("is", $team_id, $nda_output_path);
-$stmt_insert_nda->execute();
-$stmt_insert_nda->close();
+            $sql_approved_assessment = "SELECT approved_assessment_file FROM approved_assessment WHERE assessment_id = ?";
+            $stmt_approved_assessment = $conn->prepare($sql_approved_assessment);
+
+            foreach ($team_ids as $tid) {
+                // === Step 3: Retrieve all assessment IDs for the current team ID ===
+                $stmt_assessment->bind_param("i", $tid);
+                $stmt_assessment->execute();
+                $result_assessment = $stmt_assessment->get_result();
+
+                $assessment_ids = [];
+                while ($assessment_row = $result_assessment->fetch_assoc()) {
+                    $assessment_ids[] = $assessment_row['id'];
+                }
+
+                // === Step 4: Retrieve all approved_assessment_files for the current assessment IDs ===
+                foreach ($assessment_ids as $aid) {
+                    $stmt_approved_assessment->bind_param("i", $aid);
+                    $stmt_approved_assessment->execute();
+                    $stmt_approved_assessment->bind_result($approved_file);
+                    while ($stmt_approved_assessment->fetch()) {
+                        if (file_exists($approved_file)) {
+                            // === Step 5: Add each approved_assessment_file to the compiled PDF ===
+                            $compiled_pdf->AddPage();
+                            $compiled_pdf->setSourceFile($approved_file);
+                            $tplIdx = $compiled_pdf->importPage(1);
+                            $compiled_pdf->useTemplate($tplIdx);
+                        }
+                    }
+                    $stmt_approved_assessment->free_result();
+                }
+            }
+
+            // Close prepared statements
+            $stmt_assessment->close();
+            $stmt_approved_assessment->close();
+        }
+
+        // === Step 6: Save the compiled PDF ===
+        $compiled_output_path = 'Summary/' . $team_id . '_summary_compilation.pdf';
+        $compiled_pdf->Output('F', $compiled_output_path);
+
+        // === Step 7: Insert the compiled PDF path into the summary table ===
+        $sql_update_summary = "UPDATE summary SET summary_compilation_file = ? WHERE team_id = ?";
+        $stmt_update_summary = $conn->prepare($sql_update_summary);
+        $stmt_update_summary->bind_param("si", $compiled_output_path, $team_id);
+        $stmt_update_summary->execute();
+        $stmt_update_summary->close();
+
+        // === Optional: Handle NDA Compilation Separately if Needed ===
+        // If you still need to compile NDA files as per your original code, you can retain or modify that section here.
 
         // Set session variable to indicate successful submission
         $_SESSION['summary_submitted'] = true;
-        $message = "Summary submitted successfully.";
+        $message = "Summary and compilation submitted successfully.";
         $success = true;
     }
 } else {
@@ -281,7 +324,7 @@ $stmt_insert_nda->close();
                 <img class="Success" src="images/Failure.png" height="100">
             <?php endif; ?>
             <div style="height: 20px; width: 0px;"></div>
-            <div class="popup-text"><?php echo $message; ?></div>
+            <div class="popup-text"><?php echo htmlspecialchars($message); ?></div>
             <div style="height: 50px; width: 0px;"></div>
             <a href="javascript:void(0);" class="okay" onclick="closePopup()">Okay</a>
             <div style="height: 100px; width: 0px;"></div>

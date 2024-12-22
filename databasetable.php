@@ -241,7 +241,7 @@ if ($conn->query($sql) === TRUE) {
 $sql = "CREATE TABLE IF NOT EXISTS assessment (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     team_id INT(6) UNSIGNED,
-    result DECIMAL(4,2) UNSIGNED,
+    result VARCHAR(80) NOT NULL,
     area_evaluated VARCHAR(80) NOT NULL,
     findings VARCHAR(100) NOT NULL,
     recommendations VARCHAR(100) NOT NULL,
@@ -282,6 +282,7 @@ $sql = "CREATE TABLE IF NOT EXISTS summary (
     evaluator VARCHAR(50) NOT NULL,
     evaluator_signature VARCHAR(50) NOT NULL,
     summary_file VARCHAR(50) NOT NULL,
+    summary_compilation_file VARCHAR(50) NOT NULL,
     FOREIGN KEY (team_id) REFERENCES team(id)
 )";
 

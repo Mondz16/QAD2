@@ -117,21 +117,40 @@ $stmt_schedules->bind_result($schedule_id, $college_name, $program_name, $level_
 
 $schedules = [];
 while ($stmt_schedules->fetch()) {
-    // Fetch the average rating for the current team_id
+    // Fetch all ratings for the current team_id
     $sql_ratings = "
-        SELECT AVG(rating) AS average_rating
+        SELECT rating
         FROM team_areas
         WHERE team_id = ?
     ";
     $stmt_ratings = $conn->prepare($sql_ratings);
     $stmt_ratings->bind_param("i", $team_id);
     $stmt_ratings->execute();
-    $stmt_ratings->bind_result($average_rating);
-    $stmt_ratings->fetch();
+    $stmt_ratings->bind_result($rating);
+
+    $ratings = [];
+    while ($stmt_ratings->fetch()) {
+        $ratings[] = $rating;
+    }
     $stmt_ratings->close();
 
-    // If ratings were found, round the result to 2 decimal places, otherwise set it to 'N/A'
-    $result_display = ($average_rating !== null) ? round($average_rating, 2) : 'N/A';
+    // Determine the result display based on the ratings
+    if (empty($ratings)) {
+        $result_display = "No Ratings"; // If no ratings are available
+    } else {
+        $greater_than_3_5_count = count(array_filter($ratings, fn($r) => $r > 3.5));
+        $less_than_3_5_count = count($ratings) - $greater_than_3_5_count;
+
+        if ($greater_than_3_5_count === count($ratings)) {
+            $result_display = "Ready";
+        } elseif ($less_than_3_5_count >= 2 && $less_than_3_5_count <= 3) {
+            $result_display = "Needs Improvement";
+        } elseif ($less_than_3_5_count === count($ratings)) {
+            $result_display = "Revisit";
+        } else {
+            $result_display = "Needs Improvement"; // Default case
+        }
+    }
 
     // Add schedule and rating data to the array
     $schedules[] = [
@@ -150,6 +169,7 @@ while ($stmt_schedules->fetch()) {
 }
 
 $stmt_schedules->close();
+
 
 
 //fetch individual areas for the member
@@ -199,27 +219,58 @@ while ($stmt_summaries->fetch()) {
 }
 $stmt_summaries->close();
 
-$existing_area_rating_files = [];
+$summary_files = []; // Array to store team_id and their corresponding summary_file paths
 
-// Fetch the area_rating_file based on internal_users_id and schedule_id
-$sql_area_files = "SELECT area_rating_file FROM team WHERE internal_users_id = ? AND schedule_id = ? AND area_rating_file IS NOT NULL";
-$stmt_area_files = $conn->prepare($sql_area_files);
+$sql_summary_files = "SELECT team_id, summary_file FROM summary WHERE team_id IN (SELECT id FROM team WHERE internal_users_id = ?)";
+$stmt_summary_files = $conn->prepare($sql_summary_files);
+$stmt_summary_files->bind_param("s", $user_id);
+$stmt_summary_files->execute();
+$stmt_summary_files->bind_result($team_id, $summary_file);
+while ($stmt_summary_files->fetch()) {
+    $summary_files[$team_id] = $summary_file; // Store team_id as the key and file path as the value
+}
+$stmt_summary_files->close();
 
-// Loop through the user's schedules and check if there is an area_rating_file for each
+$existing_ratings = [];
+
+// Fetch the team IDs for all schedules first
+$sql_team_id = "SELECT id, schedule_id FROM team WHERE internal_users_id = ? AND schedule_id = ?";
+$stmt_team_id = $conn->prepare($sql_team_id);
+
+// Loop through the user's schedules
 foreach ($schedules as $schedule) {
     $schedule_id = $schedule['schedule_id']; // Get schedule_id from the user's schedules
 
     // Bind the user_id and schedule_id to the query
-    $stmt_area_files->bind_param("si", $user_id, $schedule_id);
-    $stmt_area_files->execute();
-    $stmt_area_files->bind_result($area_rating_file);
+    $stmt_team_id->bind_param("si", $user_id, $schedule_id);
+    $stmt_team_id->execute();
+    $stmt_team_id->bind_result($team_id, $fetched_schedule_id);
 
-    // If there is an area_rating_file, add it to the array
-    while ($stmt_area_files->fetch()) {
-        $existing_area_rating_files[$schedule_id] = $area_rating_file;
+    // Fetch all team IDs for the current schedule
+    $team_ids = [];
+    while ($stmt_team_id->fetch()) {
+        $team_ids[] = $team_id;
+    }
+
+    // Now loop through the fetched team IDs to query ratings
+    foreach ($team_ids as $team_id) {
+        $sql_ratings = "SELECT area_id, rating FROM team_areas WHERE team_id = ? AND rating IS NOT NULL";
+        $stmt_ratings = $conn->prepare($sql_ratings);
+        $stmt_ratings->bind_param("i", $team_id);
+        $stmt_ratings->execute();
+        $stmt_ratings->bind_result($area_id, $rating);
+
+        // Add ratings to the array if found
+        while ($stmt_ratings->fetch()) {
+            $existing_ratings[$schedule_id][] = [
+                'area_id' => $area_id,
+                'rating' => $rating
+            ];
+        }
+        $stmt_ratings->close();
     }
 }
-$stmt_area_files->close();
+$stmt_team_id->close();
 
 // Fetch approved assessments
 $approved_assessments = [];
@@ -257,26 +308,6 @@ while ($stmt_team_members->fetch()) {
     ];
 }
 $stmt_team_members->close();
-
-
-// Fetch the average rating
-$sql_ratings = "
-    SELECT AVG(rating) AS average_rating
-    FROM team_areas
-    WHERE team_id = ?
-";
-$stmt_ratings = $conn->prepare($sql_ratings);
-$stmt_ratings->bind_param("i", $team_id);
-$stmt_ratings->execute();
-$stmt_ratings->bind_result($average_rating);
-$stmt_ratings->fetch();
-$stmt_ratings->close();
-
-// If ratings were found, round the result to 2 decimal places, otherwise set it to 'N/A'
-$result_display = ($average_rating !== null) ? round($average_rating, 2) : 'N/A';
-
-// Add average rating to the schedule array
-$schedule['average_rating'] = $result_display;
 
 // Prepare to retrieve team members with areas assigned to them
 $team_members_with_areas = [];
@@ -557,71 +588,70 @@ function intToRoman($num) {
             <?php if (!empty($schedules)): ?>
                 <?php foreach ($schedules as $index => $schedule): ?>
                     <?php
-// Initialize the $areas array for this schedule
-$areas = [];
-$maxAreas = 0; // Initialize variable to store the max areas
+                    // Initialize the $areas array for this schedule
+                    $areas = [];
+                    $maxAreas = 0; // Initialize variable to store the max areas
 
-// Fetch areas dynamically based on level_applied and program_name
-if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2) {
-    // Level 1 and 2 areas
-    $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
-        'Vision, Mission, Goals, and Objectives', 
-        'Faculty', 
-        'Curriculum and Instruction', 
-        'Support to Students', 
-        'Research', 
-        'Extension and Community Development', 
-        'Library', 
-        'Physical Plant and Facilities', 
-        'Laboratories', 
-        'Administration'
-    )";
-    $maxAreas = 10; // Maximum areas for level 1 and 2
-} elseif ($schedule['level_applied'] == 3) {
-    // Level 3 areas
-    if (strpos($schedule['program_name'], 'Bachelor') === 0) {
-        // Program name starts with "Bachelor"
-        $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
-            'Instruction', 
-            'Extension', 
-            'Faculty Development', 
-            'Licensure Exam', 
-            'Consortia or linkages', 
-            'Library'
-        )";
-    } else {
-        // Program name does NOT start with "Bachelor"
-        $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
-            'Instruction', 
-            'Research', 
-            'Faculty Development', 
-            'Licensure Exam', 
-            'Consortia or linkages', 
-            'Library'
-        )";
-    }
-    $maxAreas = 6; // Maximum areas for level 3
-} elseif ($schedule['level_applied'] == 4) {
-    // Level 4 areas
-    $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
-        'Research', 
-        'Instruction', 
-        'Extension',
-        'Faculty Development',
-        'Consortia or linkages'
-    )";
-    $maxAreas = 5; // Maximum areas for level 4
-}
+                    // Fetch areas dynamically based on level_applied and program_name
+                    if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2) {
+                        // Level 1 and 2 areas
+                        $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+                            'Vision, Mission, Goals, and Objectives', 
+                            'Faculty', 
+                            'Curriculum and Instruction', 
+                            'Support to Students', 
+                            'Research', 
+                            'Extension and Community Development', 
+                            'Library', 
+                            'Physical Plant and Facilities', 
+                            'Laboratories', 
+                            'Administration'
+                        )";
+                        $maxAreas = 10; // Maximum areas for level 1 and 2
+                    } elseif ($schedule['level_applied'] == 3) {
+                        // Level 3 areas
+                        if (strpos($schedule['program_name'], 'Bachelor') === 0) {
+                            // Program name starts with "Bachelor"
+                            $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+                                'Instruction', 
+                                'Extension', 
+                                'Faculty Development', 
+                                'Licensure Exam', 
+                                'Consortia or linkages', 
+                                'Library'
+                            )";
+                        } else {
+                            // Program name does NOT start with "Bachelor"
+                            $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+                                'Instruction', 
+                                'Research', 
+                                'Faculty Development', 
+                                'Licensure Exam', 
+                                'Consortia or linkages', 
+                                'Library'
+                            )";
+                        }
+                        $maxAreas = 6; // Maximum areas for level 3
+                    } elseif ($schedule['level_applied'] == 4) {
+                        // Level 4 areas
+                        $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
+                            'Research', 
+                            'Instruction', 
+                            'Extension',
+                            'Faculty Development',
+                            'Consortia or linkages'
+                        )";
+                        $maxAreas = 5; // Maximum areas for level 4
+                    }
 
-// Execute the query to get areas for this schedule
-$result_areas = $conn->query($sql_areas);
-if ($result_areas) {
-    while ($row = $result_areas->fetch_assoc()) {
-        $areas[$row['id']] = $row['area_name']; // Store area id and name
-    }
-}
-?>
-
+                    // Execute the query to get areas for this schedule
+                    $result_areas = $conn->query($sql_areas);
+                    if ($result_areas) {
+                        while ($row = $result_areas->fetch_assoc()) {
+                            $areas[$row['id']] = $row['area_name']; // Store area id and name
+                        }
+                    }
+                    ?>
                     <div class="notification-list1" id="assessment-<?php echo $schedule['schedule_id']; ?>">
                         <div class="orientation3">
                             <div class="container">
@@ -804,23 +834,27 @@ if ($result_areas) {
                                             <!-- Other members -->
                                             <?php foreach ($other_members as $member): ?>
                                                 <div class="add-area" id="member-area-<?php echo $member['team_member_id']; ?>" style="display: flex; flex-direction: column; margin-bottom: 10px;">
-                                                    <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
                                                     <?php if ($member['status'] === 'accepted'): ?>
-                                                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                                                            <select class="area-select" name="area[<?php echo $member['team_member_id']; ?>][]" required onchange="updateAreaOptions('<?php echo $schedule['schedule_id']; ?>')">
-                                                                <option value="" disabled selected>Select Area</option>
-                                                                <?php foreach ($areas as $id => $area_name): ?>
-                                                                    <option value="<?php echo $id; ?>">
-                                                                        Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>
-                                                                    </option>
-                                                                <?php endforeach; ?>
-                                                            </select>
-                                                            <button type="button" onclick="addAreaDropdown('<?php echo $schedule['schedule_id']; ?>', 'member-area-<?php echo $member['team_member_id']; ?>', '<?php echo $member['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
-                                                                <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
-                                                            </button>
+                                                        <div style="display: flex; flex-direction: column; margin-bottom: 10px;">
+                                                            <!-- Label on its own line -->
+                                                            <label><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
+                                                            <!-- Row for select and button -->
+                                                            <div style="display: flex; align-items: center; margin-top: 5px;">
+                                                                <select class="area-select" name="area[<?php echo $member['team_member_id']; ?>][]" required onchange="updateAreaOptions('<?php echo $schedule['schedule_id']; ?>')" style="flex-grow: 1;">
+                                                                    <option value="" disabled selected>Select Area</option>
+                                                                    <?php foreach ($areas as $id => $area_name): ?>
+                                                                        <option value="<?php echo $id; ?>">
+                                                                            Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>
+                                                                        </option>
+                                                                    <?php endforeach; ?>
+                                                                </select>
+                                                                <button type="button" onclick="addAreaDropdown('<?php echo $schedule['schedule_id']; ?>', 'member-area-<?php echo $member['team_member_id']; ?>', '<?php echo $member['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; margin-left: 8px;">
+                                                                    <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     <?php else: ?>
-                                                        <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
+                                                        <label style="color: red; margin-top: 5px;"><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
                                                     <?php endif; ?>
                                                 </div>
                                             <?php endforeach; ?>
@@ -828,7 +862,6 @@ if ($result_areas) {
                                             <?php if ($has_accepted_members): ?>
                                                 <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
                                             <?php else: ?>
-                                                <p style="color: red;"><br><br>No members have accepted the schedule yet. Areas can be assigned once members accept.</p>
                                             <?php endif; ?>
                                         </form>
                                 </div>
@@ -869,14 +902,34 @@ if ($result_areas) {
                                                                     <?php echo htmlspecialchars($member['name']); ?>
                                                                 </div>
                                                                 <div class="titleContainer2">
-                                                                    <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>"><i class="bi bi-file-earmark-arrow-down"></i></a>
+                                                                <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>" download><i class="bi bi-file-earmark-arrow-down-fill download" style="font-size: 30px; color: #c49102;"></i></a>
                                                                 </div>
                                                                 <div class="titleContainer3">
-                                                                    <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
-                                                                        <i class="fas fa-check approve1"></i>
+                                                                <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
+                                                                    <?php 
+                                                                    // Query to fetch the approved_assessment_file
+                                                                    $sql_approved_file = "
+                                                                    SELECT approved_assessment_file
+                                                                    FROM approved_assessment
+                                                                    WHERE assessment_id = ?
+                                                                    ";
+                                                                    $stmt_approved_file = $conn->prepare($sql_approved_file);
+                                                                    $stmt_approved_file->bind_param("i", $member['assessment_id']); // Bind the assessment_id
+                                                                    $stmt_approved_file->execute();
+                                                                    $stmt_approved_file->bind_result($approved_assessment_file);
+                                                                    $stmt_approved_file->fetch();
+                                                                    $stmt_approved_file->close();
+                                                                    ?>
+                                                                    <?php if ($approved_assessment_file): ?>
+                                                                        <a href="<?php echo htmlspecialchars($approved_assessment_file); ?>" download>
+                                                                            <i class="bi bi-file-earmark-arrow-down-fill download" style="font-size: 30px; color: #38c65f;"></i>
+                                                                        </a>
                                                                     <?php else: ?>
-                                                                        <button class="approve" onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">APPROVE</button>
+                                                                        <i class="fas fa-check approve1"></i>
                                                                     <?php endif; ?>
+                                                                <?php else: ?>
+                                                                    <button class="approve" onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">APPROVE</button>
+                                                                <?php endif; ?>
                                                                 </div>
                                                             </div>
                                                         </li>
@@ -887,7 +940,12 @@ if ($result_areas) {
                                                 <div style="height: 20px;"></div>
                                                 <p>SUBMIT SUMMARY</p>
                                                 <div style="height: 10px;"></div>
-                                                <p class="assessment-button-done">ALREADY SUBMITTED</p>
+                                                <?php if (isset($summary_files[$schedule['team_id']])): ?>
+                                                    <a class="assessment-button-done" style="text-decoration: none; font-size: 15px"href="<?php echo htmlspecialchars($summary_files[$schedule['team_id']]); ?>" download>
+                                                            <i class="bi bi-cloud-arrow-down" style="font-size: 20px;"></i> Download Summary File
+                                                        </a>
+                                                <?php endif; ?>
+
                                             <?php elseif ($submitted_count < $team_member_count): ?>
                                             <?php elseif ($approved_count < $team_member_count): ?>
                                                 <div style="height: 20px;"></div>
@@ -921,62 +979,146 @@ if ($result_areas) {
                                     <p>ASSESSMENT</p>
                                     <div style="height: 10px;"></div>
                                     <p class="pending-assessments">YOUR TEAM LEADER SHOULD ASSIGN AREA FIRST</p>
-                                    <?php elseif (isset($existing_area_rating_files[$schedule['schedule_id']])): ?>
+                                    <?php elseif (!empty($existing_ratings[$schedule['schedule_id']])): ?>
                                         <?php if (in_array($schedule['team_id'], $existing_assessments)): ?>
-                                            <p>SUBMISSION STATUS</p>
-                                            <div style="height: 10px;"></div>
-                                            <p class="assessment-button-done">ALREADY SUBMITTED RATING AND ASSESSMENT</p>
-                                            <div style="height: 10px;"></div>
-                                            <div>
-                                                <?php 
-                                                // Query to fetch the logged-in user's assessment file
-                                                $sql_user_assessment = "
-                                                SELECT a.assessment_file
-                                                FROM assessment a
-                                                JOIN team t ON a.team_id = t.id
-                                                WHERE t.internal_users_id = ? 
-                                                AND t.schedule_id = ?
-                                                ";
+                                        <p>SUBMISSION STATUS</p>
+                                        <div style="height: 10px;"></div>
+                                        <p class="assessment-button-done">ALREADY SUBMITTED RATING AND ASSESSMENT</p>
+                                        <div style="height: 10px;"></div>
+                                        <div>
+                                            <?php 
+                                            // Query to fetch the logged-in user's assessment file
+                                            $sql_user_assessment = "
+                                            SELECT a.assessment_file
+                                            FROM assessment a
+                                            JOIN team t ON a.team_id = t.id
+                                            WHERE t.internal_users_id = ? 
+                                            AND t.schedule_id = ?
+                                            ";
 
-                                                $stmt_user_assessment = $conn->prepare($sql_user_assessment);
-                                                $stmt_user_assessment->bind_param("si", $user_id, $schedule_id); // Bind user_id and specific schedule_id
-                                                $stmt_user_assessment->execute();
-                                                $stmt_user_assessment->bind_result($assessment_file);
-                                                $stmt_user_assessment->fetch(); // Fetch the result
-                                                
-                                                if ($assessment_file): ?>
-                                                    <button class="approve" onclick="window.open('<?php echo htmlspecialchars($assessment_file); ?>', '_blank')">
-                                                        <i class="bi bi-file-earmark-arrow-down"></i> View Assessment File
-                                                    </button>
-                                                <?php else: ?>
-                                                    <p>No assessment file found for your account.</p>
-                                                <?php 
-                                                endif;
-                                                $stmt_user_assessment->close();
-                                                ?>
-                                            </div>
+                                            $stmt_user_assessment = $conn->prepare($sql_user_assessment);
+                                            $stmt_user_assessment->bind_param("si", $user_id, $schedule['schedule_id']); // Bind user_id and specific schedule_id
+                                            $stmt_user_assessment->execute();
+                                            $stmt_user_assessment->bind_result($assessment_file);
+                                            $stmt_user_assessment->fetch(); // Fetch the result
+
+                                            if ($assessment_file): ?>
                                             <div style="height: 10px;"></div>
-                                            <div class="">
+                                                <a class="approve" href="<?php echo htmlspecialchars($assessment_file); ?>" download>
+                                                    <i class="bi bi-cloud-arrow-down" style="font-size: 20px"></i> Download Assessment File
+                                                </a>
+                                                <div style="height: 20px;"></div>
+                                            <?php else: ?>
+                                                <p>No assessment file found for your account.</p>
+                                            <?php endif;
+                                            $stmt_user_assessment->close();
+                                            ?>
+                                        </div>
+                                        <div style="height: 10px;"></div>
+                                        <div class="">
                                             <?php
-                                            // Query to fetch the NDA file for the logged-in user based on full name
-                                            $sql_nda_file = "SELECT NDA_file FROM nda WHERE internal_accreditor = ?";
-                                            $stmt_nda_file = $conn->prepare($sql_nda_file);
-                                            $stmt_nda_file->bind_param("s", $full_name); // Bind the logged-in user's full name
-                                            $stmt_nda_file->execute();
-                                            $stmt_nda_file->bind_result($nda_file);
-                                            $stmt_nda_file->fetch();
-                                            $stmt_nda_file->close();
+                                            // Query to fetch the NDA file using schedule_id, team_id, and internal_users_id
+                                            $sql_team_id = "
+                                            SELECT id
+                                            FROM team
+                                            WHERE schedule_id = ? AND internal_users_id = ?
+                                            ";
+                                            $stmt_team_id = $conn->prepare($sql_team_id);
+                                            $stmt_team_id->bind_param("is", $schedule['schedule_id'], $user_id); // Bind schedule_id and internal_users_id
+                                            $stmt_team_id->execute();
+                                            $stmt_team_id->bind_result($team_id);
+                                            $stmt_team_id->fetch();
+                                            $stmt_team_id->close();
+
+                                            if ($team_id) {
+                                                $sql_nda_file = "
+                                                SELECT NDA_file
+                                                FROM nda
+                                                WHERE team_id = ?
+                                                ";
+                                                $stmt_nda_file = $conn->prepare($sql_nda_file);
+                                                $stmt_nda_file->bind_param("i", $team_id); // Bind the team_id
+                                                $stmt_nda_file->execute();
+                                                $stmt_nda_file->bind_result($nda_file);
+                                                $stmt_nda_file->fetch();
+                                                $stmt_nda_file->close();
+                                            } else {
+                                                $nda_file = null;
+                                            }
 
                                             if ($nda_file): ?>
-                                                <button class="approve" onclick="window.open('<?php echo htmlspecialchars($nda_file); ?>', '_blank')">
-                                                    <i class="bi bi-file-earmark-arrow-down"></i> View Your NDA
-                                                </button>
+                                                <a class="approve" href="<?php echo htmlspecialchars($nda_file); ?>" download>
+                                                    <i class="bi bi-cloud-arrow-down" style="font-size: 20px"></i> Download NDA File
+                                                </a>
+                                                <div style="height: 20px;"></div>
                                             <?php else: ?>
                                                 <p>No NDA file found for your account.</p>
                                             <?php endif; ?>
-                                            
-                                            </div>
+                                        </div>
+                                        <div style="height: 10px;"></div>
+                                        <div>
+                                            <?php
+                                            // Query to fetch the approved assessment file
+                                            if ($team_id) {
+                                                // Fetch the assessment ID linked to the team
+                                                $sql_assessment_id = "
+                                                SELECT id
+                                                FROM assessment
+                                                WHERE team_id = ?
+                                                ";
+                                                $stmt_assessment_id = $conn->prepare($sql_assessment_id);
+                                                $stmt_assessment_id->bind_param("i", $team_id); // Bind the team_id
+                                                $stmt_assessment_id->execute();
+                                                $stmt_assessment_id->bind_result($assessment_id);
+                                                $stmt_assessment_id->fetch();
+                                                $stmt_assessment_id->close();
+                                        
+                                                if ($assessment_id) {
+                                        
+                                                    // Fetch the approved assessment files linked to the specific assessment ID
+                                                    $sql_approved_file = "
+                                                    SELECT id, approved_assessment_file
+                                                    FROM approved_assessment
+                                                    WHERE assessment_id = ?
+                                                    ";
+                                                    $stmt_approved_file = $conn->prepare($sql_approved_file);
+                                                    $stmt_approved_file->bind_param("i", $assessment_id); // Bind the correct assessment_id
+                                                    $stmt_approved_file->execute();
+                                                    $stmt_approved_file->bind_result($approved_id, $approved_assessment_file);
+                                        
+                                                    // Collect all results for debugging
+                                                    $approved_results = [];
+                                                    while ($stmt_approved_file->fetch()) {
+                                                        $approved_results[] = [
+                                                            'approved_id' => $approved_id,
+                                                            'approved_assessment_file' => $approved_assessment_file,
+                                                        ];
+                                                    }
+                                                    $stmt_approved_file->close();
+                                        
+                                                    // Use the first valid result if multiple are found
+                                                    $approved_assessment_file = $approved_results[0]['approved_assessment_file'] ?? null;
+                                                    $approved_id = $approved_results[0]['approved_id'] ?? null;
+                                                } else {
+                                                    $approved_assessment_file = null;
+                                                    $approved_id = null;
+                                                }
+                                            } else {
+                                                $approved_assessment_file = null;
+                                                $approved_id = null;
+                                            }
+                                        
+                                            if ($approved_assessment_file && $assessment_id): ?>
+                                                <a class="approve" href="<?php echo htmlspecialchars($approved_assessment_file); ?>" download>
+                                                    <i class="bi bi-cloud-arrow-down" style="font-size: 20px"></i> Download Approved Assessment
+                                                </a>
                                             <?php else: ?>
+                                                <a class="approve">
+                                                    No Approved Assessment
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php else: ?>
                                         <p>ASSESSMENT</p>
                                         <div style="height: 10px;"></div>
                                         <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
@@ -1068,77 +1210,59 @@ if ($result_areas) {
 
         <!-- Popup Form for Team Member -->
         <div class="assessmentmodal" id="Ratingpopup">
-            <div class="assessmentmodal-content">
-                <h2>RATING FORM</h2>
-                <form action="internal_rating_process.php" method="POST" enctype="multipart/form-data">
-                    <div class="assessment-group">
-                        <input type="hidden" name="schedule_id" id="Ratingmodal_schedule_id">
-                        <label for="college">COLLEGE</label>
-                        <input class="assessment-group-college" type="text" id="Ratingcollege" name="college" readonly>
-                        <label for="program">PROGRAM</label>
-                        <input class="assessment-group-program" type="text" id="Ratingprogram" name="program" readonly>
-                    </div>
-                    <div class="orientationname1">
-                        <div class="titleContainer">
-                            <label for="level"><strong>LEVEL APPLIED</strong></label>
-                        </div>
-                        <div class="titleContainer">
-                            <label for="date"><strong>DATE</strong></label>
-                        </div>
-                        <div class="titleContainer">
-                            <label for="time"><strong>TIME</strong></label>
-                        </div>
-                    </div>
-                    <div class="orientationname1">
-                        <div class="nameContainer orientationContainer1">
-                            <input class="level" type="text" id="Ratinglevel" name="level" readonly>
-                        </div>
-                        <div class="nameContainer orientationContainer">
-                            <input class="level" type="text" id="Ratingdate" name="date" readonly>
-                        </div>
-                        <div class="nameContainer orientationContainer">
-                            <input class="time" type="text" id="Ratingtime" name="time" readonly>
-                        </div>
-                    </div>
-                    <div class="orientationname1">
-                        <div class="titleContainer">
-                            <label for="result"><strong>AREAS ASSIGNED</strong></label>
-                        </div>
-                        <div class="titleContainer">
-                            <label for="area_evaluated"><strong>RATING<span style="color: red;"> *<span></strong></label>
-                        </div>
-                    </div>
-
-                    <div id="Ratingarea_container">
-                    </div>
-
-                    <div style="height: 20px;"></div>
-                    <div class="orientationname1">
-                        <div class="titleContainer">
-                            <label for="evaluator"><strong>EVALUATOR</strong></label>
-                        </div>
-                        <div class="titleContainer">
-                            <label for="evaluator_signature"><strong>EVALUATOR E-SIGN<span style="color: red;"> *<span></strong></label>
-                        </div>
-                    </div>
-
-                    <div class="orientationname1 upload">
-                        <div class="nameContainer orientationContainer">
-                            <input class="area_evaluated" type="text" id="Ratingevaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly>
-                        </div>
-                        <div class="nameContainer orientationContainer uploadContainer">
-                            <span class="upload-text">UPLOAD</span>
-                            <img id="upload-icon-evaluator" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
-                            <input class="uploadInput" type="file" id="Ratingevaluator_signature" name="evaluator_signature" accept="image/png" required>
-                        </div>
-                    </div>
-                    <div class="button-container">
-                        <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
-                        <button class="submit-button1" type="submit">SUBMIT</button>
-                    </div>
-                </form>
+    <div class="assessmentmodal-content">
+        <h2>RATING FORM</h2>
+        <form action="internal_rating_process.php" method="POST">
+            <div class="assessment-group">
+                <input type="hidden" name="schedule_id" id="Ratingmodal_schedule_id">
+                <label for="college">COLLEGE</label>
+                <input class="assessment-group-college" type="text" id="Ratingcollege" name="college" readonly>
+                <label for="program">PROGRAM</label>
+                <input class="assessment-group-program" type="text" id="Ratingprogram" name="program" readonly>
             </div>
-        </div>
+            <div class="orientationname1">
+                <div class="titleContainer">
+                    <label for="level"><strong>LEVEL APPLIED</strong></label>
+                </div>
+                <div class="titleContainer">
+                    <label for="date"><strong>DATE</strong></label>
+                </div>
+                <div class="titleContainer">
+                    <label for="time"><strong>TIME</strong></label>
+                </div>
+            </div>
+            <div class="orientationname1">
+                <div class="nameContainer orientationContainer1">
+                    <input class="level" type="text" id="Ratinglevel" name="level" readonly>
+                </div>
+                <div class="nameContainer orientationContainer">
+                    <input class="level" type="text" id="Ratingdate" name="date" readonly>
+                </div>
+                <div class="nameContainer orientationContainer">
+                    <input class="time" type="text" id="Ratingtime" name="time" readonly>
+                </div>
+            </div>
+            <div class="orientationname1">
+                <div class="titleContainer">
+                    <label for="result"><strong>AREAS ASSIGNED</strong></label>
+                </div>
+                <div class="titleContainer">
+                    <label for="area_evaluated"><strong>RATING<span style="color: red;"> *<span></strong></label>
+                </div>
+            </div>
+
+            <div id="Ratingarea_container">
+            </div>
+
+            <div style="height: 20px;"></div>
+            <div class="button-container">
+                <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
+                <button class="submit-button1" type="submit">SUBMIT</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 
     <!-- Popup Form for Team Member -->
@@ -1264,18 +1388,17 @@ if ($result_areas) {
                     </div>
                 </div>
                 <div class="orientationname1">
-    <div class="titleContainer">
-        <label for="result"><strong>AREAS EVALUATED</strong></label>
-    </div>
-    <div class="titleContainer">
-        <label for="area_evaluated"><strong>RATINGS<span style="color: red;"> *</span></strong></label>
-    </div>
-</div>
+                    <div class="titleContainer">
+                        <label for="result"><strong>AREAS EVALUATED</strong></label>
+                    </div>
+                    <div class="titleContainer">
+                        <label for="area_evaluated"><strong>RATINGS<span style="color: red;"> *</span></strong></label>
+                    </div>
+                </div>
 
-<div id="SummaryRatingarea_container">
-    <!-- Areas and ratings will be dynamically added here -->
-</div>
-
+                <div id="SummaryRatingarea_container">
+                    <!-- Areas and ratings will be dynamically added here -->
+                </div>
                 <div class="orientationname1">
                     <div class="titleContainer">
                         <label for="evaluator"><strong>EVALUATOR</strong></label>

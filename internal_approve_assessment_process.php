@@ -38,11 +38,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $assessment_file = $_POST['assessment_file'];
     $team_leader_name = $_POST['team_leader'];
 
-    // Fetch the assessment_id based on the team_id
-    $stmt = $conn->prepare("SELECT id FROM assessment WHERE team_id = ?");
-    $stmt->bind_param("i", $team_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    try {
+        // Fetch the assessment_id based on the team_id
+        $stmt = $conn->prepare("SELECT id FROM assessment WHERE team_id = ?");
+        $stmt->bind_param("i", $team_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
     if ($result->num_rows === 0) {
         $message = "No assessment found for the given team ID.";
     } else {
@@ -66,12 +67,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Handle file upload
             if (isset($_FILES['team_leader_signature']) && $_FILES['team_leader_signature']['error'] === UPLOAD_ERR_OK) {
                 $fileTmpPath = $_FILES['team_leader_signature']['tmp_name'];
+                $fileSize = $_FILES['team_leader_signature']['size'];
                 $fileName = $_FILES['team_leader_signature']['name'];
                 $fileNameCmps = explode(".", $fileName);
                 $fileExtension = strtolower(end($fileNameCmps));
 
                 $allowedfileExtensions = array('png');
-                if (in_array($fileExtension, $allowedfileExtensions)) {
+                $maxFileSize = 2 * 1024 * 1024; // 2MB in bytes
+
+                if ($fileSize > $maxFileSize) {
+                    $imgnotif = "images/error.png";
+                    $message = "File size exceeds the maximum allowed size of 2MB.";
+                } elseif (!in_array($fileExtension, $allowedfileExtensions)) {
+                    $imgnotif = "images/error.png";
+                    $message = "Invalid file type. Only PNG files are allowed.";
+                } else {
                     // Read the image file into binary data
                     $signature_data = file_get_contents($fileTmpPath);
 
@@ -194,14 +204,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             unlink($temp_signature_path);
                         }
                     }
-                } else {
-                    $imgnotif = "images/error.png";
-                    $message = "Error moving the uploaded file.";
                 }
             } else {
                 $imgnotif ="images/error.png";
                 $message = "Upload failed. Allowed file types: " . implode(',', $allowedfileExtensions);
             }
+        }
+    }
+}
+    catch (mysqli_sql_exception $e) {
+        if (strpos($e->getMessage(), 'max_allowed_packet') !== false) {
+            $imgnotif = "images/error.png";
+            $message = "The electronic signature you are trying to upload exceeds the maximum allowed packet size. Please reduce the file size or contact support.";
+        } else {
+            $imgnotif = "images/error.png";
+            $message = "An unexpected error occurred: " . htmlspecialchars($e->getMessage());
         }
     }
 } else {
@@ -220,10 +237,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         document.addEventListener('DOMContentLoaded', function() {
             var popup = document.getElementById('successPopup');
             popup.style.display = 'block';
-
-            document.getElementById('closeSuccessBtn').addEventListener('click', function() {
-                popup.style.display = 'none';
-            });
 
             document.getElementById('closePopup').addEventListener('click', function() {
                 popup.style.display = 'none';

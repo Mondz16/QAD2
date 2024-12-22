@@ -37,7 +37,7 @@ function decryptData($data, $key) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
     $schedule_id = $_POST['schedule_id'];
-    $result = floatval($_POST['result']);  // Convert the result to a float
+    $result_display = $_POST['result'];  // Convert the result to a float
     $area_evaluated = $_POST['area_evaluated'];
     $findings = $_POST['findings'];
     $recommendations = $_POST['recommendations'];
@@ -113,10 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdf->SetXY(170, 103); // Adjust position
         $pdf->Write(0, $schedule_date);
 
-        // Format the result to 2 decimal places before inserting it into the PDF
-        $formatted_result = number_format($result, 2);
         $pdf->SetXY(145, 116); // Adjust position
-        $pdf->Write(0, $formatted_result);
+        $pdf->Write(0, $result_display);
 
         $pdf->SetXY(13, 141); // Adjust position
         $pdf->MultiCell(38, 5, $area_evaluated);

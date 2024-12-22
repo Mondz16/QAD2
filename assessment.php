@@ -824,7 +824,17 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                             <div class="assessment-udas">
                                                 <p>DOWNLOADABLE:<br>
                                                     <?php if (!empty($assessment['summary_file'])): ?>
-                                                        <a href="<?= $assessment['summary_file']; ?>" class="btn udas-button1" download>SUMMARY</a>
+                                                        <?php 
+                                                        // Fetch the summary_compilation_file directly
+                                                        $summary_file = $assessment['summary_file'];
+                                                        $sql = "SELECT summary_compilation_file FROM summary WHERE summary_file = ?";
+                                                        $stmt = $conn->prepare($sql);
+                                                        $stmt->bind_param("s", $summary_file);
+                                                        $stmt->execute();
+                                                        $result = $stmt->get_result();
+                                                        $compilationFile = $result->fetch_assoc()['summary_compilation_file'] ?? $summary_file; // Fallback to summary_file
+                                                        ?>
+                                                        <a href="<?= $compilationFile; ?>" class="btn udas-button1" download>SUMMARY</a>
                                                     <?php else: ?>
                                                         <button class="btn udas-button1" disabled>SUMMARY</button>
                                                     <?php endif; ?>
