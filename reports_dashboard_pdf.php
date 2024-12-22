@@ -1,6 +1,6 @@
 <?php
 session_start();
-require 'connection.php';
+include 'connection.php';
 require 'vendor/autoload.php';
 
 use setasign\Fpdi\Fpdi;
@@ -20,12 +20,6 @@ $pdf->AddPage();
 $pdf->SetFont('Arial', 'B', 16);
 
 // Database connection and fetching data
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "qadDB";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);

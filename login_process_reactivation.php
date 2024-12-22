@@ -5,12 +5,7 @@ if (isset($_GET['type']) && isset($_GET['user_id'])) {
     $type = $_GET['type'];
     $user_id = $_GET['user_id'];
 
-    $servername = "localhost";
-    $db_username = "root";
-    $db_password = "";
-    $dbname = "qadDB";
-
-    $conn = new mysqli($servername, $db_username, $db_password, $dbname);
+    include 'connection.php';
 
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);

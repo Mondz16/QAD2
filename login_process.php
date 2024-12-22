@@ -93,12 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_id = $_POST['user_id'];
     $password = $_POST['password'];
 
-    $servername = "localhost";
-    $db_username = "root";
-    $db_password = "";
-    $dbname = "qadDB";
-
-    $conn = new mysqli($servername, $db_username, $db_password, $dbname);
+    include 'connection.php';
 
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);

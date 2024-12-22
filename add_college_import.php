@@ -5,12 +5,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 // Database connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "qadDB";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+include 'connection.php';
 
 // Check connection
 if ($conn->connect_error) {

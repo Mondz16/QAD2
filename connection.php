@@ -1,10 +1,5 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "qadDB";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+include 'connection.php';
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
