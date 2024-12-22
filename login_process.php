@@ -1,5 +1,6 @@
 <?php
 session_start();
+require 'connection.php';
 require 'vendor/autoload.php';  // Include PHPMailer
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -92,8 +93,6 @@ function display_popup($message, $type, $redirect = 'login.php', $has_apply_canc
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_id = $_POST['user_id'];
     $password = $_POST['password'];
-
-    include 'connection.php';
 
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);
