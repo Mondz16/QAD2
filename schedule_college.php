@@ -7,18 +7,19 @@ $college_name = urldecode($_GET['college']);
 $college_code = htmlspecialchars($_GET['college_code']); // Added to get college_code
 
 // Update the SQL query to include the manually_unlocked column from the schedule table
-$sql = "SELECT s.id, p.program_name, s.level_applied, s.schedule_date, s.schedule_time, s.schedule_status, s.manually_unlocked
+$sql = "SELECT s.id, p.program_name, s.level_applied, s.schedule_date, 
+               s.schedule_time, s.schedule_status, s.manually_unlocked, s.unlock_expiration
         FROM schedule s
         JOIN program p ON s.program_id = p.id
         JOIN college c ON s.college_code = c.code
-        WHERE c.college_name = ? 
+        WHERE s.college_code = ? 
         AND s.schedule_status NOT IN ('finished','passed', 'failed')
         ORDER BY s.schedule_date, s.schedule_time";
-
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $college_name);
+$stmt->bind_param("s", $college_code);
 $stmt->execute();
 $result = $stmt->get_result();
+
 
 ?>
 
@@ -236,10 +237,10 @@ $result = $stmt->get_result();
                 $currentDateTime = new DateTime('now', new DateTimeZone('Asia/Manila'));
 
                 // Database connection and query execution
-                $query = "SELECT s.*, p.program_name
-                FROM schedule s
-                LEFT JOIN program p ON s.program_id = p.id"; // Replace this with your actual SQL query
-                $result = $conn->query($query);
+                //$query = "SELECT s.*, p.program_name
+                //FROM schedule s
+                //LEFT JOIN program p ON s.program_id = p.id"; // Replace this with your actual SQL query
+                //$result = $conn->query($query);
 
                 // Check if there are rows returned from the query
                 if ($result->num_rows > 0) {
@@ -379,7 +380,7 @@ $result = $stmt->get_result();
 
                         // Other buttons (Approve, Reschedule, Cancel) if the schedule is not cancelled, approved, done, or finished
                         if ($row['schedule_status'] !== 'cancelled' && $row['schedule_status'] !== 'approved' && $row['schedule_status'] !== 'done' && $row['schedule_status'] !== 'finished') {
-                            echo "<button class='button approve mt-lg-0 mt-1' onclick='openApproveModal(" . $row['id'] . ")'>APPROVE</button>";
+                            echo "<button class='button approve mt-lg-0 mt-1' onclick='openApproveModal(" . $row['id'] . ")'>CONFIRM</button>";
                             echo "<button class='button reschedule mt-lg-0 mt-1' onclick='openRescheduleModal(" . $row['id'] . ")'>RESCHEDULE</button>";
                             echo "<button class='button cancel mt-lg-0 mt-1' onclick='openCancelModal(" . $row['id'] . ")'>CANCEL</button>";
                         }
