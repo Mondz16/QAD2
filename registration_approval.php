@@ -61,14 +61,80 @@ function sendEmailNotification($email, $userId, $action, $firstName, $reason = '
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $message = "";
+    $message_class = "";
+    
+    // Determine if this is a bulk or single operation
+    if (isset($_POST['ids'])) {
+        // Bulk operation
+        processBulkRegistrations($conn);
+    } else if (isset($_POST['id'])) {
+        // Single operation
+        processSingleRegistration($conn);
+    } else {
+        $message = "Invalid request: No user ID provided.";
+        $message_class = "error";
+    }
+}
+
+function processBulkRegistrations($conn) {
+    global $message, $message_class;
+    
+    $ids = explode(',', $_POST['ids']);
+    $action = $_POST['action'];
+    $reason = isset($_POST['reason']) ? $_POST['reason'] : '';
+    $success_count = 0;
+    $error_count = 0;
+
+    foreach ($ids as $id) {
+        $result = processUser($conn, $id, $action, $reason);
+        if ($result) {
+            $success_count++;
+        } else {
+            $error_count++;
+        }
+    }
+
+    if ($success_count > 0) {
+        $message = "$success_count users processed successfully.";
+        if ($error_count > 0) {
+            $message .= " $error_count users failed due to email notification errors.";
+        }
+        $message_class = $error_count > 0 ? "warning" : "success";
+    } else {
+        $message = "Operation failed. All users failed to process due to email notification errors.";
+        $message_class = "error";
+    }
+}
+
+function processSingleRegistration($conn) {
+    global $message, $message_class;
+    
     $id = $_POST['id'];
     $action = $_POST['action'];
     $reason = isset($_POST['reason']) ? $_POST['reason'] : '';
+    
+    $result = processUser($conn, $id, $action, $reason);
+    
+    if ($result) {
+        $message = $action == "approve" ? 
+            "User approved with User ID: $id" : 
+            "User disapproved with ID: $id";
+        $message_class = "success";
+    } else {
+        $message = $action == "approve" ? 
+            "User approval failed due to email notification error." : 
+            "User rejection failed due to email notification error.";
+        $message_class = "error";
+    }
+}
 
+function processUser($conn, $id, $action, $reason = '') {
+    // Determine user type
     $user_type = "";
     $sql = "SELECT * FROM internal_users WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $id); // Change "i" to "s" since user_id is a string
+    $stmt->bind_param("s", $id);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -83,130 +149,72 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user_type = "internal";
     }
 
-    $message = "";
-    $message_class = "";
+    if ($result->num_rows != 1) {
+        return false;
+    }
 
-    if ($result->num_rows == 1) {
-        $row = $result->fetch_assoc();
-        $email = $row['email'];
-        $first_name = $row['first_name'];
-        $bb_cccc = substr($id, 3); // Extract bb-cccc part of the user_id
+    $row = $result->fetch_assoc();
+    $email = $row['email'];
+    $first_name = $row['first_name'];
+    $bb_cccc = substr($id, 3);
 
-        $conn->begin_transaction();
+    $conn->begin_transaction();
 
-        if ($action == "approve") {
-            if ($user_type == "internal") {
-                // Check for existing active user with the same bb-cccc part
-                $sql_check_active = "SELECT user_id FROM internal_users WHERE user_id LIKE ? AND status = 'active'";
-                $stmt_check_active = $conn->prepare($sql_check_active);
-                $like_pattern = '%-' . $bb_cccc;
-                $stmt_check_active->bind_param("s", $like_pattern);
-                $stmt_check_active->execute();
-                $result_check_active = $stmt_check_active->get_result();
+    try {
+        if ($action == "approve" || $action == "bulk_approve") {
+            // Handle approval
+            $table = $user_type == "internal" ? "internal_users" : "external_users";
+            
+            // Check for existing active user
+            $sql_check_active = "SELECT user_id FROM $table WHERE user_id LIKE ? AND status = 'active'";
+            $stmt_check_active = $conn->prepare($sql_check_active);
+            $like_pattern = '%-' . $bb_cccc;
+            $stmt_check_active->bind_param("s", $like_pattern);
+            $stmt_check_active->execute();
+            $result_check_active = $stmt_check_active->get_result();
 
-                if ($result_check_active->num_rows > 0) {
-                    $row_active = $result_check_active->fetch_assoc();
-                    $active_user_id = $row_active['user_id'];
-
-                    // Update the existing active user to inactive
-                    $sql_update_active = "UPDATE internal_users SET status = 'inactive' WHERE user_id = ?";
-                    $stmt_update_active = $conn->prepare($sql_update_active);
-                    $stmt_update_active->bind_param("s", $active_user_id);
-                    $stmt_update_active->execute();
-                    $stmt_update_active->close();
-                }
-
-                // Approve the current user
-                $sql_update_internal = "UPDATE internal_users SET status = 'active', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
-                $stmt_update_internal = $conn->prepare($sql_update_internal);
-                $stmt_update_internal->bind_param("s", $id);
-
-            } elseif ($user_type == "external") {
-                // Check for existing active user with the same bb-cccc part
-                $sql_check_active = "SELECT user_id FROM external_users WHERE user_id LIKE ? AND status = 'active'";
-                $stmt_check_active = $conn->prepare($sql_check_active);
-                $like_pattern = '%-' . $bb_cccc;
-                $stmt_check_active->bind_param("s", $like_pattern);
-                $stmt_check_active->execute();
-                $result_check_active = $stmt_check_active->get_result();
-
-                if ($result_check_active->num_rows > 0) {
-                    $row_active = $result_check_active->fetch_assoc();
-                    $active_user_id = $row_active['user_id'];
-
-                    // Update the existing active user to inactive
-                    $sql_update_active = "UPDATE external_users SET status = 'inactive' WHERE user_id = ?";
-                    $stmt_update_active = $conn->prepare($sql_update_active);
-                    $stmt_update_active->bind_param("s", $active_user_id);
-                    $stmt_update_active->execute();
-                    $stmt_update_active->close();
-                }
-
-                // Approve the current user
-                $sql_update_external = "UPDATE external_users SET status = 'active', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
-                $stmt_update_external = $conn->prepare($sql_update_external);
-                $stmt_update_external->bind_param("s", $id);
+            if ($result_check_active->num_rows > 0) {
+                $row_active = $result_check_active->fetch_assoc();
+                $active_user_id = $row_active['user_id'];
+                
+                // Deactivate existing active user
+                $sql_update_active = "UPDATE $table SET status = 'inactive' WHERE user_id = ?";
+                $stmt_update_active = $conn->prepare($sql_update_active);
+                $stmt_update_active->bind_param("s", $active_user_id);
+                $stmt_update_active->execute();
+                $stmt_update_active->close();
             }
 
-            // Send approval email
-            $email_status = sendEmailNotification($email, $id, $action, $first_name);
-            if ($email_status === true) {
-                // Commit the transaction if email is sent successfully
-                if ($user_type == "internal") {
-                    $stmt_update_internal->execute();
-                    $stmt_update_internal->close();
-                } else {
-                    $stmt_update_external->execute();
-                    $stmt_update_external->close();
-                }
-                $conn->commit();
-                $message = "User approved with User ID: " . $id;
-                $message_class = "success";
-            } else {
-                // Rollback the transaction if email fails
-                $conn->rollback();
-                $message = "User approval failed due to email notification error.";
-                $message_class = "error";
-            }
-
-        } else if ($action == "reject") {
-            if ($user_type == "internal") {
-                $sql_update_internal = "UPDATE internal_users SET status = 'inactive', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
-                $stmt_update_internal = $conn->prepare($sql_update_internal);
-                $stmt_update_internal->bind_param("s", $id);
-            } else if ($user_type == "external") {
-                $sql_update_external = "UPDATE external_users SET status = 'inactive', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
-                $stmt_update_external = $conn->prepare($sql_update_external);
-                $stmt_update_external->bind_param("s", $id);
-            }
-
-            // Send rejection email
-            $email_status = sendEmailNotification($email, $id, $action, $first_name, $reason);
-            if ($email_status === true) {
-                // Commit the transaction if email is sent successfully
-                if ($user_type == "internal") {
-                    $stmt_update_internal->execute();
-                    $stmt_update_internal->close();
-                } else {
-                    $stmt_update_external->execute();
-                    $stmt_update_external->close();
-                }
-                $conn->commit();
-                $message = "User disapproved with ID: " . $id;
-                $message_class = "success";
-            } else {
-                // Rollback the transaction if email fails
-                $conn->rollback();
-                $message = "User rejection failed due to email notification error.";
-                $message_class = "error";
-            }
+            // Activate current user
+            $sql_update = "UPDATE $table SET status = 'active', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
+            
+        } else if ($action == "reject" || $action == "bulk_reject") {
+            // Handle rejection
+            $table = $user_type == "internal" ? "internal_users" : "external_users";
+            $sql_update = "UPDATE $table SET status = 'inactive', date_added = CURRENT_TIMESTAMP WHERE user_id = ?";
         }
-    } else {
-        $message = "Invalid registration ID.";
-        $message_class = "error";
+
+        $stmt_update = $conn->prepare($sql_update);
+        $stmt_update->bind_param("s", $id);
+
+        // Normalize action for email notification
+        $email_action = strpos($action, 'bulk_') === 0 ? substr($action, 5) : $action;
+        $email_status = sendEmailNotification($email, $id, $email_action, $first_name, $reason);
+        
+        if ($email_status === true) {
+            $stmt_update->execute();
+            $stmt_update->close();
+            $conn->commit();
+            return true;
+        } else {
+            $conn->rollback();
+            return false;
+        }
+    } catch (Exception $e) {
+        $conn->rollback();
+        return false;
     }
 }
-
 $conn->close();
 ?>
 

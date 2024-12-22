@@ -51,7 +51,7 @@ $conn = new mysqli($servername, $db_username, $db_password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-function displayRegistrations($conn, $tableName, $title)
+function displayRegistrations($conn, $tableName, $title) 
 {
     // Fetch all users (both pending and non-pending) to check for duplicates
     $sql = "";
@@ -74,7 +74,6 @@ function displayRegistrations($conn, $tableName, $title)
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
             $trimmedUserId = substr($row['user_id'], 3);
-
             if (isset($userIds[$trimmedUserId])) {
                 $duplicateIds[$trimmedUserId] = true;
             } else {
@@ -83,8 +82,8 @@ function displayRegistrations($conn, $tableName, $title)
         }
     }
 
-    // Second pass: Display only non-duplicate internal_users with status = 'pending'
-    $result->data_seek(0); // Reset result pointer to the start
+    // Second pass: Display users
+    $result->data_seek(0);
 
     if ($result->num_rows > 0) {
         echo "<table id='collegeTable' class='data-table table border rounded-2'>
@@ -95,7 +94,6 @@ function displayRegistrations($conn, $tableName, $title)
                 <th>LAST NAME</th>
                 <th>EMAIL</th>";
     
-        // Additional columns based on table type
         if ($tableName === 'internal_users') {
             echo "<th>COLLEGE</th>";
         } elseif ($tableName === 'external_users') {
@@ -103,24 +101,23 @@ function displayRegistrations($conn, $tableName, $title)
         }
     
         echo "<th>Actions</th>
+            <th><input type='checkbox' id='selectAll' onclick='toggleAllCheckboxes(this)'>   Select All</th>
             </tr>";
     
-        $rowsDisplayed = false; // Flag to track if any valid rows are displayed
+        $rowsDisplayed = false;
     
         while ($row = $result->fetch_assoc()) {
             $trimmedUserId = substr($row['user_id'], 3);
     
-            // Skip rows with duplicate user_id
             if (isset($duplicateIds[$trimmedUserId])) {
                 continue;
             }
     
-            // Display only internal_users with status = 'pending'
             if ($tableName === 'internal_users' && $row['status'] !== 'pending') {
                 continue;
             }
     
-            $rowsDisplayed = true; // Set the flag if at least one row is displayed
+            $rowsDisplayed = true;
     
             echo "<tr>
                 <td>{$row['user_id']}</td>
@@ -129,7 +126,6 @@ function displayRegistrations($conn, $tableName, $title)
                 <td>{$row['last_name']}</td>
                 <td>{$row['email']}</td>";
     
-            // Display additional column data based on table type
             if ($tableName === 'internal_users') {
                 echo "<td>{$row['college_name']}</td>";
             } elseif ($tableName === 'external_users') {
@@ -140,17 +136,19 @@ function displayRegistrations($conn, $tableName, $title)
                     <button class='btn btn-approve btn-sm' onclick='openApproveModal(\"{$row['user_id']}\")'>Approve</button>
                     <button class='btn btn-reject btn-sm' onclick='openRejectModal(\"{$row['user_id']}\")'>Disapprove</button>
                 </td>
+                <td><input type='checkbox' class='user-select' value='{$row['user_id']}'></td>
             </tr>";
         }
     
-        echo "</table>";
+        echo "</table>
+                <button class='btn btn-approve btn-sm' onclick='bulkApprove()'>Approve Selected</button>
+                <button class='btn btn-reject btn-sm' onclick='openBulkRejectModal()'>Disapprove Selected</button>
+                ";
     
-        // If no valid rows were displayed, show the "NO PENDING REGISTRATIONS" message
         if (!$rowsDisplayed) {
             echo "<div class='no-schedule-prompt'><p>NO PENDING REGISTRATIONS</p></div>";
         }
     } else {
-        // If no rows exist in the result set
         echo "<div class='no-schedule-prompt'><p>NO PENDING REGISTRATIONS</p></div>";
     }
 }
@@ -491,7 +489,22 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             </div>
         </div>
     </div>
-
+    <!-- Add Bulk Reject Modal -->
+    <div id="bulkRejectModal" class="modal">
+        <div class="approved-modal-content">
+            <h4>Are you sure you want to disapprove these registrations?</h4>
+            <form id="bulkRejectForm" action="registration_approval.php" method="post">
+                <input type="hidden" name="ids" id="bulkRejectUserIds">
+                <input type="hidden" name="action" value="bulk_reject">
+                <textarea rows="3" cols="52" id="bulkRejectReason" name="reason" 
+                        placeholder="Enter reason for rejection" required></textarea>
+                <div class="modal-buttons">
+                    <button type="button" class="no-btn" onclick="closeBulkRejectModal()">NO</button>
+                    <button type="submit" class="yes-btn">YES</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <div id="loadingSpinner" class="loading-spinner spinner-hidden">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
@@ -578,6 +591,67 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             activeButton.classList.remove('nebtn');
             activeButton.classList.add('pobtn');
         }
+        function toggleAllCheckboxes(source) {
+    const checkboxes = document.getElementsByClassName('user-select');
+    for (let checkbox of checkboxes) {
+        checkbox.checked = source.checked;
+    }
+}
+
+function getSelectedUserIds() {
+    const checkboxes = document.getElementsByClassName('user-select');
+    const selectedIds = [];
+    for (let checkbox of checkboxes) {
+        if (checkbox.checked) {
+            selectedIds.push(checkbox.value);
+        }
+    }
+    return selectedIds;
+}
+
+function bulkApprove() {
+    const selectedIds = getSelectedUserIds();
+    if (selectedIds.length === 0) {
+        alert('Please select users to approve');
+        return;
+    }
+    
+    if (confirm('Are you sure you want to approve these registrations?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'registration_approval.php';
+        
+        const idsInput = document.createElement('input');
+        idsInput.type = 'hidden';
+        idsInput.name = 'ids';
+        idsInput.value = selectedIds.join(',');
+        
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'bulk_approve';
+        
+        form.appendChild(idsInput);
+        form.appendChild(actionInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function openBulkRejectModal() {
+    const selectedIds = getSelectedUserIds();
+    if (selectedIds.length === 0) {
+        alert('Please select users to disapprove');
+        return;
+    }
+    
+    document.getElementById('bulkRejectUserIds').value = selectedIds.join(',');
+    document.getElementById('bulkRejectModal').style.display = 'block';
+}
+
+function closeBulkRejectModal() {
+    document.getElementById('bulkRejectModal').style.display = 'none';
+}
     </script>
 </body>
 
