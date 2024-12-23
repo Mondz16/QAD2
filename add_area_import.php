@@ -6,11 +6,6 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 // Database connection
 include 'connection.php';
 
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
 $message = "";
 $message_class = "";
 
