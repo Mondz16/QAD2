@@ -77,7 +77,7 @@ function getMembers($conn, $campus, $college, $search, $offset, $year)
                     LEFT JOIN program ON schedule.program_id = program.id
                     WHERE (CONCAT(internal_users.first_name, ' ', internal_users.last_name) LIKE ?)
                     AND (internal_users.college_code LIKE ? OR ? = '')
-                    GROUP BY internal_users.user_id
+                    GROUP BY internal_users.user_id, internal_users.first_name, internal_users.last_name  -- Add first_name and last_name to GROUP BY
                     ORDER BY schedule_count DESC
                     LIMIT 10 OFFSET ?";
 
