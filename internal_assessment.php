@@ -353,7 +353,7 @@ foreach ($schedules as $schedule) {
 
     if ($team_id) {
         // Check if an NDA exists for this team_id
-        $sql_nda = "SELECT NDA_file FROM NDA WHERE team_id = ?";
+        $sql_nda = "SELECT NDA_file FROM nda WHERE team_id = ?";
         $stmt_nda = $conn->prepare($sql_nda);
         $stmt_nda->bind_param("i", $team_id);
         $stmt_nda->execute();
