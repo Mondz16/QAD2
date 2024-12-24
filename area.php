@@ -129,6 +129,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
     <title>Area</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/sidebar_updated.css">
     <link href="css/navbar.css" rel="stylesheet">
     <link href="css/pagestyle.css" rel="stylesheet">
@@ -362,6 +363,9 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                 </svg>
                             </button>
                         </div>
+                        <button class="btn-add-schedule" onclick="openStandardModal()">STANDARD
+                            <i class="bi bi-pencil-square" style="font-size: 20px; margin-left: 10px;"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="row mt-3 scrollable-container">
@@ -416,6 +420,50 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 </table>
             </div>
         </div>
+
+        <div id="standardModal" class="modal">
+    <div class="modal-content">
+        <div class="existing-standards">
+            <h3>ACCREDITATION STANDARDS</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Level</th>
+                        <th>Standard</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    // Include database connection
+                    include 'connection.php';
+
+                    // Fetch data from the accreditation_standard table
+                    $sql = "SELECT id, Level, Standard FROM accreditation_standard";
+                    $result = $conn->query($sql);
+
+                    if ($result->num_rows > 0) {
+                        // Output data for each row
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr data-id='{$row['id']}'>
+                                    <td>" . htmlspecialchars($row['Level']) . "</td>
+                                    <td class='standard-value'>" . htmlspecialchars($row['Standard']) . "</td>
+                                    <td class='action-buttons'>
+                                        <button class='edit-btn' onclick='makeEditable(this)'>Edit</button>
+                                    </td>
+                                  </tr>";
+                        }
+                    } else {
+                        echo "<tr><td colspan='3'>No standards available</td></tr>";
+                    }
+
+                    $conn->close();
+                    ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
         <div id="importModal" class="modal">
             <div class="import-modal-content">
@@ -531,6 +579,121 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             };
             xhr.send();
         }
+
+        function openStandardModal() {
+            var standardModal = document.getElementById("standardModal");
+            standardModal.style.display = "block";
+        }
+
+        // Function to close the STANDARD modal
+        function closeStandardModal() {
+            var standardModal = document.getElementById("standardModal");
+            standardModal.style.display = "none";
+        }
+
+        // Close the modal when clicking outside of the modal content
+        window.onclick = function(event) {
+            var standardModal = document.getElementById("standardModal");
+            if (event.target == standardModal) {
+                standardModal.style.display = "none";
+            }
+        }
+
+         // Function to make the standard editable
+    function makeEditable(button) {
+        const row = button.closest('tr'); // Get the row
+        const standardCell = row.querySelector('.standard-value'); // Get the standard cell
+        const actionCell = row.querySelector('.action-buttons'); // Get the action cell
+
+        // Get the current standard value
+        const standardValue = standardCell.textContent.trim();
+
+        // Create editable elements for the standard cell
+        standardCell.innerHTML = `
+            <input 
+                type="number" 
+                step="0.25" 
+                min="1.00" 
+                max="5.00" 
+                value="${standardValue}" 
+                list="standard-options" 
+                oninput="validateInputValue(this)" />
+            <datalist id="standard-options">
+                ${generateDropdownOptions()}
+            </datalist>
+        `;
+
+        // Replace edit button with save and cancel buttons
+        actionCell.innerHTML = `
+            <button class='save-btn' onclick='saveChanges(this)'>Save</button>
+            <button class='cancel-btn' onclick='cancelChanges(this, "${standardValue}")'>Cancel</button>
+        `;
+    }
+
+    // Function to generate datalist options
+    function generateDropdownOptions() {
+        let options = "";
+        for (let i = 1.00; i <= 5.00; i += 0.25) {
+            const value = i.toFixed(2);
+            options += `<option value="${value}"></option>`;
+        }
+        return options;
+    }
+
+    // Function to validate input field value
+    function validateInputValue(input) {
+        const value = parseFloat(input.value);
+        if (value < 1.00 || value > 5.00 || isNaN(value)) {
+            input.setCustomValidity("Please enter a value between 1.00 and 5.00.");
+        } else {
+            input.setCustomValidity(""); // Reset custom validity
+        }
+    }
+
+    // Function to save changes
+    function saveChanges(button) {
+        const row = button.closest('tr'); // Get the row
+        const id = row.getAttribute('data-id'); // Get the row ID
+        const standardCell = row.querySelector('.standard-value'); // Get the standard cell
+        const actionCell = row.querySelector('.action-buttons'); // Get the action cell
+        const input = standardCell.querySelector("input"); // Get the input field
+        const newValue = parseFloat(input.value).toFixed(2); // Get and format the new value
+
+        // Send AJAX request to update the database
+        fetch('update_standard.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, standard: newValue })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the standard cell to show the new value
+                standardCell.innerHTML = newValue;
+
+                // Replace save/cancel buttons with the edit button
+                actionCell.innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
+            } else {
+                alert('Failed to update standard.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Function to cancel changes
+    function cancelChanges(button, originalValue) {
+        const row = button.closest('tr'); // Get the row
+        const standardCell = row.querySelector('.standard-value'); // Get the standard cell
+        const actionCell = row.querySelector('.action-buttons'); // Get the action cell
+
+        // Restore the original value in the standard cell
+        standardCell.textContent = originalValue;
+
+        // Replace save/cancel buttons with the edit button
+        actionCell.innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
+    }
     </script>
 
 </body>

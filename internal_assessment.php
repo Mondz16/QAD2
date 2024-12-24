@@ -116,6 +116,31 @@ $assessment_count = $stmt_schedules->num_rows;
 $stmt_schedules->bind_result($schedule_id, $college_name, $program_name, $level_applied, $schedule_date, $schedule_time, $schedule_status, $team_id, $role, $area_names);
 
 $schedules = [];
+
+// Prepare the statements outside the loop for efficiency
+
+// Statement to fetch schedule_id from team table using team_id
+$sql_team = "SELECT schedule_id FROM team WHERE id = ?";
+$stmt_team = $conn->prepare($sql_team);
+if (!$stmt_team) {
+    die("Prepare failed for team table: " . $conn->error);
+}
+
+// Statement to fetch level_applied from schedule table using schedule_id
+$sql_schedule = "SELECT level_applied FROM schedule WHERE id = ?";
+$stmt_schedule = $conn->prepare($sql_schedule);
+if (!$stmt_schedule) {
+    die("Prepare failed for schedule table: " . $conn->error);
+}
+
+// Statement to fetch Standard from accreditation_standard table using Level
+$sql_accreditation = "SELECT Standard FROM accreditation_standard WHERE Level = ?";
+$stmt_accreditation = $conn->prepare($sql_accreditation);
+if (!$stmt_accreditation) {
+    die("Prepare failed for accreditation_standard table: " . $conn->error);
+}
+
+// Iterate through each schedule
 while ($stmt_schedules->fetch()) {
     // Fetch all ratings for the current team_id
     $sql_ratings = "
@@ -124,53 +149,108 @@ while ($stmt_schedules->fetch()) {
         WHERE team_id = ?
     ";
     $stmt_ratings = $conn->prepare($sql_ratings);
+    if (!$stmt_ratings) {
+        die("Prepare failed for ratings query: " . $conn->error);
+    }
     $stmt_ratings->bind_param("i", $team_id);
     $stmt_ratings->execute();
     $stmt_ratings->bind_result($rating);
 
     $ratings = [];
     while ($stmt_ratings->fetch()) {
-        $ratings[] = $rating;
+        $ratings[] = $rating; // Keeping $rating as is
     }
     $stmt_ratings->close();
 
-    // Determine the result display based on the ratings
-    if (empty($ratings)) {
+    // Step 1: Retrieve schedule_id from team table using team_id
+    $stmt_team->bind_param("i", $team_id);
+    $stmt_team->execute();
+    $stmt_team->bind_result($schedule_id_from_team); // Keeping $schedule_id_from_team as is
+    if (!$stmt_team->fetch()) {
+        // Handle case where team_id does not exist
+        $schedule_id_from_team = null;
+    }
+    $stmt_team->reset();
+
+    if ($schedule_id_from_team === null) {
+        // Handle missing schedule_id appropriately
+        $level_applied = null;
+    } else {
+        // Step 2: Retrieve level_applied from schedule table using schedule_id_from_team
+        $stmt_schedule->bind_param("i", $schedule_id_from_team);
+        $stmt_schedule->execute();
+        $stmt_schedule->bind_result($fetched_level_applied);
+        if (!$stmt_schedule->fetch()) {
+            // Handle case where schedule_id does not exist
+            $fetched_level_applied = null;
+        }
+        $stmt_schedule->reset();
+
+        $level_applied = $fetched_level_applied;
+    }
+
+    // Step 3: Retrieve Standard from accreditation_standard table using level_applied
+    if ($level_applied !== null) {
+        $stmt_accreditation->bind_param("s", $level_applied);
+        $stmt_accreditation->execute();
+        $stmt_accreditation->bind_result($standard);
+        if (!$stmt_accreditation->fetch()) {
+            // Handle case where level_applied does not have a standard
+            $standard = null;
+        }
+        $stmt_accreditation->reset();
+    } else {
+        $standard = null;
+    }
+
+    // Step 4: Determine the average_rating based on the new logic
+    if ($standard === null) {
+        // If standard is not found, default or handle accordingly
+        $result_display = "Standard Not Found";
+    } elseif (empty($ratings)) {
         $result_display = "No Ratings"; // If no ratings are available
     } else {
-        $greater_than_3_5_count = count(array_filter($ratings, fn($r) => $r > 3.5));
-        $less_than_3_5_count = count($ratings) - $greater_than_3_5_count;
+        // Calculate the threshold
+        $threshold = $standard - 0.50;
 
-        if ($greater_than_3_5_count === count($ratings)) {
+        // Determine counts based on the threshold
+        $above_standard = array_filter($ratings, fn($r) => $r > $standard);
+        $below_threshold = array_filter($ratings, fn($r) => $r < $threshold);
+        $below_threshold_count = count($below_threshold);
+
+        if (count($above_standard) === count($ratings) && $below_threshold_count === 0) {
             $result_display = "Ready";
-        } elseif ($less_than_3_5_count >= 2 && $less_than_3_5_count <= 3) {
+        } elseif ($below_threshold_count >= 1 && $below_threshold_count <= 3) {
             $result_display = "Needs Improvement";
-        } elseif ($less_than_3_5_count === count($ratings)) {
+        } elseif ($below_threshold_count === count($ratings)) {
             $result_display = "Revisit";
         } else {
-            $result_display = "Needs Improvement"; // Default case
+            // Handle any other cases, possibly defaulting to "Needs Improvement"
+            $result_display = "Needs Improvement";
         }
     }
 
     // Add schedule and rating data to the array
     $schedules[] = [
-        'schedule_id' => $schedule_id,
-        'college_name' => $college_name,
-        'program_name' => $program_name,
-        'level_applied' => $level_applied,
-        'schedule_date' => $schedule_date,
-        'schedule_time' => $schedule_time,
-        'schedule_status' => $schedule_status,
-        'team_id' => $team_id,
-        'role' => $role,
+        'schedule_id' => $schedule_id, // Assuming $schedule_id is already fetched
+        'college_name' => $college_name, // Assuming $college_name is already fetched
+        'program_name' => $program_name, // Assuming $program_name is already fetched
+        'level_applied' => $level_applied, // Retrieved from schedule table
+        'schedule_date' => $schedule_date, // Assuming $schedule_date is already fetched
+        'schedule_time' => $schedule_time, // Assuming $schedule_time is already fetched
+        'schedule_status' => $schedule_status, // Assuming $schedule_status is already fetched
+        'team_id' => $team_id, // Assuming $team_id is already fetched
+        'role' => $role, // Assuming $role is already fetched
         'area' => $area_names,  // Use the concatenated area names here
         'average_rating' => $result_display  // Use the calculated result
     ];
 }
 
+// Close all prepared statements
 $stmt_schedules->close();
-
-
+$stmt_team->close();
+$stmt_schedule->close();
+$stmt_accreditation->close();
 
 //fetch individual areas for the member
 $sql_individual_areas = "
@@ -353,7 +433,7 @@ foreach ($schedules as $schedule) {
 
     if ($team_id) {
         // Check if an NDA exists for this team_id
-        $sql_nda = "SELECT NDA_file FROM nda WHERE team_id = ?";
+        $sql_nda = "SELECT NDA_file FROM NDA WHERE team_id = ?";
         $stmt_nda = $conn->prepare($sql_nda);
         $stmt_nda->bind_param("i", $team_id);
         $stmt_nda->execute();
@@ -852,15 +932,15 @@ function intToRoman($num) {
                                                                     <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i>
                                                                 </button>
                                                             </div>
-                                                        </div>
                                                     <?php else: ?>
                                                         <label style="color: red; margin-top: 5px;"><?php echo htmlspecialchars($member['name']); ?> (<?php echo htmlspecialchars($member['role']); ?>)</label>
                                                     <?php endif; ?>
                                                 </div>
                                             <?php endforeach; ?>
-
                                             <?php if ($has_accepted_members): ?>
+                                                <div>
                                                 <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
+                                            </div>
                                             <?php else: ?>
                                             <?php endif; ?>
                                         </form>
@@ -1113,8 +1193,8 @@ function intToRoman($num) {
                                                     <i class="bi bi-cloud-arrow-down" style="font-size: 20px"></i> Download Approved Assessment
                                                 </a>
                                             <?php else: ?>
-                                                <a class="approve">
-                                                    No Approved Assessment
+                                                <a class="approve" style="border: 1px solid grey; color: grey;">
+                                                    Download Approved Assessment
                                                 </a>
                                             <?php endif; ?>
                                         </div>
@@ -1939,15 +2019,13 @@ function updateAreaOptions(scheduleId) {
                     document.getElementById('termsModal').style.display = 'none';
                 });
 
-                document.getElementById('sign-button').addEventListener('click', function() {
-                    document.getElementById('agreeTermsCheckbox').checked = false;
-                    document.getElementById('termsModal').style.display = 'block';
-                });
-                // Add event listener to run validation when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initial validation when page loads
-    updateAreaOptions();
-});
+            document.getElementById('sign-button').addEventListener('click', function() {
+                document.getElementById('agreeTermsCheckbox').checked = false;
+                document.getElementById('termsModal').style.display = 'block';
+            });
+            document.addEventListener('DOMContentLoaded', function() {
+                updateAreaOptions();
+            });
         </script>
     </body>
     </html>

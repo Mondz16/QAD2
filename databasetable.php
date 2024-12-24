@@ -405,6 +405,19 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
+// Create accreditation_standard table
+$sql = "CREATE TABLE IF NOT EXISTS accreditation_standard (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    Level VARCHAR(3) NOT NULL,
+    Standard DECIMAL(3, 2) NOT NULL
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table accreditation_standard created successfully<br>";
+} else {
+    echo "Error creating table: " . $conn->error . "<br>";
+}
+
 // Create admin account if it doesn't exist
 $sql_check_admin = "SELECT * FROM admin WHERE user_id = 'admin'";
 $result_check_admin = $conn->query($sql_check_admin);
