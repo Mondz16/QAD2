@@ -178,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Insert assessment details into the database
         $sql_insert = "INSERT INTO assessment (team_id, result, area_evaluated, findings, recommendations, evaluator, evaluator_signature, assessment_file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt_insert = $conn->prepare($sql_insert);
-        $stmt_insert->bind_param("isssssss", $team_id, $formatted_result, $area_evaluated, $findings, $recommendations, $evaluator, $encrypted_signature_data, $output_path);
+        $stmt_insert->bind_param("isssssss", $team_id, $result_display, $area_evaluated, $findings, $recommendations, $evaluator, $encrypted_signature_data, $output_path);
         if ($stmt_insert->execute()) {
             // Set session variable to indicate successful submission
             $_SESSION['assessment_submitted'] = true;

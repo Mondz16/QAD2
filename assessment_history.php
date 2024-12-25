@@ -884,7 +884,15 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                                                                         echo 'btn-failed';
                                                                                     }
                                                                                     ?>">
-                                                <?= $assessment['schedule_status'] == 'finished' ? "APPROVED" : strtoupper(htmlspecialchars($assessment['schedule_status'])); ?></button>
+                                                <?php
+                                                                                    if ($assessment['schedule_status'] == 'finished') {
+                                                                                        echo "APPROVED";
+                                                                                    } elseif ($assessment['schedule_status'] == 'passed') {
+                                                                                        echo "READY";
+                                                                                    } elseif ($assessment['schedule_status'] == 'failed') {
+                                                                                        echo "NOT READY";
+                                                                                    }
+                                                                                    ?></button>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -906,9 +914,6 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 <span class="nda-close-modal">&times;</span>
                 <h3>NDA Submission:</h3>
                 <ul id="modal-team-members"></ul>
-                <p><strong>Compilation NDA:</strong></p>
-                <div id="modal-compilation-nda"></div>
-                <p id="no-nda-message" style="display: none;">No NDA file available</p>
             </div>
         </div>
 

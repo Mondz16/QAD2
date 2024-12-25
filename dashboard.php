@@ -391,7 +391,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
 
     .modal-content {
         background-color: #fefefe;
-        margin: 15% auto;
+        margin: auto;
         padding: 20px;
         border: 1px solid #888;
         width: 80%;
@@ -745,8 +745,8 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                             // Show 'finished-buttons' only if $is_admin is true
                                             if ($is_admin) {
                                                 echo "<div class='finished-buttons'>
-                                                            <button type='button' id='retain-button'>FAIL</button>
-                                                            <button type='button' id='pass-button'>PASS</button>
+                                                            <button type='button' id='retain-button'>No Ready</button>
+                                                            <button type='button' id='pass-button'>Ready</button>
                                                 </div>";
                                             }
 
@@ -806,8 +806,8 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                             // Only show 'finished-buttons' if $is_admin is true
                                             if ($is_admin) {
                                                 echo "<div class='finished-buttons'>
-                                                    <button type='none' id='retain-button-active' class='$hideFail' disabled='disabled'>FAILED</button>
-                                                    <button type='none' id='pass-button-active' class='$hidePass' disabled='disabled'>PASSED</button>
+                                                    <button type='none' id='retain-button-active' class='$hideFail' disabled='disabled'>NOT READY</button>
+                                                    <button type='none' id='pass-button-active' class='$hidePass' disabled='disabled'>READY</button>
                                                 </div>";
                                             }
 
@@ -836,19 +836,20 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 </div>
             </div>
         </div>
-        <!-- Approve Modal -->
-        <div id="approveModal" class="modal">
-            <div class="modal-content">
-                <h4 id="modalText">Are you sure you want to approve this registration?</h4>
-                <form id="approveForm" action="dashboard_update_schedule_status.php" method="post">
-                    <input type="hidden" name="id" id="approveScheduleId">
-                    <input type="hidden" name="status" id="approveStatus">
-                    <div class="modal-buttons">
-                        <button type="button" class="no-btn" onclick="closeApproveModal()">NO</button>
-                        <button type="submit" class="yes-btn positive">YES</button>
-                    </div>
-                </form>
-            </div>
+    </div>
+
+    <!-- Approve Modal -->
+    <div id="approveModal" class="modal">
+        <div class="modal-content">
+            <h4 id="modalText">Are you sure you want to approve this registration?</h4>
+            <form id="approveForm" action="dashboard_update_schedule_status.php" method="post">
+                <input type="hidden" name="id" id="approveScheduleId">
+                <input type="hidden" name="status" id="approveStatus">
+                <div class="modal-buttons">
+                    <button type="button" class="no-btn" onclick="closeApproveModal()">NO</button>
+                    <button type="submit" class="yes-btn positive">YES</button>
+                </div>
+            </form>
         </div>
     </div>
 

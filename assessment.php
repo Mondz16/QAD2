@@ -883,9 +883,6 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 <span class="nda-close-modal">&times;</span>
                 <h3>NDA Submission:</h3>
                 <ul id="modal-team-members"></ul>
-                <p><strong>Compilation NDA:</strong></p>
-                <div id="modal-compilation-nda"></div>
-                <p id="no-nda-message" style="display: none;">No NDA file available</p>
             </div>
         </div>
 
