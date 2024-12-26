@@ -433,7 +433,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="standards-table-body">
                     <?php
                     // Include database connection
                     include 'connection.php';
@@ -446,12 +446,12 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                         // Output data for each row
                         while ($row = $result->fetch_assoc()) {
                             echo "<tr data-id='{$row['id']}'>
-                                    <td>" . htmlspecialchars($row['Level']) . "</td>
+                                    <td class='level-value'>" . htmlspecialchars($row['Level']) . "</td>
                                     <td class='standard-value'>" . htmlspecialchars($row['Standard']) . "</td>
                                     <td class='action-buttons'>
                                         <button class='edit-btn' onclick='makeEditable(this)'>Edit</button>
                                     </td>
-                                  </tr>";
+                                </tr>";
                         }
                     } else {
                         echo "<tr><td colspan='3'>No standards available</td></tr>";
@@ -461,6 +461,9 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                     ?>
                 </tbody>
             </table>
+            <div class="add-new-standard">
+                <button id="add-btn" onclick="addNewStandard()">Add</button>
+            </div>
         </div>
     </div>
 </div>
@@ -599,101 +602,173 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             }
         }
 
-         // Function to make the standard editable
-    function makeEditable(button) {
-        const row = button.closest('tr'); // Get the row
-        const standardCell = row.querySelector('.standard-value'); // Get the standard cell
-        const actionCell = row.querySelector('.action-buttons'); // Get the action cell
+        function makeEditable(button) {
+    const row = button.closest('tr');
+    const levelCell = row.querySelector('.level-value');
+    const standardCell = row.querySelector('.standard-value');
+    const actionCell = row.querySelector('.action-buttons');
 
-        // Get the current standard value
-        const standardValue = standardCell.textContent.trim();
+    const levelValue = levelCell.textContent.trim();
+    const standardValue = standardCell.textContent.trim();
 
-        // Create editable elements for the standard cell
-        standardCell.innerHTML = `
+    levelCell.innerHTML = `<input type="text" value="${levelValue}" />`;
+    standardCell.innerHTML = `
+        <input 
+            type="number" 
+            step="0.05" 
+            min="1.00" 
+            max="5.00" 
+            value="${standardValue}" 
+            list="standard-options" 
+            oninput="validateInputValue(this)" />
+        <datalist id="standard-options">
+            ${generateDropdownOptions()}
+        </datalist>
+    `;
+
+    actionCell.innerHTML = `
+        <button class='save-btn' onclick='saveChanges(this)'>Save</button>
+        <button class='cancel-btn' onclick='cancelChanges(this, "${levelValue}", "${standardValue}")'>Cancel</button>
+    `;
+}
+
+function generateDropdownOptions() {
+    let options = "";
+    for (let i = 1.00; i <= 5.00; i += 0.05) {
+        const value = i.toFixed(2);
+        options += `<option value="${value}"></option>`;
+    }
+    return options;
+}
+
+function validateInputValue(input) {
+    const value = parseFloat(input.value);
+    if (value < 1.00 || value > 5.00 || isNaN(value)) {
+        input.setCustomValidity("Please enter a value between 1.00 and 5.00.");
+    } else {
+        input.setCustomValidity("");
+    }
+}
+
+function saveChanges(button) {
+    const row = button.closest('tr');
+    const id = row.getAttribute('data-id');
+    const levelCell = row.querySelector('.level-value');
+    const standardCell = row.querySelector('.standard-value');
+    const actionCell = row.querySelector('.action-buttons');
+
+    const newLevel = levelCell.querySelector("input").value.trim();
+    const newStandard = parseFloat(standardCell.querySelector("input").value).toFixed(2);
+
+    fetch('update_standard.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, level: newLevel, standard: newStandard })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            levelCell.textContent = newLevel;
+            standardCell.textContent = newStandard;
+
+            actionCell.innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
+        } else {
+            alert('Failed to update standard.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function cancelChanges(button, originalLevel, originalStandard) {
+    const row = button.closest('tr');
+    const levelCell = row.querySelector('.level-value');
+    const standardCell = row.querySelector('.standard-value');
+    const actionCell = row.querySelector('.action-buttons');
+
+    levelCell.textContent = originalLevel;
+    standardCell.textContent = originalStandard;
+
+    actionCell.innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
+}
+
+function addNewStandard() {
+    const tableBody = document.getElementById('standards-table-body');
+
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+        <td class='level-value'><input type="text" placeholder="Enter Level" /></td>
+        <td class='standard-value'>
             <input 
                 type="number" 
-                step="0.25" 
+                step="0.05" 
                 min="1.00" 
                 max="5.00" 
-                value="${standardValue}" 
                 list="standard-options" 
-                oninput="validateInputValue(this)" />
+                oninput="validateInputValue(this)" 
+                placeholder="Enter Standard" />
             <datalist id="standard-options">
                 ${generateDropdownOptions()}
             </datalist>
-        `;
+        </td>
+        <td class='action-buttons'>
+            <button class='save-btn' onclick='saveNewStandard(this)'>Save</button>
+            <button class='cancel-btn' onclick='cancelNewStandard(this)'>Cancel</button>
+        </td>
+    `;
 
-        // Replace edit button with save and cancel buttons
-        actionCell.innerHTML = `
-            <button class='save-btn' onclick='saveChanges(this)'>Save</button>
-            <button class='cancel-btn' onclick='cancelChanges(this, "${standardValue}")'>Cancel</button>
-        `;
+    tableBody.appendChild(newRow);
+
+    const addBtn = document.getElementById('add-btn');
+    addBtn.parentElement.appendChild(addBtn); // Move the add button below the new row
+}
+
+function saveNewStandard(button) {
+    const row = button.closest('tr');
+    const levelInput = row.querySelector('.level-value input');
+    const standardInput = row.querySelector('.standard-value input');
+
+    const newLevel = levelInput.value.trim();
+    const newStandard = parseFloat(standardInput.value).toFixed(2);
+
+    if (!newLevel || isNaN(newStandard)) {
+        alert('Please fill out both fields correctly.');
+        return;
     }
 
-    // Function to generate datalist options
-    function generateDropdownOptions() {
-        let options = "";
-        for (let i = 1.00; i <= 5.00; i += 0.25) {
-            const value = i.toFixed(2);
-            options += `<option value="${value}"></option>`;
-        }
-        return options;
-    }
+    fetch('add_standard.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ level: newLevel, standard: newStandard })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            row.setAttribute('data-id', data.id);
+            row.querySelector('.level-value').textContent = newLevel;
+            row.querySelector('.standard-value').textContent = newStandard;
 
-    // Function to validate input field value
-    function validateInputValue(input) {
-        const value = parseFloat(input.value);
-        if (value < 1.00 || value > 5.00 || isNaN(value)) {
-            input.setCustomValidity("Please enter a value between 1.00 and 5.00.");
+            row.querySelector('.action-buttons').innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
+
+            const addBtn = document.getElementById('add-btn');
+            addBtn.parentElement.appendChild(addBtn);
         } else {
-            input.setCustomValidity(""); // Reset custom validity
+            alert('Failed to add standard.');
         }
-    }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
 
-    // Function to save changes
-    function saveChanges(button) {
-        const row = button.closest('tr'); // Get the row
-        const id = row.getAttribute('data-id'); // Get the row ID
-        const standardCell = row.querySelector('.standard-value'); // Get the standard cell
-        const actionCell = row.querySelector('.action-buttons'); // Get the action cell
-        const input = standardCell.querySelector("input"); // Get the input field
-        const newValue = parseFloat(input.value).toFixed(2); // Get and format the new value
+function cancelNewStandard(button) {
+    const row = button.closest('tr');
+    row.remove();
 
-        // Send AJAX request to update the database
-        fetch('update_standard.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, standard: newValue })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Update the standard cell to show the new value
-                standardCell.innerHTML = newValue;
-
-                // Replace save/cancel buttons with the edit button
-                actionCell.innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
-            } else {
-                alert('Failed to update standard.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    }
-
-    // Function to cancel changes
-    function cancelChanges(button, originalValue) {
-        const row = button.closest('tr'); // Get the row
-        const standardCell = row.querySelector('.standard-value'); // Get the standard cell
-        const actionCell = row.querySelector('.action-buttons'); // Get the action cell
-
-        // Restore the original value in the standard cell
-        standardCell.textContent = originalValue;
-
-        // Replace save/cancel buttons with the edit button
-        actionCell.innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
-    }
+    const addBtn = document.getElementById('add-btn');
+    addBtn.parentElement.appendChild(addBtn);
+}
     </script>
 
 </body>

@@ -19,14 +19,13 @@ if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11')
 $success = false;
 $message = '';
 
-// Function to encrypt data
+// Helper Functions
 function encryptData($data, $key) {
     $iv = openssl_random_pseudo_bytes(16);
     $encryptedData = openssl_encrypt($data, 'AES-256-CBC', $key, 0, $iv);
     return base64_encode($iv . $encryptedData);
 }
 
-// Function to decrypt data
 function decryptData($data, $key) {
     $data = base64_decode($data);
     $iv = substr($data, 0, 16);
@@ -37,7 +36,7 @@ function decryptData($data, $key) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['user_id'];
     $schedule_id = $_POST['schedule_id'];
-    $result_display = $_POST['result'];  // Convert the result to a float
+    $ratings = $_POST['area_rating']; // Ratings for each area
     $area_evaluated = $_POST['area_evaluated'];
     $findings = $_POST['findings'];
     $recommendations = $_POST['recommendations'];
@@ -61,6 +60,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt_team->bind_result($team_id);
     $stmt_team->fetch();
     $stmt_team->close();
+
+    if (!$team_id) {
+        $message = "No matching team found for the user.";
+    } else {
+        // Process Ratings for Each Area
+        foreach ($ratings as $area_id => $rating) {
+            $rating = floatval($rating);
+            $sql_update_areas = "UPDATE team_areas SET rating = ? WHERE team_id = ? AND area_id = ?";
+            $stmt_update_areas = $conn->prepare($sql_update_areas);
+            $stmt_update_areas->bind_param("dii", $rating, $team_id, $area_id);
+            if (!$stmt_update_areas->execute()) {
+                $message = "Error updating ratings: " . $stmt_update_areas->error;
+                $stmt_update_areas->close();
+                break;
+            }
+            $stmt_update_areas->close();
+        }
+
+        // Retrieve all ratings for the current team_id
+        $sql_ratings = "SELECT rating FROM team_areas WHERE team_id = ?";
+        $stmt_ratings = $conn->prepare($sql_ratings);
+        $stmt_ratings->bind_param("i", $team_id);
+        $stmt_ratings->execute();
+        $stmt_ratings->bind_result($rating);
+
+        $all_ratings = [];
+        while ($stmt_ratings->fetch()) {
+            $all_ratings[] = $rating;
+        }
+        $stmt_ratings->close();
+
+        // Retrieve schedule_id and level_applied
+        $sql_schedule = "SELECT level_applied FROM schedule WHERE id = ?";
+        $stmt_schedule = $conn->prepare($sql_schedule);
+        $stmt_schedule->bind_param("i", $schedule_id);
+        $stmt_schedule->execute();
+        $stmt_schedule->bind_result($level_applied);
+        $stmt_schedule->fetch();
+        $stmt_schedule->close();
+
+        // Note the level_applied from the schedule
+        // level_applied is the value we need to use for comparison
+
+        // Retrieve standard based on level_applied from accreditation_standard
+        $sql_standard = "SELECT Standard FROM accreditation_standard WHERE Level = ?";
+        $stmt_standard = $conn->prepare($sql_standard);
+        $stmt_standard->bind_param("s", $level_applied);  // Compare with Level in accreditation_standard
+        $stmt_standard->execute();
+        $stmt_standard->bind_result($standard);
+        $stmt_standard->fetch();
+        $stmt_standard->close();
+
+        // Determine the average_rating based on the new logic
+        if ($standard === null) {
+            $result_display = "Standard Not Found";
+        } elseif (empty($all_ratings)) {
+            $result_display = "No Ratings";
+        } else {
+            $threshold = $standard - 0.50;
+            $above_standard = array_filter($all_ratings, fn($r) => $r > $standard);
+            $below_threshold = array_filter($all_ratings, fn($r) => $r < $threshold);
+            $below_threshold_count = count($below_threshold);
+
+            if (count($above_standard) === count($all_ratings) && $below_threshold_count === 0) {
+                $result_display = "Ready";
+            } elseif ($below_threshold_count >= 1 && $below_threshold_count <= 3) {
+                $result_display = "Needs Improvement";
+            } elseif ($below_threshold_count === count($all_ratings)) {
+                $result_display = "Revisit";
+            } else {
+                $result_display = "Needs Improvement";
+            }
+        }
 
     if (!$team_id) {
         $message = "No matching team found for the user.";
@@ -188,6 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = "Error: " . $stmt_insert->error;
         }
         $stmt_insert->close();
+    }
     }
     $conn->close();
 } else {

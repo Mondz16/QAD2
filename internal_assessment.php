@@ -142,25 +142,6 @@ if (!$stmt_accreditation) {
 
 // Iterate through each schedule
 while ($stmt_schedules->fetch()) {
-    // Fetch all ratings for the current team_id
-    $sql_ratings = "
-        SELECT rating
-        FROM team_areas
-        WHERE team_id = ?
-    ";
-    $stmt_ratings = $conn->prepare($sql_ratings);
-    if (!$stmt_ratings) {
-        die("Prepare failed for ratings query: " . $conn->error);
-    }
-    $stmt_ratings->bind_param("i", $team_id);
-    $stmt_ratings->execute();
-    $stmt_ratings->bind_result($rating);
-
-    $ratings = [];
-    while ($stmt_ratings->fetch()) {
-        $ratings[] = $rating; // Keeping $rating as is
-    }
-    $stmt_ratings->close();
 
     // Step 1: Retrieve schedule_id from team table using team_id
     $stmt_team->bind_param("i", $team_id);
@@ -171,64 +152,6 @@ while ($stmt_schedules->fetch()) {
         $schedule_id_from_team = null;
     }
     $stmt_team->reset();
-
-    if ($schedule_id_from_team === null) {
-        // Handle missing schedule_id appropriately
-        $level_applied = null;
-    } else {
-        // Step 2: Retrieve level_applied from schedule table using schedule_id_from_team
-        $stmt_schedule->bind_param("i", $schedule_id_from_team);
-        $stmt_schedule->execute();
-        $stmt_schedule->bind_result($fetched_level_applied);
-        if (!$stmt_schedule->fetch()) {
-            // Handle case where schedule_id does not exist
-            $fetched_level_applied = null;
-        }
-        $stmt_schedule->reset();
-
-        $level_applied = $fetched_level_applied;
-    }
-
-    // Step 3: Retrieve Standard from accreditation_standard table using level_applied
-    if ($level_applied !== null) {
-        $stmt_accreditation->bind_param("s", $level_applied);
-        $stmt_accreditation->execute();
-        $stmt_accreditation->bind_result($standard);
-        if (!$stmt_accreditation->fetch()) {
-            // Handle case where level_applied does not have a standard
-            $standard = null;
-        }
-        $stmt_accreditation->reset();
-    } else {
-        $standard = null;
-    }
-
-    // Step 4: Determine the average_rating based on the new logic
-    if ($standard === null) {
-        // If standard is not found, default or handle accordingly
-        $result_display = "Standard Not Found";
-    } elseif (empty($ratings)) {
-        $result_display = "No Ratings"; // If no ratings are available
-    } else {
-        // Calculate the threshold
-        $threshold = $standard - 0.50;
-
-        // Determine counts based on the threshold
-        $above_standard = array_filter($ratings, fn($r) => $r > $standard);
-        $below_threshold = array_filter($ratings, fn($r) => $r < $threshold);
-        $below_threshold_count = count($below_threshold);
-
-        if (count($above_standard) === count($ratings) && $below_threshold_count === 0) {
-            $result_display = "Ready";
-        } elseif ($below_threshold_count >= 1 && $below_threshold_count <= 3) {
-            $result_display = "Needs Improvement";
-        } elseif ($below_threshold_count === count($ratings)) {
-            $result_display = "Revisit";
-        } else {
-            // Handle any other cases, possibly defaulting to "Needs Improvement"
-            $result_display = "Needs Improvement";
-        }
-    }
 
     // Add schedule and rating data to the array
     $schedules[] = [
@@ -242,9 +165,9 @@ while ($stmt_schedules->fetch()) {
         'team_id' => $team_id, // Assuming $team_id is already fetched
         'role' => $role, // Assuming $role is already fetched
         'area' => $area_names,  // Use the concatenated area names here
-        'average_rating' => $result_display  // Use the calculated result
     ];
 }
+
 
 // Close all prepared statements
 $stmt_schedules->close();
@@ -1089,8 +1012,7 @@ function intToRoman($num)
                                     <p>ASSESSMENT</p>
                                     <div style="height: 10px;"></div>
                                     <p class="pending-assessments">YOUR TEAM LEADER SHOULD ASSIGN AREA FIRST</p>
-                                <?php elseif (!empty($existing_ratings[$schedule['schedule_id']])): ?>
-                                    <?php if (in_array($schedule['team_id'], $existing_assessments)): ?>
+                                <?php elseif (!empty($existing_ratings[$schedule['schedule_id']]) && in_array($schedule['team_id'], $existing_assessments)): ?>
                                         <p>SUBMISSION STATUS</p>
                                         <div style="height: 10px;"></div>
                                         <p class="assessment-button-done">ALREADY SUBMITTED RATING AND ASSESSMENT</p>
@@ -1228,16 +1150,11 @@ function intToRoman($num)
                                                 </a>
                                             <?php endif; ?>
                                         </div>
-                                    <?php else: ?>
-                                        <p>ASSESSMENT</p>
-                                        <div style="height: 10px;"></div>
-                                        <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>)">START ASSESSMENT</button>
-                                    <?php endif; ?>
-                                <?php else: ?>
-                                    <p>RATING</p>
-                                    <div style="height: 10px;"></div>
-                                    <button class="assessment-button" onclick="RatingopenPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>, <?php echo htmlspecialchars(json_encode($individual_areas[$schedule['schedule_id']])); ?>)">START RATING</button>
-                                <?php endif; ?>
+                                        <?php else: ?>
+                                            <p>ASSESSMENT</p>
+                                            <div style="height: 10px;"></div>
+                                            <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>, <?php echo htmlspecialchars(json_encode($individual_areas[$schedule['schedule_id']])); ?>)">START ASSESSMENT</button>
+                                        <?php endif; ?>
                             <?php endif; ?>
                         <?php endif; ?>
                                     </div>
@@ -1318,40 +1235,13 @@ function intToRoman($num)
         </div>
     </div>
 
+
+
     <!-- Popup Form for Team Member -->
-    <div class="assessmentmodal" id="Ratingpopup">
+    <div class="assessmentmodal" id="popup">
         <div class="assessmentmodal-content">
-            <h2>RATING FORM</h2>
-            <form action="internal_rating_process.php" method="POST">
-                <div class="assessment-group">
-                    <input type="hidden" name="schedule_id" id="Ratingmodal_schedule_id">
-                    <label for="college">COLLEGE</label>
-                    <input class="assessment-group-college" type="text" id="Ratingcollege" name="college" readonly>
-                    <label for="program">PROGRAM</label>
-                    <input class="assessment-group-program" type="text" id="Ratingprogram" name="program" readonly>
-                </div>
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="level"><strong>LEVEL APPLIED</strong></label>
-                    </div>
-                    <div class="titleContainer">
-                        <label for="date"><strong>DATE</strong></label>
-                    </div>
-                    <div class="titleContainer">
-                        <label for="time"><strong>TIME</strong></label>
-                    </div>
-                </div>
-                <div class="orientationname1">
-                    <div class="nameContainer orientationContainer1">
-                        <input class="level" type="text" id="Ratinglevel" name="level" readonly>
-                    </div>
-                    <div class="nameContainer orientationContainer">
-                        <input class="level" type="text" id="Ratingdate" name="date" readonly>
-                    </div>
-                    <div class="nameContainer orientationContainer">
-                        <input class="time" type="text" id="Ratingtime" name="time" readonly>
-                    </div>
-                </div>
+            <h2>ASSESSMENT FORM</h2>
+            <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
                 <div class="orientationname1">
                     <div class="titleContainer">
                         <label for="result"><strong>AREAS ASSIGNED</strong></label>
@@ -1363,23 +1253,6 @@ function intToRoman($num)
 
                 <div id="Ratingarea_container">
                 </div>
-
-                <div style="height: 20px;"></div>
-                <div class="button-container">
-                    <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
-                    <button class="submit-button1" type="submit">SUBMIT</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-
-
-    <!-- Popup Form for Team Member -->
-    <div class="assessmentmodal" id="popup">
-        <div class="assessmentmodal-content">
-            <h2>ASSESSMENT FORM</h2>
-            <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
                 <div class="assessment-group">
                     <input type="hidden" name="schedule_id" id="modal_schedule_id">
                     <label for="college">COLLEGE</label>
@@ -1410,21 +1283,12 @@ function intToRoman($num)
                     </div>
                 </div>
                 <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="result"><strong>RESULT<span style="color: red;"> *</span></strong></label>
-                    </div>
-                    <div class="titleContainer">
+                    <div class="titleContainer" hidden>
                         <label for="area_evaluated"><strong>AREA EVALUATED</strong></label>
                     </div>
                 </div>
                 <div class="orientationname1">
-                    <!-- Result input field to display the average rating -->
-                    <div class="nameContainer orientationContainer">
-                        <input class="result" type="text" id="result" name="result" readonly value="<?php echo $result_display; ?>">
-                    </div>
-
-                    <!-- Area evaluated field remains the same as before -->
-                    <div class="nameContainer orientationContainer">
+                    <div class="nameContainer orientationContainer" hidden>
                         <input class="area_evaluated" type="text" id="area_evaluated" name="area_evaluated" readonly>
                     </div>
                 </div>
@@ -1661,14 +1525,17 @@ function intToRoman($num)
             });
         }
 
-        function RatingopenPopup(schedule, areas) {
-            // Set readonly fields
-            document.getElementById('Ratingmodal_schedule_id').value = schedule.schedule_id;
-            document.getElementById('Ratingcollege').value = schedule.college_name;
-            document.getElementById('Ratingprogram').value = schedule.program_name;
-            document.getElementById('Ratinglevel').value = schedule.level_applied;
-            document.getElementById('Ratingdate').value = formatDate(schedule.schedule_date);
-            document.getElementById('Ratingtime').value = formatTime(schedule.schedule_time);
+
+        function openPopup(schedule, areas) {
+            document.getElementById('modal_schedule_id').value = schedule.schedule_id;
+            document.getElementById('college').value = schedule.college_name;
+            document.getElementById('program').value = schedule.program_name;
+            document.getElementById('level').value = schedule.level_applied;
+
+            // Format the date and time
+            document.getElementById('date').value = formatDate(schedule.schedule_date);
+            document.getElementById('time').value = formatTime(schedule.schedule_time);
+            document.getElementById('area_evaluated').value = schedule.area;
 
             // Clear previous areas
             const areaContainer = document.getElementById('Ratingarea_container');
@@ -1705,26 +1572,6 @@ function intToRoman($num)
                 noAreasElement.innerText = 'No areas assigned.';
                 areaContainer.appendChild(noAreasElement);
             }
-
-            // Show the modal
-            document.getElementById('Ratingpopup').style.display = 'block';
-        }
-
-
-
-        function openPopup(schedule) {
-            document.getElementById('modal_schedule_id').value = schedule.schedule_id;
-            document.getElementById('college').value = schedule.college_name;
-            document.getElementById('program').value = schedule.program_name;
-            document.getElementById('level').value = schedule.level_applied;
-
-            // Format the date and time
-            document.getElementById('date').value = formatDate(schedule.schedule_date);
-            document.getElementById('time').value = formatTime(schedule.schedule_time);
-            document.getElementById('area_evaluated').value = schedule.area;
-
-            // Set the result field to display the average rating
-            document.getElementById('result').value = schedule.average_rating || 'N/A';
 
             document.getElementById('popup').style.display = 'block';
         }
