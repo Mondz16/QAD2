@@ -841,7 +841,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                 <th>Time</th>
                                 <th>Assessment</th>
                                 <th>NDA</th>
-                                <th>Result</th>
+                                <th>Remark</th>
                             </tr>
                         </thead>
                         <tbody>

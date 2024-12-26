@@ -67,6 +67,30 @@ function getSchedules($conn, $year)
     return $schedules;
 }
 
+function getAllSchedules($conn)
+{
+    $query = "SELECT schedule_date, COUNT(team.internal_users_id) AS user_count
+              FROM schedule 
+              INNER JOIN team ON schedule.id = team.schedule_id
+              GROUP BY schedule_date";
+              
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        die("Prepare failed: " . $conn->error);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $schedules = [];
+    while ($row = $result->fetch_assoc()) {
+        $schedules[] = $row;
+    }
+
+    return $schedules;
+}
+
+
 function getMembers($conn, $campus, $college, $search, $offset, $year)
 {
     $query = "SELECT internal_users.first_name, internal_users.last_name, 
@@ -174,7 +198,7 @@ function getRecentActivities($conn)
 }
 
 $year = date('Y');
-$schedules = getSchedules($conn, $year);
+$schedules = getAllSchedules($conn);
 $userDistribution = getUserDistributionByCampus($conn);
 $userStatusCount = getUserStatusCount($conn);
 $recentActivities = getRecentActivities($conn);
@@ -563,10 +587,10 @@ $conn->close();
                     <thead>
                         <tr>
                             <th>Program Name</th>
+                            <th>Pennding Schedules</th>
                             <th>Approved Schedules</th>
                             <th>Rescheduled</th>
                             <th>Canceled Schedules</th>
-                            <th>Total Schedules</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -625,6 +649,10 @@ $conn->close();
                         data: "program_name"
                     },
                     {
+                        title: "Pending",
+                        data: "pending_count"
+                    },
+                    {
                         title: "Approved",
                         data: "approved_count"
                     },
@@ -635,10 +663,6 @@ $conn->close();
                     {
                         title: "Canceled",
                         data: "canceled_count"
-                    },
-                    {
-                        title: "Total Schedules",
-                        data: "total_schedule_count"
                     }
                 ],
                 pageLength: 15,

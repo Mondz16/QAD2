@@ -67,20 +67,49 @@ function getSchedules($conn, $year)
     return $schedules;
 }
 
+function getAllSchedules($conn)
+{
+    $query = "SELECT schedule_date, COUNT(team.internal_users_id) AS user_count
+              FROM schedule 
+              INNER JOIN team ON schedule.id = team.schedule_id
+              GROUP BY schedule_date";
+
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        die("Prepare failed: " . $conn->error);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $schedules = [];
+    while ($row = $result->fetch_assoc()) {
+        $schedules[] = $row;
+    }
+
+    return $schedules;
+}
+
 function getMembers($conn, $campus, $college, $search, $offset, $year)
 {
-    $query = "SELECT internal_users.first_name, internal_users.last_name, 
-                    COALESCE(COUNT(CASE WHEN schedule.schedule_status IN ('passed', 'failed', 'finished') THEN team.id END), 0) AS schedule_count
-                    FROM internal_users 
-                    LEFT JOIN team ON internal_users.user_id = team.internal_users_id
-                    LEFT JOIN schedule ON team.schedule_id = schedule.id AND YEAR(schedule.schedule_date) = ?
-                    LEFT JOIN program ON schedule.program_id = program.id
-                    WHERE (CONCAT(internal_users.first_name, ' ', internal_users.last_name) LIKE ?)
-                    AND (internal_users.college_code LIKE ? OR ? = '')
-                    GROUP BY internal_users.user_id, internal_users.first_name, internal_users.last_name  -- Add first_name and last_name to GROUP BY
-                    ORDER BY schedule_count DESC
-                    LIMIT 10 OFFSET ?";
-
+    $query = "SELECT 
+                  internal_users.first_name, 
+                  internal_users.last_name, 
+                  COALESCE(COUNT(team.id), 0) AS schedule_count,
+                  COALESCE(SUM(CASE WHEN team.status = 'accepted' OR team.status = 'finished' THEN 1 ELSE 0 END), 0) AS accepted_count,
+                  COALESCE(SUM(CASE WHEN team.status = 'declined' THEN 1 ELSE 0 END), 0) AS declined_count,
+                  COALESCE(SUM(CASE WHEN team.status = 'pending' THEN 1 ELSE 0 END), 0) AS pending_count
+              FROM internal_users 
+              LEFT JOIN team ON internal_users.user_id = team.internal_users_id
+              LEFT JOIN schedule ON team.schedule_id = schedule.id 
+                                  AND YEAR(schedule.schedule_date) = ? 
+                                  AND schedule.schedule_status NOT IN ('cancelled')
+              LEFT JOIN program ON schedule.program_id = program.id
+              WHERE (CONCAT(internal_users.first_name, ' ', internal_users.last_name) LIKE ?)
+                AND (internal_users.college_code LIKE ? OR ? = '')
+              GROUP BY internal_users.user_id
+              ORDER BY schedule_count DESC
+              LIMIT 10 OFFSET ?";
     $stmt = $conn->prepare($query);
     $search_param = "%$search%";
     $stmt->bind_param('isssi', $year, $search_param, $college, $college, $offset);
@@ -174,7 +203,7 @@ function getRecentActivities($conn)
 }
 
 $year = date('Y');
-$schedules = getSchedules($conn, $year);
+$schedules = getAllSchedules($conn);
 $userDistribution = getUserDistributionByCampus($conn);
 $userStatusCount = getUserStatusCount($conn);
 $recentActivities = getRecentActivities($conn);
@@ -569,6 +598,7 @@ $conn->close();
                             <tr>
                                 <th>Full Name</th>
                                 <th>Schedule Count</th>
+                                <th>Pending Count</th>
                                 <th>Accepted Count</th>
                                 <th>Declined Count</th>
                             </tr>
@@ -578,6 +608,7 @@ $conn->close();
                                 <tr>
                                     <td><?= $member['first_name'] . ' ' . $member['last_name'] ?></td>
                                     <td><?= $member['schedule_count'] ?></td>
+                                    <td><?= $member['pending_count'] ?></td>
                                     <td><?= $member['accepted_count'] ?></td>
                                     <td><?= $member['declined_count'] ?></td>
                                 </tr>
@@ -715,10 +746,11 @@ $conn->close();
                             recordsTotal: members.recordsTotal,
                             recordsFiltered: members.recordsFiltered,
                             data: members.data.map(member => [
-                                member.first_name + ' ' + member.last_name,
-                                member.schedule_count,
-                                member.accepted_count,
-                                member.declined_count
+                                `${member.first_name} ${member.last_name}`, // Full Name
+                                member.schedule_count, // Total Schedules
+                                member.pending_count, // Pending Count
+                                member.accepted_count, // Accepted Count
+                                member.declined_count // Declined Count
                             ])
                         });
                     });
@@ -730,6 +762,9 @@ $conn->close();
                         title: "Schedules"
                     },
                     {
+                        title: "Pending"
+                    },
+                    {
                         title: "Accepted"
                     },
                     {
@@ -738,6 +773,7 @@ $conn->close();
                 ],
                 pageLength: 10
             });
+
 
 
             $('#campus').change(function() {

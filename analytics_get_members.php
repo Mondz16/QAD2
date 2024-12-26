@@ -34,12 +34,13 @@ function getMembers($conn, $campus, $college, $search, $offset, $year)
                   internal_users.last_name, 
                   COALESCE(COUNT(team.id), 0) AS schedule_count,
                   COALESCE(SUM(CASE WHEN team.status = 'accepted' OR team.status = 'finished' THEN 1 ELSE 0 END), 0) AS accepted_count,
-                  COALESCE(SUM(CASE WHEN team.status = 'declined' OR team.status = 'pending' THEN 1 ELSE 0 END), 0) AS declined_count
+                  COALESCE(SUM(CASE WHEN team.status = 'declined' THEN 1 ELSE 0 END), 0) AS declined_count,
+                  COALESCE(SUM(CASE WHEN team.status = 'pending' THEN 1 ELSE 0 END), 0) AS pending_count
               FROM internal_users 
               LEFT JOIN team ON internal_users.user_id = team.internal_users_id
               LEFT JOIN schedule ON team.schedule_id = schedule.id 
                                   AND YEAR(schedule.schedule_date) = ? 
-                                  AND schedule.schedule_status NOT IN ('pending', 'cancelled')
+                                  AND schedule.schedule_status NOT IN ('cancelled')
               LEFT JOIN program ON schedule.program_id = program.id
               WHERE (CONCAT(internal_users.first_name, ' ', internal_users.last_name) LIKE ?)
                 AND (internal_users.college_code LIKE ? OR ? = '')

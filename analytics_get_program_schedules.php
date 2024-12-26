@@ -10,15 +10,15 @@ if ($_POST['action'] === 'getProgramSchedule') {
     $search = $_POST['search'] ?? '';
     $offset = (int)$_POST['offset'];
     $limit = (int)$_POST['limit'] ?? 15;
-    $sort_column = $_POST['sort_column'] ?? 'total_schedule_count'; // Default sort column
+    $sort_column = $_POST['sort_column'] ?? 'approved_count'; // Default sort column
     $sort_direction = strtoupper($_POST['sort_direction'] ?? 'DESC'); // Default sort direction
     $college_code = $_POST['college_code'] ?? '';
     $year = $_POST['year'] ?? date('Y');
 
     // Whitelist columns to prevent SQL injection
-    $allowed_columns = ['program_name', 'approved_count', 'total_reschedule_count', 'canceled_count', 'total_schedule_count'];
+    $allowed_columns = ['program_name', 'approved_count', 'total_reschedule_count', 'canceled_count', 'pending_count'];
     if (!in_array($sort_column, $allowed_columns)) {
-        $sort_column = 'total_schedule_count';
+        $sort_column = 'approved_count';
     }
     if (!in_array($sort_direction, ['ASC', 'DESC'])) {
         $sort_direction = 'DESC';
@@ -50,9 +50,9 @@ if ($_POST['action'] === 'getProgramSchedule') {
     $query = "
         SELECT 
             program.program_name,
-            COUNT(schedule.id) AS total_schedule_count,
             COALESCE(SUM(CASE WHEN schedule.schedule_status IN ('approved', 'done', 'finished', 'passed', 'failed') THEN 1 ELSE 0 END), 0) AS approved_count,
             COALESCE(SUM(CASE WHEN schedule.schedule_status = 'cancelled' THEN 1 ELSE 0 END), 0) AS canceled_count,
+            COALESCE(SUM(CASE WHEN schedule.schedule_status = 'pending' THEN 1 ELSE 0 END), 0) AS pending_count,
             COALESCE(SUM(schedule.reschedule_count), 0) AS total_reschedule_count
         FROM program
         INNER JOIN schedule ON program.id = schedule.program_id
@@ -90,7 +90,7 @@ if ($_POST['action'] === 'getProgramSchedule') {
                 'approved_count' => $row['approved_count'],
                 'total_reschedule_count' => $row['total_reschedule_count'],
                 'canceled_count' => $row['canceled_count'],
-                'total_schedule_count' => $row['total_schedule_count']
+                'pending_count' => $row['pending_count'],
             ];
         }, $schedules)
     ]);
@@ -116,9 +116,9 @@ function getProgramSchedules($conn, $search, $offset, $college_code, $year)
     $query = "
         SELECT 
             program.program_name,
-            COUNT(schedule.id) AS total_schedule_count,
             COALESCE(SUM(CASE WHEN schedule.schedule_status IN ('approved', 'done', 'finished', 'passed', 'failed') THEN 1 ELSE 0 END), 0) AS approved_count,
             COALESCE(SUM(CASE WHEN schedule.schedule_status = 'cancelled' THEN 1 ELSE 0 END), 0) AS canceled_count,
+            COALESCE(SUM(CASE WHEN schedule.schedule_status = 'pending' THEN 1 ELSE 0 END), 0) AS pending_count,
             COALESCE(SUM(schedule.reschedule_count), 0) AS total_reschedule_count
         FROM program
         INNER JOIN schedule ON program.id = schedule.program_id
@@ -133,7 +133,7 @@ function getProgramSchedules($conn, $search, $offset, $college_code, $year)
 
     $query .= "
         GROUP BY program.id
-        ORDER BY total_schedule_count DESC
+        ORDER BY pending_count DESC
         LIMIT 20 OFFSET ?";
 
     // Prepare and bind parameters

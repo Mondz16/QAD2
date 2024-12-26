@@ -412,9 +412,11 @@ $conn->close();
                 <div class="chart-wrapper large">
                     <canvas id="collegeChart" height="550"></canvas>
                 </div>
+                <!-- First, in the HTML section, change the id of the canvas to reflect that it's now a bar chart -->
                 <div class="chart-wrapper-right">
                     <div class="chart-wrapper-pie-chart">
-                        <canvas id="programPieChart"></canvas>
+                        <!-- Changed the ID from programPieChart to programBarChart -->
+                        <canvas id="programBarChart" height="200" style="margin:0"></canvas>
                     </div>
                     <div class="recent-programs-container">
                         <h3>Recent Program Levels</h3>
@@ -549,48 +551,69 @@ $conn->close();
             const labels = data.map(item => item.college_campus);
             const programCounts = data.map(item => item.program_count);
             const collegeCounts = data.map(item => item.college_count);
-            const totalPrograms = programCounts.reduce((sum, count) => sum + count, 0);
 
-            pieChart.data.labels = labels;
-            pieChart.data.datasets = [{
-                data: programCounts,
-                backgroundColor: [
-                    '#FFD160',
-                    '#9CC8E5',
-                    '#FF6384',
-                    '#FF6347',
-                    '#8FBC8F',
-                    '#4682B4',
-                    '#7B68EE',
-                    '#32CD32'
-                ],
-            }];
+            programBarChart.data.labels = labels;
+            programBarChart.data.datasets[0].data = programCounts;
+            programBarChart.data.collegeCounts = collegeCounts; // Store college counts for tooltip
 
-            pieChart.options.plugins.tooltip.callbacks = {
-                label: function(context) {
-                    const label = context.label || '';
-                    const value = context.raw || 0;
-                    const percentage = ((value / totalPrograms) * 100).toFixed(2);
-                    const collegeCount = collegeCounts[context.dataIndex];
-                    return ` ${collegeCount} colleges | ${value} programs`;
-                }
-            };
-
-            pieChart.options.plugins.datalabels = {
-                formatter: (value, context) => {
-                    return `${value}%`;
-                },
-                color: '#fff',
-                font: {
-                    weight: 'bold'
-                },
-                anchor: 'end',
-                align: 'start',
-                offset: 5
-            };
-
-            pieChart.update();
+            programBarChart.update();
         }
+
+        const ctxBar2 = document.getElementById('programBarChart').getContext('2d');
+        const programBarChart = new Chart(ctxBar2, {
+            type: 'bar',
+            data: {
+                labels: [], // The labels for the campuses will be set dynamically
+                datasets: [{
+                    label: 'Number of Programs',
+                    data: [],
+                    backgroundColor: [
+                        '#FFD160',
+                        '#9CC8E5',
+                        '#FF6384',
+                        '#FF6347',
+                        '#8FBC8F',
+                        '#4682B4',
+                        '#7B68EE',
+                        '#32CD32'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false // Hide legend since we only have one dataset
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                const value = context.raw || 0;
+                                const collegeCount = context.chart.data.collegeCounts[context.dataIndex];
+                                return `${collegeCount} colleges | ${value} programs`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: false,
+                            text: 'Number of Programs'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: false,
+                            text: 'Campus'
+                        }
+                    }
+                }
+            }
+        });
 
 
         $(document).ready(function() {
@@ -715,62 +738,6 @@ $conn->close();
                 }
             }
         });
-
-        const ctxPie = document.getElementById('programPieChart').getContext('2d');
-        const pieChart = new Chart(ctxPie, {
-            type: 'pie',
-            data: {
-                labels: [], // The labels for the campuses will be set dynamically
-                datasets: []
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top', // Ensure the legend is positioned above the chart
-                        labels: {
-                            boxWidth: 20, // Adjust the width of the colored box next to each label
-                            padding: 10, // Add some padding between the labels
-                            font: {
-                                size: 14 // Adjust the font size of the labels if needed
-                            }
-                        },
-                        onClick: (e) => e.stopPropagation(), // Prevent the legend click event from affecting the chart
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                return `${label}: ${value} programs`;
-                            }
-                        }
-                    },
-                    datalabels: {
-                        formatter: (value, context) => {
-                            const total = context.chart.data.datasets[0].data.reduce((acc, val) => acc + val, 0);
-                            const percentage = ((value / total) * 100).toFixed(2);
-                            return `${percentage}%`;
-                        },
-                        color: '#fff',
-                        font: {
-                            weight: 'bold'
-                        },
-                        anchor: 'end',
-                        align: 'start',
-                        offset: -10
-                    }
-                },
-                layout: {
-                    padding: {
-                        top: 10 // Adjust the padding above the chart if needed
-                    }
-                }
-            },
-            plugins: [ChartDataLabels]
-        });
-
 
 
         window.addEventListener('DOMContentLoaded', async () => {
