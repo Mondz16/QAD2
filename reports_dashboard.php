@@ -540,6 +540,78 @@ $conn->close();
                 backgroundColor: colors[index],
             }));
 
+            const ctxBar = document.getElementById('collegeChart').getContext('2d');
+            const chart = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: uniqueCampuses,
+                    datasets: levels.map((level, index) => ({
+                        label: level === '1' || level === '2' || level === '3' || level === '4' ?
+                            `Level ${level}` : level,
+                        data: uniqueCampuses.map(campus => {
+                            const campusData = data.find(item => item.college_campus === campus) || {};
+                            return campusData[level] || 0;
+                        }),
+                        backgroundColor: colors[index],
+                    }))
+                },
+                options: {
+                    indexAxis: 'y', // Makes bars horizontal
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Program Levels by Campus',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: true,
+                                drawBorder: true,
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 20,
+                            right: 20,
+                            bottom: 20,
+                            left: 20
+                        }
+                    }
+                }
+            });
+
             chart.data.labels = uniqueCampuses;
             chart.data.datasets = datasets;
             chart.update();
@@ -687,57 +759,6 @@ $conn->close();
                 tableBody.appendChild(row);
             });
         }
-
-        const ctxBar = document.getElementById('collegeChart').getContext('2d');
-        const chart = new Chart(ctxBar, {
-            type: 'bar',
-            data: {
-                labels: [],
-                datasets: []
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        titleFont: {
-                            size: 16,
-                            weight: 'bold'
-                        },
-                        bodyFont: {
-                            size: 14
-                        },
-                        cornerRadius: 5
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            font: {
-                                size: 14
-                            }
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(200, 200, 200, 0.2)'
-                        },
-                        ticks: {
-                            font: {
-                                size: 14
-                            }
-                        }
-                    }
-                }
-            }
-        });
 
 
         window.addEventListener('DOMContentLoaded', async () => {
