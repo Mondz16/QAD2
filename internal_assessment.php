@@ -1013,14 +1013,14 @@ function intToRoman($num)
                                     <div style="height: 10px;"></div>
                                     <p class="pending-assessments">YOUR TEAM LEADER SHOULD ASSIGN AREA FIRST</p>
                                 <?php elseif (!empty($existing_ratings[$schedule['schedule_id']]) && in_array($schedule['team_id'], $existing_assessments)): ?>
-                                        <p>SUBMISSION STATUS</p>
-                                        <div style="height: 10px;"></div>
-                                        <p class="assessment-button-done">ALREADY SUBMITTED RATING AND ASSESSMENT</p>
-                                        <div style="height: 10px;"></div>
-                                        <div>
-                                            <?php
-                                                            // Query to fetch the logged-in user's assessment file
-                                                            $sql_user_assessment = "
+                                    <p>SUBMISSION STATUS</p>
+                                    <div style="height: 10px;"></div>
+                                    <p class="assessment-button-done">ALREADY SUBMITTED RATING AND ASSESSMENT</p>
+                                    <div style="height: 10px;"></div>
+                                    <div>
+                                        <?php
+                                                        // Query to fetch the logged-in user's assessment file
+                                                        $sql_user_assessment = "
                                             SELECT a.assessment_file
                                             FROM assessment a
                                             JOIN team t ON a.team_id = t.id
@@ -1028,534 +1028,533 @@ function intToRoman($num)
                                             AND t.schedule_id = ?
                                             ";
 
-                                                            $stmt_user_assessment = $conn->prepare($sql_user_assessment);
-                                                            $stmt_user_assessment->bind_param("si", $user_id, $schedule['schedule_id']); // Bind user_id and specific schedule_id
-                                                            $stmt_user_assessment->execute();
-                                                            $stmt_user_assessment->bind_result($assessment_file);
-                                                            $stmt_user_assessment->fetch(); // Fetch the result
+                                                        $stmt_user_assessment = $conn->prepare($sql_user_assessment);
+                                                        $stmt_user_assessment->bind_param("si", $user_id, $schedule['schedule_id']); // Bind user_id and specific schedule_id
+                                                        $stmt_user_assessment->execute();
+                                                        $stmt_user_assessment->bind_result($assessment_file);
+                                                        $stmt_user_assessment->fetch(); // Fetch the result
 
-                                                            if ($assessment_file): ?>
-                                                <div style="height: 10px;"></div>
-                                                <a class="approve" href="<?php echo htmlspecialchars($assessment_file); ?>" download>
-                                                    <i class="bi bi-cloud-arrow-down" style="font-size: 20px"></i> Download Assessment File
-                                                </a>
-                                                <div style="height: 20px;"></div>
-                                            <?php else: ?>
-                                                <p>No assessment file found for your account.</p>
-                                            <?php endif;
-                                                            $stmt_user_assessment->close();
-                                            ?>
-                                        </div>
-                                        <div style="height: 10px;"></div>
-                                        <div class="">
-                                            <?php
-                                                            // Query to fetch the NDA file using schedule_id, team_id, and internal_users_id
-                                                            $sql_team_id = "
+                                                        if ($assessment_file): ?>
+                                            <div style="height: 10px;"></div>
+                                            <a class="approve" href="<?php echo htmlspecialchars($assessment_file); ?>" download>
+                                                <i class="bi bi-cloud-arrow-down" style="font-size: 20px"></i> Download Assessment File
+                                            </a>
+                                            <div style="height: 20px;"></div>
+                                        <?php else: ?>
+                                            <p>No assessment file found for your account.</p>
+                                        <?php endif;
+                                                        $stmt_user_assessment->close();
+                                        ?>
+                                    </div>
+                                    <div style="height: 10px;"></div>
+                                    <div class="">
+                                        <?php
+                                                        // Query to fetch the NDA file using schedule_id, team_id, and internal_users_id
+                                                        $sql_team_id = "
                                             SELECT id
                                             FROM team
                                             WHERE schedule_id = ? AND internal_users_id = ?
                                             ";
-                                                            $stmt_team_id = $conn->prepare($sql_team_id);
-                                                            $stmt_team_id->bind_param("is", $schedule['schedule_id'], $user_id); // Bind schedule_id and internal_users_id
-                                                            $stmt_team_id->execute();
-                                                            $stmt_team_id->bind_result($team_id);
-                                                            $stmt_team_id->fetch();
-                                                            $stmt_team_id->close();
+                                                        $stmt_team_id = $conn->prepare($sql_team_id);
+                                                        $stmt_team_id->bind_param("is", $schedule['schedule_id'], $user_id); // Bind schedule_id and internal_users_id
+                                                        $stmt_team_id->execute();
+                                                        $stmt_team_id->bind_result($team_id);
+                                                        $stmt_team_id->fetch();
+                                                        $stmt_team_id->close();
 
-                                                            if ($team_id) {
-                                                                $sql_nda_file = "
+                                                        if ($team_id) {
+                                                            $sql_nda_file = "
                                                 SELECT NDA_file
                                                 FROM nda
                                                 WHERE team_id = ?
                                                 ";
-                                                                $stmt_nda_file = $conn->prepare($sql_nda_file);
-                                                                $stmt_nda_file->bind_param("i", $team_id); // Bind the team_id
-                                                                $stmt_nda_file->execute();
-                                                                $stmt_nda_file->bind_result($nda_file);
-                                                                $stmt_nda_file->fetch();
-                                                                $stmt_nda_file->close();
-                                                            } else {
-                                                                $nda_file = null;
-                                                            }
+                                                            $stmt_nda_file = $conn->prepare($sql_nda_file);
+                                                            $stmt_nda_file->bind_param("i", $team_id); // Bind the team_id
+                                                            $stmt_nda_file->execute();
+                                                            $stmt_nda_file->bind_result($nda_file);
+                                                            $stmt_nda_file->fetch();
+                                                            $stmt_nda_file->close();
+                                                        } else {
+                                                            $nda_file = null;
+                                                        }
 
-                                                            if ($nda_file): ?>
-                                                <a class="approve" href="<?php echo htmlspecialchars($nda_file); ?>" download>
-                                                    <i class="bi bi-cloud-arrow-down" style="font-size: 20px"></i> Download NDA File
-                                                </a>
-                                                <div style="height: 20px;"></div>
-                                            <?php else: ?>
-                                                <p>No NDA file found for your account.</p>
-                                            <?php endif; ?>
-                                        </div>
-                                        <div style="height: 10px;"></div>
-                                        <div>
-                                            <?php
-                                                            // Query to fetch the approved assessment file
-                                                            if ($team_id) {
-                                                                // Fetch the assessment ID linked to the team
-                                                                $sql_assessment_id = "
+                                                        if ($nda_file): ?>
+                                            <a class="approve" href="<?php echo htmlspecialchars($nda_file); ?>" download>
+                                                <i class="bi bi-cloud-arrow-down" style="font-size: 20px"></i> Download NDA File
+                                            </a>
+                                            <div style="height: 20px;"></div>
+                                        <?php else: ?>
+                                            <p>No NDA file found for your account.</p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div style="height: 10px;"></div>
+                                    <div>
+                                        <?php
+                                                        // Query to fetch the approved assessment file
+                                                        if ($team_id) {
+                                                            // Fetch the assessment ID linked to the team
+                                                            $sql_assessment_id = "
                                                 SELECT id
                                                 FROM assessment
                                                 WHERE team_id = ?
                                                 ";
-                                                                $stmt_assessment_id = $conn->prepare($sql_assessment_id);
-                                                                $stmt_assessment_id->bind_param("i", $team_id); // Bind the team_id
-                                                                $stmt_assessment_id->execute();
-                                                                $stmt_assessment_id->bind_result($assessment_id);
-                                                                $stmt_assessment_id->fetch();
-                                                                $stmt_assessment_id->close();
+                                                            $stmt_assessment_id = $conn->prepare($sql_assessment_id);
+                                                            $stmt_assessment_id->bind_param("i", $team_id); // Bind the team_id
+                                                            $stmt_assessment_id->execute();
+                                                            $stmt_assessment_id->bind_result($assessment_id);
+                                                            $stmt_assessment_id->fetch();
+                                                            $stmt_assessment_id->close();
 
-                                                                if ($assessment_id) {
+                                                            if ($assessment_id) {
 
-                                                                    // Fetch the approved assessment files linked to the specific assessment ID
-                                                                    $sql_approved_file = "
+                                                                // Fetch the approved assessment files linked to the specific assessment ID
+                                                                $sql_approved_file = "
                                                     SELECT id, approved_assessment_file
                                                     FROM approved_assessment
                                                     WHERE assessment_id = ?
                                                     ";
-                                                                    $stmt_approved_file = $conn->prepare($sql_approved_file);
-                                                                    $stmt_approved_file->bind_param("i", $assessment_id); // Bind the correct assessment_id
-                                                                    $stmt_approved_file->execute();
-                                                                    $stmt_approved_file->bind_result($approved_id, $approved_assessment_file);
+                                                                $stmt_approved_file = $conn->prepare($sql_approved_file);
+                                                                $stmt_approved_file->bind_param("i", $assessment_id); // Bind the correct assessment_id
+                                                                $stmt_approved_file->execute();
+                                                                $stmt_approved_file->bind_result($approved_id, $approved_assessment_file);
 
-                                                                    // Collect all results for debugging
-                                                                    $approved_results = [];
-                                                                    while ($stmt_approved_file->fetch()) {
-                                                                        $approved_results[] = [
-                                                                            'approved_id' => $approved_id,
-                                                                            'approved_assessment_file' => $approved_assessment_file,
-                                                                        ];
-                                                                    }
-                                                                    $stmt_approved_file->close();
-
-                                                                    // Use the first valid result if multiple are found
-                                                                    $approved_assessment_file = $approved_results[0]['approved_assessment_file'] ?? null;
-                                                                    $approved_id = $approved_results[0]['approved_id'] ?? null;
-                                                                } else {
-                                                                    $approved_assessment_file = null;
-                                                                    $approved_id = null;
+                                                                // Collect all results for debugging
+                                                                $approved_results = [];
+                                                                while ($stmt_approved_file->fetch()) {
+                                                                    $approved_results[] = [
+                                                                        'approved_id' => $approved_id,
+                                                                        'approved_assessment_file' => $approved_assessment_file,
+                                                                    ];
                                                                 }
+                                                                $stmt_approved_file->close();
+
+                                                                // Use the first valid result if multiple are found
+                                                                $approved_assessment_file = $approved_results[0]['approved_assessment_file'] ?? null;
+                                                                $approved_id = $approved_results[0]['approved_id'] ?? null;
                                                             } else {
                                                                 $approved_assessment_file = null;
                                                                 $approved_id = null;
                                                             }
+                                                        } else {
+                                                            $approved_assessment_file = null;
+                                                            $approved_id = null;
+                                                        }
 
-                                                            if ($approved_assessment_file && $assessment_id): ?>
-                                                <a class="approve" href="<?php echo htmlspecialchars($approved_assessment_file); ?>" download>
-                                                    <i class="bi bi-cloud-arrow-down" style="font-size: 20px"></i> Download Approved Assessment
-                                                </a>
-                                            <?php else: ?>
-                                                <a class="approve" style="border: 1px solid grey; color: grey;">
-                                                    Download Approved Assessment
-                                                </a>
-                                            <?php endif; ?>
-                                        </div>
+                                                        if ($approved_assessment_file && $assessment_id): ?>
+                                            <a class="approve" href="<?php echo htmlspecialchars($approved_assessment_file); ?>" download>
+                                                <i class="bi bi-cloud-arrow-down" style="font-size: 20px"></i> Download Approved Assessment
+                                            </a>
                                         <?php else: ?>
-                                            <p>ASSESSMENT</p>
-                                            <div style="height: 10px;"></div>
-                                            <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>, <?php echo htmlspecialchars(json_encode($individual_areas[$schedule['schedule_id']])); ?>)">START ASSESSMENT</button>
+                                            <a class="approve" style="border: 1px solid grey; color: grey;">
+                                                Download Approved Assessment
+                                            </a>
                                         <?php endif; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <p>ASSESSMENT</p>
+                                    <div style="height: 10px;"></div>
+                                    <button class="assessment-button" onclick="openPopup(<?php echo htmlspecialchars(json_encode($schedule)); ?>, <?php echo htmlspecialchars(json_encode($individual_areas[$schedule['schedule_id']])); ?>)">START ASSESSMENT</button>
+                                <?php endif; ?>
                             <?php endif; ?>
                         <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
                         </div>
-            </div>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ACCEPTED</strong></p>
-    <?php endif; ?>
-        </div>
-    </div>
-
-    <!-- NDA Signing Popup -->
-    <div class="ndamodal1" id="ndaPopup" style="display: none;">
-        <div class="ndamodal-content1">
-            <h2>NON-DISCLOSURE AGREEMENT</h2>
-            <form action="internal_nda_process.php" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="team_id" id="nda_team_id">
-                <input type="hidden" name="internal_accreditor" id="nda_internal_accreditor">
-                <input type="hidden" name="date_added" id="date_added" value="<?php echo date('Y-m-d'); ?>">
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="internal_accreditor"><strong>INTERNAL ACCREDITOR</strong></label>
-                    </div>
-                    <div class="titleContainer" style="padding-left: 100px;">
-                        <label for="internal_accreditor_signature"><strong>E-SIGNATURE</strong></label>
-                    </div>
-                </div>
-                <div class="orientationname1 upload">
-                    <div class="nameContainer orientationContainer" style="padding-right: 110px">
-                        <input class="area_evaluated" type="text" id="internal_accreditor" name="internal_accreditor" value="<?php echo $full_name; ?>" readonly>
-                    </div>
-                    <div class="nameContainer orientationContainer uploadContainer">
-                        <span class="upload-text">UPLOAD</span>
-                        <img id="upload-icon-nda" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
-                        <input class="uploadInput" type="file" id="internal_accreditor_signature" name="internal_accreditor_signature" accept="image/png" required>
-                    </div>
-                </div>
-                <div class="button-container">
-                    <button class="cancel-button" type="button" onclick="closeNdaPopup()">CANCEL</button>
-                    <button class="submit-button" type="submit">SUBMIT</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Terms and Conditions Modal -->
-    <div id="termsModal" class="popup2" style="display:none;">
-        <div class="esign-popup-content">
-            <div style="height: 20px; width: 0px;"></div>
-            <h2>Electronic Signature<br>Usage Agreement</h2>
-            <p>By agreeing to this statement, you consent to the following terms and conditions regarding the use of your electronic signature:<br><br>
-
-                1. You acknowledge and agree that your electronic signature will be used exclusively for internal accreditation purposes within our organization. This includes, but is not limited to, verifying and validating documents, authorizations, and other internal procedures.<br><br>
-
-                2. You understand and agree that your electronic signature will be encrypted using AES-256-CBC encryption. This ensures that your electronic signature is secure and protected against unauthorized access, tampering, and breaches.<br><br>
-
-                3. You consent to the secure storage of your electronic signature in our database, which is protected by advanced security measures. Access to this database is restricted to authorized personnel only, ensuring that your electronic signature is used appropriately and solely for the purposes outlined above.<br><br>
-
-                4. You agree that your electronic signature will be kept confidential and will not be shared, disclosed, or used for any purposes other than those specified in this agreement without your explicit consent.<br><br>
-
-                5. You acknowledge that it is your responsibility to ensure that your electronic signature is accurate and to safeguard any credentials or devices used to create your electronic signature.<br><br>
-
-                6. You understand that we reserve the right to update or modify these terms and conditions at any time. Any changes will be communicated to you, and your continued use of your electronic signature for internal accreditation purposes will constitute your acceptance of the revised terms.<br><br>
-
-                If you have any questions or concerns regarding the use of your electronic signature or these terms and conditions, please contact us at usepqad@gmail.com.<br><br>
-
-                By clicking "Agree," you consent to the use of your electronic signature as described above and agree to the security measures implemented for its protection.</p><br><br>
-            <label>
-                <input type="checkbox" id="agreeTermsCheckbox"> I agree to the terms and conditions
-            </label><br><br>
-            <div class="e-sign-container">
-                <button class="cancel-button1" id="closeTermsBtn" type="button">CLOSE</button>
-                <button class="approve-assessment-button" id="acceptTerms" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)" disabled>SUBMIT</button>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ACCEPTED</strong></p>
+                <?php endif; ?>
             </div>
         </div>
-    </div>
+
+        <!-- NDA Signing Popup -->
+        <div class="ndamodal1" id="ndaPopup" style="display: none;">
+            <div class="ndamodal-content1">
+                <h2>NON-DISCLOSURE AGREEMENT</h2>
+                <form action="internal_nda_process.php" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="team_id" id="nda_team_id">
+                    <input type="hidden" name="internal_accreditor" id="nda_internal_accreditor">
+                    <input type="hidden" name="date_added" id="date_added" value="<?php echo date('Y-m-d'); ?>">
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="internal_accreditor"><strong>INTERNAL ACCREDITOR</strong></label>
+                        </div>
+                        <div class="titleContainer" style="padding-left: 100px;">
+                            <label for="internal_accreditor_signature"><strong>E-SIGNATURE</strong></label>
+                        </div>
+                    </div>
+                    <div class="orientationname1 upload">
+                        <div class="nameContainer orientationContainer" style="padding-right: 110px">
+                            <input class="area_evaluated" type="text" id="internal_accreditor" name="internal_accreditor" value="<?php echo $full_name; ?>" readonly>
+                        </div>
+                        <div class="nameContainer orientationContainer uploadContainer">
+                            <span class="upload-text">UPLOAD</span>
+                            <img id="upload-icon-nda" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                            <input class="uploadInput" type="file" id="internal_accreditor_signature" name="internal_accreditor_signature" accept="image/png" required>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button class="cancel-button" type="button" onclick="closeNdaPopup()">CANCEL</button>
+                        <button class="submit-button" type="submit">SUBMIT</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Terms and Conditions Modal -->
+        <div id="termsModal" class="popup2" style="display:none;">
+            <div class="esign-popup-content">
+                <div style="height: 20px; width: 0px;"></div>
+                <h2>Electronic Signature<br>Usage Agreement</h2>
+                <p>By agreeing to this statement, you consent to the following terms and conditions regarding the use of your electronic signature:<br><br>
+
+                    1. You acknowledge and agree that your electronic signature will be used exclusively for internal accreditation purposes within our organization. This includes, but is not limited to, verifying and validating documents, authorizations, and other internal procedures.<br><br>
+
+                    2. You understand and agree that your electronic signature will be encrypted using AES-256-CBC encryption. This ensures that your electronic signature is secure and protected against unauthorized access, tampering, and breaches.<br><br>
+
+                    3. You consent to the secure storage of your electronic signature in our database, which is protected by advanced security measures. Access to this database is restricted to authorized personnel only, ensuring that your electronic signature is used appropriately and solely for the purposes outlined above.<br><br>
+
+                    4. You agree that your electronic signature will be kept confidential and will not be shared, disclosed, or used for any purposes other than those specified in this agreement without your explicit consent.<br><br>
+
+                    5. You acknowledge that it is your responsibility to ensure that your electronic signature is accurate and to safeguard any credentials or devices used to create your electronic signature.<br><br>
+
+                    6. You understand that we reserve the right to update or modify these terms and conditions at any time. Any changes will be communicated to you, and your continued use of your electronic signature for internal accreditation purposes will constitute your acceptance of the revised terms.<br><br>
+
+                    If you have any questions or concerns regarding the use of your electronic signature or these terms and conditions, please contact us at usepqad@gmail.com.<br><br>
+
+                    By clicking "Agree," you consent to the use of your electronic signature as described above and agree to the security measures implemented for its protection.</p><br><br>
+                <label>
+                    <input type="checkbox" id="agreeTermsCheckbox"> I agree to the terms and conditions
+                </label><br><br>
+                <div class="e-sign-container">
+                    <button class="cancel-button1" id="closeTermsBtn" type="button">CLOSE</button>
+                    <button class="approve-assessment-button" id="acceptTerms" onclick="openNdaPopup('<?php echo $full_name; ?>', <?php echo $schedule['team_id']; ?>)" disabled>SUBMIT</button>
+                </div>
+            </div>
+        </div>
 
 
 
-    <!-- Popup Form for Team Member -->
-    <div class="assessmentmodal" id="popup">
-        <div class="assessmentmodal-content">
-            <h2>ASSESSMENT FORM</h2>
-            <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="result"><strong>AREAS ASSIGNED</strong></label>
+        <!-- Popup Form for Team Member -->
+        <div class="assessmentmodal" id="popup">
+            <div class="assessmentmodal-content">
+                <h2>ASSESSMENT FORM</h2>
+                <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="result"><strong>AREAS ASSIGNED</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="area_evaluated"><strong>RATING<span style="color: red;"> *<span></strong></label>
+                        </div>
                     </div>
-                    <div class="titleContainer">
-                        <label for="area_evaluated"><strong>RATING<span style="color: red;"> *<span></strong></label>
-                    </div>
-                </div>
 
-                <div id="Ratingarea_container">
-                </div>
-                <div class="assessment-group">
-                    <input type="hidden" name="schedule_id" id="modal_schedule_id">
-                    <label for="college">COLLEGE</label>
-                    <input class="assessment-group-college" type="text" id="college" name="college" readonly>
-                    <label for="program">PROGRAM</label>
-                    <input class="assessment-group-program" type="text" id="program" name="program" readonly>
-                </div>
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="level"><strong>LEVEL APPLIED</strong></label>
+                    <div id="Ratingarea_container">
                     </div>
-                    <div class="titleContainer">
-                        <label for="date"><strong>DATE</strong></label>
+                    <div class="assessment-group">
+                        <input type="hidden" name="schedule_id" id="modal_schedule_id">
+                        <label for="college">COLLEGE</label>
+                        <input class="assessment-group-college" type="text" id="college" name="college" readonly>
+                        <label for="program">PROGRAM</label>
+                        <input class="assessment-group-program" type="text" id="program" name="program" readonly>
                     </div>
-                    <div class="titleContainer">
-                        <label for="time"><strong>TIME</strong></label>
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="level"><strong>LEVEL APPLIED</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="date"><strong>DATE</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="time"><strong>TIME</strong></label>
+                        </div>
                     </div>
-                </div>
-                <div class="orientationname1">
-                    <div class="nameContainer orientationContainer1">
-                        <input class="level" type="text" id="level" name="level" readonly>
+                    <div class="orientationname1">
+                        <div class="nameContainer orientationContainer1">
+                            <input class="level" type="text" id="level" name="level" readonly>
+                        </div>
+                        <div class="nameContainer orientationContainer">
+                            <input class="level" type="text" id="date" name="date" readonly>
+                        </div>
+                        <div class="nameContainer orientationContainer">
+                            <input class="time" type="text" id="time" name="time" readonly>
+                        </div>
                     </div>
-                    <div class="nameContainer orientationContainer">
-                        <input class="level" type="text" id="date" name="date" readonly>
+                    <div class="orientationname1">
+                        <div class="titleContainer" hidden>
+                            <label for="area_evaluated"><strong>AREA EVALUATED</strong></label>
+                        </div>
                     </div>
-                    <div class="nameContainer orientationContainer">
-                        <input class="time" type="text" id="time" name="time" readonly>
+                    <div class="orientationname1">
+                        <div class="nameContainer orientationContainer" hidden>
+                            <input class="area_evaluated" type="text" id="area_evaluated" name="area_evaluated" readonly>
+                        </div>
                     </div>
-                </div>
-                <div class="orientationname1">
-                    <div class="titleContainer" hidden>
-                        <label for="area_evaluated"><strong>AREA EVALUATED</strong></label>
-                    </div>
-                </div>
-                <div class="orientationname1">
-                    <div class="nameContainer orientationContainer" hidden>
-                        <input class="area_evaluated" type="text" id="area_evaluated" name="area_evaluated" readonly>
-                    </div>
-                </div>
-                <div style="height: 20px;"></div>
-                <div class="assessment-group">
-                    <label for="findings"><strong>FINDINGS<span style="color: red;"> *<span></strong></label>
-                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="findings" name="findings" rows="10" placeholder="Add a comment" required></textarea>
                     <div style="height: 20px;"></div>
-                    <label for="recommendations"><strong>RECOMMENDATIONS<span style="color: red;"> *<span></strong></label>
-                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="recommendations" name="recommendations" rows="10" placeholder="Add a comment" required></textarea>
-                </div>
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="evaluator"><strong>EVALUATOR</strong></label>
+                    <div class="assessment-group">
+                        <label for="findings"><strong>FINDINGS<span style="color: red;"> *<span></strong></label>
+                        <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="findings" name="findings" rows="10" placeholder="Add a comment" required></textarea>
+                        <div style="height: 20px;"></div>
+                        <label for="recommendations"><strong>RECOMMENDATIONS<span style="color: red;"> *<span></strong></label>
+                        <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="recommendations" name="recommendations" rows="10" placeholder="Add a comment" required></textarea>
                     </div>
-                    <div class="titleContainer">
-                        <label for="evaluator_signature"><strong>EVALUATOR E-SIGN<span style="color: red;"> *<span></strong></label>
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="evaluator"><strong>EVALUATOR</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="evaluator_signature"><strong>EVALUATOR E-SIGN<span style="color: red;"> *<span></strong></label>
+                        </div>
                     </div>
-                </div>
-                <div class="orientationname1 upload">
-                    <div class="nameContainer orientationContainer">
-                        <input class="area_evaluated" type="text" id="evaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly>
+                    <div class="orientationname1 upload">
+                        <div class="nameContainer orientationContainer">
+                            <input class="area_evaluated" type="text" id="evaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly>
+                        </div>
+                        <div class="nameContainer orientationContainer uploadContainer">
+                            <span class="upload-text">UPLOAD</span>
+                            <img id="upload-icon-evaluator" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                            <input class="uploadInput" type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required>
+                        </div>
                     </div>
-                    <div class="nameContainer orientationContainer uploadContainer">
-                        <span class="upload-text">UPLOAD</span>
-                        <img id="upload-icon-evaluator" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
-                        <input class="uploadInput" type="file" id="evaluator_signature" name="evaluator_signature" accept="image/png" required>
+                    <div class="button-container">
+                        <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
+                        <button class="submit-button1" type="submit">SUBMIT</button>
                     </div>
-                </div>
-                <div class="button-container">
-                    <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
-                    <button class="submit-button1" type="submit">SUBMIT</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Popup Form for Team Leader -->
-    <div class="Summarymodal" id="Summarypopup">
-        <div class="Summarymodal-content">
-            <h2>SUMMARY FORM</h2>
-            <form action="internal_summary_assessment_process.php" method="POST" enctype="multipart/form-data">
-                <div class="assessment-group">
-                    <input type="hidden" name="schedule_id" id="Summarymodal_schedule_id">
-                    <label for="college">COLLEGE</label>
-                    <input type="text" id="Summarycollege" name="college" readonly>
-                    <div style="height: 20px;"></div>
-                    <label for="program">PROGRAM</label>
-                    <input type="text" id="Summaryprogram" name="program" readonly>
-                </div>
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="level"><strong>LEVEL APPLIED</strong></label>
-                    </div>
-                    <div class="titleContainer">
-                        <label for="date"><strong>DATE</strong></label>
-                    </div>
-                    <div class="titleContainer">
-                        <label for="time"><strong>TIME</strong></label>
-                    </div>
-                </div>
-                <div class="orientationname1">
-                    <div class="nameContainer orientationContainer1">
-                        <input class="level" type="text" id="Summarylevel" name="level" readonly>
-                    </div>
-                    <div class="nameContainer orientationContainer">
-                        <input class="level" type="text" id="Summarydate" name="date" readonly>
-                    </div>
-                    <div class="nameContainer orientationContainer">
-                        <input class="time" type="text" id="Summarytime" name="time" readonly>
-                    </div>
-                </div>
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="result"><strong>AREAS EVALUATED</strong></label>
-                    </div>
-                    <div class="titleContainer">
-                        <label for="area_evaluated"><strong>RATINGS<span style="color: red;"> *</span></strong></label>
-                    </div>
-                </div>
-
-                <div id="SummaryRatingarea_container">
-                    <!-- Areas and ratings will be dynamically added here -->
-                </div>
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="evaluator"><strong>EVALUATOR</strong></label>
-                    </div>
-                    <div class="titleContainer">
-                        <label for="Summaryevaluator_signature"><strong>TEAM LEADER E-SIGN<span style="color: red;"> *<span></strong></label>
-                    </div>
-                </div>
-                <div class="orientationname1 upload">
-                    <div class="nameContainer orientationContainer">
-                        <input class="area_evaluated" type="text" id="Summaryevaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly>
-                    </div>
-                    <div class="nameContainer orientationContainer uploadContainer">
-                        <span class="upload-text">UPLOAD</span>
-                        <img id="upload-icon-team-evaluator" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
-                        <input class="uploadInput" type="file" id="Summaryevaluator_signature" name="evaluator_signature" accept="image/png" required>
-                    </div>
-                </div>
-                <div class="button-container">
-                    <button class="cancel-button1" type="button" onclick="SummaryclosePopup()">Close</button>
-                    <button class="submit-button1" type="submit">Submit Summary</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Popup Form for Approving Assessment -->
-    <div class="approvalmodal" id="approveAssessmentPopup">
-        <div class="approvalmodal-content">
-            <h2>APPROVE ASSESSMENT</h2>
-            <form id="approveAssessmentForm" action="internal_approve_assessment_process.php" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="team_id" id="approve_team_id">
-                <input type="hidden" name="assessment_file" id="approve_assessment_file">
-                <div class="orientationname1">
-                    <div class="titleContainer">
-                        <label for="team_leader"><strong>TEAM LEADER</strong></label>
-                    </div>
-                    <div class="titleContainer" style="padding-left: 100px;">
-                        <label for="team_leader_signature"><strong>TEAM LEADER E-SIGN<span style="color: red;"> *<span></strong></label>
-                    </div>
-                </div>
-                <div class="orientationname1 upload">
-                    <div class="nameContainer orientationContainer" style="padding-right: 110px">
-                        <input class="area_evaluated" type="text" id="team_leader" name="team_leader" value="<?php echo $full_name; ?>" readonly>
-                    </div>
-                    <div class="nameContainer orientationContainer uploadContainer">
-                        <span class="upload-text">UPLOAD</span>
-                        <img id="upload-icon-leader" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
-                        <input class="uploadInput" type="file" id="team_leader_signature" name="team_leader_signature" accept="image/png" required>
-                    </div>
-                </div>
-                <div class="button-container">
-                    <button class="approve-cancel-button" type="button" onclick="closeApproveAssessmentPopup()">CANCEL</button>
-                    <button class="approve-assessment-button" type="submit">SUBMIT</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="customLoadingOverlay" class="custom-loading-overlay custom-spinner-hidden">
-        <div class="custom-spinner"></div>
-    </div>
-
-    <div id="logoutModal" class="modal1">
-        <div class="modal-content1">
-            <h4 id="confirmationMessage" style="font-size: 20px;">Are you sure you want to logout?</h4>
-            <div class="button-container">
-                <button type="button" class="accept-back-button" id="backButton" onclick="cancelLogout()">NO</button>
-                <button type="button" class="accept-confirm-button" id="confirmButton" onclick="confirmLogout()">YES</button>
+                </form>
             </div>
         </div>
-    </div>
 
-    <script>
-        function openLogoutModal() {
-            document.getElementById('logoutModal').style.display = 'block'; // Show the modal
-        }
+        <!-- Popup Form for Team Leader -->
+        <div class="Summarymodal" id="Summarypopup">
+            <div class="Summarymodal-content">
+                <h2>SUMMARY FORM</h2>
+                <form action="internal_summary_assessment_process.php" method="POST" enctype="multipart/form-data">
+                    <div class="assessment-group">
+                        <input type="hidden" name="schedule_id" id="Summarymodal_schedule_id">
+                        <label for="college">COLLEGE</label>
+                        <input type="text" id="Summarycollege" name="college" readonly>
+                        <div style="height: 20px;"></div>
+                        <label for="program">PROGRAM</label>
+                        <input type="text" id="Summaryprogram" name="program" readonly>
+                    </div>
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="level"><strong>LEVEL APPLIED</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="date"><strong>DATE</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="time"><strong>TIME</strong></label>
+                        </div>
+                    </div>
+                    <div class="orientationname1">
+                        <div class="nameContainer orientationContainer1">
+                            <input class="level" type="text" id="Summarylevel" name="level" readonly>
+                        </div>
+                        <div class="nameContainer orientationContainer">
+                            <input class="level" type="text" id="Summarydate" name="date" readonly>
+                        </div>
+                        <div class="nameContainer orientationContainer">
+                            <input class="time" type="text" id="Summarytime" name="time" readonly>
+                        </div>
+                    </div>
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="result"><strong>AREAS EVALUATED</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="area_evaluated"><strong>RATINGS<span style="color: red;"> *</span></strong></label>
+                        </div>
+                    </div>
 
-        function confirmLogout() {
-            window.location.href = 'logout.php'; // Redirect to logout.php
-        }
+                    <div id="SummaryRatingarea_container">
+                        <!-- Areas and ratings will be dynamically added here -->
+                    </div>
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="evaluator"><strong>EVALUATOR</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="Summaryevaluator_signature"><strong>TEAM LEADER E-SIGN<span style="color: red;"> *<span></strong></label>
+                        </div>
+                    </div>
+                    <div class="orientationname1 upload">
+                        <div class="nameContainer orientationContainer">
+                            <input class="area_evaluated" type="text" id="Summaryevaluator" name="evaluator" value="<?php echo $full_name; ?>" readonly>
+                        </div>
+                        <div class="nameContainer orientationContainer uploadContainer">
+                            <span class="upload-text">UPLOAD</span>
+                            <img id="upload-icon-team-evaluator" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                            <input class="uploadInput" type="file" id="Summaryevaluator_signature" name="evaluator_signature" accept="image/png" required>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button class="cancel-button1" type="button" onclick="SummaryclosePopup()">Close</button>
+                        <button class="submit-button1" type="submit">Submit Summary</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-        function cancelLogout() {
-            document.getElementById('logoutModal').style.display = 'none';
-        }
+        <!-- Popup Form for Approving Assessment -->
+        <div class="approvalmodal" id="approveAssessmentPopup">
+            <div class="approvalmodal-content">
+                <h2>APPROVE ASSESSMENT</h2>
+                <form id="approveAssessmentForm" action="internal_approve_assessment_process.php" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="team_id" id="approve_team_id">
+                    <input type="hidden" name="assessment_file" id="approve_assessment_file">
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="team_leader"><strong>TEAM LEADER</strong></label>
+                        </div>
+                        <div class="titleContainer" style="padding-left: 100px;">
+                            <label for="team_leader_signature"><strong>TEAM LEADER E-SIGN<span style="color: red;"> *<span></strong></label>
+                        </div>
+                    </div>
+                    <div class="orientationname1 upload">
+                        <div class="nameContainer orientationContainer" style="padding-right: 110px">
+                            <input class="area_evaluated" type="text" id="team_leader" name="team_leader" value="<?php echo $full_name; ?>" readonly>
+                        </div>
+                        <div class="nameContainer orientationContainer uploadContainer">
+                            <span class="upload-text">UPLOAD</span>
+                            <img id="upload-icon-leader" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
+                            <input class="uploadInput" type="file" id="team_leader_signature" name="team_leader_signature" accept="image/png" required>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button class="approve-cancel-button" type="button" onclick="closeApproveAssessmentPopup()">CANCEL</button>
+                        <button class="approve-assessment-button" type="submit">SUBMIT</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-        document.addEventListener('click', function(event) {
-            var modal = document.getElementById('logoutModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
+        <div id="customLoadingOverlay" class="custom-loading-overlay custom-spinner-hidden">
+            <div class="custom-spinner"></div>
+        </div>
+
+        <div id="logoutModal" class="modal1">
+            <div class="modal-content1">
+                <h4 id="confirmationMessage" style="font-size: 20px;">Are you sure you want to logout?</h4>
+                <div class="button-container">
+                    <button type="button" class="accept-back-button" id="backButton" onclick="cancelLogout()">NO</button>
+                    <button type="button" class="accept-confirm-button" id="confirmButton" onclick="confirmLogout()">YES</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function openLogoutModal() {
+                document.getElementById('logoutModal').style.display = 'block'; // Show the modal
             }
-        });
 
-        document.getElementById('approveAssessmentForm').addEventListener('submit', function(event) {
-            // Show the loading spinner
-            document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
-        });
+            function confirmLogout() {
+                window.location.href = 'logout.php'; // Redirect to logout.php
+            }
 
-        document.querySelector('#popup form').addEventListener('submit', function() {
-            document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
-        });
+            function cancelLogout() {
+                document.getElementById('logoutModal').style.display = 'none';
+            }
 
-        document.querySelector('#Summarypopup form').addEventListener('submit', function() {
-            document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
-        });
-
-        function handleFileChange(inputElement, iconElement) {
-            inputElement.addEventListener('change', function() {
-                if (this.files && this.files.length > 0) {
-                    // Change icon to check mark if a file is selected
-                    iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
-                } else {
-                    // Change icon back to download if no file is selected
-                    iconElement.src = 'images/download-icon1.png';
+            document.addEventListener('click', function(event) {
+                var modal = document.getElementById('logoutModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
                 }
             });
-        }
 
-        handleFileChange(document.getElementById('internal_accreditor_signature'), document.getElementById('upload-icon-nda'));
-        handleFileChange(document.getElementById('evaluator_signature'), document.getElementById('upload-icon-evaluator'));
-
-        handleFileChange(document.getElementById('Summaryevaluator_signature'), document.getElementById('upload-icon-team-evaluator'));
-        handleFileChange(document.getElementById('team_leader_signature'), document.getElementById('upload-icon-leader'));
-
-        function toggleNotifications() {
-            var dropdown = document.getElementById('notificationDropdown');
-            dropdown.classList.toggle('show');
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            // Format the date to include short month format
-            const formattedDate = date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short', // Short month (e.g., "Jan")
-                day: 'numeric',
+            document.getElementById('approveAssessmentForm').addEventListener('submit', function(event) {
+                // Show the loading spinner
+                document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
             });
-            // Add a dot to the month abbreviation if it's not already there
-            return formattedDate.replace(/(\b\w{3}\b)(?=\s\d{1,2},\s\d{4})/, '$1.');
-        }
 
-        function formatTime(timeString) {
-            const [hours, minutes] = timeString.split(':');
-            const date = new Date();
-            date.setHours(hours, minutes);
-            return date.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12: true,
+            document.querySelector('#popup form').addEventListener('submit', function() {
+                document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
             });
-        }
 
+            document.querySelector('#Summarypopup form').addEventListener('submit', function() {
+                document.getElementById('customLoadingOverlay').classList.remove('custom-spinner-hidden');
+            });
 
-        function openPopup(schedule, areas) {
-            document.getElementById('modal_schedule_id').value = schedule.schedule_id;
-            document.getElementById('college').value = schedule.college_name;
-            document.getElementById('program').value = schedule.program_name;
-            document.getElementById('level').value = schedule.level_applied;
-
-            // Format the date and time
-            document.getElementById('date').value = formatDate(schedule.schedule_date);
-            document.getElementById('time').value = formatTime(schedule.schedule_time);
-            document.getElementById('area_evaluated').value = schedule.area;
-
-            // Clear previous areas
-            const areaContainer = document.getElementById('Ratingarea_container');
-            areaContainer.innerHTML = ''; // Clear out any previous areas
-
-            // Generate the range of values for the datalist (1.00 to 5.00 counting by 0.25)
-            let ratingOptions = '';
-            for (let i = 1; i <= 5; i += 0.25) {
-                ratingOptions += `<option value="${i.toFixed(2)}"></option>`;
+            function handleFileChange(inputElement, iconElement) {
+                inputElement.addEventListener('change', function() {
+                    if (this.files && this.files.length > 0) {
+                        // Change icon to check mark if a file is selected
+                        iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists
+                    } else {
+                        // Change icon back to download if no file is selected
+                        iconElement.src = 'images/download-icon1.png';
+                    }
+                });
             }
 
-            // Check if areas are defined and not empty
-            if (areas && areas.length > 0) {
-                areas.forEach(area => {
-                    // Create the input with datalist and input type="number" with constraints
-                    const inputDiv = document.createElement('div');
-                    inputDiv.classList.add('orientationname1');
-                    inputDiv.style.marginBottom = '20px'; // Add margin below each field
+            handleFileChange(document.getElementById('internal_accreditor_signature'), document.getElementById('upload-icon-nda'));
+            handleFileChange(document.getElementById('evaluator_signature'), document.getElementById('upload-icon-evaluator'));
 
-                    inputDiv.innerHTML = `
+            handleFileChange(document.getElementById('Summaryevaluator_signature'), document.getElementById('upload-icon-team-evaluator'));
+            handleFileChange(document.getElementById('team_leader_signature'), document.getElementById('upload-icon-leader'));
+
+            function toggleNotifications() {
+                var dropdown = document.getElementById('notificationDropdown');
+                dropdown.classList.toggle('show');
+            }
+
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                // Format the date to include short month format
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short', // Short month (e.g., "Jan")
+                    day: 'numeric',
+                });
+                // Add a dot to the month abbreviation if it's not already there
+                return formattedDate.replace(/(\b\w{3}\b)(?=\s\d{1,2},\s\d{4})/, '$1.');
+            }
+
+            function formatTime(timeString) {
+                const [hours, minutes] = timeString.split(':');
+                const date = new Date();
+                date.setHours(hours, minutes);
+                return date.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: true,
+                });
+            }
+
+
+            function openPopup(schedule, areas) {
+                document.getElementById('modal_schedule_id').value = schedule.schedule_id;
+                document.getElementById('college').value = schedule.college_name;
+                document.getElementById('program').value = schedule.program_name;
+                document.getElementById('level').value = schedule.level_applied;
+
+                // Format the date and time
+                document.getElementById('date').value = formatDate(schedule.schedule_date);
+                document.getElementById('time').value = formatTime(schedule.schedule_time);
+                document.getElementById('area_evaluated').value = schedule.area;
+
+                // Clear previous areas
+                const areaContainer = document.getElementById('Ratingarea_container');
+                areaContainer.innerHTML = ''; // Clear out any previous areas
+
+                // Generate the range of values for the datalist (1.00 to 5.00 counting by 0.25)
+                let ratingOptions = '';
+                for (let i = 1; i <= 5; i += 0.25) {
+                    ratingOptions += `<option value="${i.toFixed(2)}"></option>`;
+                }
+
+                // Check if areas are defined and not empty
+                if (areas && areas.length > 0) {
+                    areas.forEach(area => {
+                        // Create the input with datalist and input type="number" with constraints
+                        const inputDiv = document.createElement('div');
+                        inputDiv.classList.add('orientationname1');
+                        inputDiv.style.marginBottom = '20px'; // Add margin below each field
+
+                        inputDiv.innerHTML = `
                 <div class="nameContainer orientationContainer">
                     <input class="area_evaluated" type="text" value="${area.area_name}" readonly>
                 </div>
@@ -1564,348 +1563,348 @@ function intToRoman($num)
                     <datalist id="ratingOptions">${ratingOptions}</datalist>
                 </div>
             `;
-                    areaContainer.appendChild(inputDiv);
-                });
-            } else {
-                // Optionally handle cases where there are no areas to display
-                const noAreasElement = document.createElement('p');
-                noAreasElement.innerText = 'No areas assigned.';
-                areaContainer.appendChild(noAreasElement);
+                        areaContainer.appendChild(inputDiv);
+                    });
+                } else {
+                    // Optionally handle cases where there are no areas to display
+                    const noAreasElement = document.createElement('p');
+                    noAreasElement.innerText = 'No areas assigned.';
+                    areaContainer.appendChild(noAreasElement);
+                }
+
+                document.getElementById('popup').style.display = 'block';
             }
 
-            document.getElementById('popup').style.display = 'block';
-        }
 
+            function SummaryopenPopup(schedule) {
+                document.getElementById('Summarymodal_schedule_id').value = schedule.schedule_id;
+                document.getElementById('Summarycollege').value = schedule.college_name;
+                document.getElementById('Summaryprogram').value = schedule.program_name;
+                document.getElementById('Summarylevel').value = schedule.level_applied;
 
-        function SummaryopenPopup(schedule) {
-            document.getElementById('Summarymodal_schedule_id').value = schedule.schedule_id;
-            document.getElementById('Summarycollege').value = schedule.college_name;
-            document.getElementById('Summaryprogram').value = schedule.program_name;
-            document.getElementById('Summarylevel').value = schedule.level_applied;
+                // Format the date and time
+                document.getElementById('Summarydate').value = formatDate(schedule.schedule_date);
+                document.getElementById('Summarytime').value = formatTime(schedule.schedule_time);
 
-            // Format the date and time
-            document.getElementById('Summarydate').value = formatDate(schedule.schedule_date);
-            document.getElementById('Summarytime').value = formatTime(schedule.schedule_time);
+                // Fetch and display areas with their ratings
+                fetchTeamAreasAndRatings(schedule.schedule_id);
 
-            // Fetch and display areas with their ratings
-            fetchTeamAreasAndRatings(schedule.schedule_id);
+                document.getElementById('Summarypopup').style.display = 'block';
+            }
 
-            document.getElementById('Summarypopup').style.display = 'block';
-        }
+            function fetchTeamAreasAndRatings(schedule_id) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', 'get_team_areas.php?schedule_id=' + schedule_id, true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        try {
+                            var areas = JSON.parse(xhr.responseText); // Parse the JSON response
+                            var container = document.getElementById('SummaryRatingarea_container');
+                            container.innerHTML = ''; // Clear existing content
 
-        function fetchTeamAreasAndRatings(schedule_id) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'get_team_areas.php?schedule_id=' + schedule_id, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    try {
-                        var areas = JSON.parse(xhr.responseText); // Parse the JSON response
-                        var container = document.getElementById('SummaryRatingarea_container');
-                        container.innerHTML = ''; // Clear existing content
+                            areas.forEach(function(area) {
+                                // Create the container for each area and rating
+                                var areaRow = document.createElement('div');
+                                areaRow.classList.add('orientationname1'); // Use style class for row consistency
+                                areaRow.style.marginBottom = '20px'; // Add margin below each field
 
-                        areas.forEach(function(area) {
-                            // Create the container for each area and rating
-                            var areaRow = document.createElement('div');
-                            areaRow.classList.add('orientationname1'); // Use style class for row consistency
-                            areaRow.style.marginBottom = '20px'; // Add margin below each field
+                                // Create the left side for the area name
+                                var areaLabelContainer = document.createElement('div');
+                                areaLabelContainer.classList.add('nameContainer', 'orientationContainer');
+                                var areaInput = document.createElement('input');
+                                areaInput.classList.add('area_evaluated');
+                                areaInput.type = 'text';
+                                areaInput.value = area.area_name;
+                                areaInput.readOnly = true;
+                                areaLabelContainer.appendChild(areaInput);
 
-                            // Create the left side for the area name
-                            var areaLabelContainer = document.createElement('div');
-                            areaLabelContainer.classList.add('nameContainer', 'orientationContainer');
-                            var areaInput = document.createElement('input');
-                            areaInput.classList.add('area_evaluated');
-                            areaInput.type = 'text';
-                            areaInput.value = area.area_name;
-                            areaInput.readOnly = true;
-                            areaLabelContainer.appendChild(areaInput);
+                                // Create the right side for the rating dropdown/input
+                                var ratingInputContainer = document.createElement('div');
+                                ratingInputContainer.classList.add('nameContainer', 'orientationContainer');
+                                var ratingInput = document.createElement('input');
+                                ratingInput.setAttribute('list', `ratingOptions-${area.area_id}`);
+                                ratingInput.classList.add('result');
+                                ratingInput.name = `area_rating[${area.area_id}]`;
+                                ratingInput.placeholder = 'Enter or select rating';
+                                ratingInput.required = true;
+                                ratingInput.pattern = '^[1-5](\\.\\d{1,2})?$'; // Validate between 1 and 5 with up to 2 decimal places
+                                ratingInput.value = area.rating || ''; // Pre-fill if rating exists
 
-                            // Create the right side for the rating dropdown/input
-                            var ratingInputContainer = document.createElement('div');
-                            ratingInputContainer.classList.add('nameContainer', 'orientationContainer');
-                            var ratingInput = document.createElement('input');
-                            ratingInput.setAttribute('list', `ratingOptions-${area.area_id}`);
-                            ratingInput.classList.add('result');
-                            ratingInput.name = `area_rating[${area.area_id}]`;
-                            ratingInput.placeholder = 'Enter or select rating';
-                            ratingInput.required = true;
-                            ratingInput.pattern = '^[1-5](\\.\\d{1,2})?$'; // Validate between 1 and 5 with up to 2 decimal places
-                            ratingInput.value = area.rating || ''; // Pre-fill if rating exists
+                                // Create the datalist for rating options (1.00 to 5.00 in steps of 0.25)
+                                var ratingOptions = document.createElement('datalist');
+                                ratingOptions.id = `ratingOptions-${area.area_id}`;
+                                for (let i = 1; i <= 5; i += 0.25) {
+                                    var option = document.createElement('option');
+                                    option.value = i.toFixed(2);
+                                    ratingOptions.appendChild(option);
+                                }
 
-                            // Create the datalist for rating options (1.00 to 5.00 in steps of 0.25)
-                            var ratingOptions = document.createElement('datalist');
-                            ratingOptions.id = `ratingOptions-${area.area_id}`;
-                            for (let i = 1; i <= 5; i += 0.25) {
-                                var option = document.createElement('option');
-                                option.value = i.toFixed(2);
-                                ratingOptions.appendChild(option);
-                            }
+                                // Disable input if rating exists (readonly)
+                                if (area.rating) {
+                                    ratingInput.readOnly = true;
+                                }
 
-                            // Disable input if rating exists (readonly)
-                            if (area.rating) {
-                                ratingInput.readOnly = true;
-                            }
+                                ratingInputContainer.appendChild(ratingInput);
+                                ratingInputContainer.appendChild(ratingOptions);
+                                areaRow.appendChild(areaLabelContainer);
+                                areaRow.appendChild(ratingInputContainer);
+                                container.appendChild(areaRow);
+                            });
+                        } catch (error) {
+                            console.error("Error parsing JSON:", error);
+                            console.log("Server response:", xhr.responseText);
+                        }
+                    }
+                };
+                xhr.send();
+            }
 
-                            ratingInputContainer.appendChild(ratingInput);
-                            ratingInputContainer.appendChild(ratingOptions);
-                            areaRow.appendChild(areaLabelContainer);
-                            areaRow.appendChild(ratingInputContainer);
-                            container.appendChild(areaRow);
-                        });
-                    } catch (error) {
-                        console.error("Error parsing JSON:", error);
-                        console.log("Server response:", xhr.responseText);
+            function SummaryclosePopup() {
+                document.getElementById('Summarypopup').style.display = 'none';
+            }
+
+            function closePopup() {
+                document.getElementById('popup').style.display = 'none';
+            }
+
+            let selectedTeamId = null;
+
+            // Open the terms modal and store the team ID
+            function openTermsModal(schedule) {
+                selectedTeamId = schedule.team_id; // Store the team ID
+                document.getElementById('termsModal').style.display = 'block';
+            }
+
+            // Open the NDA popup after agreeing to terms
+            function openNdaPopup(fullName) {
+                document.getElementById('nda_internal_accreditor').value = fullName;
+                document.getElementById('nda_team_id').value = selectedTeamId; // Use the stored team ID
+                document.getElementById('ndaPopup').style.display = 'block';
+                document.getElementById('termsModal').style.display = 'none';
+            }
+
+            function closeNdaPopup() {
+                document.getElementById('ndaPopup').style.display = 'none';
+            }
+
+            function approveAssessmentPopup(member) {
+                document.getElementById('approve_team_id').value = member.team_id;
+                document.getElementById('approve_assessment_file').value = member.assessment_file;
+
+                document.getElementById('approveAssessmentPopup').style.display = 'block';
+            }
+
+            function closeApproveAssessmentPopup() {
+                document.getElementById('approveAssessmentPopup').style.display = 'none';
+            }
+
+            // Close modals when clicking outside of them
+            window.onclick = function(event) {
+                var modals = [
+                    document.getElementById('popup'),
+                    document.getElementById('Summarypopup'),
+                    document.getElementById('approveAssessmentPopup'),
+                    document.getElementById('ndaPopup')
+                ];
+
+                modals.forEach(function(modal) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                <?php foreach ($schedules as $index => $schedule): ?>
+                    var modal<?php echo $index; ?> = document.getElementById('myModal-<?php echo $index; ?>');
+                    var btn<?php echo $index; ?> = document.getElementById('openModalBtn-<?php echo $index; ?>');
+                    var span<?php echo $index; ?> = document.getElementById('closeModalBtn-<?php echo $index; ?>');
+
+                    // Open modal
+                    btn<?php echo $index; ?>.onclick = function() {
+                        modal<?php echo $index; ?>.style.display = "block";
+                    }
+
+                    // Close modal
+                    span<?php echo $index; ?>.onclick = function() {
+                        modal<?php echo $index; ?>.style.display = "none";
+                    }
+                <?php endforeach; ?>
+            });
+
+            var assessmentsData = {}; // To store data for each assessment
+
+            // Initialize totalSelectedAreas based on existing dropdowns (team members only) for each assessment
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize assessments data
+                document.querySelectorAll('.notification-list1').forEach(function(assessmentDiv) {
+                    var scheduleId = assessmentDiv.id.replace('assessment-', ''); // Get the schedule_id
+                    assessmentsData[scheduleId] = {
+                        totalSelectedAreas: document.querySelectorAll(`#assessment-${scheduleId} .area-select`).length,
+                        maxAreas: <?php echo $maxAreas; ?>, // Ensure this value is dynamically adjusted per schedule if needed
+                        selectedAreas: [] // To track the areas already selected for this assessment
+                    };
+                });
+
+                // Initialize areas to be disabled for each assessment based on current selections
+                document.querySelectorAll('.area-select').forEach(function(select) {
+                    var selectedValue = select.value;
+                    var scheduleId = select.closest('.notification-list1').id.replace('assessment-', '');
+                    if (selectedValue) {
+                        assessmentsData[scheduleId].selectedAreas.push(selectedValue);
+                    }
+                });
+            });
+
+            // Add Area Dropdown for a specific assessment
+            function addAreaDropdown(scheduleId, divId, teamMemberId) {
+                // Prevent adding more areas if the maximum limit is reached
+                if (assessmentsData[scheduleId].totalSelectedAreas >= assessmentsData[scheduleId].maxAreas) {
+                    alert("You cannot add more than " + assessmentsData[scheduleId].maxAreas + " areas.");
+                    return; // Exit if the limit is reached
+                }
+
+                var container = document.getElementById(divId);
+                var newDiv = document.createElement('div');
+                newDiv.classList.add('dropdown-container');
+                newDiv.style.display = 'flex';
+                newDiv.style.alignItems = 'center';
+                newDiv.style.marginBottom = '10px';
+
+                var newSelect = document.createElement('select');
+                newSelect.name = `area[${teamMemberId}][]`;
+                newSelect.classList.add('area-select');
+                newSelect.required = true;
+                newSelect.onchange = function() {
+                    updateAreaOptions(scheduleId);
+                };
+
+                var defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.text = 'Select Area';
+                defaultOption.disabled = true;
+                defaultOption.selected = true;
+                newSelect.appendChild(defaultOption);
+
+                // Populate area options dynamically and disable already selected areas
+                <?php foreach ($areas as $id => $area_name): ?>
+                    var option = document.createElement('option');
+                    option.value = '<?php echo $id; ?>';
+                    option.text = 'Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>';
+
+                    // Disable already selected areas
+                    if (assessmentsData[scheduleId].selectedAreas.includes('<?php echo $id; ?>')) {
+                        option.disabled = true;
+                    }
+
+                    newSelect.appendChild(option);
+                <?php endforeach; ?>
+
+                newDiv.appendChild(newSelect);
+
+                // Add remove button
+                var removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.style.border = 'none';
+                removeButton.style.background = 'none';
+                removeButton.style.cursor = 'pointer';
+                removeButton.style.paddingLeft = '8px';
+
+                var removeIcon = document.createElement('i');
+                removeIcon.classList.add('fa-solid', 'fa-circle-minus');
+                removeIcon.style.color = 'red';
+                removeIcon.style.fontSize = '25px';
+
+                removeButton.appendChild(removeIcon);
+                removeButton.onclick = function() {
+                    container.removeChild(newDiv);
+                    assessmentsData[scheduleId].totalSelectedAreas--; // Decrement total selected areas when a dropdown is removed
+                    updateAreaOptions(scheduleId); // Update options to make the removed area selectable again
+                };
+
+                newDiv.appendChild(removeButton);
+                container.appendChild(newDiv);
+
+                assessmentsData[scheduleId].totalSelectedAreas++; // Increment the total number of selected areas
+                updateAreaOptions(scheduleId);
+            }
+
+            // Update area options based on selections for a specific assessment
+            function updateAreaOptions(scheduleId) {
+                var areaSelects = document.querySelectorAll(`#assessment-${scheduleId} .area-select`);
+                var submitButton = document.querySelector(`#assessment-${scheduleId} .assessment-button1`);
+
+                // Tracking variables
+                var validatedSelections = [];
+                var isValid = true;
+
+                // Collect selected values and validate uniqueness
+                areaSelects.forEach(function(select) {
+                    var selectedValue = select.value.trim();
+
+                    if (!selectedValue) {
+                        isValid = false; // No selection in a dropdown
+                        return;
+                    }
+
+                    if (validatedSelections.includes(selectedValue)) {
+                        isValid = false; // Duplicate selection
+                        return;
+                    }
+
+                    validatedSelections.push(selectedValue);
+                });
+
+                // Ensure all areas are uniquely selected
+                var isCorrectTotalSelections = validatedSelections.length === assessmentsData[scheduleId].maxAreas;
+
+                // Disable already selected options in other dropdowns
+                areaSelects.forEach(function(select) {
+                    Array.from(select.options).forEach(function(option) {
+                        option.disabled = validatedSelections.includes(option.value) && option.value !== select.value;
+                    });
+                });
+
+                // Enable or disable submit button based on validity
+                if (submitButton) {
+                    if (!isValid || !isCorrectTotalSelections) {
+                        submitButton.disabled = true;
+                        submitButton.style.opacity = '0.5';
+                        submitButton.style.cursor = 'not-allowed';
+                        submitButton.title = `Please ensure ${assessmentsData[scheduleId].maxAreas} unique areas are assigned.`;
+                    } else {
+                        submitButton.disabled = false;
+                        submitButton.style.opacity = '1';
+                        submitButton.style.cursor = 'pointer';
+                        submitButton.title = '';
                     }
                 }
-            };
-            xhr.send();
-        }
-
-        function SummaryclosePopup() {
-            document.getElementById('Summarypopup').style.display = 'none';
-        }
-
-        function closePopup() {
-            document.getElementById('popup').style.display = 'none';
-        }
-
-        let selectedTeamId = null;
-
-        // Open the terms modal and store the team ID
-        function openTermsModal(schedule) {
-            selectedTeamId = schedule.team_id; // Store the team ID
-            document.getElementById('termsModal').style.display = 'block';
-        }
-
-        // Open the NDA popup after agreeing to terms
-        function openNdaPopup(fullName) {
-            document.getElementById('nda_internal_accreditor').value = fullName;
-            document.getElementById('nda_team_id').value = selectedTeamId; // Use the stored team ID
-            document.getElementById('ndaPopup').style.display = 'block';
-            document.getElementById('termsModal').style.display = 'none';
-        }
-
-        function closeNdaPopup() {
-            document.getElementById('ndaPopup').style.display = 'none';
-        }
-
-        function approveAssessmentPopup(member) {
-            document.getElementById('approve_team_id').value = member.team_id;
-            document.getElementById('approve_assessment_file').value = member.assessment_file;
-
-            document.getElementById('approveAssessmentPopup').style.display = 'block';
-        }
-
-        function closeApproveAssessmentPopup() {
-            document.getElementById('approveAssessmentPopup').style.display = 'none';
-        }
-
-        // Close modals when clicking outside of them
-        window.onclick = function(event) {
-            var modals = [
-                document.getElementById('popup'),
-                document.getElementById('Summarypopup'),
-                document.getElementById('approveAssessmentPopup'),
-                document.getElementById('ndaPopup')
-            ];
-
-            modals.forEach(function(modal) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            <?php foreach ($schedules as $index => $schedule): ?>
-                var modal<?php echo $index; ?> = document.getElementById('myModal-<?php echo $index; ?>');
-                var btn<?php echo $index; ?> = document.getElementById('openModalBtn-<?php echo $index; ?>');
-                var span<?php echo $index; ?> = document.getElementById('closeModalBtn-<?php echo $index; ?>');
-
-                // Open modal
-                btn<?php echo $index; ?>.onclick = function() {
-                    modal<?php echo $index; ?>.style.display = "block";
-                }
-
-                // Close modal
-                span<?php echo $index; ?>.onclick = function() {
-                    modal<?php echo $index; ?>.style.display = "none";
-                }
-            <?php endforeach; ?>
-        });
-
-        var assessmentsData = {}; // To store data for each assessment
-
-        // Initialize totalSelectedAreas based on existing dropdowns (team members only) for each assessment
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize assessments data
-            document.querySelectorAll('.notification-list1').forEach(function(assessmentDiv) {
-                var scheduleId = assessmentDiv.id.replace('assessment-', ''); // Get the schedule_id
-                assessmentsData[scheduleId] = {
-                    totalSelectedAreas: document.querySelectorAll(`#assessment-${scheduleId} .area-select`).length,
-                    maxAreas: <?php echo $maxAreas; ?>, // Ensure this value is dynamically adjusted per schedule if needed
-                    selectedAreas: [] // To track the areas already selected for this assessment
-                };
-            });
-
-            // Initialize areas to be disabled for each assessment based on current selections
-            document.querySelectorAll('.area-select').forEach(function(select) {
-                var selectedValue = select.value;
-                var scheduleId = select.closest('.notification-list1').id.replace('assessment-', '');
-                if (selectedValue) {
-                    assessmentsData[scheduleId].selectedAreas.push(selectedValue);
-                }
-            });
-        });
-
-        // Add Area Dropdown for a specific assessment
-        function addAreaDropdown(scheduleId, divId, teamMemberId) {
-            // Prevent adding more areas if the maximum limit is reached
-            if (assessmentsData[scheduleId].totalSelectedAreas >= assessmentsData[scheduleId].maxAreas) {
-                alert("You cannot add more than " + assessmentsData[scheduleId].maxAreas + " areas.");
-                return; // Exit if the limit is reached
             }
 
-            var container = document.getElementById(divId);
-            var newDiv = document.createElement('div');
-            newDiv.classList.add('dropdown-container');
-            newDiv.style.display = 'flex';
-            newDiv.style.alignItems = 'center';
-            newDiv.style.marginBottom = '10px';
 
-            var newSelect = document.createElement('select');
-            newSelect.name = `area[${teamMemberId}][]`;
-            newSelect.classList.add('area-select');
-            newSelect.required = true;
-            newSelect.onchange = function() {
-                updateAreaOptions(scheduleId);
-            };
-
-            var defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.text = 'Select Area';
-            defaultOption.disabled = true;
-            defaultOption.selected = true;
-            newSelect.appendChild(defaultOption);
-
-            // Populate area options dynamically and disable already selected areas
-            <?php foreach ($areas as $id => $area_name): ?>
-                var option = document.createElement('option');
-                option.value = '<?php echo $id; ?>';
-                option.text = 'Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>';
-
-                // Disable already selected areas
-                if (assessmentsData[scheduleId].selectedAreas.includes('<?php echo $id; ?>')) {
-                    option.disabled = true;
-                }
-
-                newSelect.appendChild(option);
-            <?php endforeach; ?>
-
-            newDiv.appendChild(newSelect);
-
-            // Add remove button
-            var removeButton = document.createElement('button');
-            removeButton.type = 'button';
-            removeButton.style.border = 'none';
-            removeButton.style.background = 'none';
-            removeButton.style.cursor = 'pointer';
-            removeButton.style.paddingLeft = '8px';
-
-            var removeIcon = document.createElement('i');
-            removeIcon.classList.add('fa-solid', 'fa-circle-minus');
-            removeIcon.style.color = 'red';
-            removeIcon.style.fontSize = '25px';
-
-            removeButton.appendChild(removeIcon);
-            removeButton.onclick = function() {
-                container.removeChild(newDiv);
-                assessmentsData[scheduleId].totalSelectedAreas--; // Decrement total selected areas when a dropdown is removed
-                updateAreaOptions(scheduleId); // Update options to make the removed area selectable again
-            };
-
-            newDiv.appendChild(removeButton);
-            container.appendChild(newDiv);
-
-            assessmentsData[scheduleId].totalSelectedAreas++; // Increment the total number of selected areas
-            updateAreaOptions(scheduleId);
-        }
-
-        // Update area options based on selections for a specific assessment
-        function updateAreaOptions(scheduleId) {
-            var areaSelects = document.querySelectorAll(`#assessment-${scheduleId} .area-select`);
-            var submitButton = document.querySelector(`#assessment-${scheduleId} .assessment-button1`);
-
-            // Tracking variables
-            var validatedSelections = [];
-            var isValid = true;
-
-            // Collect selected values and validate uniqueness
-            areaSelects.forEach(function(select) {
-                var selectedValue = select.value.trim();
-
-                if (!selectedValue) {
-                    isValid = false; // No selection in a dropdown
-                    return;
-                }
-
-                if (validatedSelections.includes(selectedValue)) {
-                    isValid = false; // Duplicate selection
-                    return;
-                }
-
-                validatedSelections.push(selectedValue);
-            });
-
-            // Ensure all areas are uniquely selected
-            var isCorrectTotalSelections = validatedSelections.length === assessmentsData[scheduleId].maxAreas;
-
-            // Disable already selected options in other dropdowns
-            areaSelects.forEach(function(select) {
-                Array.from(select.options).forEach(function(option) {
-                    option.disabled = validatedSelections.includes(option.value) && option.value !== select.value;
-                });
-            });
-
-            // Enable or disable submit button based on validity
-            if (submitButton) {
-                if (!isValid || !isCorrectTotalSelections) {
-                    submitButton.disabled = true;
-                    submitButton.style.opacity = '0.5';
-                    submitButton.style.cursor = 'not-allowed';
-                    submitButton.title = `Please ensure ${assessmentsData[scheduleId].maxAreas} unique areas are assigned.`;
+            document.getElementById('agreeTermsCheckbox').addEventListener('change', function() {
+                var acceptButton = document.getElementById('acceptTerms');
+                if (this.checked) {
+                    acceptButton.disabled = false;
+                    acceptButton.classList.remove('disabled');
                 } else {
-                    submitButton.disabled = false;
-                    submitButton.style.opacity = '1';
-                    submitButton.style.cursor = 'pointer';
-                    submitButton.title = '';
+                    acceptButton.disabled = true;
+                    acceptButton.classList.add('disabled');
                 }
-            }
-        }
+            });
 
+            document.getElementById('closeTermsBtn').addEventListener('click', function() {
+                document.getElementById('termsModal').style.display = 'none';
+            });
 
-        document.getElementById('agreeTermsCheckbox').addEventListener('change', function() {
-            var acceptButton = document.getElementById('acceptTerms');
-            if (this.checked) {
-                acceptButton.disabled = false;
-                acceptButton.classList.remove('disabled');
-            } else {
-                acceptButton.disabled = true;
-                acceptButton.classList.add('disabled');
-            }
-        });
-
-        document.getElementById('closeTermsBtn').addEventListener('click', function() {
-            document.getElementById('termsModal').style.display = 'none';
-        });
-
-        document.getElementById('sign-button').addEventListener('click', function() {
-            document.getElementById('agreeTermsCheckbox').checked = false;
-            document.getElementById('termsModal').style.display = 'block';
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            updateAreaOptions();
-        });
-    </script>
+            document.getElementById('sign-button').addEventListener('click', function() {
+                document.getElementById('agreeTermsCheckbox').checked = false;
+                document.getElementById('termsModal').style.display = 'block';
+            });
+            document.addEventListener('DOMContentLoaded', function() {
+                updateAreaOptions();
+            });
+        </script>
 </body>
 
 </html>
