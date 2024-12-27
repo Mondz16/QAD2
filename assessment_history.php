@@ -791,6 +791,9 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                     <span class="notification-counter"><?= $transferRequestCount; ?></span>
                                 <?php endif; ?>
                             </a>
+                            <a href="<?php echo $is_admin ? 'program_level.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                                <span style="margin-left: 8px;">Update Program Level</span>
+                            </a>
                         </div>
                     </li>
                     <li class="sidebar-item has-dropdown">

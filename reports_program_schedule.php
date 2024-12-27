@@ -73,7 +73,7 @@ function getAllSchedules($conn)
               FROM schedule 
               INNER JOIN team ON schedule.id = team.schedule_id
               GROUP BY schedule_date";
-              
+
     $stmt = $conn->prepare($query);
     if (!$stmt) {
         die("Prepare failed: " . $conn->error);
@@ -512,6 +512,9 @@ $conn->close();
                             <?php if ($transferRequestCount > 0): ?>
                                 <span class="notification-counter"><?= $transferRequestCount; ?></span>
                             <?php endif; ?>
+                        </a>
+                        <a href="<?php echo $is_admin ? 'program_level.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">Update Program Level</span>
                         </a>
                     </div>
                 </li>
