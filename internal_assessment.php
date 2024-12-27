@@ -897,7 +897,6 @@ function intToRoman($num)
                                                                 <?php else: ?>
                                                                 <?php endif; ?>
                                                             </form>
-                                        </div>
                                     <?php else: ?>
                                         <!-- Existing team member submission and approval status check -->
                                         <?php
@@ -1167,6 +1166,7 @@ function intToRoman($num)
         <p style="text-align: center; font-size: 20px"><strong>NO SCHEDULED INTERNAL ACCREDITATION HAS BEEN ACCEPTED</strong></p>
     <?php endif; ?>
         </div>
+    </div>
     </div>
 
     <!-- NDA Signing Popup -->
