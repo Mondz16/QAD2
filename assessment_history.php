@@ -832,6 +832,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             </nav>
             <div class="container text-center mt-4">
                 <h1 class="mt-5 mb-5">ASSESSMENT HISTORY</h1>
+                <div id="assessment-timeline-container" class="mt-4 mb-5"></div>
                 <div class="table-responsive">
                     <table id="assessmentTable" class="table table-bordered display">
                         <thead>
@@ -888,14 +889,14 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                                                                     }
                                                                                     ?>">
                                                 <?php
-                                                                                    if ($assessment['schedule_status'] == 'finished') {
-                                                                                        echo "APPROVED";
-                                                                                    } elseif ($assessment['schedule_status'] == 'passed') {
-                                                                                        echo "READY";
-                                                                                    } elseif ($assessment['schedule_status'] == 'failed') {
-                                                                                        echo "NOT READY";
-                                                                                    }
-                                                                                    ?></button>
+                                                if ($assessment['schedule_status'] == 'finished') {
+                                                    echo "APPROVED";
+                                                } elseif ($assessment['schedule_status'] == 'passed') {
+                                                    echo "READY";
+                                                } elseif ($assessment['schedule_status'] == 'failed') {
+                                                    echo "NOT READY";
+                                                }
+                                                ?></button>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -908,7 +909,6 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                     </table>
                 </div>
             </div>
-
         </div>
 
         <!-- Modal HTML -->
@@ -920,36 +920,11 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             </div>
         </div>
 
-
-        <!-- Modal -->
-        <div id="approvalModal" class="modal">
-            <div class="modal-content">
-                <h2>Approve Summary</h2>
-                <form id="approveForm" method="POST" action="approve_summary.php" enctype="multipart/form-data">
-                    <div class="label-holder">
-                        <label for="qadOfficerName"><strong>QAD OFFICER NAME:</strong></label>
-                        <label for="qadOfficerSignature" style="margin-right: 35px;"><strong>SIGNATURE (PNG ONLY):<span style="color: red;"> *<span></strong></label>
-                    </div>
-                    <div class="input-holder">
-                        <input type="text" id="qadOfficerName" name="qadOfficerName" value="<?php echo $full_name; ?>" readonly>
-                        <div class="nameContainer orientationContainer uploadContainer">
-                            <span class="upload-text">UPLOAD</span>
-                            <img id="upload-icon-nda" src="images/download-icon1.png" alt="Upload Icon" class="upload-icon">
-                            <input class="uploadInput" type="file" id="qadOfficerSignature" name="qadOfficerSignature" accept="image/png" required="">
-                        </div>
-                    </div>
-                    <input type="hidden" id="summaryFile" name="summaryFile">
-                    <div class="button-container">
-                        <button type="button" class="approve-cancel-button" onclick="closeApprovalModalPopup()">CANCEL</button>
-                        <button type="submit" class="approve-assessment-button">SUBMIT</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
         <div id="customLoadingOverlay" class="custom-loading-overlay custom-spinner-hidden">
             <div class="custom-spinner"></div>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
         <script>
             $(document).ready(function() {
@@ -1043,12 +1018,232 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 });
             }
 
+            // Create a dropdown for year filter
+            function createYearFilter(assessments, containerId) {
+                const years = [...new Set(assessments.map(assessment =>
+                    new Date(assessment.schedule_date).getFullYear()
+                ))].sort();
+
+                const filterContainer = document.createElement('div');
+                filterContainer.className = 'mb-4 text-right';
+
+                const select = document.createElement('select');
+                select.className = 'p-2 border rounded-md';
+                select.id = 'yearFilter';
+
+                // Add "All Years" option
+                const allOption = document.createElement('option');
+                allOption.value = 'all';
+                allOption.textContent = 'All Years';
+                select.appendChild(allOption);
+
+                // Add year options
+                years.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    select.appendChild(option);
+                });
+
+                filterContainer.appendChild(select);
+                document.getElementById(containerId).appendChild(filterContainer);
+
+                return select;
+            }
+
+            // Define level order
+            const levelOrder = ['Candidate', 'PSV', '1', '2', '3', '4'];
+
+            // Function to normalize level display
+            function normalizeLevel(level) {
+                if (level === 'Not Accreditable') return 'Candidate';
+                if (level === 'CAN') return 'Candidate';
+                return level;
+            }
+
+            // Function to filter table rows
+            function filterTable(selectedYear) {
+                const table = document.getElementById('assessmentTable');
+                const rows = table.getElementsByTagName('tr');
+
+                // Start from index 1 to skip header row
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    const dateCell = row.cells[4]; // Index 4 is the date column
+
+                    if (dateCell) {
+                        const rowDate = new Date(dateCell.textContent);
+                        const rowYear = rowDate.getFullYear();
+
+                        if (selectedYear === 'all' || rowYear === parseInt(selectedYear)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                }
+            }
+
+            // Process data for the chart
+            function processAssessmentData(assessments, selectedYear) {
+                const filteredAssessments = selectedYear === 'all' ?
+                    assessments :
+                    assessments.filter(assessment =>
+                        new Date(assessment.schedule_date).getFullYear() === parseInt(selectedYear)
+                    );
+
+                const datasets = {
+                    finished: [],
+                    passed: [],
+                    failed: []
+                };
+
+                filteredAssessments.forEach(assessment => {
+                    const normalizedLevel = normalizeLevel(assessment.level_applied);
+
+                    if (levelOrder.includes(normalizedLevel)) {
+                        const point = {
+                            x: new Date(assessment.schedule_date),
+                            y: normalizedLevel,
+                            program: assessment.program_name,
+                            college: assessment.college_name,
+                            status: assessment.schedule_status,
+                            originalLevel: assessment.level_applied
+                        };
+
+                        datasets[assessment.schedule_status].push(point);
+                    }
+                });
+
+                return {
+                    datasets
+                };
+            }
+
+            // Initialize the chart
+            function initializeChart(containerId) {
+                const ctx = document.createElement('canvas');
+                document.getElementById(containerId).appendChild(ctx);
+
+                return new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                                label: 'Approved',
+                                data: [],
+                                backgroundColor: '#bfbfbf',
+                                pointRadius: 8,
+                            },
+                            {
+                                label: 'Ready',
+                                data: [],
+                                backgroundColor: '#22c55e',
+                                pointRadius: 8,
+                            },
+                            {
+                                label: 'Not Ready',
+                                data: [],
+                                backgroundColor: '#ef4444',
+                                pointRadius: 8,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Assessment Timeline by Level'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const point = context.raw;
+                                        let status = point.status.charAt(0).toUpperCase() + point.status.slice(1);
+                                        if(status == 'Finished'){
+                                            status = 'Approved';
+                                        }
+                                        return [
+                                            `College: ${point.college}`,
+                                            `Program: ${point.program}`,
+                                            `Level: ${point.originalLevel}`,
+                                            `Status: ${status}`,
+                                            `Date: ${point.x.toLocaleDateString()}`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'month',
+                                    displayFormats: {
+                                        month: 'MMM yyyy'
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            },
+                            y: {
+                                type: 'category',
+                                labels: levelOrder,
+                                reverse: true,
+                                title: {
+                                    display: true,
+                                    text: 'Level Applied'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Main function to set up the timeline
+            function setupAssessmentTimeline(assessments, containerId) {
+                const container = document.getElementById(containerId);
+                container.style.height = '500px';
+
+                const yearFilter = createYearFilter(assessments, containerId);
+                const chart = initializeChart(containerId);
+
+                function updateChart(selectedYear) {
+                    const data = processAssessmentData(assessments, selectedYear);
+
+                    chart.data.datasets[0].data = data.datasets.finished;
+                    chart.data.datasets[1].data = data.datasets.passed;
+                    chart.data.datasets[2].data = data.datasets.failed;
+
+                    chart.update();
+                }
+
+                // Update both chart and table when year changes
+                yearFilter.addEventListener('change', (e) => {
+                    const selectedYear = e.target.value;
+                    updateChart(selectedYear);
+                    filterTable(selectedYear);
+                });
+
+                // Initial render
+                updateChart('all');
+            }
+
+            const assessments = <?php echo json_encode($assessments); ?>;
+
             document.addEventListener('DOMContentLoaded', function() {
                 // NDA Modal Logic
                 const ndaModal = document.getElementById('ndaModal');
                 const closeNdaModalBtn = ndaModal ? ndaModal.querySelector('.nda-close-modal') : null;
                 const modalTeamMembers = document.getElementById('modal-team-members');
                 const noNdaMessage = document.getElementById('no-nda-message');
+                setupAssessmentTimeline(assessments, 'assessment-timeline-container');
 
                 // Function to open NDA modal
                 function openNdaModal() {

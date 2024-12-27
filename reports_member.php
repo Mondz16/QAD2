@@ -566,6 +566,7 @@ $conn->close();
                 <div>
                     <label for="year">Year:</label>
                     <select id="year">
+                        <option value="all">All Years</option>
                         <?php
                         $unique_years = [];
                         foreach ($schedules as $schedule):
@@ -798,21 +799,21 @@ $conn->close();
                 table.draw();
             });
 
-            $('#year').change(function() {
-                const year = $(this).val();
-                $.post('analytics_get_members.php', {
-                    action: 'getSchedules',
-                    year: year
-                }, function(data) {
-                    const schedules = JSON.parse(data);
-                    const labels = schedules.map(s => s.schedule_date);
-                    const dataPoints = schedules.map(s => s.user_count);
+            // $('#year').change(function() {
+            //     const year = $(this).val();
+            //     $.post('analytics_get_members.php', {
+            //         action: 'getSchedules',
+            //         year: year
+            //     }, function(data) {
+            //         const schedules = JSON.parse(data);
+            //         const labels = schedules.map(s => s.schedule_date);
+            //         const dataPoints = schedules.map(s => s.user_count);
 
-                    scheduleChart.data.labels = labels;
-                    scheduleChart.data.datasets[0].data = dataPoints;
-                    scheduleChart.update();
-                });
-            });
+            //         scheduleChart.data.labels = labels;
+            //         scheduleChart.data.datasets[0].data = dataPoints;
+            //         scheduleChart.update();
+            //     });
+            // });
         });
     </script>
 </body>

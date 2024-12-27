@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($stmt->execute()) {
             // Perform program level checks and updates
-            handleProgramLevelUpdates($scheduleId, $status);
+            //handleProgramLevelUpdates($scheduleId, $status);
 
             // Notify the college
             notifyCollege($scheduleId, $status);

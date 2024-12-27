@@ -85,13 +85,14 @@ if (count($teamLeaders) > 0) {
         if ($schedule) {
             // Fetch team members
             $teamMembersQuery = "
-                SELECT 
-                    t.id AS team_id, 
+                SELECT t.id AS team_id, 
                     CONCAT(iu.first_name, ' ', iu.middle_initial, '. ', iu.last_name) AS member_name
                 FROM team t
                 JOIN internal_users iu ON t.internal_users_id = iu.user_id
-                WHERE t.schedule_id = '$scheduleId'
+                WHERE t.schedule_id = '$scheduleId' 
+                AND t.status IN ('accepted', 'finished')
             ";
+
             $teamMembersResult = $conn->query($teamMembersQuery);
             $teamMembers = $teamMembersResult->fetch_all(MYSQLI_ASSOC);
 
@@ -656,10 +657,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Schedule</span>
                             <?php if ($totalPendingSchedules > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -726,10 +727,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Administrative</span>
                             <?php if ($totalPendingUsers > 0 || $transferRequestCount > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -740,7 +741,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                 <span style="margin-left: 8px;">Register Verification</span>
                                 <?php if ($totalPendingUsers > 0): ?>
                                     <span class="notification-counter"><?= $totalPendingUsers; ?></span>
-                                <?php endif; ?>                            </a>
+                                <?php endif; ?> </a>
                             <a href="<?php echo $is_admin ? 'college_transfer.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">College Transfer</span>
                                 <?php if ($transferRequestCount > 0): ?>
@@ -827,7 +828,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                             <div class="assessment-udas">
                                                 <p>DOWNLOADABLE:<br>
                                                     <?php if (!empty($assessment['summary_file'])): ?>
-                                                        <?php 
+                                                        <?php
                                                         // Fetch the summary_compilation_file directly
                                                         $summary_file = $assessment['summary_file'];
                                                         $sql = "SELECT summary_compilation_file FROM summary WHERE summary_file = ?";
