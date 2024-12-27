@@ -238,14 +238,14 @@ $result = $stmt->get_result();
 
                 // Database connection and query execution
                 //$query = "SELECT s.*, p.program_name
-                //FROM schedule s
-                //LEFT JOIN program p ON s.program_id = p.id"; // Replace this with your actual SQL query
+                        //FROM schedule s
+                        //LEFT JOIN program p ON s.program_id = p.id
+                        //WHERE s.schedule_status = 'approved'"; // Added condition to only get approved schedules
                 //$result = $conn->query($query);
 
                 // Check if there are rows returned from the query
                 if ($result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
-
                         $scheduleDate = $row['schedule_date'];
                         $scheduleTime = $row['schedule_time'];
 
@@ -264,56 +264,54 @@ $result = $stmt->get_result();
                             continue; // Skip this record
                         }
 
-                        // Check if the schedule matches the current date, the time is 5 PM or later, and manually_unlocked = 0
-                        if ($currentDateTime->format('Y-m-d') === $scheduleDateTime->format('Y-m-d') && 
-                            $currentDateTime >= $scheduleDateTime->setTime(17, 0, 0) && 
-                            $row['manually_unlocked'] == 0) {
+                        // Updated condition to include past dates and current date after 5 PM
+                        if (($currentDateTime->format('Y-m-d') > $scheduleDateTime->format('Y-m-d') || 
+                            ($currentDateTime->format('Y-m-d') === $scheduleDateTime->format('Y-m-d') && 
+                            $currentDateTime >= $scheduleDateTime->setTime(17, 0, 0))) && 
+                            $row['manually_unlocked'] == 0 && 
+                            $row['schedule_status'] === 'approved') {
                             
-                            // Check if the schedule is not already marked as done
-                            if ($row['schedule_status'] !== 'done') {
-                                // Prepare the update query
-                                $updateDoneSql = "UPDATE schedule 
-                                                SET schedule_status = 'done', 
-                                                    status_date = NOW() 
-                                                WHERE id = ?";
-                                $updateDoneStmt = $conn->prepare($updateDoneSql);
+                            // Prepare the update query
+                            $updateDoneSql = "UPDATE schedule 
+                                            SET schedule_status = 'done', 
+                                                status_date = NOW() 
+                                            WHERE id = ? AND schedule_status = 'approved'";
+                            $updateDoneStmt = $conn->prepare($updateDoneSql);
 
-                                if ($updateDoneStmt) {
-                                    // Bind parameters and execute
-                                    $updateDoneStmt->bind_param("i", $row['id']);
-                                    if ($updateDoneStmt->execute()) {
-                                        // Log successful update
-                                        if ($updateDoneStmt->affected_rows > 0) {
-                                            echo "Schedule ID " . $row['id'] . " marked as 'done' automatically.<br>";
-                                        } else {
-                                            echo "No changes made for schedule ID: " . $row['id'] . ".<br>";
-                                        }
+                            if ($updateDoneStmt) {
+                                // Bind parameters and execute
+                                $updateDoneStmt->bind_param("i", $row['id']);
+                                if ($updateDoneStmt->execute()) {
+                                    // Log successful update
+                                    if ($updateDoneStmt->affected_rows > 0) {
+                                        echo "Schedule ID " . $row['id'] . " marked as 'done' automatically.<br>";
                                     } else {
-                                        // Log error if execution fails
-                                        echo "Execution failed for ID " . $row['id'] . ": " . $conn->error . "<br>";
+                                        echo "No changes made for schedule ID: " . $row['id'] . ".<br>";
                                     }
-                                    // Close statement
-                                    $updateDoneStmt->close();
                                 } else {
-                                    // Log error if preparing the statement fails
-                                    echo "Prepare failed: (" . $conn->errno . ") " . $conn->error . "<br>";
+                                    // Log error if execution fails
+                                    echo "Execution failed for ID " . $row['id'] . ": " . $conn->error . "<br>";
                                 }
+                                // Close statement
+                                $updateDoneStmt->close();
+                            } else {
+                                // Log error if preparing the statement fails
+                                echo "Prepare failed: (" . $conn->errno . ") " . $conn->error . "<br>";
                             }
                         }
+
                         // Check if the schedule is manually unlocked
                         if ($row['manually_unlocked'] == 1 && !empty($row['unlock_expiration'])) {
                             // Validate unlock_expiration date format
                             $unlockExpiration = DateTime::createFromFormat('Y-m-d H:i:s', $row['unlock_expiration'], new DateTimeZone('Asia/Manila'));
 
                             if (!$unlockExpiration) {
-                                // If date format is invalid, skip this row and log the error
                                 echo "Invalid unlock_expiration format for ID: " . $row['id'] . "<br>";
-                                continue; // Skip to next iteration
+                                continue;
                             }
 
                             // Check if the unlock period has expired
                             if ($currentDateTime > $unlockExpiration) {
-
                                 // Prepare the update query
                                 $updateSql = "UPDATE schedule 
                                             SET schedule_status = 'done', 
@@ -324,25 +322,20 @@ $result = $stmt->get_result();
                                 $updateStmt = $conn->prepare($updateSql);
 
                                 if ($updateStmt) {
-                                    // Bind parameters and execute
                                     $updateStmt->bind_param("i", $row['id']);
                                     if ($updateStmt->execute()) {
-                                        // Log successful update and affected rows
                                         if ($updateStmt->affected_rows > 0) {
+                                            echo "Schedule ID " . $row['id'] . " unlock period expired and marked as done.<br>";
                                         } else {
-                                            echo "No changes made for schedule ID: " . $row['id'] . ". It might already be updated.<br>";
+                                            echo "No changes made for schedule ID: " . $row['id'] . ".<br>";
                                         }
                                     } else {
-                                        // Log error if execution fails
                                         echo "Execution failed for ID " . $row['id'] . ": " . $conn->error . "<br>";
                                     }
-                                    // Close statement
                                     $updateStmt->close();
                                 } else {
-                                    // Log error if preparing the statement fails
                                     echo "Prepare failed: (" . $conn->errno . ") " . $conn->error . "<br>";
                                 }
-                            } else {
                             }
                         }
 

@@ -405,7 +405,7 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating table: " . $conn->error . "<br>";
 }
 
-// Create accreditation_standard table
+// SQL to create accreditation_standard table
 $sql = "CREATE TABLE IF NOT EXISTS accreditation_standard (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     Level VARCHAR(3) NOT NULL,
@@ -417,6 +417,22 @@ if ($conn->query($sql) === TRUE) {
 } else {
     echo "Error creating table: " . $conn->error . "<br>";
 }
+
+// Insert data into accreditation_standard table
+$sql = "INSERT INTO accreditation_standard (Level, Standard) VALUES
+    ('PSV', 1.00),
+    ('1', 3.00),
+    ('2', 3.50),
+    ('3', 4.00),
+    ('4', 4.50)";
+
+// Execute the insert query
+if ($conn->query($sql) === TRUE) {
+    echo "Data inserted successfully into accreditation_standard table<br>";
+} else {
+    echo "Error inserting data: " . $conn->error . "<br>";
+}
+
 
 // Create admin account if it doesn't exist
 $sql_check_admin = "SELECT * FROM admin WHERE user_id = 'admin'";
