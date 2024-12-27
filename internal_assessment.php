@@ -781,6 +781,7 @@ function intToRoman($num)
                                             </div>
                                         </div>
                                         <div class="bodyRight2">
+                                            <div>
                                             <?php if ($schedule['role'] === 'Team Leader'): ?>
                                                 <?php if ($schedule['schedule_status'] == 'done'): ?>
                                                     <!-- Logic for displaying "locked" message when schedule is done for Team Leader -->
@@ -897,6 +898,7 @@ function intToRoman($num)
                                                                 <?php else: ?>
                                                                 <?php endif; ?>
                                                             </form>
+                                                    </div>
                                     <?php else: ?>
                                         <!-- Existing team member submission and approval status check -->
                                         <?php
