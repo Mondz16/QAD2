@@ -796,7 +796,9 @@ function saveProgramData() {
                         let levelApplied = 'NA';
                         if (currentLevel === 'Candidate') {
                             levelApplied = 'PSV';
-                        } else if (currentLevel < 4) {
+                        } else if (currentLevel === 'PSV') {
+                            levelApplied = '1';
+                        }else if (currentLevel < 4) {
                             levelApplied = parseInt(currentLevel) + 1;
                         } else {
                             levelApplied = currentLevel;
