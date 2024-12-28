@@ -612,28 +612,123 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             text-decoration: none;
         }
 
-        table.dataTable {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-            margin-top: 10px;
+        /* Modern DataTable Styling */
+        .dataTables_wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
 
-        table.dataTable th,
-        table.dataTable td:first-child {
-            padding: 10px;
-            text-align: left;
+        /* Table Header Styling */
+        table.dataTable thead th {
+            background-color: #B73033 !important;
+            color: white !important;
+            font-weight: 600;
+            padding: 16px;
+            border: 1px solid #E5E5E5;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        table.dataTable td {
-            padding: 10px;
-            text-align: center;
+        /* Table Body Styling */
+        table.dataTable tbody td {
+            padding: 16px;
+            border: 1px solid #E5E5E5;
+            color: #333;
+            font-size: 14px;
             vertical-align: middle;
         }
 
-        table.dataTable thead th {
+        /* Stripe Effect */
+        table.dataTable tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        table.dataTable tbody tr:hover {
+            background-color: #f5f5f5;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Export Button Styling */
+        .dt-buttons .btn-primary {
             background-color: #B73033;
-            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: background-color 0.2s ease;
+            color: white;
+        }
+
+        .dt-buttons .btn-primary:hover {
+            background-color: #9c292b;
+        }
+
+        /* Filter Inputs Styling */
+        .dataTables_filter input {
+            border: 1px solid #E5E5E5;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .dataTables_filter input:focus {
+            border-color: #B73033;
+            box-shadow: 0 0 0 3px rgba(183, 48, 51, 0.1);
+        }
+
+        /* Filter Container Styling */
+        .filter-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .filter-container label {
+            font-weight: 500;
+            color: #333;
+            margin-right: 8px;
+        }
+
+        .filter-container select {
+            border: 1px solid #E5E5E5;
+            border-radius: 6px;
+            padding: 8px 32px 8px 12px;
+            font-size: 14px;
+            margin-right: 20px;
+            color: #333;
+            background: white;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 16px;
+            appearance: none;
+            cursor: pointer;
+            outline: none;
+            min-width: 160px;
+        }
+
+        .filter-container select:focus {
+            border-color: #B73033;
+            box-shadow: 0 0 0 3px rgba(183, 48, 51, 0.1);
+        }
+
+        /* Status Column Badge Styling */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-block;
+            text-transform: capitalize;
         }
 
         .btn-approve {
@@ -647,9 +742,19 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             color: white;
         }
 
+        .status-pending {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+
         .btn-failed {
             background-color: #B73033 !important;
             color: white;
+        }
+
+        .status-cancelled {
+            background-color: #ffebee;
+            color: #c62828;
         }
     </style>
 </head>
@@ -900,10 +1005,6 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <button class="assessment-button-done">APPROVED</button>
-                                </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -1025,11 +1126,65 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 ))].sort();
 
                 const filterContainer = document.createElement('div');
-                filterContainer.className = 'mb-4 text-right';
+                filterContainer.style.cssText = `
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 1rem;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1000;
+    `;
+
+                // Create label for the select
+                const label = document.createElement('label');
+                label.htmlFor = 'yearFilter';
+                label.textContent = 'Filter by Year:';
+                label.style.cssText = `
+        margin-right: 0.5rem;
+        font-weight: 500;
+        color: #4b5563;
+    `;
 
                 const select = document.createElement('select');
-                select.className = 'p-2 border rounded-md';
                 select.id = 'yearFilter';
+                select.style.cssText = `
+        padding: 0.5rem 2rem 0.5rem 0.75rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        background-color: white;
+        cursor: pointer;
+        font-size: 0.875rem;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1rem;
+        min-width: 120px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: all 0.15s ease;
+    `;
+
+                // Hover effect
+                select.onmouseover = () => {
+                    select.style.borderColor = '#9ca3af';
+                };
+                select.onmouseout = () => {
+                    select.style.borderColor = '#e5e7eb';
+                };
+
+                // Focus effect
+                select.onfocus = () => {
+                    select.style.outline = 'none';
+                    select.style.ringColor = '#3b82f6';
+                    select.style.borderColor = '#3b82f6';
+                    select.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                };
+                select.onblur = () => {
+                    select.style.borderColor = '#e5e7eb';
+                    select.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                };
 
                 // Add "All Years" option
                 const allOption = document.createElement('option');
@@ -1045,8 +1200,12 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                     select.appendChild(option);
                 });
 
+                filterContainer.appendChild(label);
                 filterContainer.appendChild(select);
-                document.getElementById(containerId).appendChild(filterContainer);
+
+                const container = document.getElementById(containerId);
+                container.style.position = 'relative';
+                container.appendChild(filterContainer);
 
                 return select;
             }
@@ -1164,7 +1323,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                     label: function(context) {
                                         const point = context.raw;
                                         let status = point.status.charAt(0).toUpperCase() + point.status.slice(1);
-                                        if(status == 'Finished'){
+                                        if (status == 'Finished') {
                                             status = 'Approved';
                                         }
                                         return [

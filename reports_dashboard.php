@@ -162,7 +162,6 @@ $conn->close();
     <link rel="stylesheet" href="css/sidebar_updated.css">
     <link rel="stylesheet" type="text/css" href="reports_dashboard_styles.css">
     <link href="css/pagestyle.css" rel="stylesheet">
-    <link rel="stylesheet" href="index.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"></script>
@@ -419,7 +418,7 @@ $conn->close();
                 <div class="chart-wrapper-right">
                     <div class="chart-wrapper-pie-chart">
                         <!-- Changed the ID from programPieChart to programBarChart -->
-                        <canvas id="programBarChart" height="200" style="margin:0"></canvas>
+                        <canvas id="programPieChart"></canvas>
                     </div>
                     <div class="recent-programs-container">
                         <h3>Recent Program Levels</h3>
@@ -439,7 +438,7 @@ $conn->close();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         async function fetchCollegeData(programLevel, year) {
             const response = await fetch(`fetch_college_data_report.php?programLevel=${programLevel}&year=${year}`);
@@ -559,7 +558,7 @@ $conn->close();
                     }))
                 },
                 options: {
-                    indexAxis: 'y', // Makes bars horizontal
+                    indexAxis: 'x', // Makes bars horizontal
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
@@ -610,7 +609,7 @@ $conn->close();
                             right: 20,
                             bottom: 20,
                             left: 20
-                        }
+                        },
                     }
                 }
             });
@@ -627,20 +626,19 @@ $conn->close();
             const programCounts = data.map(item => item.program_count);
             const collegeCounts = data.map(item => item.college_count);
 
-            programBarChart.data.labels = labels;
-            programBarChart.data.datasets[0].data = programCounts;
-            programBarChart.data.collegeCounts = collegeCounts; // Store college counts for tooltip
+            programPieChart.data.labels = labels;
+            programPieChart.data.datasets[0].data = programCounts;
+            programPieChart.data.collegeCounts = collegeCounts; // Store college counts for tooltip
 
-            programBarChart.update();
+            programPieChart.update();
         }
 
-        const ctxBar2 = document.getElementById('programBarChart').getContext('2d');
-        const programBarChart = new Chart(ctxBar2, {
-            type: 'bar',
+        const ctxPie = document.getElementById('programPieChart').getContext('2d');
+        const programPieChart = new Chart(ctxPie, {
+            type: 'pie',
             data: {
                 labels: [], // The labels for the campuses will be set dynamically
                 datasets: [{
-                    label: 'Number of Programs',
                     data: [],
                     backgroundColor: [
                         '#FFD160',
@@ -652,44 +650,104 @@ $conn->close();
                         '#7B68EE',
                         '#32CD32'
                     ],
-                    borderWidth: 1
+                    borderColor: 'white',
+                    borderWidth: 2,
+                    hoverBorderColor: 'white',
+                    hoverBorderWidth: 3,
+                    hoverOffset: 10
                 }]
             },
             options: {
                 responsive: true,
+                layout: {
+                    padding: {
+                        top: 20,
+                        bottom: 20,
+                        left: 40,
+                        right: 20
+                    }
+                },
                 plugins: {
+                    title: {
+                        display: true,
+                        text: 'Program Distribution by Campus',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 10
+                        }
+                    },
                     legend: {
-                        display: false // Hide legend since we only have one dataset
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            padding: 10,
+                            font: {
+                                size: 11
+                            },
+                            generateLabels: function(chart) {
+                                const datasets = chart.data.datasets;
+                                const labels = chart.data.labels;
+                                if (datasets.length) {
+                                    return labels.map((label, i) => ({
+                                        text: label,
+                                        fillStyle: datasets[0].backgroundColor[i],
+                                        strokeStyle: datasets[0].backgroundColor[i],
+                                        lineWidth: 0,
+                                        hidden: isNaN(datasets[0].data[i]),
+                                        index: i
+                                    }));
+                                }
+                                return [];
+                            }
+                        }
                     },
                     tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        titleColor: '#333',
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyColor: '#333',
+                        bodyFont: {
+                            size: 13
+                        },
+                        borderColor: '#ddd',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 8,
                         callbacks: {
                             label: function(context) {
-                                const label = context.dataset.label || '';
+                                const label = context.label || '';
                                 const value = context.raw || 0;
                                 const collegeCount = context.chart.data.collegeCounts[context.dataIndex];
-                                return `${collegeCount} colleges | ${value} programs`;
+                                const percentage = ((value / context.dataset.data.reduce((a, b) => a + b)) * 100).toFixed(1);
+                                return [
+                                    `Colleges: ${collegeCount}`,
+                                    `Programs: ${value}`
+                                ];
                             }
                         }
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: false,
-                            text: 'Number of Programs'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: false,
-                            text: 'Campus'
-                        }
-                    }
+                animation: {
+                    animateScale: true,
+                    animateRotate: true,
+                    duration: 1000
                 }
             }
         });
 
+        // Optional: Add a gradient background to the chart container
+        const chartContainer = document.getElementById('programPieChart').parentElement;
+        chartContainer.style.borderRadius = '12px';
+        chartContainer.style.padding = '10px';
+        chartContainer.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+        chartContainer.style.marginBottom = '0px !important';
 
         $(document).ready(function() {
             const table = $('#programScheduleTable').DataTable({

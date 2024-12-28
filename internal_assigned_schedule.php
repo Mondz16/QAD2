@@ -40,7 +40,7 @@ $year_query = "SELECT DISTINCT YEAR(schedule_date) as year FROM schedule";
 $year_result = $conn->query($year_query);
 
 // Fetch distinct statuses for the status dropdown
-$status_options = ['pending', 'cancelled', 'finished'];
+$status_options = ['pending', 'cancelled', 'finished', 'passed', 'failed'];
 
 // Fetch notifications for the logged-in user
 $sql_notifications = "
@@ -95,65 +95,148 @@ $stmt_assessment_count->close();
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.5/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
     <style>
-        .edit-icon {
-            display: inline-block;
-            margin-left: 10px;
-            cursor: pointer;
-        }
-
-        .edit-icon i {
-            font-size: 14px;
-            color: #000;
-        }
-
-        .report-box {
+        /* Modern DataTable Styling */
+        .dataTables_wrapper {
+            background: white;
             padding: 20px;
-            border: 1px solid #ddd;
-            margin-top: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
 
-        .report-box h3 {
-            margin-bottom: 10px;
+        /* Table Header Styling */
+        table.dataTable thead th {
+            background-color: #B73033 !important;
+            color: white !important;
+            font-weight: 600;
+            padding: 16px;
+            border: 1px solid #E5E5E5;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .report-box p {
-            font-size: 18px;
-            font-weight: bold;
+        /* Table Body Styling */
+        table.dataTable tbody td {
+            padding: 16px;
+            border: 1px solid #E5E5E5;
+            color: #333;
+            font-size: 14px;
+            vertical-align: middle;
         }
 
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-            margin-top: 10px;
+        /* Stripe Effect */
+        table.dataTable tbody tr:nth-child(even) {
+            background-color: #fafafa;
         }
 
-        table th,
-        table td {
-            padding: 10px;
-            text-align: left;
-            border: solid #E5E5E5 1px;
+        table.dataTable tbody tr:hover {
+            background-color: #f5f5f5;
+            transition: background-color 0.2s ease;
         }
 
-        table thead th {
+        /* Export Button Styling */
+        .dt-buttons .btn-primary {
             background-color: #B73033;
-            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: background-color 0.2s ease;
+            color: white;
         }
 
+        .dt-buttons .btn-primary:hover {
+            background-color: #9c292b;
+        }
+
+        /* Filter Inputs Styling */
+        .dataTables_filter input {
+            border: 1px solid #E5E5E5;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .dataTables_filter input:focus {
+            border-color: #B73033;
+            box-shadow: 0 0 0 3px rgba(183, 48, 51, 0.1);
+        }
+
+        /* Filter Container Styling */
         .filter-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
             margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .filter-container label {
+            font-weight: 500;
+            color: #333;
+            margin-right: 8px;
         }
 
         .filter-container select {
-            padding: 5px;
-            margin-right: 10px;
+            border: 1px solid #E5E5E5;
+            border-radius: 6px;
+            padding: 8px 32px 8px 12px;
+            font-size: 14px;
+            margin-right: 20px;
+            color: #333;
+            background: white;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 16px;
+            appearance: none;
+            cursor: pointer;
+            outline: none;
+            min-width: 160px;
         }
 
-        .filter-container button {
-            padding: 5px 10px;
+        .filter-container select:focus {
+            border-color: #B73033;
+            box-shadow: 0 0 0 3px rgba(183, 48, 51, 0.1);
         }
-        .notification-counter {
-    color: #E6A33E; /* Text color */
+
+        /* Status Column Badge Styling */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-block;
+            text-transform: capitalize;
+        }
+
+        .status-approved {
+            background-color: rgb(209, 209, 209);
+            color:rgb(255, 255, 255);
+        }
+
+        .status-passed {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-pending {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .status-failed {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .status-cancelled {
+            background-color: #ffebee;
+            color: #c62828;
         }
     </style>
 </head>
@@ -237,9 +320,9 @@ $stmt_assessment_count->close();
                         <span style="margin-left: 8px;">Assessment</span>
                         <?php if ($assessment_count > 0): ?>
                             <span class="notification-counter">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                    <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                </svg>
                             </span>
                         <?php endif; ?>
                     </a>
@@ -247,8 +330,8 @@ $stmt_assessment_count->close();
                         <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                             <span style="margin-left: 8px;">View Assessments</span>
                             <?php if ($assessment_count > 0): ?>
-                            <span class="notification-counter"><?php echo $assessment_count; ?></span>
-                        <?php endif; ?>
+                                <span class="notification-counter"><?php echo $assessment_count; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">UDAS Assessments</span>
@@ -291,9 +374,9 @@ $stmt_assessment_count->close();
                         <span style="margin-left: 8px;">Account</span>
                         <?php if ($notification_count > 0): ?>
                             <span class="notification-counter">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                    <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                </svg>
                             </span>
                         <?php endif; ?>
                     </a>
@@ -305,8 +388,8 @@ $stmt_assessment_count->close();
                         <a href="<?php echo $is_admin === false ? 'internal_notification.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Notifications</span>
                             <?php if ($notification_count > 0): ?>
-                            <span class="notification-counter"><?php echo $notification_count; ?></span>
-                        <?php endif; ?>
+                                <span class="notification-counter"><?php echo $notification_count; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="logout.php" class="sidebar-link">
                             <span style="margin-left: 8px;">Logout</span>
@@ -361,68 +444,74 @@ $stmt_assessment_count->close();
     </div>
 
     <script>
-        $(document).ready(function() {
-            const table = $('#scheduleTable').DataTable({
-                dom: 'Bfrtip',
-                buttons: [{
-                    extend: 'pdfHtml5',
-                    text: 'Export to PDF',
-                    className: 'btn btn-primary',
-                    title: 'Schedule Report',
-                    filename: function() {
-                        // Generate a dynamic filename with the current date and time
-                        const now = new Date();
-                        const formattedDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
-                        const formattedTime = now
-                            .toLocaleTimeString('en-US', {
-                                hour12: false
-                            })
-                            .replace(/:/g, '-'); // HH-MM-SS
-                        return `Schedule_Report_${formattedDate}_${formattedTime}`;
-                    },
-                    exportOptions: {
-                        columns: ':visible',
-                        modifier: {
-                            search: 'applied',
-                            order: 'applied'
-                        }
-                    },
-                    customize: function(doc) {
-                        doc.styles.tableHeader.fillColor = '#B73033';
-                        doc.styles.tableHeader.color = 'white';
-                    }
-                }],
-                serverSide: true,
-                ajax: {
-                    url: 'fetch_schedules.php',
-                    type: 'POST',
-                    data: function(d) {
-                        d.college = $('#college').val();
-                        d.year = $('#year').val();
-                        d.status = $('#status').val();
+        const table = $('#scheduleTable').DataTable({
+            dom: 'Bfrtip',
+            buttons: [{
+                extend: 'pdfHtml5',
+                text: 'Export to PDF',
+                className: 'btn btn-primary',
+                title: 'Schedule Report',
+                filename: function() {
+                    // Generate a dynamic filename with the current date and time
+                    const now = new Date();
+                    const formattedDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+                    const formattedTime = now
+                        .toLocaleTimeString('en-US', {
+                            hour12: false
+                        })
+                        .replace(/:/g, '-'); // HH-MM-SS
+                    return `Schedule_Report_${formattedDate}_${formattedTime}`;
+                },
+                exportOptions: {
+                    columns: ':visible',
+                    modifier: {
+                        search: 'applied',
+                        order: 'applied'
                     }
                 },
-                columns: [{
-                        data: 'schedule_date'
-                    },
-                    {
-                        data: 'schedule_time'
-                    },
-                    {
-                        data: 'college_name'
-                    },
-                    {
-                        data: 'program_name'
-                    },
-                    {
-                        data: 'schedule_status'
+                customize: function(doc) {
+                    doc.styles.tableHeader.fillColor = '#B73033';
+                    doc.styles.tableHeader.color = 'white';
+                }
+            }],
+            serverSide: true,
+            ajax: {
+                url: 'fetch_schedules.php',
+                type: 'POST',
+                data: function(d) {
+                    d.college = $('#college').val();
+                    d.year = $('#year').val();
+                    d.status = $('#status').val();
+                }
+            },
+            columns: [{
+                    data: 'schedule_date'
+                },
+                {
+                    data: 'schedule_time'
+                },
+                {
+                    data: 'college_name'
+                },
+                {
+                    data: 'program_name'
+                },
+                {
+                    data: 'schedule_status',
+                    render: function(data, type, row) {
+                        if (type === 'display') {
+                            const status = data === 'finished' ? 'approved' : data;
+                            const statusClass = `status-${status}`;
+                            return `<span class="status-badge ${statusClass}">${status}</span>`;
+                        }
+                        return data;
                     }
-                ]
-            });
+                }
+            ]
+        });
 
-            $('#college, #year, #status').change(function() {
-                table.draw();
-            });
+        $('#college, #year, #status').change(function() {
+            table.draw();
         });
     </script>
 </body>

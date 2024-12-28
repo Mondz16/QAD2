@@ -145,7 +145,8 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             width: 40px;
             height: 40px;
             border-width: 5px;
-            border-color: #B73033 !important; /* Enforce the custom color */
+            border-color: #B73033 !important;
+            /* Enforce the custom color */
             border-right-color: transparent !important;
         }
 
@@ -169,6 +170,15 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
         .scrollable-container {
             max-height: 650px;
             overflow-y: auto;
+        }
+
+        .modal-content {
+            top: 30%;
+            width: 80%;
+            max-width: 1000px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f9f9f9;
         }
     </style>
 </head>
@@ -213,7 +223,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 </div>
             </div>
             <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
-            
+
             <nav id="sidebar">
                 <ul class="sidebar-nav">
                     <li class="sidebar-item has-dropdown">
@@ -221,10 +231,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Schedule</span>
                             <?php if ($totalPendingSchedules > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -263,10 +273,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Assessment</span>
                             <?php if ($assessmentCount > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -289,10 +299,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Administrative</span>
                             <?php if ($totalPendingUsers > 0 || $transferRequestCount > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -303,7 +313,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                 <span style="margin-left: 8px;">Register Verification</span>
                                 <?php if ($totalPendingUsers > 0): ?>
                                     <span class="notification-counter"><?= $totalPendingUsers; ?></span>
-                                <?php endif; ?>                            </a>
+                                <?php endif; ?> </a>
                             <a href="<?php echo $is_admin ? 'college_transfer.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">College Transfer</span>
                                 <?php if ($transferRequestCount > 0): ?>
@@ -321,7 +331,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin === false ? 'internal_assigned_schedule.php' : 'reports_program_schedule.php'; ?>" class="sidebar-link">
-                            <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
+                                <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
                             <a href="reports_dashboard.php" class="sidebar-link">
                                 <span style="margin-left: 8px;">View Programs</span></a>
                             <a href="program_timeline.php" class="sidebar-link">
@@ -425,51 +435,51 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
         </div>
 
         <div id="standardModal" class="modal">
-    <div class="modal-content">
-        <div class="existing-standards">
-            <h3>ACCREDITATION STANDARDS</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Level</th>
-                        <th>Standard</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="standards-table-body">
-                    <?php
-                    // Include database connection
-                    include 'connection.php';
+            <div class="modal-content">
+                <div class="existing-standards">
+                    <h3>ACCREDITATION STANDARDS</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Level</th>
+                                <th>Standard</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="standards-table-body">
+                            <?php
+                            // Include database connection
+                            include 'connection.php';
 
-                    // Fetch data from the accreditation_standard table
-                    $sql = "SELECT id, Level, Standard FROM accreditation_standard";
-                    $result = $conn->query($sql);
+                            // Fetch data from the accreditation_standard table
+                            $sql = "SELECT id, Level, Standard FROM accreditation_standard";
+                            $result = $conn->query($sql);
 
-                    if ($result->num_rows > 0) {
-                        // Output data for each row
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<tr data-id='{$row['id']}'>
+                            if ($result->num_rows > 0) {
+                                // Output data for each row
+                                while ($row = $result->fetch_assoc()) {
+                                    echo "<tr data-id='{$row['id']}'>
                                     <td class='level-value'>" . htmlspecialchars($row['Level']) . "</td>
                                     <td class='standard-value'>" . htmlspecialchars($row['Standard']) . "</td>
                                     <td class='action-buttons'>
                                         <button class='edit-btn' onclick='makeEditable(this)'>Edit</button>
                                     </td>
                                 </tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='3'>No standards available</td></tr>";
-                    }
+                                }
+                            } else {
+                                echo "<tr><td colspan='3'>No standards available</td></tr>";
+                            }
 
-                    $conn->close();
-                    ?>
-                </tbody>
-            </table>
-            <div class="add-new-standard">
-                <button id="add-btn" onclick="addNewStandard()">Add</button>
+                            $conn->close();
+                            ?>
+                        </tbody>
+                    </table>
+                    <div class="add-new-standard">
+                        <button id="add-btn" onclick="addNewStandard()">Add</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
         <div id="importModal" class="modal">
             <div class="import-modal-content">
@@ -509,11 +519,11 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             });
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const importForm = document.querySelector('#importModal form');
             const loadingSpinner = document.getElementById('loadingSpinner');
 
-            importForm.addEventListener('submit', function () {
+            importForm.addEventListener('submit', function() {
                 // Show the loading spinner
                 loadingSpinner.classList.remove('spinner-hidden');
             });
@@ -568,7 +578,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
         function fetchParameters(area_code) {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "fetch_parameters.php?area_code=" + area_code, true);
-            xhr.onreadystatechange = function () {
+            xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     var parameters = JSON.parse(xhr.responseText);
                     var parametersBody = document.getElementById("parametersBody");
@@ -606,16 +616,16 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
         }
 
         function makeEditable(button) {
-    const row = button.closest('tr');
-    const levelCell = row.querySelector('.level-value');
-    const standardCell = row.querySelector('.standard-value');
-    const actionCell = row.querySelector('.action-buttons');
+            const row = button.closest('tr');
+            const levelCell = row.querySelector('.level-value');
+            const standardCell = row.querySelector('.standard-value');
+            const actionCell = row.querySelector('.action-buttons');
 
-    const levelValue = levelCell.textContent.trim();
-    const standardValue = standardCell.textContent.trim();
+            const levelValue = levelCell.textContent.trim();
+            const standardValue = standardCell.textContent.trim();
 
-    levelCell.innerHTML = `<input type="text" value="${levelValue}" />`;
-    standardCell.innerHTML = `
+            levelCell.innerHTML = `<input type="text" value="${levelValue}" />`;
+            standardCell.innerHTML = `
         <input 
             type="number" 
             step="0.05" 
@@ -629,78 +639,84 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
         </datalist>
     `;
 
-    actionCell.innerHTML = `
+            actionCell.innerHTML = `
         <button class='save-btn' onclick='saveChanges(this)'>Save</button>
         <button class='cancel-btn' onclick='cancelChanges(this, "${levelValue}", "${standardValue}")'>Cancel</button>
     `;
-}
+        }
 
-function generateDropdownOptions() {
-    let options = "";
-    for (let i = 1.00; i <= 5.00; i += 0.05) {
-        const value = i.toFixed(2);
-        options += `<option value="${value}"></option>`;
-    }
-    return options;
-}
+        function generateDropdownOptions() {
+            let options = "";
+            for (let i = 1.00; i <= 5.00; i += 0.05) {
+                const value = i.toFixed(2);
+                options += `<option value="${value}"></option>`;
+            }
+            return options;
+        }
 
-function validateInputValue(input) {
-    const value = parseFloat(input.value);
-    if (value < 1.00 || value > 5.00 || isNaN(value)) {
-        input.setCustomValidity("Please enter a value between 1.00 and 5.00.");
-    } else {
-        input.setCustomValidity("");
-    }
-}
+        function validateInputValue(input) {
+            const value = parseFloat(input.value);
+            if (value < 1.00 || value > 5.00 || isNaN(value)) {
+                input.setCustomValidity("Please enter a value between 1.00 and 5.00.");
+            } else {
+                input.setCustomValidity("");
+            }
+        }
 
-function saveChanges(button) {
-    const row = button.closest('tr');
-    const id = row.getAttribute('data-id');
-    const levelCell = row.querySelector('.level-value');
-    const standardCell = row.querySelector('.standard-value');
-    const actionCell = row.querySelector('.action-buttons');
+        function saveChanges(button) {
+            const row = button.closest('tr');
+            const id = row.getAttribute('data-id');
+            const levelCell = row.querySelector('.level-value');
+            const standardCell = row.querySelector('.standard-value');
+            const actionCell = row.querySelector('.action-buttons');
 
-    const newLevel = levelCell.querySelector("input").value.trim();
-    const newStandard = parseFloat(standardCell.querySelector("input").value).toFixed(2);
+            const newLevel = levelCell.querySelector("input").value.trim();
+            const newStandard = parseFloat(standardCell.querySelector("input").value).toFixed(2);
 
-    fetch('update_standard.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, level: newLevel, standard: newStandard })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            levelCell.textContent = newLevel;
-            standardCell.textContent = newStandard;
+            fetch('update_standard.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id,
+                        level: newLevel,
+                        standard: newStandard
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        levelCell.textContent = newLevel;
+                        standardCell.textContent = newStandard;
+
+                        actionCell.innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
+                    } else {
+                        alert('Failed to update standard.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function cancelChanges(button, originalLevel, originalStandard) {
+            const row = button.closest('tr');
+            const levelCell = row.querySelector('.level-value');
+            const standardCell = row.querySelector('.standard-value');
+            const actionCell = row.querySelector('.action-buttons');
+
+            levelCell.textContent = originalLevel;
+            standardCell.textContent = originalStandard;
 
             actionCell.innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
-        } else {
-            alert('Failed to update standard.');
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-}
 
-function cancelChanges(button, originalLevel, originalStandard) {
-    const row = button.closest('tr');
-    const levelCell = row.querySelector('.level-value');
-    const standardCell = row.querySelector('.standard-value');
-    const actionCell = row.querySelector('.action-buttons');
+        function addNewStandard() {
+            const tableBody = document.getElementById('standards-table-body');
 
-    levelCell.textContent = originalLevel;
-    standardCell.textContent = originalStandard;
-
-    actionCell.innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
-}
-
-function addNewStandard() {
-    const tableBody = document.getElementById('standards-table-body');
-
-    const newRow = document.createElement('tr');
-    newRow.innerHTML = `
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
         <td class='level-value'><input type="text" placeholder="Enter Level" /></td>
         <td class='standard-value'>
             <input 
@@ -721,58 +737,64 @@ function addNewStandard() {
         </td>
     `;
 
-    tableBody.appendChild(newRow);
+            tableBody.appendChild(newRow);
 
-    const addBtn = document.getElementById('add-btn');
-    addBtn.parentElement.appendChild(addBtn); // Move the add button below the new row
-}
+            const addBtn = document.getElementById('add-btn');
+            addBtn.parentElement.appendChild(addBtn); // Move the add button below the new row
+        }
 
-function saveNewStandard(button) {
-    const row = button.closest('tr');
-    const levelInput = row.querySelector('.level-value input');
-    const standardInput = row.querySelector('.standard-value input');
+        function saveNewStandard(button) {
+            const row = button.closest('tr');
+            const levelInput = row.querySelector('.level-value input');
+            const standardInput = row.querySelector('.standard-value input');
 
-    const newLevel = levelInput.value.trim();
-    const newStandard = parseFloat(standardInput.value).toFixed(2);
+            const newLevel = levelInput.value.trim();
+            const newStandard = parseFloat(standardInput.value).toFixed(2);
 
-    if (!newLevel || isNaN(newStandard)) {
-        alert('Please fill out both fields correctly.');
-        return;
-    }
+            if (!newLevel || isNaN(newStandard)) {
+                alert('Please fill out both fields correctly.');
+                return;
+            }
 
-    fetch('add_standard.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level: newLevel, standard: newStandard })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            row.setAttribute('data-id', data.id);
-            row.querySelector('.level-value').textContent = newLevel;
-            row.querySelector('.standard-value').textContent = newStandard;
+            fetch('add_standard.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        level: newLevel,
+                        standard: newStandard
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        row.setAttribute('data-id', data.id);
+                        row.querySelector('.level-value').textContent = newLevel;
+                        row.querySelector('.standard-value').textContent = newStandard;
 
-            row.querySelector('.action-buttons').innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
+                        row.querySelector('.action-buttons').innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
+
+                        const addBtn = document.getElementById('add-btn');
+                        addBtn.parentElement.appendChild(addBtn);
+                    } else {
+                        alert('Failed to add standard.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function cancelNewStandard(button) {
+            const row = button.closest('tr');
+            row.remove();
 
             const addBtn = document.getElementById('add-btn');
             addBtn.parentElement.appendChild(addBtn);
-        } else {
-            alert('Failed to add standard.');
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-}
-
-function cancelNewStandard(button) {
-    const row = button.closest('tr');
-    row.remove();
-
-    const addBtn = document.getElementById('add-btn');
-    addBtn.parentElement.appendChild(addBtn);
-}
     </script>
 
 </body>
+
 </html>
