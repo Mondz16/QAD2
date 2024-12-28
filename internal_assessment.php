@@ -682,8 +682,16 @@ function intToRoman($num)
                             }
                         }
                         ?>
-                        <div class="notification-list1" id="assessment-<?php echo $schedule['schedule_id']; ?>">
-                            <div class="orientation3">
+<div id="assessment-<?php echo $schedule['schedule_id']; ?>" 
+class="notification-list1" 
+     data-max-areas="<?php echo $maxAreas; ?>"
+     data-areas='<?php 
+        $areasArray = array_map(function($id, $name) {
+            return ['id' => $id, 'name' => $name];
+        }, array_keys($areas), array_values($areas));
+        echo htmlspecialchars(json_encode($areasArray), ENT_QUOTES, 'UTF-8'); 
+     ?>'>
+                                 <div class="orientation3">
                                 <div class="container">
                                     <div class="body4">
                                         <div class="bodyLeft2">
@@ -851,16 +859,19 @@ function intToRoman($num)
                                                                 // Display Team Leader
                                                                 if ($team_leader): ?>
                                                                     <div class="add-area" id="team-leader-area-<?php echo $schedule['schedule_id']; ?>" style="display: flex; flex-direction: column; margin-bottom: 10px;">
-                                                                        <label><?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)
+                                                                        <label>
+                                                                            <?php echo htmlspecialchars($team_leader['name']); ?> (<?php echo htmlspecialchars($team_leader['role']); ?>)
                                                                             <?php if ($team_leader['status'] === 'accepted'): ?>
-                                                                                <button type="button" onclick="addAreaDropdown('<?php echo $schedule['schedule_id']; ?>', 'team-leader-area-<?php echo $schedule['schedule_id']; ?>', '<?php echo $team_leader['team_member_id']; ?>')" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
+                                                                                <button type="button" onclick="addAreaDropdown('<?php echo $schedule['schedule_id']; ?>', 'team-leader-area-<?php echo $schedule['schedule_id']; ?>', '<?php echo $team_leader['team_member_id']; ?>', true)" style="border: none; background: none; cursor: pointer; padding-left: 8px;">
                                                                                     <i class="fa-solid fa-circle-plus" style="color: green; font-size: 25px;"></i> Assign Area
                                                                                 </button>
+                                                                            <?php else: ?>
+                                                                                <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
+                                                                            <?php endif; ?>
                                                                         </label>
-                                                                    <?php else: ?>
-                                                                        <p style="color: red; margin-top: 5px;">This member has yet to accept the schedule.</p>
-                                                                    <?php endif; ?>
                                                                     </div>
+                                                                <?php else: ?>
+                                                                    <p style="color: red;">No team leader assigned for this schedule.</p>
                                                                 <?php endif; ?>
 
                                                                 <!-- Other members -->
@@ -1732,156 +1743,175 @@ function intToRoman($num)
                 <?php endforeach; ?>
             });
 
-            var assessmentsData = {}; // To store data for each assessment
+            var schedulesData = {};
 
-            // Initialize totalSelectedAreas based on existing dropdowns (team members only) for each assessment
-            document.addEventListener('DOMContentLoaded', function() {
-                // Initialize assessments data
-                document.querySelectorAll('.notification-list1').forEach(function(assessmentDiv) {
-                    var scheduleId = assessmentDiv.id.replace('assessment-', ''); // Get the schedule_id
-                    assessmentsData[scheduleId] = {
-                        totalSelectedAreas: document.querySelectorAll(`#assessment-${scheduleId} .area-select`).length,
-                        maxAreas: <?php echo $maxAreas; ?>, // Ensure this value is dynamically adjusted per schedule if needed
-                        selectedAreas: [] // To track the areas already selected for this assessment
-                    };
-                });
+function intToRoman(num) {
+    const romanNumerals = [
+        ['M', 1000], ['CM', 900], ['D', 500], ['CD', 400],
+        ['C', 100], ['XC', 90], ['L', 50], ['XL', 40],
+        ['X', 10], ['IX', 9], ['V', 5], ['IV', 4], ['I', 1]
+    ];
+    let roman = '';
+    for (let [letter, value] of romanNumerals) {
+        while (num >= value) {
+            roman += letter;
+            num -= value;
+        }
+    }
+    return roman;
+}
 
-                // Initialize areas to be disabled for each assessment based on current selections
-                document.querySelectorAll('.area-select').forEach(function(select) {
-                    var selectedValue = select.value;
-                    var scheduleId = select.closest('.notification-list1').id.replace('assessment-', '');
-                    if (selectedValue) {
-                        assessmentsData[scheduleId].selectedAreas.push(selectedValue);
-                    }
-                });
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.notification-list1').forEach(function (assessmentDiv) {
+        const scheduleId = assessmentDiv.id.replace('assessment-', '');
+        
+        try {
+            // Parse the areas data from the data attribute
+            const areasData = JSON.parse(assessmentDiv.dataset.areas || '[]');
+            const maxAreas = parseInt(assessmentDiv.dataset.maxAreas, 10) || 0;
+
+            schedulesData[scheduleId] = {
+                totalSelectedAreas: document.querySelectorAll(`#assessment-${scheduleId} .area-select`).length,
+                maxAreas: maxAreas,
+                selectedAreas: [],
+                availableAreas: areasData
+            };
+
+            // Track initial selections
+            document.querySelectorAll(`#assessment-${scheduleId} .area-select`).forEach(function (select) {
+                const selectedValue = select.value;
+                if (selectedValue) {
+                    schedulesData[scheduleId].selectedAreas.push(selectedValue);
+                }
             });
+        } catch (error) {
+            console.error('Error initializing schedule data:', error);
+        }
+    });
+});
 
-            // Add Area Dropdown for a specific assessment
-            function addAreaDropdown(scheduleId, divId, teamMemberId) {
-                // Prevent adding more areas if the maximum limit is reached
-                if (assessmentsData[scheduleId].totalSelectedAreas >= assessmentsData[scheduleId].maxAreas) {
-                    alert("You cannot add more than " + assessmentsData[scheduleId].maxAreas + " areas.");
-                    return; // Exit if the limit is reached
-                }
+function addAreaDropdown(scheduleId, divId, teamMemberId) {
+    const scheduleData = schedulesData[scheduleId];
+    
+    if (!scheduleData) {
+        console.error('No schedule data found for ID:', scheduleId);
+        return;
+    }
 
-                var container = document.getElementById(divId);
-                var newDiv = document.createElement('div');
-                newDiv.classList.add('dropdown-container');
-                newDiv.style.display = 'flex';
-                newDiv.style.alignItems = 'center';
-                newDiv.style.marginBottom = '10px';
+    if (scheduleData.totalSelectedAreas >= scheduleData.maxAreas) {
+        alert(`You cannot add more than ${scheduleData.maxAreas} areas.`);
+        return;
+    }
 
-                var newSelect = document.createElement('select');
-                newSelect.name = `area[${teamMemberId}][]`;
-                newSelect.classList.add('area-select');
-                newSelect.required = true;
-                newSelect.onchange = function() {
-                    updateAreaOptions(scheduleId);
-                };
+    const container = document.getElementById(divId);
+    if (!container) {
+        console.error('Container not found:', divId);
+        return;
+    }
 
-                var defaultOption = document.createElement('option');
-                defaultOption.value = '';
-                defaultOption.text = 'Select Area';
-                defaultOption.disabled = true;
-                defaultOption.selected = true;
-                newSelect.appendChild(defaultOption);
+    const newDiv = document.createElement('div');
+    newDiv.classList.add('dropdown-container');
+    newDiv.style.display = 'flex';
+    newDiv.style.alignItems = 'center';
+    newDiv.style.marginBottom = '10px';
 
-                // Populate area options dynamically and disable already selected areas
-                <?php foreach ($areas as $id => $area_name): ?>
-                    var option = document.createElement('option');
-                    option.value = '<?php echo $id; ?>';
-                    option.text = 'Area <?php echo intToRoman($id); ?> - <?php echo htmlspecialchars($area_name); ?>';
+    const newSelect = document.createElement('select');
+    newSelect.name = `area[${teamMemberId}][]`;
+    newSelect.classList.add('area-select');
+    newSelect.required = true;
+    newSelect.style.flexGrow = '1';
+    newSelect.onchange = () => updateAreaOptions(scheduleId);
 
-                    // Disable already selected areas
-                    if (assessmentsData[scheduleId].selectedAreas.includes('<?php echo $id; ?>')) {
-                        option.disabled = true;
-                    }
+    // Add default option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.text = 'Select Area';
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    newSelect.appendChild(defaultOption);
 
-                    newSelect.appendChild(option);
-                <?php endforeach; ?>
+    // Add area options specific to this schedule
+    scheduleData.availableAreas.forEach(area => {
+        const option = document.createElement('option');
+        option.value = area.id;
+        option.text = `Area ${intToRoman(area.id)} - ${area.name}`;
+        option.disabled = scheduleData.selectedAreas.includes(area.id.toString());
+        newSelect.appendChild(option);
+    });
 
-                newDiv.appendChild(newSelect);
+    newDiv.appendChild(newSelect);
 
-                // Add remove button
-                var removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.style.border = 'none';
-                removeButton.style.background = 'none';
-                removeButton.style.cursor = 'pointer';
-                removeButton.style.paddingLeft = '8px';
+    // Add remove button
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.style.border = 'none';
+    removeButton.style.background = 'none';
+    removeButton.style.cursor = 'pointer';
+    removeButton.style.marginLeft = '8px';
 
-                var removeIcon = document.createElement('i');
-                removeIcon.classList.add('fa-solid', 'fa-circle-minus');
-                removeIcon.style.color = 'red';
-                removeIcon.style.fontSize = '25px';
+    const removeIcon = document.createElement('i');
+    removeIcon.classList.add('fa-solid', 'fa-circle-minus');
+    removeIcon.style.color = 'red';
+    removeIcon.style.fontSize = '25px';
 
-                removeButton.appendChild(removeIcon);
-                removeButton.onclick = function() {
-                    container.removeChild(newDiv);
-                    assessmentsData[scheduleId].totalSelectedAreas--; // Decrement total selected areas when a dropdown is removed
-                    updateAreaOptions(scheduleId); // Update options to make the removed area selectable again
-                };
+    removeButton.appendChild(removeIcon);
+    removeButton.onclick = function () {
+        container.removeChild(newDiv);
+        scheduleData.totalSelectedAreas--;
+        updateAreaOptions(scheduleId);
+    };
 
-                newDiv.appendChild(removeButton);
-                container.appendChild(newDiv);
+    newDiv.appendChild(removeButton);
+    container.appendChild(newDiv);
 
-                assessmentsData[scheduleId].totalSelectedAreas++; // Increment the total number of selected areas
-                updateAreaOptions(scheduleId);
+    scheduleData.totalSelectedAreas++;
+    updateAreaOptions(scheduleId);
+}
+
+function updateAreaOptions(scheduleId) {
+    const scheduleData = schedulesData[scheduleId];
+    if (!scheduleData) return;
+
+    const areaSelects = document.querySelectorAll(`#assessment-${scheduleId} .area-select`);
+    const submitButton = document.querySelector(`#assessment-${scheduleId} .assessment-button1`);
+
+    const validatedSelections = [];
+    let isValid = true;
+
+    areaSelects.forEach(function (select) {
+        const selectedValue = select.value.trim();
+        
+        if (!selectedValue) {
+            isValid = false;
+            return;
+        }
+
+        if (validatedSelections.includes(selectedValue)) {
+            isValid = false;
+            return;
+        }
+
+        validatedSelections.push(selectedValue);
+    });
+
+    // Update options availability for each select
+    areaSelects.forEach(function (select) {
+        Array.from(select.options).forEach(function (option) {
+            if (option.value) {
+                option.disabled = validatedSelections.includes(option.value) && option.value !== select.value;
             }
+        });
+    });
 
-            // Update area options based on selections for a specific assessment
-            function updateAreaOptions(scheduleId) {
-                var areaSelects = document.querySelectorAll(`#assessment-${scheduleId} .area-select`);
-                var submitButton = document.querySelector(`#assessment-${scheduleId} .assessment-button1`);
-
-                // Tracking variables
-                var validatedSelections = [];
-                var isValid = true;
-
-                // Collect selected values and validate uniqueness
-                areaSelects.forEach(function(select) {
-                    var selectedValue = select.value.trim();
-
-                    if (!selectedValue) {
-                        isValid = false; // No selection in a dropdown
-                        return;
-                    }
-
-                    if (validatedSelections.includes(selectedValue)) {
-                        isValid = false; // Duplicate selection
-                        return;
-                    }
-
-                    validatedSelections.push(selectedValue);
-                });
-
-                // Ensure all areas are uniquely selected
-                var isCorrectTotalSelections = validatedSelections.length === assessmentsData[scheduleId].maxAreas;
-
-                // Disable already selected options in other dropdowns
-                areaSelects.forEach(function(select) {
-                    Array.from(select.options).forEach(function(option) {
-                        option.disabled = validatedSelections.includes(option.value) && option.value !== select.value;
-                    });
-                });
-
-                // Enable or disable submit button based on validity
-                if (submitButton) {
-                    if (!isValid || !isCorrectTotalSelections) {
-                        submitButton.disabled = true;
-                        submitButton.style.opacity = '0.5';
-                        submitButton.style.cursor = 'not-allowed';
-                        submitButton.title = `Please ensure ${assessmentsData[scheduleId].maxAreas} unique areas are assigned.`;
-                    } else {
-                        submitButton.disabled = false;
-                        submitButton.style.opacity = '1';
-                        submitButton.style.cursor = 'pointer';
-                        submitButton.title = '';
-                    }
-                }
-            }
-
-
+    // Update submit button state
+    if (submitButton) {
+        const isValidSubmit = isValid && validatedSelections.length === scheduleData.maxAreas;
+        submitButton.disabled = !isValidSubmit;
+        submitButton.style.opacity = isValidSubmit ? '1' : '0.5';
+        submitButton.style.cursor = isValidSubmit ? 'pointer' : 'not-allowed';
+        submitButton.title = isValidSubmit ? '' : `Please ensure ${scheduleData.maxAreas} unique areas are assigned.`;
+    }
+}
             document.getElementById('agreeTermsCheckbox').addEventListener('change', function() {
                 var acceptButton = document.getElementById('acceptTerms');
                 if (this.checked) {
