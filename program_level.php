@@ -550,9 +550,16 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
 
             programForm.innerHTML = `
         <div class="edit-form">
-            <div class="form-group">
-                <label>Program Level:</label>
-                <input type="text" class="form-control" name="new-program_level" required>
+                <div class="form-group">
+                    <label>Program Level:</label>
+                    <select class="form-control" name="new-program_level" required>
+                        <option value="">Select Program Level</option>
+                        <option value="PSV">PSV</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
             </div>
             <div class="form-group">
                 <label>Date Received:</label>
