@@ -284,7 +284,7 @@ $result = $stmt->get_result();
                                 if ($updateDoneStmt->execute()) {
                                     // Log successful update
                                     if ($updateDoneStmt->affected_rows > 0) {
-                                        echo "Schedule ID " . $row['id'] . " marked as 'done' automatically.<br>";
+                                        echo "";
                                     } else {
                                         echo "No changes made for schedule ID: " . $row['id'] . ".<br>";
                                     }
@@ -325,7 +325,7 @@ $result = $stmt->get_result();
                                     $updateStmt->bind_param("i", $row['id']);
                                     if ($updateStmt->execute()) {
                                         if ($updateStmt->affected_rows > 0) {
-                                            echo "Schedule ID " . $row['id'] . " unlock period expired and marked as done.<br>";
+                                            echo "";
                                         } else {
                                             echo "No changes made for schedule ID: " . $row['id'] . ".<br>";
                                         }

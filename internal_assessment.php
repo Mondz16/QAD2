@@ -798,7 +798,7 @@ class="notification-list1"
                                                 <?php elseif ($schedule['schedule_status'] == 'pending'): ?>
                                                     <p>SCHEDULE STATUS</p>
                                                     <div style="height: 10px;"></div>
-                                                    <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE APPROVED</button>
+                                                    <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE CONFIRMED</button>
                                                 <?php elseif ($schedule['schedule_status'] == 'approved'): ?>
                                                     <!-- Existing code for NDA and further steps -->
                                                     <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
@@ -1157,7 +1157,7 @@ class="notification-list1"
                                             </a>
                                         <?php else: ?>
                                             <a class="approve" style="border: 1px solid grey; color: grey;">
-                                                Download Approved Assessment
+                                                <i class="bi bi-cloud-arrow-down" style="font-size: 20px"></i> Download Approved Assessment
                                             </a>
                                         <?php endif; ?>
                                     </div>
@@ -1936,5 +1936,4 @@ function updateAreaOptions(scheduleId) {
             });
         </script>
 </body>
-
 </html>
