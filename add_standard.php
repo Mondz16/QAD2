@@ -9,7 +9,7 @@ include 'connection.php';
 $data = json_decode(file_get_contents('php://input'), true);
 
 // Extract level and standard values
-$level = isset($data['level']) ? $data['level'] : '';
+$level = isset($data['level']) ? trim($data['level']) : '';
 $standard = isset($data['standard']) ? $data['standard'] : '';
 
 // Validation: Ensure both level and standard are provided and valid
@@ -18,30 +18,67 @@ if (empty($level) || empty($standard) || !is_numeric($standard) || $standard < 1
     exit;
 }
 
-// Prepare the SQL statement to insert a new record
-$sql = "INSERT INTO accreditation_standard (Level, Standard) VALUES (?, ?)";
+// Check for existing level first
+$checkSql = "SELECT COUNT(*) as count FROM accreditation_standard WHERE Level = ?";
+$checkStmt = $conn->prepare($checkSql);
 
-try {
-    // Prepare the statement using mysqli
-    if ($stmt = $conn->prepare($sql)) {
-        // Bind the parameters to the statement
-        $stmt->bind_param("sd", $level, $standard); // 's' for string, 'd' for double (decimal)
-
-        // Execute the statement
-        if ($stmt->execute()) {
-            // Return success response with the ID of the new row
-            $newId = $conn->insert_id;
-            echo json_encode(['success' => true, 'id' => $newId]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Failed to insert the record']);
-        }
-        // Close the statement
-        $stmt->close();
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to prepare the statement']);
+if ($checkStmt) {
+    $checkStmt->bind_param("s", $level);
+    $checkStmt->execute();
+    $result = $checkStmt->get_result();
+    $row = $result->fetch_assoc();
+    
+    if ($row['count'] > 0) {
+        echo json_encode([
+            'success' => false,
+            'message' => "Level '$level' already exists in the database. Please use a different level."
+        ]);
+        $checkStmt->close();
+        $conn->close();
+        exit;
     }
-} catch (Exception $e) {
-    // Handle errors and return failure response
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    
+    $checkStmt->close();
+    
+    // If we get here, the level is unique - proceed with insert
+    $sql = "INSERT INTO accreditation_standard (Level, Standard) VALUES (?, ?)";
+    
+    try {
+        if ($stmt = $conn->prepare($sql)) {
+            $stmt->bind_param("sd", $level, $standard);
+            
+            if ($stmt->execute()) {
+                $newId = $conn->insert_id;
+                echo json_encode([
+                    'success' => true,
+                    'id' => $newId,
+                    'message' => 'Standard added successfully'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to insert the record'
+                ]);
+            }
+            $stmt->close();
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Failed to prepare the statement'
+            ]);
+        }
+    } catch (Exception $e) {
+        echo json_encode([
+            'success' => false,
+            'message' => $e->getMessage()
+        ]);
+    }
+} else {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Failed to prepare validation statement'
+    ]);
 }
+
+$conn->close();
 ?>

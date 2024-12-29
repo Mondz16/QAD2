@@ -436,7 +436,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 <div class="program-modal-content">
                     <h2>Add Program Level</h2>
                     <div id="program-form"></div>
-                    <button type="button" class="save-program-btn">Save Schedule</button>
+                    <button type="button" class="save-program-btn">Save</button>
                     <button type="button" class="cancel-program-btn">Cancel</button>
                 </div>
             </div>

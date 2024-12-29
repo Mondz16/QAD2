@@ -744,47 +744,53 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
         }
 
         function saveNewStandard(button) {
-            const row = button.closest('tr');
-            const levelInput = row.querySelector('.level-value input');
-            const standardInput = row.querySelector('.standard-value input');
+    const row = button.closest('tr');
+    const levelInput = row.querySelector('.level-value input');
+    const standardInput = row.querySelector('.standard-value input');
 
-            const newLevel = levelInput.value.trim();
-            const newStandard = parseFloat(standardInput.value).toFixed(2);
+    const newLevel = levelInput.value.trim();
+    const newStandard = parseFloat(standardInput.value).toFixed(2);
 
-            if (!newLevel || isNaN(newStandard)) {
-                alert('Please fill out both fields correctly.');
-                return;
+    if (!newLevel || isNaN(newStandard)) {
+        alert('Please fill out both fields correctly.');
+        return;
+    }
+
+    fetch('add_standard.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                level: newLevel,
+                standard: newStandard
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                row.setAttribute('data-id', data.id);
+                row.querySelector('.level-value').textContent = newLevel;
+                row.querySelector('.standard-value').textContent = newStandard;
+
+                row.querySelector('.action-buttons').innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
+
+                const addBtn = document.getElementById('add-btn');
+                addBtn.parentElement.appendChild(addBtn);
+            } else {
+                // Show the specific error message from the server
+                alert(data.message || 'Failed to add standard.');
+                // Keep focus on the level input if it's a duplicate
+                if (data.message.includes('already exists')) {
+                    levelInput.focus();
+                }
             }
-
-            fetch('add_standard.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        level: newLevel,
-                        standard: newStandard
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        row.setAttribute('data-id', data.id);
-                        row.querySelector('.level-value').textContent = newLevel;
-                        row.querySelector('.standard-value').textContent = newStandard;
-
-                        row.querySelector('.action-buttons').innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
-
-                        const addBtn = document.getElementById('add-btn');
-                        addBtn.parentElement.appendChild(addBtn);
-                    } else {
-                        alert('Failed to add standard.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the standard.');
+        });
+}
 
         function cancelNewStandard(button) {
             const row = button.closest('tr');

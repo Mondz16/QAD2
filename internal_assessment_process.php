@@ -123,12 +123,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $below_threshold = array_filter($all_ratings, fn($r) => $r < $threshold);
             $below_threshold_count = count($below_threshold);
 
-            if (count($above_standard) === count($all_ratings) && $below_threshold_count === 0) {
+            if (count($above_standard) === $total_ratings && $below_threshold_count === 0) {
                 $result_display = "Ready";
+            } elseif ($below_threshold_count === $total_ratings) {
+                $result_display = "Revisit";
             } elseif ($below_threshold_count >= 1 && $below_threshold_count <= 3) {
                 $result_display = "Needs Improvement";
-            } elseif ($below_threshold_count === count($all_ratings)) {
-                $result_display = "Revisit";
             } else {
                 $result_display = "Needs Improvement";
             }
