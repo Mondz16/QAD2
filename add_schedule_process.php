@@ -92,13 +92,12 @@ HTML;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $collegeId = mysqli_real_escape_string($conn, $_POST['college']);
-    $programs = $_POST['program']; // Array of programs
-    $levels = $_POST['level-output']; // Array of levels
-    $level_validities = $_POST['level_validity']; // Array of validities
-    $dates = $_POST['date']; // Array of dates
-    $times = $_POST['time']; // Array of times
-    $zooms = isset($_POST['zoom']) ? $_POST['zoom'] : array(); // Array of zoom links
-    // Fix: Changed team_leaders to team_leader and added proper null check
+    $programs = $_POST['program'];
+    $levels = $_POST['level-output'];
+    $level_validities = $_POST['level_validity'];
+    $dates = $_POST['date'];
+    $times = $_POST['time'];
+    $zooms = isset($_POST['zoom']) ? $_POST['zoom'] : array();
     $team_leader_id = isset($_POST['team_leader']) ? mysqli_real_escape_string($conn, $_POST['team_leader']) : '';
     $team_members_ids = isset($_POST['team_members']) ? $_POST['team_members'] : array();
 
@@ -132,23 +131,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->begin_transaction();
 
     try {
+        // Get team leader details
         $sql_user_details = "SELECT email, first_name, last_name, 
                      CONCAT(first_name, ' ', middle_initial, '. ', last_name) AS name 
                      FROM internal_users WHERE user_id = ?";
-$stmt_leader = $conn->prepare($sql_user_details);
-$stmt_leader->bind_param("s", $team_leader_id);
-$stmt_leader->execute();
-$leader_result = $stmt_leader->get_result();
+        $stmt_leader = $conn->prepare($sql_user_details);
+        $stmt_leader->bind_param("s", $team_leader_id);
+        $stmt_leader->execute();
+        $leader_result = $stmt_leader->get_result();
 
-if ($leader_data = $leader_result->fetch_assoc()) {
-    $team_leader_email = $leader_data['email'];
-    $team_leader_name = $leader_data['first_name'] . ' ' . $leader_data['last_name'];
-} else {
-    throw new Exception("Team Leader details not found.");
-}
+        if ($leader_data = $leader_result->fetch_assoc()) {
+            $team_leader_email = $leader_data['email'];
+            $team_leader_name = $leader_data['first_name'] . ' ' . $leader_data['last_name'];
+        } else {
+            throw new Exception("Team Leader details not found.");
+        }
+        $stmt_leader->close();
 
-$stmt_leader->close();
+        // Get team members details
+        $team_members = [];
+        if (!empty($team_members_ids)) {
+            foreach ($team_members_ids as $member_id) {
+                $sql_user_details = "SELECT email, first_name, last_name 
+                             FROM internal_users WHERE user_id = ?";
+                $stmt_member = $conn->prepare($sql_user_details);
+                $stmt_member->bind_param("s", $member_id);
+                $stmt_member->execute();
+                $member_result = $stmt_member->get_result();
 
+                if ($member_data = $member_result->fetch_assoc()) {
+                    $team_members[] = [
+                        'email' => $member_data['email'],
+                        'name' => $member_data['first_name'] . ' ' . $member_data['last_name']
+                    ];
+                }
+                $stmt_member->close();
+            }
+        }
 
         // Process each program
         for ($i = 0; $i < count($programs); $i++) {
@@ -157,8 +176,6 @@ $stmt_leader->close();
             $level_validity = mysqli_real_escape_string($conn, $level_validities[$i]);
             $date = mysqli_real_escape_string($conn, $dates[$i]);
             $time = mysqli_real_escape_string($conn, $times[$i]);
-
-            // Handle empty or null zoom values
             $zoom = '';
             if (isset($zooms[$i]) && $zooms[$i] !== null && trim($zooms[$i]) !== '') {
                 $zoom = mysqli_real_escape_string($conn, $zooms[$i]);
@@ -213,12 +230,10 @@ $stmt_leader->close();
                 $result
             );
             $stmt_schedule->execute();
-            $schedule_ids[] = $stmt_schedule->insert_id;
+            $schedule_id = $stmt_schedule->insert_id;
             $stmt_schedule->close();
-        }
 
-        // Insert team assignments for each schedule
-        foreach ($schedule_ids as $schedule_id) {
+            // Insert team assignments
             // Insert team leader
             $sql_insert_leader = "INSERT INTO team (schedule_id, internal_users_id, role, status)
                     VALUES (?, ?, 'Team Leader', 'pending')";
@@ -232,99 +247,74 @@ $stmt_leader->close();
                 $sql_insert_members = "INSERT INTO team (schedule_id, internal_users_id, role, status)
                         VALUES (?, ?, 'Team Member', 'pending')";
                 $stmt_insert_members = $conn->prepare($sql_insert_members);
-                
+
                 foreach ($team_members_ids as $member_id) {
                     $stmt_insert_members->bind_param("is", $schedule_id, $member_id);
                     $stmt_insert_members->execute();
                 }
                 $stmt_insert_members->close();
             }
-        }
 
-        // Get team members details
-$team_members = [];
-if (!empty($team_members_ids)) {
-    foreach ($team_members_ids as $member_id) {
-        // Prepare a new statement for each member
-        $sql_user_details = "SELECT email, first_name, last_name 
-                             FROM internal_users WHERE user_id = ?";
-        $stmt_member = $conn->prepare($sql_user_details);
-        $stmt_member->bind_param("s", $member_id);
-        $stmt_member->execute();
-        $member_result = $stmt_member->get_result();
-        
-        // Check if a member was found
-        if ($member_data = $member_result->fetch_assoc()) {
-            $team_members[] = [
-                'email' => $member_data['email'],
-                'name' => $member_data['first_name'] . ' ' . $member_data['last_name']
-            ];
-        } else {
-            // Handle case when a team member is not found (optional)
-            echo "Warning: Member with ID $member_id not found.\n";
-        }
-        
-        $stmt_member->close(); // Close statement for each iteration
-    }
-}
-        // Send email notification
-        $mail = new PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'usepqad@gmail.com';
-            $mail->Password = 'ofcx jwfa ghkv hsgz';
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
-            $mail->SMTPOptions = array(
-                'ssl' => array(
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                    'allow_self_signed' => true
-                )
-            );
+            // Send email notification for this specific program
+            $mail = new PHPMailer(true);
+            try {
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = 'usepqad@gmail.com';
+                $mail->Password = 'ofcx jwfa ghkv hsgz';
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
+                $mail->SMTPOptions = array(
+                    'ssl' => array(
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                        'allow_self_signed' => true
+                    )
+                );
 
-            // Add recipients
-            $mail->setFrom('usepqad@gmail.com', 'USeP - Quality Assurance Division');
-            $mail->addAddress($college_email);
-            $mail->addAddress($team_leader_email);
-            foreach ($team_members as $member) {
-                $mail->addAddress($member['email']);
+                // Add recipients
+                $mail->setFrom('usepqad@gmail.com', 'USeP - Quality Assurance Division');
+                $mail->addAddress($college_email);
+                $mail->addAddress($team_leader_email);
+                foreach ($team_members as $member) {
+                    $mail->addAddress($member['email']);
+                }
+
+                // Format email content
+                $formatted_date = date("F j, Y", strtotime($date));
+                $formatted_time = date("g:i A", strtotime($time));
+                $zoom_link_section = !empty($zoom) ? "<strong>Meeting Link:</strong> $zoom<br>" : "";
+
+                $team_members_list = '';
+                foreach ($team_members as $member) {
+                    $team_members_list .= "<li>{$member['name']}</li>";
+                }
+
+                $mail->isHTML(true);
+                $mail->Subject = "New Schedule Notification - $program_name";
+                $mail->Body = "Dear Team,<br><br>
+                              A new schedule has been added:<br><br>
+                              College: $college_name<br>
+                              Program: $program_name<br>
+                              Level Applied: $level<br>
+                              Date: $formatted_date<br>
+                              Time: $formatted_time<br>
+                              $zoom_link_section<br>
+                              <strong>Team Leader:</strong> $team_leader_name<br>
+                              <strong>Team Members:</strong><br><ul>$team_members_list</ul><br>
+                              Best regards,<br>USeP - Quality Assurance Division";
+
+                $mail->send();
+            } catch (Exception $e) {
+                throw new Exception("Email could not be sent for program $program_name. Error: " . $mail->ErrorInfo);
             }
-
-            // Format email content
-            $formatted_date = date("F j, Y", strtotime($date));
-            $formatted_time = date("g:i A", strtotime($time));
-            $zoom_link_section = !empty($zoom) ? "<strong>Meeting Link:</strong> $zoom<br>" : "";
-            
-            $team_members_list = '';
-            foreach ($team_members as $member) {
-                $team_members_list .= "<li>{$member['name']}</li>";
-            }
-
-            $mail->isHTML(true);
-            $mail->Subject = 'New Schedule Notification';
-            $mail->Body = "Dear Team,<br><br>
-                          A new schedule has been added:<br><br>
-                          College: $college_name<br>
-                          Program: $program_name<br>
-                          Level Applied: $level<br>
-                          Date: $formatted_date<br>
-                          Time: $formatted_time<br>
-                          $zoom_link_section<br>
-                          <strong>Team Leader:</strong> $team_leader_name<br>
-                          <strong>Team Members:</strong><br><ul>$team_members_list</ul><br>
-                          Best regards,<br>USeP - Quality Assurance Division";
-
-            $mail->send();
-            $conn->commit();
-            
-            showResponsePopup('success', 'New schedule and team members have been successfully created.<br>
-                             Email notifications have been sent.');
-        } catch (Exception $e) {
-            throw new Exception('Email could not be sent. Error: ' . $mail->ErrorInfo);
         }
+
+        $conn->commit();
+        showResponsePopup('success', 'New schedules and team members have been successfully created.<br>
+                         Email notifications have been sent for each program.');
+
     } catch (Exception $e) {
         $conn->rollback();
         showResponsePopup('error', 'Error: ' . $e->getMessage());
@@ -335,4 +325,3 @@ if (!empty($team_members_ids)) {
     header("Location: add_schedule.php");
     exit();
 }
-?>
