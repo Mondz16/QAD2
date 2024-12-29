@@ -807,35 +807,32 @@ class="notification-list1"
                                                         <button class="assessment-button" onclick="openTermsModal(<?php echo htmlspecialchars(json_encode($schedule)); ?>)" id="sign-button">SIGN</button>
 
                                                     <?php else: ?>
-                                                        <!-- Check if Areas are Assigned -->
                                                         <?php
-                                                        // Modify the area assignment check logic
-                                                        $all_areas_assigned = true;
-                                                        $has_accepted_members = false;
+                                                            // Modify the area assignment check logic
+                                                            $all_areas_assigned = true;
+                                                            $has_accepted_members = false;
 
-                                                        if (isset($team_members_with_areas[$schedule['schedule_id']])) {
-                                                            foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
-                                                                // Skip Team Leader
-                                                                if ($member['role'] !== 'Team Leader') {
-                                                                    // Check if any member has accepted
+                                                            if (isset($team_members_with_areas[$schedule['schedule_id']])) {
+                                                                foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
+                                                                    // Check if the member has accepted
                                                                     if ($member['status'] === 'accepted') {
                                                                         $has_accepted_members = true;
 
-                                                                        // Check if the accepted member has no assigned areas
+                                                                        // Check if the member (including the Team Leader) has assigned areas
                                                                         if (empty($member['areas'][0])) {
                                                                             $all_areas_assigned = false;
                                                                             break;
                                                                         }
                                                                     }
                                                                 }
+                                                            } else {
+                                                                $all_areas_assigned = false;
                                                             }
-                                                        } else {
-                                                            $all_areas_assigned = false;
-                                                        }
 
-                                                        // If no members have accepted, still show area assignment but hide the submit button
-                                                        $show_assign_areas = (!$has_accepted_members || !$all_areas_assigned);
-                                                        ?>
+                                                            // If no members have accepted, still show area assignment but hide the submit button
+                                                            $show_assign_areas = (!$has_accepted_members || !$all_areas_assigned);
+                                                            ?>
+
 
                                                         <?php if ($show_assign_areas): ?>
                                                             <p>ASSIGN AREAS TO TEAM MEMBERS</p>
@@ -901,12 +898,9 @@ class="notification-list1"
                                                                         <?php endif; ?>
                                                                     </div>
                                                                 <?php endforeach; ?>
-                                                                <?php if ($has_accepted_members): ?>
                                                                     <div>
-                                                                        <button type="submit" class="assessment-button1">ASSIGN AREAS</button>
+                                                                       <button type="submit" class="assessment-button1" disabled style="opacity: 0.5; cursor: not-allowed;">ASSIGN AREAS</button>
                                                                     </div>
-                                                                <?php else: ?>
-                                                                <?php endif; ?>
                                                             </form>
                                         </div>
                                     <?php else: ?>
@@ -927,59 +921,68 @@ class="notification-list1"
                                                                 }
                                                             }
                                         ?>
-                                        <p>MEMBER SUBMISSION STATUS</p>
-                                        <div style="height: 10px;"></div>
-                                        <div class="assessmentname2">
-                                            <div class="nameContainer">
-                                                <p><?php echo $submitted_count; ?>/<?php echo $team_member_count; ?> SUBMITTED ASSESSMENTS</p>
+                                        <!-- Check if there are submitted assessments -->
+                                        <?php if ($team_member_count > 0): ?>
+                                            <p>MEMBER SUBMISSION STATUS</p>
+                                            <div style="height: 10px;"></div>
+                                            <div class="assessmentname2">
+                                                <div class="nameContainer">
+                                                    <p><?php echo $submitted_count; ?>/<?php echo $team_member_count; ?> SUBMITTED ASSESSMENTS</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div style="height: 20px;"></div>
-                                        <p>TEAM MEMBERS ASSESSMENT</p>
-                                        <div style="height: 10px;"></div>
-                                        <ul style="list-style: none; font-size: 18px;">
-                                            <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
-                                                <?php if ($member['assessment_file'] && $member['role'] !== 'Team Leader'): ?>
-                                                    <li>
-                                                        <div class="assessmentname1">
-                                                            <div class="titleContainer1">
-                                                                <?php echo htmlspecialchars($member['name']); ?>
-                                                            </div>
-                                                            <div class="titleContainer2">
-                                                                <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>" download><i class="bi bi-file-earmark-arrow-down-fill download" style="font-size: 30px; color: #c49102;"></i></a>
-                                                            </div>
-                                                            <div class="titleContainer3">
-                                                                <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
-                                                                    <?php
-                                                                        // Query to fetch the approved_assessment_file
-                                                                        $sql_approved_file = "
-                                                                    SELECT approved_assessment_file
-                                                                    FROM approved_assessment
-                                                                    WHERE assessment_id = ?
-                                                                    ";
-                                                                        $stmt_approved_file = $conn->prepare($sql_approved_file);
-                                                                        $stmt_approved_file->bind_param("i", $member['assessment_id']); // Bind the assessment_id
-                                                                        $stmt_approved_file->execute();
-                                                                        $stmt_approved_file->bind_result($approved_assessment_file);
-                                                                        $stmt_approved_file->fetch();
-                                                                        $stmt_approved_file->close();
-                                                                    ?>
-                                                                    <?php if ($approved_assessment_file): ?>
-                                                                        <a href="<?php echo htmlspecialchars($approved_assessment_file); ?>" download>
-                                                                            <i class="bi bi-file-earmark-arrow-down-fill download" style="font-size: 30px; color: #38c65f;"></i>
-                                                                        </a>
+                                            <div style="height: 20px;"></div>
+                                        <?php endif; ?>
+
+                                        <!-- Check if there are team members with assessments -->
+                                        <?php if ($submitted_count > 0): ?>
+                                            <p>TEAM MEMBERS ASSESSMENT</p>
+                                            <div style="height: 10px;"></div>
+                                            <ul style="list-style: none; font-size: 18px;">
+                                                <?php foreach ($team_members[$schedule['schedule_id']] as $member): ?>
+                                                    <?php if ($member['assessment_file'] && $member['role'] !== 'Team Leader'): ?>
+                                                        <li>
+                                                            <div class="assessmentname1">
+                                                                <div class="titleContainer1">
+                                                                    <?php echo htmlspecialchars($member['name']); ?>
+                                                                </div>
+                                                                <div class="titleContainer2">
+                                                                    <a href="<?php echo htmlspecialchars($member['assessment_file']); ?>" download>
+                                                                        <i class="bi bi-file-earmark-arrow-down-fill download" style="font-size: 30px; color: #c49102;"></i>
+                                                                    </a>
+                                                                </div>
+                                                                <div class="titleContainer3">
+                                                                    <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
+                                                                        <?php
+                                                                            // Query to fetch the approved_assessment_file
+                                                                            $sql_approved_file = "
+                                                                            SELECT approved_assessment_file
+                                                                            FROM approved_assessment
+                                                                            WHERE assessment_id = ?
+                                                                            ";
+                                                                            $stmt_approved_file = $conn->prepare($sql_approved_file);
+                                                                            $stmt_approved_file->bind_param("i", $member['assessment_id']); // Bind the assessment_id
+                                                                            $stmt_approved_file->execute();
+                                                                            $stmt_approved_file->bind_result($approved_assessment_file);
+                                                                            $stmt_approved_file->fetch();
+                                                                            $stmt_approved_file->close();
+                                                                        ?>
+                                                                        <?php if ($approved_assessment_file): ?>
+                                                                            <a href="<?php echo htmlspecialchars($approved_assessment_file); ?>" download>
+                                                                                <i class="bi bi-file-earmark-arrow-down-fill download" style="font-size: 30px; color: #38c65f;"></i>
+                                                                            </a>
+                                                                        <?php else: ?>
+                                                                            <i class="fas fa-check approve1"></i>
+                                                                        <?php endif; ?>
                                                                     <?php else: ?>
-                                                                        <i class="fas fa-check approve1"></i>
+                                                                        <button class="approve" onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">APPROVE</button>
                                                                     <?php endif; ?>
-                                                                <?php else: ?>
-                                                                    <button class="approve" onclick="approveAssessmentPopup(<?php echo htmlspecialchars(json_encode($member)); ?>)">APPROVE</button>
-                                                                <?php endif; ?>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </li>
-                                                <?php endif; ?>
-                                            <?php endforeach; ?>
-                                        </ul>
+                                                        </li>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        <?php endif; ?>
                                         <?php if (in_array($schedule['team_id'], $existing_summaries)): ?>
                                             <div style="height: 20px;"></div>
                                             <p>SUBMIT SUMMARY</p>
@@ -1766,7 +1769,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const scheduleId = assessmentDiv.id.replace('assessment-', '');
         
         try {
-            // Parse the areas data from the data attribute
             const areasData = JSON.parse(assessmentDiv.dataset.areas || '[]');
             const maxAreas = parseInt(assessmentDiv.dataset.maxAreas, 10) || 0;
 
@@ -1784,6 +1786,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     schedulesData[scheduleId].selectedAreas.push(selectedValue);
                 }
             });
+
+            // Initialize button state
+            updateAreaOptions(scheduleId);
         } catch (error) {
             console.error('Error initializing schedule data:', error);
         }
