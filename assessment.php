@@ -83,6 +83,15 @@ if (count($teamLeaders) > 0) {
         $schedule = $scheduleResult->fetch_assoc();
 
         if ($schedule) {
+            // Check if UDAS assessment exists for this schedule
+            $udasQuery = "SELECT id FROM udas_assessment WHERE schedule_id = ?";
+            $udasStmt = $conn->prepare($udasQuery);
+            $udasStmt->bind_param("i", $scheduleId);
+            $udasStmt->execute();
+            $udasResult = $udasStmt->get_result();
+            $hasUdasAssessment = $udasResult->num_rows > 0;
+            $udasStmt->close();
+
             // Fetch team members
             $teamMembersQuery = "
                 SELECT t.id AS team_id, 
@@ -140,7 +149,8 @@ if (count($teamLeaders) > 0) {
                 'nda_internal_accreditors' => $ndaInternalAccreditors,
                 'team_leader' => $leader['team_leader_name'],
                 'team_members' => array_column($teamMembers, 'member_name'),
-                'is_approved' => $summary ? (bool)$conn->query("SELECT id FROM approved_summary WHERE summary_id = '{$summary['id']}'")->num_rows : false
+                'is_approved' => $summary ? (bool)$conn->query("SELECT id FROM approved_summary WHERE summary_id = '{$summary['id']}'")->num_rows : false,
+                'has_udas_assessment' => $hasUdasAssessment  // Add this new field
             ];
         }
     }
@@ -409,6 +419,17 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             color: #fff;
         }
 
+        .assessment-udas .udas-button-disabled {
+            height: 46px;
+            width: 100%;
+            margin: 10px 0;
+            font-weight: bold;
+            border: 1px solid #006118;
+            background-color: #46C556;
+            color: #fff;
+            opacity: 50%;
+        }
+
         .udas-button1 {
             background-color: #fff;
         }
@@ -607,6 +628,38 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
         .nda-close-modal:focus {
             color: black;
             text-decoration: none;
+        }
+
+        /* Custom tooltip styles */
+        .custom-tooltip {
+            position: relative;
+        }
+
+        .custom-tooltip:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 12px;
+            background-color: #333;
+            color: white;
+            font-size: 14px;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 5px;
+        }
+
+        .custom-tooltip:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #333;
+            margin-bottom: -6px;
         }
     </style>
 </head>
@@ -860,10 +913,18 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                                 <p>APPROVE:<br>
                                                     <?php if (!empty($assessment['summary_file']) && $assessment['is_approved']): ?>
                                                         <button class="assessment-button-done">APPROVED</button>
-                                                    <?php elseif (!empty($assessment['summary_file'])): ?>
+                                                    <?php elseif (!empty($assessment['summary_file']) && $assessment['has_udas_assessment']): ?>
                                                         <button class="btn approve-btn udas-button" data-summary-file="<?= $assessment['summary_file']; ?>">APPROVE</button>
+                                                    <?php elseif (!empty($assessment['summary_file']) && !$assessment['has_udas_assessment']): ?>
+                                                        <button class="btn udas-button-disabled"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-placement="top"
+                                                            title="UDAS Assessment must be submitted first">APPROVE</button>
                                                     <?php else: ?>
-                                                        <button class="btn approve-btn udas-button" disabled>APPROVE</button>
+                                                        <button class="btn udas-button-disabled"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-placement="top"
+                                                            title="Waiting for team leader summary submission">APPROVE</button>
                                                     <?php endif; ?>
                                                 </p>
                                             </div>
@@ -1008,6 +1069,17 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 const closeNdaModalBtn = ndaModal ? ndaModal.querySelector('.nda-close-modal') : null;
                 const modalTeamMembers = document.getElementById('modal-team-members');
                 const noNdaMessage = document.getElementById('no-nda-message');
+
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+
+                // Add not-allowed cursor to disabled buttons
+                const disabledButtons = document.querySelectorAll('button[disabled]');
+                disabledButtons.forEach(button => {
+                    button.style.cursor = 'not-allowed';
+                });
 
                 // Function to open NDA modal
                 function openNdaModal() {
