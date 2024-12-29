@@ -439,6 +439,7 @@ $conn->close();
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script>
         async function fetchCollegeData(programLevel, year) {
             const response = await fetch(`fetch_college_data_report.php?programLevel=${programLevel}&year=${year}`);
@@ -515,6 +516,8 @@ $conn->close();
             });
         }
 
+        Chart.register(ChartDataLabels);
+
         async function updateCharts() {
             const programLevel = "All";
             const year = "All";
@@ -540,30 +543,46 @@ $conn->close();
                     return campusData[level] || 0;
                 }),
                 backgroundColor: colors[index],
+                barPercentage: 0.8,
+                categoryPercentage: 0.9
             }));
+
+            // Destroy existing chart if it exists
+            const existingChart = Chart.getChart('collegeChart');
+            if (existingChart) {
+                existingChart.destroy();
+            }
 
             const ctxBar = document.getElementById('collegeChart').getContext('2d');
             const chart = new Chart(ctxBar, {
                 type: 'bar',
                 data: {
                     labels: uniqueCampuses,
-                    datasets: levels.map((level, index) => ({
-                        label: level === '1' || level === '2' || level === '3' || level === '4' ?
-                            `Level ${level}` : level,
-                        data: uniqueCampuses.map(campus => {
-                            const campusData = data.find(item => item.college_campus === campus) || {};
-                            return campusData[level] || 0;
-                        }),
-                        backgroundColor: colors[index],
-                    }))
+                    datasets: datasets
                 },
                 options: {
-                    indexAxis: 'x', // Makes bars horizontal
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
+                        datalabels: {
+                            display: function(context) {
+                                return context.dataset.data[context.dataIndex] > 0;
+                            },
+                            color: 'black',
+                            anchor: 'end',
+                            align: 'top',
+                            offset: -5,
+                            font: {
+                                size: 11,
+                                weight: 'bold'
+                            },
+                            formatter: function(value) {
+                                return value > 0 ? value : '';
+                            }
+                        },
                         legend: {
                             position: 'right',
+                            align: 'start',
                             labels: {
                                 padding: 20,
                                 font: {
@@ -583,8 +602,7 @@ $conn->close();
                     scales: {
                         x: {
                             grid: {
-                                display: true,
-                                drawBorder: true,
+                                display: false
                             },
                             ticks: {
                                 font: {
@@ -594,29 +612,28 @@ $conn->close();
                         },
                         y: {
                             grid: {
-                                display: false
+                                display: true
                             },
                             ticks: {
                                 font: {
                                     size: 12
                                 }
-                            }
+                            },
+                            beginAtZero: true,
                         }
                     },
                     layout: {
                         padding: {
-                            top: 20,
+                            top: 40, // Increased top padding for labels
                             right: 20,
                             bottom: 20,
                             left: 20
-                        },
+                        }
                     }
                 }
             });
 
-            chart.data.labels = uniqueCampuses;
-            chart.data.datasets = datasets;
-            chart.update();
+            return chart;
         }
 
         async function updatePieChart(programLevel, year) {
