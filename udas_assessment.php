@@ -243,7 +243,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             font-weight: bold;
         }
 
-        
+
         .scrollable-container {
             max-height: 650px;
             max-width: 1200px;
@@ -253,7 +253,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             margin-left: 30px;
         }
 
-        .scrollable-container-holder{
+        .scrollable-container-holder {
             display: inline-block;
             width: fit-content;
             padding: 20px 20px 20px 0px;
@@ -269,26 +269,34 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             z-index: 1000;
             left: 0;
             top: 0;
-            width: 100%; /* This ensures the overlay covers the full width */
-            height: 100%; /* This ensures the overlay covers the full height */
+            width: 100%;
+            /* This ensures the overlay covers the full width */
+            height: 100%;
+            /* This ensures the overlay covers the full height */
             overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Semi-transparent background */
         }
 
         .modal-content {
             background-color: #fefefe;
             padding: 20px;
             border: 1px solid #888;
-            width: 535px; /* Set the width of the modal content */
+            width: 535px;
+            /* Set the width of the modal content */
             border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Optional: add a subtle shadow */
-            max-height: 850px; /* Limits the height of the modal content */
-            overflow-y: auto; /* Enables vertical scrolling if content exceeds the height */
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            /* Optional: add a subtle shadow */
+            max-height: 850px;
+            /* Limits the height of the modal content */
+            overflow-y: auto;
+            /* Enables vertical scrolling if content exceeds the height */
 
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%); /* This centers the modal */
+            transform: translate(-50%, -50%);
+            /* This centers the modal */
         }
 
 
@@ -307,14 +315,17 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             flex: 1;
         }
 
-        .assessment-group input[type="text"], .assessment-group-college {
+        .assessment-group input[type="text"],
+        .assessment-group-college {
             width: 100%;
             padding: 12px;
             box-sizing: border-box;
-            text-align: left; /* Aligns the input text to the left */
+            text-align: left;
+            /* Aligns the input text to the left */
         }
 
-        .assessment-group-college, .assessment-group-program {
+        .assessment-group-college,
+        .assessment-group-program {
             height: 48px;
             font-size: 16px;
         }
@@ -323,7 +334,8 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             margin-bottom: 20px;
         }
 
-        .assessment-group-college, .assessment-group-program {
+        .assessment-group-college,
+        .assessment-group-program {
             height: 48px;
             font-size: 16px;
         }
@@ -335,7 +347,12 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             margin-bottom: 10px;
         }
 
-        .name, .orientationname, .orientationname1, .assessmentname, .assessmentname1, .assessmentname2 {
+        .name,
+        .orientationname,
+        .orientationname1,
+        .assessmentname,
+        .assessmentname1,
+        .assessmentname2 {
             display: flex;
             gap: 10px;
         }
@@ -344,7 +361,11 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             width: 100%;
         }
 
-        .nameContainer, .prefixContainer, .profilenameContainer, .form-group input, .assessment-group input {
+        .nameContainer,
+        .prefixContainer,
+        .profilenameContainer,
+        .form-group input,
+        .assessment-group input {
             border-color: rgb(170, 170, 170);
             border-style: solid;
             border-width: 1px;
@@ -356,7 +377,8 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             padding: 12px 20px;
         }
 
-        .orientationContainer, .orientationContainer1 {
+        .orientationContainer,
+        .orientationContainer1 {
             text-align: center;
         }
 
@@ -364,7 +386,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             background-color: #FFEBA3;
         }
 
-        .level, .time, .result, .area_evaluated {
+        .level,
+        .time,
+        .result,
+        .area_evaluated {
             color: #575757;
             width: 100%;
             border: 0;
@@ -420,7 +445,12 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             z-index: 2;
         }
 
-        .submit-button1, .cancel-button1, .approve-cancel-button, .orientation-button, .assessment-button, .assessment-button-done {
+        .submit-button1,
+        .cancel-button1,
+        .approve-cancel-button,
+        .orientation-button,
+        .assessment-button,
+        .assessment-button-done {
             padding: 10px 25px;
             margin: 0 5px;
             cursor: pointer;
@@ -429,7 +459,8 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             font-size: 14px;
         }
 
-        .cancel-button, .cancel-button1 {
+        .cancel-button,
+        .cancel-button1 {
             color: #AFAFAF;
             border: 1px solid #AFAFAF;
         }
@@ -439,11 +470,14 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             color: white;
             font-weight: bold;
         }
+
         .cancel-button1 {
             width: 150px;
         }
 
-        .submit-button, .submit-button1, .export-button {
+        .submit-button,
+        .submit-button1,
+        .export-button {
             color: #006118;
             border: 1px solid #006118;
             background-color: #D4FFDF;
@@ -453,16 +487,21 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
             width: 228px;
         }
 
-        .submit-button:hover, .submit-button1:hover, .export-button:hover {
+        .submit-button:hover,
+        .submit-button1:hover,
+        .export-button:hover {
             background-color: #76FA97;
             border: 1px solid #76FA97;
             font-weight: bold;
         }
 
-        .button-container, .e-sign-container {
+        .button-container,
+        .e-sign-container {
             display: flex;
-            width: 100%; /* Ensure the container takes full width */
-            margin-top: 20px; /* Add some spacing from other elements */
+            width: 100%;
+            /* Ensure the container takes full width */
+            margin-top: 20px;
+            /* Add some spacing from other elements */
         }
 
         .button-container {
@@ -483,14 +522,19 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
         }
 
         .custom-spinner {
-            width: 40px; /* Size similar to Bootstrap's default spinner */
-            height: 40px; /* Size similar to Bootstrap's default spinner */
+            width: 40px;
+            /* Size similar to Bootstrap's default spinner */
+            height: 40px;
+            /* Size similar to Bootstrap's default spinner */
             border-width: 5px;
             border-style: solid;
             border-radius: 50%;
-            border-color: #B73033; /* Custom color for the spinner */
-            border-right-color: transparent; /* Transparent border to create the spinning effect */
-            animation: custom-spin 0.75s linear infinite; /* Bootstrap-like spinning animation */
+            border-color: #B73033;
+            /* Custom color for the spinner */
+            border-right-color: transparent;
+            /* Transparent border to create the spinning effect */
+            animation: custom-spin 0.75s linear infinite;
+            /* Bootstrap-like spinning animation */
         }
 
         .custom-spinner-hidden {
@@ -503,8 +547,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 transform: rotate(360deg);
             }
         }
+
         .notification-counter {
-    color: #E6A33E; /* Text color */
+            color: #E6A33E;
+            /* Text color */
         }
     </style>
 </head>
@@ -549,7 +595,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 </div>
             </div>
             <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
-            
+
             <nav id="sidebar">
                 <ul class="sidebar-nav">
                     <li class="sidebar-item has-dropdown">
@@ -557,10 +603,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Schedule</span>
                             <?php if ($totalPendingSchedules > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -599,10 +645,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Assessment</span>
                             <?php if ($assessmentCount > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -625,10 +671,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             <span style="margin-left: 8px;">Administrative</span>
                             <?php if ($totalPendingUsers > 0 || $transferRequestCount > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -658,7 +704,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                         </a>
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin === false ? 'internal_assigned_schedule.php' : 'reports_program_schedule.php'; ?>" class="sidebar-link">
-                            <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
+                                <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
                             <a href="reports_dashboard.php" class="sidebar-link">
                                 <span style="margin-left: 8px;">View Programs</span></a>
                             <a href="program_timeline.php" class="sidebar-link">
@@ -701,20 +747,20 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                                 echo "<div class='assessment-details'>";
                                 echo "<div class='assessment-holder-1'><div class='assessment-college'><p>COLLEGE: <br><div class='assessment-values'>" . $schedule['college_name'] . "</div>PROGRAM:<br> <div class='assessment-values'>" . $schedule['program_name'] . "</div></div> <div class='assessment-level-applied'><p> LEVEL APPLIED: <br><h3>";
 
-                                            // Display level applied with abbreviations
-                                            switch ($schedule['level_applied']) {
-                                                case "Not Accreditable":
-                                                    echo "NA";
-                                                    break;
-                                                case "Candidate":
-                                                    echo "CAN";
-                                                    break;
-                                                default:
-                                                    echo $schedule['level_applied'];
-                                                    break;
-                                            }
+                                // Display level applied with abbreviations
+                                switch ($schedule['level_applied']) {
+                                    case "Not Accreditable":
+                                        echo "NA";
+                                        break;
+                                    case "Candidate":
+                                        echo "CAN";
+                                        break;
+                                    default:
+                                        echo $schedule['level_applied'];
+                                        break;
+                                }
 
-                                            echo "</h3></p>
+                                echo "</h3></p>
             </div>
           </div>";
                                 echo "<div class='assessment-holder-2'><div class='assessment-dateTime'><p>DATE:<br><div class='assessment-values'>" . $scheduleDate . "</div> </div><div class='assessment-dateTime'><p>TIME: <br><div class='assessment-values'>" . $scheduleTime . "</div></div></br></p>";
@@ -776,7 +822,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                 <div style="height: 20px;"></div>
                 <div class="assessment-group">
                     <label for="area"><strong>AREA<span style="color: red;"> *<span></strong></label>
-                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="area" name="area" rows="10" placeholder="Add area" required></textarea>
+                    <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="area" name="area" rows="10" placeholder="Add area" readonly></textarea>
                     <div style="height: 20px;"></div>
                     <label for="comments"><strong>COMMENTS<span style="color: red;"> *<span></strong></label>
                     <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="comments" name="comments" rows="10" placeholder="Add comments" required></textarea>
@@ -838,33 +884,87 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
 
         // Get the <span> element that closes the modal
         var span = document.getElementsByClassName("close")[0];
+        // Function to get areas based on level and program name
+        function getAreas(level, programName) {
+            let areas = [];
 
-        // When the user clicks the button, open the modal
+            if (level === "1" || level === "2") {
+                areas = [
+                    'Vision, Mission, Goals, and Objectives',
+                    'Faculty',
+                    'Curriculum and Instruction',
+                    'Support to Students',
+                    'Research',
+                    'Extension and Community Development',
+                    'Library',
+                    'Physical Plant and Facilities',
+                    'Laboratories',
+                    'Administration'
+                ];
+            } else if (level === "3") {
+                if (programName.startsWith('Bachelor')) {
+                    areas = [
+                        'Instruction',
+                        'Extension',
+                        'Faculty Development',
+                        'Licensure Exam',
+                        'Consortia or linkages',
+                        'Library'
+                    ];
+                } else {
+                    areas = [
+                        'Instruction',
+                        'Research',
+                        'Faculty Development',
+                        'Licensure Exam',
+                        'Consortia or linkages',
+                        'Library'
+                    ];
+                }
+            } else if (level === "4") {
+                areas = [
+                    'Research',
+                    'Instruction',
+                    'Extension',
+                    'Faculty Development',
+                    'Consortia or linkages'
+                ];
+            }
+
+            return areas.join('\n');
+        }
+
+        // Modify the existing onclick function for the modal buttons
         for (let btn of btns) {
             btn.onclick = function() {
                 var schedule = JSON.parse(this.getAttribute('data-schedule'));
+
+                // Existing code...
                 document.getElementById('schedule_id').value = schedule.id;
                 document.getElementById('college').value = schedule.college_name;
                 document.getElementById('program').value = schedule.program_name;
                 document.getElementById('level_applied').value = schedule.level_applied;
+
+                // Add this new line to populate the areas
+                document.getElementById('area').value = getAreas(schedule.level_applied, schedule.program_name);
+
+                // Rest of the existing code...
                 document.getElementById('date').value = new Date(schedule.schedule_date).toLocaleDateString('en-US', {
                     month: 'long',
                     day: 'numeric',
                     year: 'numeric'
                 });
 
-                // Fix the time parsing issue
                 var timeParts = schedule.schedule_time.split(':');
                 var hours = parseInt(timeParts[0]);
                 var minutes = parseInt(timeParts[1]);
                 var ampm = hours >= 12 ? 'PM' : 'AM';
                 hours = hours % 12;
-                hours = hours ? hours : 12; // the hour '0' should be '12'
+                hours = hours ? hours : 12;
                 var formattedTime = hours + ':' + (minutes < 10 ? '0' + minutes : minutes) + ' ' + ampm;
 
                 document.getElementById('time').value = formattedTime;
 
-                // Set current date and time
                 var now = new Date();
                 var formattedNow = now.toLocaleString('en-US', {
                     month: 'long',
@@ -892,7 +992,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
         }
 
         function handleFileChange(inputElement, iconElement) {
-            inputElement.addEventListener('change', function () {
+            inputElement.addEventListener('change', function() {
                 if (this.files && this.files.length > 0) {
                     // Change icon to check mark if a file is selected
                     iconElement.src = 'images/success.png'; // Ensure this path is correct and the image exists

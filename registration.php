@@ -94,7 +94,7 @@ function displayRegistrations($conn, $tableName, $title)
         }
     
         echo "<th>Actions</th>
-            <th><input type='checkbox' id='selectAll' onclick='toggleAllCheckboxes(this)'>   Select All</th>
+            <th><input type='checkbox' id='selectAll' onclick='toggleAllCheckboxes(this)'> All</th>
             </tr>";
     
         $rowsDisplayed = false;
