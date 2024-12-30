@@ -118,6 +118,18 @@ $Sresult = $conn->query($sqlPendingSchedulesCount);
 $Srow = $Sresult->fetch_assoc();
 $totalPendingSchedules = $Srow['total_pending_schedules'];
 
+// Fetch the total count of missing udas_assessment_file
+$sqlMissingAssessmentsCount = "
+    SELECT COUNT(*) AS total_missing_assessments
+    FROM schedule s
+    LEFT JOIN udas_assessment ua ON s.id = ua.schedule_id
+    WHERE s.schedule_status = 'approved' 
+      AND (ua.udas_assessment_file IS NULL OR ua.udas_assessment_file = '')
+";
+$Dresult = $conn->query($sqlMissingAssessmentsCount);
+$Drow = $Dresult->fetch_assoc();
+$totalMissingAssessments = $Drow['total_missing_assessments'];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -288,8 +300,10 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                             </a>
                             <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">UDAS Assessments</span>
-                            </a>
-                            <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                                <?php if ($totalMissingAssessments > 0): ?>
+                                    <span class="notification-counter"><?= $totalMissingAssessments; ?></span>
+                                <?php endif; ?>
+                            </a>                            <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">Assessment History</span>
                             </a>
                         </div>

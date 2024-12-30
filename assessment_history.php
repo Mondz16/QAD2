@@ -146,6 +146,17 @@ if (count($teamLeaders) > 0) {
     }
 }
 
+// Query to count assessments
+$countQuery = "
+    SELECT COUNT(DISTINCT s.id) AS assessment_count
+        FROM schedule s
+        JOIN team t ON s.id = t.schedule_id
+        WHERE s.schedule_status IN ('approved', 'pending')
+";
+$Aresult = $conn->query($countQuery);
+$Arow = $Aresult->fetch_assoc();
+$assessmentCount = $Arow['assessment_count'];
+
 // Query to count pending internal users
 $sqlInternalPendingCount = "
     SELECT COUNT(*) AS internal_pending_count
@@ -191,6 +202,17 @@ $sqlPendingSchedulesCount = "
 $Sresult = $conn->query($sqlPendingSchedulesCount);
 $Srow = $Sresult->fetch_assoc();
 $totalPendingSchedules = $Srow['total_pending_schedules'];
+
+$sqlMissingAssessmentsCount = "
+    SELECT COUNT(*) AS total_missing_assessments
+    FROM schedule s
+    LEFT JOIN udas_assessment ua ON s.id = ua.schedule_id
+    WHERE s.schedule_status = 'approved' 
+      AND (ua.udas_assessment_file IS NULL OR ua.udas_assessment_file = '')
+";
+$Dresult = $conn->query($sqlMissingAssessmentsCount);
+$Drow = $Dresult->fetch_assoc();
+$totalMissingAssessments = $Drow['total_missing_assessments'];
 
 ?>
 <!DOCTYPE html>
@@ -845,7 +867,7 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link-active">
                             <span style="margin-left: 8px;">Assessment</span>
-                            <?php if (count($assessments) > 0): ?>
+                            <?php if ($assessmentCount > 0): ?>
                                 <span class="notification-counter">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
                                         <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
@@ -856,14 +878,15 @@ $totalPendingSchedules = $Srow['total_pending_schedules'];
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                                 <span style="margin-left: 8px;">View Assessments</span>
-                                <?php if (count($assessments) > 0): ?>
-                                    <span class="notification-counter">
-                                        <?= count($assessments) ?> <!-- Display the count of assessments -->
-                                    </span>
+                                <?php if ($assessmentCount > 0): ?>
+                                    <span class="notification-counter"><?= $assessmentCount; ?></span>
                                 <?php endif; ?>
                             </a>
                             <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">UDAS Assessments</span>
+                                <?php if ($totalMissingAssessments > 0): ?>
+                                    <span class="notification-counter"><?= $totalMissingAssessments; ?></span>
+                                <?php endif; ?>
                             </a>
                             <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">Assessment History</span>
