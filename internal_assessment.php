@@ -808,30 +808,28 @@ class="notification-list1"
 
                                                     <?php else: ?>
                                                         <?php
-                                                            // Modify the area assignment check logic
-                                                            $all_areas_assigned = true;
-                                                            $has_accepted_members = false;
+                                                        // Modify the area assignment check logic
+                                                        $all_areas_assigned = false; // Initialize as false by default
+                                                        $has_accepted_members = false;
 
-                                                            if (isset($team_members_with_areas[$schedule['schedule_id']])) {
-                                                                foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
-                                                                    // Check if the member has accepted
-                                                                    if ($member['status'] === 'accepted') {
-                                                                        $has_accepted_members = true;
+                                                        if (isset($team_members_with_areas[$schedule['schedule_id']])) {
+                                                            foreach ($team_members_with_areas[$schedule['schedule_id']] as $member) {
+                                                                // Check if the member has accepted
+                                                                if ($member['status'] === 'accepted') {
+                                                                    $has_accepted_members = true;
 
-                                                                        // Check if the member (including the Team Leader) has assigned areas
-                                                                        if (empty($member['areas'][0])) {
-                                                                            $all_areas_assigned = false;
-                                                                            break;
-                                                                        }
+                                                                    // Check if the member (including the Team Leader) has at least one assigned area
+                                                                    if (!empty($member['areas'][0])) {
+                                                                        $all_areas_assigned = true; // If any member or team leader has areas, mark as true
+                                                                        break; // No need to check further
                                                                     }
                                                                 }
-                                                            } else {
-                                                                $all_areas_assigned = false;
                                                             }
+                                                        }
 
-                                                            // If no members have accepted, still show area assignment but hide the submit button
-                                                            $show_assign_areas = (!$has_accepted_members || !$all_areas_assigned);
-                                                            ?>
+                                                        // If no members have accepted, still show area assignment but hide the submit button
+                                                        $show_assign_areas = (!$has_accepted_members || !$all_areas_assigned);
+                                                        ?>
 
 
                                                         <?php if ($show_assign_areas): ?>
