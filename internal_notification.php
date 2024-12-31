@@ -301,7 +301,7 @@ $stmt_assessment_count->close();
                                         <p><strong>Date:</strong> <?php echo $date->format('F j, Y'); ?> | <?php echo $time->format('g:i A'); ?></p><br>
                                         
                                         <div class="role-area">
-                                            <p><strong>Role:</strong> <?php echo htmlspecialchars($role); ?><br><strong>Areas:</strong> <?php echo htmlspecialchars($assigned_area_names); ?></p>
+                                            <p><strong>Role:</strong> <?php echo htmlspecialchars($role); ?></p>
                                             <div class="notification-actions">
                                                 <?php if ($role === 'Team Leader'): ?>
                                                     <form id="actionForm-<?php echo $team_id; ?>" action="internal_notification_process.php" method="POST">
