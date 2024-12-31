@@ -405,7 +405,7 @@ $totalMissingAssessments = $Drow['total_missing_assessments'];
         <!-- The Modal for Acceptance -->
         <div id="acceptModal" class="modal">
             <div class="modal-content">
-                <h4>Are you sure you want to accept this registration?</h4>
+                <h4>Are you sure you want to approve this request?</h4>
                 <form id="acceptForm" action="college_transfer_process.php" method="post">
                     <input type="hidden" name="action" value="accept">
                     <input type="hidden" name="new_user_id" id="accept_new_user_id">
@@ -423,7 +423,7 @@ $totalMissingAssessments = $Drow['total_missing_assessments'];
         <!-- The Modal for Rejection -->
         <div id="rejectModal" class="modal">
             <div class="modal-content">
-                <h4>Are you sure you want to disapprove this registration?</h4>
+                <h4>Are you sure you want to disapprove this request?</h4>
                 <form id="rejectForm" action="college_transfer_process.php" method="post">
                     <input type="hidden" name="action" value="reject">
                     <input type="hidden" name="new_user_id" id="reject_new_user_id">
