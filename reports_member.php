@@ -472,7 +472,7 @@ $conn->close();
                             <a href="<?php echo $is_admin ? 'orientation.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">View Orientation</span>
                                 <?php if ($totalPendingOrientations > 0): ?>
-                                    <span class="notification-counter"><?= $totalPendingSchedules; ?></span>
+                                    <span class="notification-counter"><?= $totalPendingOrientations; ?></span>
                                 <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin === false ? 'internal_orientation.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">

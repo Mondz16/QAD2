@@ -11,6 +11,15 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $is_admin = false;
 
+// Fetch user details
+$sql_user = "SELECT first_name, middle_initial, last_name, email, college_code, profile_picture FROM internal_users WHERE user_id = ?";
+$stmt_user = $conn->prepare($sql_user);
+$stmt_user->bind_param("s", $user_id);
+$stmt_user->execute();
+$stmt_user->bind_result($first_name, $middle_initial, $last_name, $email, $college_code, $profile_picture);
+$stmt_user->fetch();
+$stmt_user->close();
+
 // Check user type and redirect accordingly
 if ($user_id === 'admin') {
     $is_admin = true;
@@ -169,6 +178,23 @@ $sqlPendingOrientationsCount = "
     $Qrow = $Qresult->fetch_assoc();
     $totalPendingOrientations = $Qrow['total_pending_orientations'];
 
+    $sql_pending_count = "
+    SELECT 
+        COUNT(*) AS total_pending_schedules
+    FROM schedule s
+    JOIN program p ON s.program_id = p.id
+    JOIN college c ON s.college_code = c.code
+    WHERE s.college_code = ? 
+    AND s.schedule_status = 'pending'
+";
+
+$stmt_pending_count = $conn->prepare($sql_pending_count);
+$stmt_pending_count->bind_param("s", $college_code);
+$stmt_pending_count->execute();
+$result_pending_count = $stmt_pending_count->get_result();
+$row_pending_count = $result_pending_count->fetch_assoc();
+$total_pending_schedules = $row_pending_count['total_pending_schedules'];
+
 $conn->close();
 
 ?>
@@ -244,7 +270,7 @@ $conn->close();
                 <li class="sidebar-item has-dropdown">
                     <a href="#" class="sidebar-link">
                         <span style="margin-left: 8px;">Schedule</span>
-                        <?php if ($totalPendingSchedules > 0 || $totalPendingOrientations > 0 && $is_admin): ?>
+                        <?php if ($total_pending_schedules > 0 || $totalPendingSchedules > 0  && $is_admin|| $totalPendingOrientations > 0 && $is_admin): ?>
                             <span class="notification-counter">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
                                     <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
@@ -264,12 +290,15 @@ $conn->close();
                         </a>
                         <a href="<?php echo $is_admin ? 'orientation.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">View Orientation</span>
-                            <?php if ($totalPendingOrientations > 0): ?>
-                                    <span class="notification-counter"><?= $totalPendingSchedules; ?></span>
+                            <?php if ($totalPendingOrientations > 0 && $is_admin): ?>
+                                    <span class="notification-counter"><?= $totalPendingOrientations; ?></span>
                                 <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin === false ? 'internal_orientation.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Request Orientation</span>
+                            <?php if ($total_pending_schedules > 0): ?>
+                                    <span class="notification-counter"><?= $total_pending_schedules; ?></span>
+                            <?php endif; ?>
                         </a>
                     </div>
                 </li>
