@@ -109,6 +109,15 @@ $Dresult = $conn->query($sqlMissingAssessmentsCount);
 $Drow = $Dresult->fetch_assoc();
 $totalMissingAssessments = $Drow['total_missing_assessments'];
 
+$sqlPendingOrientationsCount = "
+        SELECT COUNT(*) AS total_pending_orientations
+        FROM orientation o
+        WHERE o.orientation_status = 'pending'
+    ";
+
+    $Qresult = $conn->query($sqlPendingOrientationsCount);
+    $Qrow = $Qresult->fetch_assoc();
+    $totalPendingOrientations = $Qrow['total_pending_orientations'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -311,7 +320,7 @@ $totalMissingAssessments = $Drow['total_missing_assessments'];
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link-active">
                             <span style="margin-left: 8px;">Schedule</span>
-                            <?php if ($totalPendingSchedules > 0): ?>
+                            <?php if ($totalPendingSchedules > 0 || $totalPendingOrientations > 0): ?>
                                 <span class="notification-counter">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
                             <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
@@ -331,6 +340,9 @@ $totalMissingAssessments = $Drow['total_missing_assessments'];
                             </a>
                             <a href="<?php echo $is_admin ? 'orientation.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">View Orientation</span>
+                                <?php if ($totalPendingOrientations > 0): ?>
+                                    <span class="notification-counter"><?= $totalPendingSchedules; ?></span>
+                                <?php endif; ?>
                             </a>
                             <a href="<?php echo $is_admin === false ? 'internal_orientation.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">Request Orientation</span>

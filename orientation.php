@@ -175,6 +175,28 @@ $Dresult = $conn->query($sqlMissingAssessmentsCount);
 $Drow = $Dresult->fetch_assoc();
 $totalMissingAssessments = $Drow['total_missing_assessments'];
 
+function countPendingOrientations($conn, $orientationType)
+{
+    $sqlPendingOrientationsCount = "
+        SELECT COUNT(*) AS total_pending_orientations
+        FROM orientation o
+        WHERE o.orientation_type = '$orientationType' AND o.orientation_status = 'pending'
+    ";
+
+    $result = $conn->query($sqlPendingOrientationsCount);
+
+    if ($result) {
+        $row = $result->fetch_assoc();
+        return $row['total_pending_orientations'];
+    }
+
+    return 0; // Return 0 if the query fails
+}
+
+// Get counts for both orientation types
+$onlineCount = countPendingOrientations($conn, 'online');
+$faceToFaceCount = countPendingOrientations($conn, 'face_to_face');
+$totalPendingOrientations = $onlineCount + $faceToFaceCount;
 ?>
 
 <!DOCTYPE html>
@@ -237,7 +259,7 @@ $totalMissingAssessments = $Drow['total_missing_assessments'];
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link-active">
                             <span style="margin-left: 8px;">Schedule</span>
-                            <?php if ($totalPendingSchedules > 0): ?>
+                            <?php if ($totalPendingSchedules > 0 || $totalPendingOrientations > 0): ?>
                                 <span class="notification-counter">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
                             <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
@@ -257,6 +279,9 @@ $totalMissingAssessments = $Drow['total_missing_assessments'];
                             </a>
                             <a href="<?php echo $is_admin ? 'orientation.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">View Orientation</span>
+                                <?php if ($totalPendingOrientations > 0): ?>
+                                    <span class="notification-counter"><?= $totalPendingSchedules; ?></span>
+                                <?php endif; ?>
                             </a>
                             <a href="<?php echo $is_admin === false ? 'internal_orientation.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">Request Orientation</span>
@@ -377,8 +402,16 @@ $totalMissingAssessments = $Drow['total_missing_assessments'];
                     <div class="col-12 border rounded-2" style="background: white;">
                         <div class="row no-gutters py-2">
                             <div class="tabs">
-                                <div class="tab border active" data-tab="online">ONLINE</div>
-                                <div class="tab border" data-tab="face_to_face">FACE TO FACE</div>
+                                <div class="tab border active" data-tab="online">ONLINE
+                                <?php if ($onlineCount > 0): ?>
+                                    <span class="notification-counter"><?= $onlineCount; ?></span>
+                                <?php endif; ?>
+                                </div>
+                                <div class="tab border" data-tab="face_to_face">FACE TO FACE
+                                <?php if ($faceToFaceCount > 0): ?>
+                                    <span class="notification-counter"><?= $faceToFaceCount; ?></span>
+                                <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     </div>
