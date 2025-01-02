@@ -112,7 +112,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($admin['email'] === '') {
                 // Redirect directly if email is a placeholder
                 $_SESSION['user_id'] = $admin['user_id'];  // Set session variable to 'user_id'
-                header("Location: dashboard.php");
+                header("Location: admin_sidebar.php");
                 exit;
             }
 
