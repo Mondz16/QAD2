@@ -2,13 +2,11 @@
 include 'connection.php';
 session_start();
 
-// Check user session
 if (!isset($_SESSION['user_id']) || substr($_SESSION['user_id'], 3, 2) !== '11') {
     header("Location: login.php");
     exit();
 }
 
-// Initialize variables for status and message
 $status = '';
 $message = '';
 

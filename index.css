@@ -714,11 +714,11 @@
     outline: none;
     background-color: transparent;
     font-size: 1rem;
-    -webkit-appearance: none; /* Remove default dropdown arrow in WebKit browsers */
-    -moz-appearance: none; /* Remove default dropdown arrow in Firefox */
-    appearance: none; /* Remove default dropdown arrow */
-    background-color: transparent; /* Ensure background is transparent */
-    cursor: pointer; /* Change cursor to pointer */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    cursor: pointer;
     padding: 12px 20px;
 }
 

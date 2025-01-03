@@ -51,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $assessment_id = $assessment['id'];
         $stmt->close();
 
-        // Fetch the email and full name of the team member based on the team_id
         $stmt = $conn->prepare("SELECT iu.email, iu.first_name, iu.middle_initial, iu.last_name FROM internal_users iu JOIN team t ON iu.user_id = t.internal_users_id WHERE t.id = ?");
         $stmt->bind_param("i", $team_id);
         $stmt->execute();
@@ -64,7 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $full_name = $user['first_name'] . ' ' . $user['middle_initial'] . '. ' . $user['last_name'];
             $stmt->close();
 
-            // Handle file upload
             if (isset($_FILES['team_leader_signature']) && $_FILES['team_leader_signature']['error'] === UPLOAD_ERR_OK) {
                 $fileTmpPath = $_FILES['team_leader_signature']['tmp_name'];
                 $fileSize = $_FILES['team_leader_signature']['size'];
@@ -73,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $fileExtension = strtolower(end($fileNameCmps));
 
                 $allowedfileExtensions = array('png');
-                $maxFileSize = 2 * 1024 * 1024; // 2MB in bytes
+                $maxFileSize = 2 * 1024 * 1024;
 
                 if ($fileSize > $maxFileSize) {
                     $imgnotif = "images/error.png";
@@ -82,16 +80,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $imgnotif = "images/error.png";
                     $message = "Invalid file type. Only PNG files are allowed.";
                 } else {
-                    // Read the image file into binary data
                     $signature_data = file_get_contents($fileTmpPath);
 
-                    // Encrypt the binary data
                     $encrypted_signature_data = encryptData($signature_data, $encryption_key);
 
-                    // Remove the plain image file
                     unlink($fileTmpPath);
 
-                    // Load the existing assessment PDF
                     $pdf = new FPDI();
                     $pageCount = $pdf->setSourceFile($assessment_file);
                     for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
@@ -99,23 +93,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $pdf->addPage();
                         $pdf->useTemplate($templateId);
 
-                        // Only add the team leader's name and signature on the first page
                         if ($pageNo == 1) {
                             $pdf->SetFont('Arial', '', 12);
 
-                            // Set font and calculate the position to center the text around a specific X coordinate
-                            $centerTextX = 158; // The center X coordinate where you want to center the text
-                            $textYPosition = 258; // The Y coordinate where you want to place the text
+                            $centerTextX = 158; 
+                            $textYPosition = 258; 
                             $textWidth = $pdf->GetStringWidth($team_leader_name);
 
-                            // Calculate the X position to center the text
                             $textXPosition = $centerTextX - ($textWidth / 2);
 
-                            // Print the QAD Officer's name centered at the specified centerTextX
                             $pdf->SetXY($textXPosition, $textYPosition);
                             $pdf->Write(0, $team_leader_name);
 
-                            // Decrypt the signature image before adding to PDF
                             $decrypted_signature_data = decryptData($encrypted_signature_data, $encryption_key);
                             $temp_signature_path = tempnam(sys_get_temp_dir(), 'sig') . '.png';
                             file_put_contents($temp_signature_path, $decrypted_signature_data);

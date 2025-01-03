@@ -29,8 +29,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-    $otp = rand(100000, 999999); // Generate a 6-digit OTP
-    $hashed_otp = password_hash($otp, PASSWORD_DEFAULT); // Hash the OTP
+    $otp = rand(100000, 999999);
+    $hashed_otp = password_hash($otp, PASSWORD_DEFAULT);
 
     include 'connection.php';
 
@@ -65,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo "<script>
                     alert('This account is already registered but not verified. Redirecting to OTP verification page.');
                     window.location.href = 'verify_otp.php?email=" . urlencode($email) . "&type=" . urlencode($type) . "';
-                  </script>";
+                </script>";
             exit;
         }
 
@@ -76,15 +76,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     } else {
                         window.location.href = 'register.php';
                     }
-                  </script>";
+                </script>";
         } elseif ($status == 'pending') {
             echo "<script>alert('This account is already registered in the system but pending. Please wait for the admin to approve.');
-                  window.location.href = 'register.php';
-                  </script>";
+                window.location.href = 'register.php';
+                </script>";
         } elseif ($status == 'active') {
             echo "<script>alert('This account is already registered in the system and active.');
-                  window.location.href = 'login.php';
-                  </script>";
+                window.location.href = 'login.php';
+                </script>";
         }
         exit;
     }

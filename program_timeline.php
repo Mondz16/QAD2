@@ -685,7 +685,6 @@ $conn->close();
                         <p><strong>LEGENDS</strong></p>
                     </div>
                     <div class="legend-lines">
-                        <div class="legend-line red-line"></div>
                         <div class="legend-line green-line"></div>
                         <div class="legend-line grey-line"></div>
                         <div class="legend-line yellow-line"></div>
@@ -694,9 +693,6 @@ $conn->close();
                         </div>
                     </div>
                     <div class="legend-tooltip">
-                        <div class="tooltip-line">
-                            <div class="tooltip-color red-tooltip" style="margin-right: 30px;">NA</div><strong>NOT ACCREDITABLE</strong>
-                        </div>
                         <div class="tooltip-line">
                             <div class="tooltip-color green-tooltip" style="margin-right: 30px;">CAN</div><strong>CANDIDATE</strong>
                         </div>
@@ -943,15 +939,11 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                                 let levelColor = '';
 
                                 switch (dataPoint.level.toUpperCase()) {
-                                    case 'NOT ACCREDITABLE':
-                                        levelShort = 'NA';
-                                        levelColor = '#B73033';
-                                        break;
                                     case 'CANDIDATE':
                                         levelShort = 'CAN';
                                         levelColor = '#76FA97';
                                         break;
-                                    case 'PRE-SURVEY VISIT':
+                                    case 'PSV':
                                         levelShort = 'PSV';
                                         levelColor = '#CCCCCC';
                                         break;
@@ -985,36 +977,29 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                                 const boxX = x - boxWidth / 2;
                                 const boxY = y - boxHeight / 2;
 
-                                // Draw the box with rounded corners
+                                // Draw the top half with rounded corners
                                 ctx.beginPath();
                                 ctx.moveTo(boxX + borderRadius, boxY);
                                 ctx.lineTo(boxX + boxWidth - borderRadius, boxY);
                                 ctx.quadraticCurveTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + borderRadius);
-                                ctx.lineTo(boxX + boxWidth, boxY + boxHeight - borderRadius);
-                                ctx.quadraticCurveTo(boxX + boxWidth, boxY + boxHeight, boxX + boxWidth - borderRadius, boxY + boxHeight);
-                                ctx.lineTo(boxX + borderRadius, boxY + boxHeight);
-                                ctx.quadraticCurveTo(boxX, boxY + boxHeight, boxX, boxY + boxHeight - borderRadius);
+                                ctx.lineTo(boxX + boxWidth, boxY + boxHeight / 2);
+                                ctx.lineTo(boxX, boxY + boxHeight / 2);
                                 ctx.lineTo(boxX, boxY + borderRadius);
                                 ctx.quadraticCurveTo(boxX, boxY, boxX + borderRadius, boxY);
                                 ctx.closePath();
 
-                                ctx.strokeStyle = '#000000';
-                                ctx.lineWidth = 1;
-                                ctx.stroke();
-
-                                // Draw the top half (level)
-                                ctx.beginPath();
-                                ctx.rect(boxX, boxY, boxWidth, boxHeight / 2);
                                 ctx.fillStyle = levelColor;
                                 ctx.fill();
+                                ctx.strokeStyle = '#000000';
+                                ctx.stroke();
 
-                                // Draw the bottom half (date)
+                                // Draw the bottom half (rectangular)
                                 ctx.beginPath();
                                 ctx.rect(boxX, boxY + boxHeight / 2, boxWidth, boxHeight / 2);
                                 ctx.fillStyle = '#FFFFFF';
                                 ctx.fill();
                                 ctx.strokeStyle = '#000000';
-                                ctx.strokeRect(boxX, boxY + boxHeight / 2, boxWidth, boxHeight / 2);
+                                ctx.stroke();
 
                                 // Add level text
                                 ctx.fillStyle = 'white';
@@ -1055,14 +1040,35 @@ function loadProgramsForColleges(collegeCodes, selectedValues) {
         if (xhr1.readyState === 4 && xhr1.status === 200) {
             try {
                 const response = JSON.parse(xhr1.responseText);
+                
+                // Create a Set to store unique program names
+                const uniquePrograms = new Set();
+                
+                // Collect all unique program names across all colleges
+                Object.values(response.programs).forEach(collegePrograms => {
+                    collegePrograms.forEach(program => {
+                        uniquePrograms.add(program.program_name);
+                    });
+                });
+                
+                // Generate new options HTML with unique programs while maintaining custom structure
+                let uniqueOptionsHtml = Array.from(uniquePrograms)
+                    .sort() // Optional: sort alphabetically
+                    .map(programName => `<div class="select-item" data-value="${programName}">${programName}</div>`)
+                    .join('');
 
-                // Populate programs in the dropdown
-                document.querySelector('.select-items').innerHTML = response.options;
+                // If no programs are found, show a default message
+                if (uniquePrograms.size === 0) {
+                    uniqueOptionsHtml = "<div>Select programs</div>";
+                }
+                
+                // Update the dropdown while maintaining custom structure
+                document.querySelector('.select-items').innerHTML = uniqueOptionsHtml;
 
                 const chartContainer = document.getElementById('chartContainer');
                 chartContainer.innerHTML = ''; // Clear previous content
 
-                // Dynamically create sections for selected colleges
+                // Rest of your existing code remains unchanged
                 selectedValues.forEach(selectedCollege => {
                     const collegeCode = selectedCollege.code;
                     const collegeName = selectedCollege.name;
@@ -1267,7 +1273,7 @@ function loadProgramsForColleges(collegeCodes, selectedValues) {
 
             // Define colors and abbreviations for each level
             const levelColors = {
-                'Not Accreditable': '#B73033', // Red
+                'No Graduates Yet': '#B73033', // Red
                 'Candidate': '#76FA97', // Green
                 'PSV': '#CCCCCC', // Grey
                 '1': '#FDC879', // Yellow
@@ -1277,7 +1283,7 @@ function loadProgramsForColleges(collegeCodes, selectedValues) {
             };
 
             const levelAbbreviations = {
-                'Not Accreditable': 'NA',
+                'No Graduates Yet': 'NA',
                 'Candidate': 'CAN',
                 'PSV': 'PSV',
                 '1': 'LVL 1',

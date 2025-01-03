@@ -422,13 +422,12 @@ $stmt_assessment_count->close();
                                 <?php
                                 $status_color = '';
                                 if ($schedule['schedule_status'] === 'pending') {
-                                    $status_color = '#E6A33E'; // Pending color
+                                    $status_color = '#E6A33E';
                                 } elseif ($schedule['schedule_status'] === 'approved') {
-                                    $status_color = '#34C759'; // Approved color
+                                    $status_color = '#34C759';
                                 }
                                 ?>
                                 <?php if (empty($schedule['orientation_id'])): ?>
-                                    <!-- No orientation request exists, show the request orientation button -->
                                     <p class="status1">STATUS: <strong style="color: <?php echo $status_color; ?>; margin-left: 5px;"><?php echo htmlspecialchars($schedule['schedule_status']); ?></strong>
                                         <button class="orientation-button" onclick="openModal(<?php echo $schedule_id; ?>)">REQUEST ORIENTATION</button>
                                     </p>

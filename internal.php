@@ -400,7 +400,6 @@ $stmt_assessment_count->close();
 
         <div id="passwordMatchMessage"></div>
 
-        <!-- Modals -->
         <div id="profilePictureModal" class="modal">
             <div class="modal-content">
                 <form action="update_profile.php" method="post" enctype="multipart/form-data">
@@ -434,7 +433,6 @@ $stmt_assessment_count->close();
                             <?php if ($prefix !== 'Assoc. Prof.') { ?><option value="Assoc. Prof.">Assoc. Prof.</option><?php } ?>
                             <?php if ($prefix !== 'Assist. Prof.') { ?><option value="Assist. Prof.">Assist. Prof.</option><?php } ?>
                             <?php if ($prefix !== 'Engr.') { ?><option value="Engr.">Engr.</option><?php } ?>
-                            <!-- Add more options as needed -->
                         </select>
                     </div>
                     <input type="hidden" name="field" value="prefix">

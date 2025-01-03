@@ -1,11 +1,9 @@
 <?php
 session_start();
 
-// Check if user is already logged in
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
 
-    // Parse user_id to get role
     if ($user_id === 'admin') {
         header("Location: dashboard.php");
     } else {

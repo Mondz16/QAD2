@@ -64,7 +64,7 @@ $sql = "CREATE TABLE IF NOT EXISTS program_level_history (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     program_id INT(6) UNSIGNED NOT NULL,
     program_level VARCHAR(20) NOT NULL,
-    date_received DATE NOT NULL,
+    date_received DATE NULL,
     year_of_validity DATE NULL,
     FOREIGN KEY (program_id) REFERENCES program(id)
 )";

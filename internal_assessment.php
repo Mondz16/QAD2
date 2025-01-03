@@ -623,7 +623,7 @@ function intToRoman($num)
                         $maxAreas = 0; // Initialize variable to store the max areas
 
                         // Fetch areas dynamically based on level_applied and program_name
-                        if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2) {
+                        if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2 || $schedule['level_applied'] == 'PSV') {
                             // Level 1 and 2 areas
                             $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
                             'Vision, Mission, Goals, and Objectives', 

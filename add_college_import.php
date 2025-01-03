@@ -33,9 +33,13 @@ function getNextCollegeCode($conn)
     return $next_code;
 }
 
-// Function to convert Excel date to YYYY-MM-DD format
+// Function to convert Excel date to YYYY-MM-DD format or NULL if empty
 function excelDateToDate($excelDate)
 {
+    if (empty($excelDate)) {
+        return null;
+    }
+    
     if (is_numeric($excelDate)) {
         $unixDate = ($excelDate - 25569) * 86400; // Convert Excel date to Unix timestamp
         return gmdate("Y-m-d", $unixDate);
@@ -64,7 +68,7 @@ if (isset($_FILES['excel_file']['name'])) {
             $program_name = $sheet->getCellByColumnAndRow(4, $row)->getValue();
             $program_level = $sheet->getCellByColumnAndRow(5, $row)->getValue();
             $date_received = $sheet->getCellByColumnAndRow(6, $row)->getValue();
-            $date_received = excelDateToDate($date_received); // Convert date to YYYY-MM-DD format
+            $date_received = excelDateToDate($date_received); // Convert date to YYYY-MM-DD format or NULL
             $year_of_validity = $sheet->getCellByColumnAndRow(7, $row)->getValue();
 
             // Set program_level to 'N/A' if it is blank
@@ -118,9 +122,15 @@ if (isset($_FILES['excel_file']['name'])) {
 
                     if ($existing_program_level !== $program_level) {
                         // Insert new program level history
-                        $sql_insert_program_level_history = "INSERT INTO program_level_history (program_id, program_level, date_received, year_of_validity) VALUES (?, ?, ?, ?)";
-                        $stmt_insert_program_level_history = $conn->prepare($sql_insert_program_level_history);
-                        $stmt_insert_program_level_history->bind_param("isss", $program_id, $program_level, $date_received, $year_of_validity);
+                        if ($date_received === null) {
+                            $sql_insert_program_level_history = "INSERT INTO program_level_history (program_id, program_level, date_received, year_of_validity) VALUES (?, ?, NULL, ?)";
+                            $stmt_insert_program_level_history = $conn->prepare($sql_insert_program_level_history);
+                            $stmt_insert_program_level_history->bind_param("iss", $program_id, $program_level, $year_of_validity);
+                        } else {
+                            $sql_insert_program_level_history = "INSERT INTO program_level_history (program_id, program_level, date_received, year_of_validity) VALUES (?, ?, ?, ?)";
+                            $stmt_insert_program_level_history = $conn->prepare($sql_insert_program_level_history);
+                            $stmt_insert_program_level_history->bind_param("isss", $program_id, $program_level, $date_received, $year_of_validity);
+                        }
                         $stmt_insert_program_level_history->execute();
 
                         // Update the program with the new program level ID
@@ -142,9 +152,15 @@ if (isset($_FILES['excel_file']['name'])) {
                 $program_id = $conn->insert_id;
 
                 // Insert program level history
-                $sql_insert_program_level_history = "INSERT INTO program_level_history (program_id, program_level, date_received, year_of_validity) VALUES (?, ?, ?, ?)";
-                $stmt_insert_program_level_history = $conn->prepare($sql_insert_program_level_history);
-                $stmt_insert_program_level_history->bind_param("isss", $program_id, $program_level, $date_received, $year_of_validity);
+                if ($date_received === null) {
+                    $sql_insert_program_level_history = "INSERT INTO program_level_history (program_id, program_level, date_received, year_of_validity) VALUES (?, ?, NULL, ?)";
+                    $stmt_insert_program_level_history = $conn->prepare($sql_insert_program_level_history);
+                    $stmt_insert_program_level_history->bind_param("iss", $program_id, $program_level, $year_of_validity);
+                } else {
+                    $sql_insert_program_level_history = "INSERT INTO program_level_history (program_id, program_level, date_received, year_of_validity) VALUES (?, ?, ?, ?)";
+                    $stmt_insert_program_level_history = $conn->prepare($sql_insert_program_level_history);
+                    $stmt_insert_program_level_history->bind_param("isss", $program_id, $program_level, $date_received, $year_of_validity);
+                }
                 $stmt_insert_program_level_history->execute();
 
                 // Get the last inserted program level history ID

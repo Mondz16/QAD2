@@ -79,23 +79,19 @@ foreach ($area_ratings as $area_id => $rating) {
     $stmt_area->fetch();
     $stmt_area->close();
 
-    // Insert or update the rating in team_areas
     $sql_rating = "INSERT INTO team_areas (team_id, area_id, rating) VALUES (?, ?, ?) 
                   ON DUPLICATE KEY UPDATE rating = ?";
     $stmt_rating = $conn->prepare($sql_rating);
-    $updated_rating = $rating;  // Ensure it's a separate variable
+    $updated_rating = $rating;
     $stmt_rating->bind_param("iidd", $team_id, $area_id, $rating, $updated_rating);
     $stmt_rating->execute();
     $stmt_rating->close();
 
-    // Prepare for the PDF
     $areas[] = $area_name;
     $results[] = $rating;
 }
 
-// **Refactored Logic Starts Here**
 
-// Step 1: Retrieve level_applied from schedule table using schedule_id
 $sql_level = "SELECT level_applied FROM schedule WHERE id = ?";
 $stmt_level = $conn->prepare($sql_level);
 $stmt_level->bind_param("i", $schedule_id);
@@ -104,7 +100,6 @@ $stmt_level->bind_result($level_applied);
 $stmt_level->fetch();
 $stmt_level->close();
 
-// Step 2: Retrieve standard from accreditation_standard table using level_applied
 $sql_standard = "SELECT Standard FROM accreditation_standard WHERE Level = ?";
 $stmt_standard = $conn->prepare($sql_standard);
 $stmt_standard->bind_param("s", $level_applied);
@@ -113,14 +108,11 @@ $stmt_standard->bind_result($standard);
 $stmt_standard->fetch();
 $stmt_standard->close();
 
-// Step 3: Determine the interpretation based on the standard and ratings
 if (empty($results)) {
-    $interpretation = "No Ratings"; // If no ratings are available
+    $interpretation = "No Ratings"; 
 } else {
-    // Calculate the threshold
     $threshold = $standard - 0.50;
 
-    // Determine counts based on the threshold
     $above_standard_count = count(array_filter($results, function($r) use ($standard) {
         return $r > $standard;
     }));
@@ -129,21 +121,18 @@ if (empty($results)) {
     }));
     $total_ratings = count($results);
 
-    // Apply the logic based on the level and standard
     if ($below_threshold_count === $total_ratings && $total_ratings > 0) {
-        $interpretation = "Revisit"; // All ratings are strictly less than (standard - 0.50)
+        $interpretation = "Revisit";
     } elseif ($above_standard_count === $total_ratings && $below_threshold_count === 0) {
-        $interpretation = "Ready"; // All ratings are greater than standard and none are below (standard - 0.50)
+        $interpretation = "Ready";
     } elseif ($below_threshold_count >= 1 && $below_threshold_count <= 3) {
-        $interpretation = "Needs Improvement"; // 1-3 ratings are strictly less than (standard - 0.50)
+        $interpretation = "Needs Improvement";
     } else {
-        $interpretation = "Needs Improvement"; // Default case
+        $interpretation = "Needs Improvement";
     }
 }
 
-// **Refactored Logic Ends Here**
 
-// Save the filled PDF for summary
 $pdf = new FPDI();
 $pdf->AddPage();
 $pdf->setSourceFile('Summary/summary.pdf');
