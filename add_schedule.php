@@ -367,14 +367,15 @@ if (!isset($_SESSION['user_id'])) {
         let programsData = [];
 
         function showProgramModal() {
-    const modal = document.getElementById('programModal');
-    const programForm = document.getElementById('program-form');
+            const modal = document.getElementById('programModal');
+            const programForm = document.getElementById('program-form');
+            document.querySelector('.cancel-program-btn').style.display = "block";
 
-    // Clear previous content
-    programForm.innerHTML = '';
+            // Clear previous content
+            programForm.innerHTML = '';
 
-    // Add the program form template
-    const template = `
+            // Add the program form template
+            const template = `
         <div class="program-block" id="program-block-temp">
             <div class="form-group">
                 <label for="program-temp">PROGRAM:</label>
@@ -414,117 +415,119 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     `;
 
-    programForm.insertAdjacentHTML('beforeend', template);
-    modal.style.display = "block";
-    // Initialize select2 for the new dropdown
-    $("#program-temp").select({
+            programForm.insertAdjacentHTML('beforeend', template);
+            modal.style.display = "block";
+            // Initialize select2 for the new dropdown
+            $("#program-temp").select({
                 dropdownParent: $('#programModal')
             });
-    // Populate program dropdown
-    updateSelectedPrograms();
+            // Populate program dropdown
+            updateSelectedPrograms();
             updateSubmitButtonState();
             clearScheduleErrors();
             updateNewProgramDropdown("#program-temp");
-    // Set minimum date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('date-temp').setAttribute('min', today);
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date-temp').setAttribute('min', today);
 
-    // Restrict time to 8:00 AM to 5:00 PM using JavaScript validation
-    const timeInput = document.getElementById('time-temp');
-    timeInput.addEventListener('input', () => {
-        const [hours, minutes] = timeInput.value.split(':').map(Number);
-        if (hours < 8 || (hours === 17 && minutes > 0) || hours > 17) {
-            alert("Time must be between 08:00 AM and 5:00 PM.");
-            timeInput.value = ''; // Reset the invalid time
-        }
-    });
+            // Restrict time to 8:00 AM to 5:00 PM using JavaScript validation
+            const timeInput = document.getElementById('time-temp');
+            timeInput.addEventListener('input', () => {
+                const [hours, minutes] = timeInput.value.split(':').map(Number);
+                if (hours < 8 || (hours === 17 && minutes > 0) || hours > 17) {
+                    alert("Time must be between 08:00 AM and 5:00 PM.");
+                    timeInput.value = ''; // Reset the invalid time
+                }
+            });
 
-    // Initialize select2 for the new dropdown
-    $("#program-temp").select({
-        dropdownParent: $('#programModal')
-    });
+            // Initialize select2 for the new dropdown
+            $("#program-temp").select({
+                dropdownParent: $('#programModal')
+            });
 
-    // Populate program dropdown
-    updateSelectedPrograms();
-    updateSubmitButtonState();
-    clearScheduleErrors();
-    updateNewProgramDropdown("#program-temp");
-}
-
-function saveProgramData() {
-    // Gather input elements
-    const program = document.getElementById('program-temp');
-    const levelValidity = document.getElementById('year-validity-temp');
-    const date = document.getElementById('date-temp');
-    const time = document.getElementById('time-temp');
-
-    // Initialize validation flag and error messages
-    let isValid = true;
-    const errors = [];
-
-    // Check each required field
-    if (!program.value) {
-        isValid = false;
-        errors.push("Program is required.");
-    }
-
-    if (!levelValidity.value) {
-        isValid = false;
-        errors.push("Level validity is required.");
-    }
-
-    if (!date.value) {
-        isValid = false;
-        errors.push("Date is required.");
-    } else {
-        const selectedDate = new Date(date.value);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (selectedDate < today) {
-            isValid = false;
-            errors.push("Date cannot be in the past.");
-        }
-    }
-
-    if (!time.value) {
-        isValid = false;
-        errors.push("Time is required.");
-    } else {
-        const [hours, minutes] = time.value.split(':').map(Number);
-        if (hours < 8 || (hours === 17 && minutes > 0) || hours > 17) {
-            isValid = false;
-            errors.push("Time must be between 08:00 AM and 5:00 PM.");
-        }
-    }
-
-    if (!isValid) {
-        alert(`Please correct the following errors:\n\n${errors.join("\n")}`);
-        return;
-    }
-
-    checkScheduleDate((isScheduleValid) => {
-        if (isScheduleValid) {
-            programCount++;
-            const programData = {
-                id: programCount,
-                program: program.value,
-                programName: program.options[program.selectedIndex].text,
-                level: document.getElementById('program-level-temp').value,
-                levelApplied: document.getElementById('level-output-temp').value,
-                validity: levelValidity.value,
-                date: date.value,
-                time: time.value,
-                zoom: document.getElementById('zoom-temp').value
-            };
-
-            programsData.push(programData);
-            updateProgramsList();
+            // Populate program dropdown
+            updateSelectedPrograms();
             updateSubmitButtonState();
-            closeModal();
+            clearScheduleErrors();
+            updateNewProgramDropdown("#program-temp");
+
+            document.querySelector('.save-program-btn').onclick = saveProgramData;
         }
-    });
-}
+
+        function saveProgramData() {
+            // Gather input elements
+            const program = document.getElementById('program-temp');
+            const levelValidity = document.getElementById('year-validity-temp');
+            const date = document.getElementById('date-temp');
+            const time = document.getElementById('time-temp');
+
+            // Initialize validation flag and error messages
+            let isValid = true;
+            const errors = [];
+
+            // Check each required field
+            if (!program.value) {
+                isValid = false;
+                errors.push("Program is required.");
+            }
+
+            if (!levelValidity.value) {
+                isValid = false;
+                errors.push("Level validity is required.");
+            }
+
+            if (!date.value) {
+                isValid = false;
+                errors.push("Date is required.");
+            } else {
+                const selectedDate = new Date(date.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (selectedDate < today) {
+                    isValid = false;
+                    errors.push("Date cannot be in the past.");
+                }
+            }
+
+            if (!time.value) {
+                isValid = false;
+                errors.push("Time is required.");
+            } else {
+                const [hours, minutes] = time.value.split(':').map(Number);
+                if (hours < 8 || (hours === 17 && minutes > 0) || hours > 17) {
+                    isValid = false;
+                    errors.push("Time must be between 08:00 AM and 5:00 PM.");
+                }
+            }
+
+            if (!isValid) {
+                alert(`Please correct the following errors:\n\n${errors.join("\n")}`);
+                return;
+            }
+
+            checkScheduleDate((isScheduleValid) => {
+                if (isScheduleValid) {
+                    programCount++;
+                    const programData = {
+                        id: programCount,
+                        program: program.value,
+                        programName: program.options[program.selectedIndex].text,
+                        level: document.getElementById('program-level-temp').value,
+                        levelApplied: document.getElementById('level-output-temp').value,
+                        validity: levelValidity.value,
+                        date: date.value,
+                        time: time.value,
+                        zoom: document.getElementById('zoom-temp').value
+                    };
+
+                    programsData.push(programData);
+                    updateProgramsList();
+                    updateSubmitButtonState();
+                    closeModal();
+                }
+            });
+        }
 
 
         function updateProgramsList() {
@@ -583,6 +586,7 @@ function saveProgramData() {
 
         function editProgram(id) {
             const program = programsData.find(p => p.id === id);
+            console.log(program);
             if (!program) return;
 
             showProgramModal();
@@ -598,7 +602,10 @@ function saveProgramData() {
                 document.getElementById('zoom-temp').value = program.zoom;
 
                 // Remove the old program data
-                programsData = programsData.filter(p => p.id !== id);
+                document.querySelector('.save-program-btn').onclick = () => {
+                    programsData = programsData.filter(p => p.id !== id);
+                    saveProgramData();
+                }
             }, 100);
         }
 
@@ -613,7 +620,6 @@ function saveProgramData() {
             document.getElementById('programModal').style.display = "none";
         }
         document.querySelector('.cancel-program-btn').onclick = closeModal;
-        document.querySelector('.save-program-btn').onclick = saveProgramData;
         document.getElementById('add-program-button').onclick = showProgramModal;
 
         window.onclick = function(event) {
@@ -798,7 +804,7 @@ function saveProgramData() {
                             levelApplied = 'PSV';
                         } else if (currentLevel === 'PSV') {
                             levelApplied = '1';
-                        }else if (currentLevel < 4) {
+                        } else if (currentLevel < 4) {
                             levelApplied = parseInt(currentLevel) + 1;
                         } else {
                             levelApplied = currentLevel;

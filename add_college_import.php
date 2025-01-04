@@ -70,6 +70,7 @@ if (isset($_FILES['excel_file']['name'])) {
             $date_received = $sheet->getCellByColumnAndRow(6, $row)->getValue();
             $date_received = excelDateToDate($date_received); // Convert date to YYYY-MM-DD format or NULL
             $year_of_validity = $sheet->getCellByColumnAndRow(7, $row)->getValue();
+            $year_of_validity = excelDateToDate($year_of_validity); // Convert date to YYYY-MM-DD format or NULL
 
             // Set program_level to 'N/A' if it is blank
             if (empty($program_level)) {
