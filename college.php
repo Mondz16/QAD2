@@ -58,9 +58,10 @@ while ($row_college = $result_colleges->fetch_assoc()) {
 
 $sql_programs = "SELECT 
                     p.college_code, 
-                    p.program_name, 
+                    p.program_name,
+                    p.board_action_link, 
                     plh.program_level, 
-                    plh.date_received 
+                    plh.date_received
                  FROM 
                     program p
                  LEFT JOIN 
@@ -75,7 +76,8 @@ while ($row_program = $result_programs->fetch_assoc()) {
     $collegePrograms[$row_program['college_code']]['programs'][] = [
         'program_name' => $row_program['program_name'],
         'program_level' => $program_level,
-        'date_received' => $row_program['date_received']
+        'date_received' => $row_program['date_received'],
+        'board_action_link' => $row_program['board_action_link']
     ];
 }
 
@@ -197,9 +199,9 @@ $sqlPendingOrientationsCount = "
         WHERE o.orientation_status = 'pending'
     ";
 
-    $Qresult = $conn->query($sqlPendingOrientationsCount);
-    $Qrow = $Qresult->fetch_assoc();
-    $totalPendingOrientations = $Qrow['total_pending_orientations'];
+$Qresult = $conn->query($sqlPendingOrientationsCount);
+$Qrow = $Qresult->fetch_assoc();
+$totalPendingOrientations = $Qrow['total_pending_orientations'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -259,7 +261,8 @@ $sqlPendingOrientationsCount = "
 
         .modal-content {
             max-width: 1200px !important;
-            top: 20% !important;
+            top: 15% !important;
+            max-height: 800px;
         }
     </style>
 </head>
@@ -576,6 +579,7 @@ $sqlPendingOrientationsCount = "
                         <th>Date Received <button onclick="sortPrograms('date_received')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
                                     <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5" />
                                 </svg></button></th>
+                        <th>Board Action</th>
                     </tr>
                     <!-- Program details will be populated here using JavaScript -->
                 </table>
@@ -697,6 +701,7 @@ $sqlPendingOrientationsCount = "
             <th>Date Received <button class="sort-buttons" onclick="sortPrograms('date_received')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
                                     <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5" />
                                 </svg></button></th>
+                                <th>Board Action</th>
         </tr>
     `;
 
@@ -705,10 +710,14 @@ $sqlPendingOrientationsCount = "
                 var cell1 = row.insertCell(0);
                 var cell2 = row.insertCell(1);
                 var cell3 = row.insertCell(2);
+                var cell4 = row.insertCell(3);
 
                 cell1.innerHTML = program.program_name;
                 cell2.innerHTML = program.program_level || 'N/A';
                 cell3.innerHTML = program.date_received;
+                if(program.board_action_link){
+                    cell4.innerHTML = `<a href="${program.board_action_link}">Link</a>`;
+                }
             });
         }
 

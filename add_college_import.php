@@ -71,6 +71,7 @@ if (isset($_FILES['excel_file']['name'])) {
             $date_received = excelDateToDate($date_received); // Convert date to YYYY-MM-DD format or NULL
             $year_of_validity = $sheet->getCellByColumnAndRow(7, $row)->getValue();
             $year_of_validity = excelDateToDate($year_of_validity); // Convert date to YYYY-MM-DD format or NULL
+            $board_action_link = $sheet->getCellByColumnAndRow(8, $row)->getValue();
 
             // Set program_level to 'N/A' if it is blank
             if (empty($program_level)) {
@@ -144,9 +145,9 @@ if (isset($_FILES['excel_file']['name'])) {
                 }
             } else {
                 // Insert new program
-                $sql_insert_program = "INSERT INTO program (college_code, program_name) VALUES (?, ?)";
+                $sql_insert_program = "INSERT INTO program (college_code, program_name, board_action_link) VALUES (?, ?, ?)";
                 $stmt_insert_program = $conn->prepare($sql_insert_program);
-                $stmt_insert_program->bind_param("ss", $college_code, $program_name);
+                $stmt_insert_program->bind_param("sss", $college_code, $program_name, $board_action_link);
                 $stmt_insert_program->execute();
 
                 // Get the last inserted program ID

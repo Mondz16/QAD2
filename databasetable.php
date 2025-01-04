@@ -50,6 +50,7 @@ $sql = "CREATE TABLE IF NOT EXISTS program (
     college_code VARCHAR(2),
     program_name VARCHAR(255) NOT NULL,
     program_level_id INT(6) UNSIGNED,
+    board_action_link VARCHAR(255),
     FOREIGN KEY (college_code) REFERENCES college(code)
 )";
 
