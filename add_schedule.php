@@ -440,7 +440,7 @@ if (!isset($_SESSION['user_id'])) {
     });
 
     // Initialize select2 for the new dropdown
-    $("#program-temp").select2({
+    $("#program-temp").select({
         dropdownParent: $('#programModal')
     });
 
