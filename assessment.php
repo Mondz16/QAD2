@@ -156,42 +156,46 @@ if (count($teamLeaders) > 0) {
     }
 }
 
-// Query to count pending internal users
-$sqlInternalPendingCount = "
-    SELECT COUNT(*) AS internal_pending_count
-    FROM internal_users i
-    LEFT JOIN college c ON i.college_code = c.code
-    WHERE i.status = 'pending' AND i.otp = 'verified'
-";
-$internalResult = $conn->query($sqlInternalPendingCount);
-$internalPendingCount = $internalResult->fetch_assoc()['internal_pending_count'] ?? 0;
+$sqlPendingCount = "SELECT 
+    (
+        -- Count all pending internal users
+        (SELECT COUNT(*) 
+         FROM internal_users i
+         LEFT JOIN college c ON i.college_code = c.code
+         WHERE i.status = 'pending' AND i.otp = 'verified')
+        
+        -- Subtract duplicate accounts from transfers
+        - (SELECT COUNT(*)
+           FROM internal_users i1
+           INNER JOIN internal_users i2 ON SUBSTRING(i1.user_id, 4) = SUBSTRING(i2.user_id, 4)
+           WHERE i1.status = 'pending' 
+           AND i2.status = 'active'
+           AND i1.id > i2.id)  -- Ensures we only count each pair once
+    ) + 
+    
+    -- Add external pending users
+    (SELECT COUNT(*) 
+     FROM external_users e
+     LEFT JOIN company c ON e.company_code = c.code
+     WHERE e.status = 'pending'
+    ) AS total_pending_users;";
+$wresult = $conn->query($sqlPendingCount);
+$totalPendingUsers = $wresult->fetch_assoc()['total_pending_users'] ?? 0;
 
-// Query to count pending external users
-$sqlExternalPendingCount = "
-    SELECT COUNT(*) AS external_pending_count
-    FROM external_users e
-    LEFT JOIN company c ON e.company_code = c.code
-    WHERE e.status = 'pending'
-";
-$externalResult = $conn->query($sqlExternalPendingCount);
-$externalPendingCount = $externalResult->fetch_assoc()['external_pending_count'] ?? 0;
-
+// SQL query to count unique transfer requests based on bb-cccc part of user_id
 $sqlTransferRequestCount = "
     SELECT COUNT(DISTINCT bb_cccc) AS transfer_request_count
-    FROM (
-        SELECT SUBSTRING(user_id, 4) AS bb_cccc, status
-        FROM internal_users
-        WHERE status = 'pending'
-        GROUP BY bb_cccc
-        HAVING COUNT(*) > 1
-    ) AS transfer_groups
+FROM (
+    SELECT SUBSTRING(user_id, 4) AS bb_cccc
+    FROM internal_users
+    GROUP BY SUBSTRING(user_id, 4)
+    HAVING 
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) > 0
+        AND SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) > 0
+) AS transfer_groups;
 ";
 $Tresult = $conn->query($sqlTransferRequestCount);
 $transferRequestCount = $Tresult->fetch_assoc()['transfer_request_count'] ?? 0;
-
-
-// Total pending users count
-$totalPendingUsers = $internalPendingCount + $externalPendingCount - $transferRequestCount;
 
 $sqlPendingSchedulesCount = "
     SELECT COUNT(*) AS total_pending_schedules
