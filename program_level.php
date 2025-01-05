@@ -115,9 +115,9 @@ $sqlPendingOrientationsCount = "
         WHERE o.orientation_status = 'pending'
     ";
 
-    $Qresult = $conn->query($sqlPendingOrientationsCount);
-    $Qrow = $Qresult->fetch_assoc();
-    $totalPendingOrientations = $Qrow['total_pending_orientations'];
+$Qresult = $conn->query($sqlPendingOrientationsCount);
+$Qrow = $Qresult->fetch_assoc();
+$totalPendingOrientations = $Qrow['total_pending_orientations'];
 ?>
 
 <!DOCTYPE html>
@@ -287,10 +287,10 @@ $sqlPendingOrientationsCount = "
                             <span style="margin-left: 8px;">Schedule</span>
                             <?php if ($totalPendingSchedules > 0 || $totalPendingOrientations > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -581,11 +581,12 @@ $sqlPendingOrientationsCount = "
                     <label>Program Level:</label>
                     <select class="form-control" name="new-program_level" required>
                         <option value="">Select Program Level</option>
-                        <option value="PSV">PSV</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
+                        <option value="Candidate" ${programsData.some(program => program === 'Candidate') ? 'disabled' : ''}>Candidate</option>
+                        <option value="PSV" ${programsData.some(program => program === 'PSV') ? 'disabled' : ''}>PSV</option>
+                        <option value="1" ${programsData.some(program => program === '1') ? 'disabled' : ''}>1</option>
+                        <option value="2" ${programsData.some(program => program === '2') ? 'disabled' : ''}>2</option>
+                        <option value="3" ${programsData.some(program => program === '3') ? 'disabled' : ''}>3</option>
+                        <option value="4" ${programsData.some(program => program === '4') ? 'disabled' : ''}>4</option>
                     </select>
             </div>
             <div class="form-group">
@@ -739,6 +740,7 @@ $sqlPendingOrientationsCount = "
 
         function fetchProgramLevelDynamic() {
             const programId = document.getElementById(`program`).value;
+            const addProgramButton = document.getElementById('add-program-button');
             if (programId) {
                 $.ajax({
                     url: 'get_program_level_history.php',
@@ -750,6 +752,13 @@ $sqlPendingOrientationsCount = "
                         const data = JSON.parse(response);
                         console.log(data);
                         updateProgramsList(data);
+
+                        console.log(programCount);
+                        if (programCount >= 5) {
+                            addProgramButton.disabled = true;
+                        } else {
+                            addProgramButton.disabled = false;
+                        }
                     },
                     error: function(xhr, status, error) {
                         console.error('Error:', error);
@@ -763,9 +772,17 @@ $sqlPendingOrientationsCount = "
         function updateProgramsList(programData) {
             const container = document.querySelector('.selected-programs-list');
             container.innerHTML = '';
+            programCount = 0;
+            programsData = [];
+
+            programData.history.map(history => {
+                programCount++;
+                programsData.push(history.level);
+            });
 
             // Create the program history display
             const historyContent = programData.history.map(history => {
+
                 // Calculate default validity (date_received + years_of_validity + 3 years)
                 const dateReceived = new Date(history.date_received);
                 const defaultValidity = new Date(dateReceived.setFullYear(
@@ -774,9 +791,9 @@ $sqlPendingOrientationsCount = "
 
                 let showDateReceived = true;
                 let levelToShow = `Level ${history.level}`;
-                if(history.level == "Not Accreditable" || history.level == "Candidate" || history.level == "No Graduates Yet" || history.level == "N/A" ||  history.level == "PSV" ){
+                if (history.level == "Not Accreditable" || history.level == "Candidate" || history.level == "No Graduates Yet" || history.level == "N/A" || history.level == "PSV") {
                     levelToShow = history.level;
-                    if(history.level != "Candidate" ||history.level != "PSV" ){
+                    if (history.level == "Not Accreditable" || history.level == "No Graduates Yet" || history.level == "N/A") {
                         showDateReceived = false;
                     }
                 }
@@ -798,8 +815,27 @@ $sqlPendingOrientationsCount = "
             <div class="edit-form" id="edit-form-${history.id}" style="display: none;">
                 <div class="form-group">
                     <label>Program Level:</label>
-                    <input type="number" class="form-control" name="program_level"
-                           value="${history.level}" min="1" max="4">
+                    <select class="form-control" name="program_level" required>
+                        <option value="${history.level}">Select Program Level</option>
+                        <option value="Candidate" 
+                            ${history.level === 'Candidate' ? 'selected' : ''} 
+                            ${programsData.some(program => program === 'Candidate') ? 'disabled' : ''}>Candidate</option>
+                        <option value="PSV" 
+                            ${history.level === 'PSV' ? 'selected' : ''} 
+                            ${programsData.some(program => program === 'PSV') ? 'disabled' : ''}>PSV</option>
+                        <option value="1" 
+                            ${history.level === '1' ? 'selected' : ''} 
+                            ${programsData.some(program => program === '1') ? 'disabled' : ''}>1</option>
+                        <option value="2" 
+                            ${history.level === '2' ? 'selected' : ''} 
+                            ${programsData.some(program => program === '2') ? 'disabled' : ''}>2</option>
+                        <option value="3" 
+                            ${history.level === '3' ? 'selected' : ''} 
+                            ${programsData.some(program => program === '3') ? 'disabled' : ''}>3</option>
+                        <option value="4" 
+                            ${history.level === '4' ? 'selected' : ''} 
+                            ${programsData.some(program => program === '4') ? 'disabled' : ''}>4</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Date Received:</label>

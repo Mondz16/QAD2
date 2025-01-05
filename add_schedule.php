@@ -390,11 +390,13 @@ if (!isset($_SESSION['user_id'])) {
                     <label for="level-validity-temp">YEARS OF VALIDITY:</label>
                 </div>
                 <div class="level-input-holder">
-                    <input class="level-input" type="text" id="program-level-temp" name="level" readonly>
+                    <input class="level-input" type="text" id="program-level-temp" name="level" readonly hidden>
+                    <input class="level-input" type="text" id="program-level-output" readonly>
                     <div class="level-holder">
                         <span id="level-acquired-temp"></span>
                     </div>
-                    <input class="level-input highlight" type="text" id="level-output-temp" name="level-output" readonly>
+                    <input class="level-input highlight" type="text" id="level-output-temp" name="level-output" readonly hidden>
+                    <input class="level-input highlight" type="text" id="level-output" readonly>
                     <input class="level-input-validity" type="text" id="year-validity-temp" name="level_validity" value="3" required>
                 </div>
             </div>
@@ -593,13 +595,33 @@ if (!isset($_SESSION['user_id'])) {
 
             // Populate modal with program data
             setTimeout(() => {
-                document.getElementById('program-temp').value = program.program;
+                const programDropdown = document.getElementById('program-temp');
+                programDropdown.value = program.program;
                 document.getElementById('program-level-temp').value = program.level;
                 document.getElementById('level-output-temp').value = program.levelApplied;
                 document.getElementById('year-validity-temp').value = program.validity;
                 document.getElementById('date-temp').value = program.date;
                 document.getElementById('time-temp').value = program.time;
                 document.getElementById('zoom-temp').value = program.zoom;
+
+                var currentLevelTextOutput = program.validity;
+                var levelAppliedTextOutput = program.levelApplied;
+
+                if (program.level === 'No Graduates Yet') {
+                    currentLevelTextOutput = 'NGY';
+                } else if (program.level === 'Candidate') {
+                    currentLevelTextOutput = 'CAN';
+                } 
+                
+                if (program.levelApplied === 'No Graduates Yet') {
+                    levelAppliedTextOutput = 'NGY';
+                } else if (program.levelApplied === 'Candidate') {
+                    levelAppliedTextOutput = 'CAN';
+                } 
+
+                $('#program-level-output').val(currentLevelTextOutput);
+                $('#level-output').val(levelAppliedTextOutput);
+                programDropdown.disabled = true;
 
                 // Remove the old program data
                 document.querySelector('.save-program-btn').onclick = () => {
@@ -798,20 +820,34 @@ if (!isset($_SESSION['user_id'])) {
                         const data = JSON.parse(response);
                         const currentLevel = data.program_level.trim();
                         const dateReceived = data.date_received.trim();
+                        let levelApplied;
+                        var currentLevelTextOutput = currentLevel;
+                        var levelAppliedTextOutput = levelApplied;
 
-                        let levelApplied = 'NA';
-                        if (currentLevel === 'Candidate') {
+                        if (currentLevel === 'No Graduates Yet') {
+                            currentLevelTextOutput = 'NGY';
+                            levelAppliedTextOutput = 'CAN';
+                            levelApplied = 'Candidate';
+                        } else if (currentLevel === 'Candidate') {
+                            currentLevelTextOutput = 'CAN';
                             levelApplied = 'PSV';
+                            levelAppliedTextOutput = levelApplied;
                         } else if (currentLevel === 'PSV') {
                             levelApplied = '1';
+                            levelAppliedTextOutput = levelApplied;
                         } else if (currentLevel < 4) {
                             levelApplied = parseInt(currentLevel) + 1;
+                            levelAppliedTextOutput = levelApplied;
                         } else {
                             levelApplied = currentLevel;
+                            levelAppliedTextOutput = levelApplied;
                         }
 
                         document.getElementById(`program-level-${count}`).value = currentLevel;
                         document.getElementById(`level-output-${count}`).value = levelApplied;
+
+                        $('#program-level-output').val(currentLevelTextOutput);
+                        $('#level-output').val(levelAppliedTextOutput);
 
                         if (dateReceived !== 'N/A' && currentLevel !== 'NA') {
                             document.getElementById(`level-acquired-${count}`).innerText = `ACQUIRED IN ${dateReceived}`;
@@ -906,6 +942,7 @@ if (!isset($_SESSION['user_id'])) {
                         var currentLevelTextOutput = currentLevel;
                         var levelAppliedTextOutput = levelApplied;
 
+                        console(currentLevel);
                         if (currentLevel === 'Not Accreditable' || currentLevel === 'No Graduates Yet') {
                             currentLevelTextOutput = 'NA';
                             levelApplied = 'Candidate';
