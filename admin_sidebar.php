@@ -60,7 +60,7 @@ $countQuery = "
     SELECT COUNT(DISTINCT s.id) AS assessment_count
         FROM schedule s
         JOIN team t ON s.id = t.schedule_id
-        WHERE s.schedule_status IN ('approved', 'pending')
+        WHERE s.schedule_status IN ('approved')
 ";
 $Aresult = $conn->query($countQuery);
 $Arow = $Aresult->fetch_assoc();

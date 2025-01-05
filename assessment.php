@@ -155,6 +155,16 @@ if (count($teamLeaders) > 0) {
         }
     }
 }
+// Query to count assessments
+$countQuery = "
+    SELECT COUNT(DISTINCT s.id) AS assessment_count
+        FROM schedule s
+        JOIN team t ON s.id = t.schedule_id
+        WHERE s.schedule_status IN ('approved')
+";
+$Aresult = $conn->query($countQuery);
+$Arow = $Aresult->fetch_assoc();
+$assessmentCount = $Arow['assessment_count'];
 
 $sqlPendingCount = "SELECT 
     (
@@ -779,7 +789,7 @@ $sqlPendingOrientationsCount = "
                     <li class="sidebar-item has-dropdown">
                         <a href="#" class="sidebar-link-active">
                             <span style="margin-left: 8px;">Assessment</span>
-                            <?php if (count($assessments) > 0): ?>
+                            <?php if ($assessmentCount > 0): ?>
                                 <span class="notification-counter">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
                                         <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
@@ -790,9 +800,9 @@ $sqlPendingOrientationsCount = "
                         <div class="sidebar-dropdown">
                             <a href="<?php echo $is_admin ? 'assessment.php' : 'internal_assessment.php'; ?>" class="sidebar-link">
                                 <span style="margin-left: 8px;">View Assessments</span>
-                                <?php if (count($assessments) > 0): ?>
+                                <?php if ($assessmentCount > 0): ?>
                                     <span class="notification-counter">
-                                        <?= count($assessments) ?> <!-- Display the count of assessments -->
+                                        <?= $assessmentCount ?> <!-- Display the count of assessments -->
                                     </span>
                                 <?php endif; ?>
                             </a>
