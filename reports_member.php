@@ -107,6 +107,7 @@ function getMembers($conn, $campus, $college, $search, $offset, $year)
               LEFT JOIN program ON schedule.program_id = program.id
               WHERE (CONCAT(internal_users.first_name, ' ', internal_users.last_name) LIKE ?)
                 AND (internal_users.college_code LIKE ? OR ? = '')
+                AND internal_users.status = 'active'
               GROUP BY internal_users.user_id
               ORDER BY schedule_count DESC
               LIMIT 10 OFFSET ?";
@@ -160,6 +161,7 @@ function getUserDistributionByCampus($conn)
     $query = "SELECT college.college_campus, COUNT(internal_users.user_id) AS user_count
               FROM internal_users 
               INNER JOIN college ON internal_users.college_code = college.code
+              WHERE internal_users.status = 'active'
               GROUP BY college.college_campus";
     $result = $conn->query($query);
 
@@ -292,9 +294,9 @@ $sqlPendingOrientationsCount = "
         WHERE o.orientation_status = 'pending'
     ";
 
-    $Qresult = $conn->query($sqlPendingOrientationsCount);
-    $Qrow = $Qresult->fetch_assoc();
-    $totalPendingOrientations = $Qrow['total_pending_orientations'];
+$Qresult = $conn->query($sqlPendingOrientationsCount);
+$Qrow = $Qresult->fetch_assoc();
+$totalPendingOrientations = $Qrow['total_pending_orientations'];
 $conn->close();
 ?>
 
@@ -451,29 +453,29 @@ $conn->close();
                 <li class="sidebar-item has-dropdown">
                     <a href="#" class="sidebar-link">
                         <span style="margin-left: 8px;">Schedule</span>
-                            <?php if ($totalPendingSchedules > 0 || $totalPendingOrientations > 0): ?>
-                                <span class="notification-counter">
+                        <?php if ($totalPendingSchedules > 0 || $totalPendingOrientations > 0): ?>
+                            <span class="notification-counter">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
+                                    <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                </svg>
                             </span>
+                        <?php endif; ?>
+                    </a>
+                    <div class="sidebar-dropdown">
+                        <a href="dashboard.php" class="sidebar-link">
+                            <span style="margin-left: 8px;">View Schedule</span>
+                        </a>
+                        <a href="<?php echo $is_admin ? 'schedule.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">Add Schedule</span>
+                            <?php if ($totalPendingSchedules > 0): ?>
+                                <span class="notification-counter"><?= $totalPendingSchedules; ?></span>
                             <?php endif; ?>
                         </a>
-                        <div class="sidebar-dropdown">
-                            <a href="dashboard.php" class="sidebar-link">
-                                <span style="margin-left: 8px;">View Schedule</span>
-                            </a>
-                            <a href="<?php echo $is_admin ? 'schedule.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
-                                <span style="margin-left: 8px;">Add Schedule</span>
-                                <?php if ($totalPendingSchedules > 0): ?>
-                                    <span class="notification-counter"><?= $totalPendingSchedules; ?></span>
-                                <?php endif; ?>
-                            </a>
-                            <a href="<?php echo $is_admin ? 'orientation.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
-                                <span style="margin-left: 8px;">View Orientation</span>
-                                <?php if ($totalPendingOrientations > 0): ?>
-                                    <span class="notification-counter"><?= $totalPendingSchedules; ?></span>
-                                <?php endif; ?>
+                        <a href="<?php echo $is_admin ? 'orientation.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            <span style="margin-left: 8px;">View Orientation</span>
+                            <?php if ($totalPendingOrientations > 0): ?>
+                                <span class="notification-counter"><?= $totalPendingSchedules; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin === false ? 'internal_orientation.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Request Orientation</span>
@@ -512,10 +514,10 @@ $conn->close();
                             <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
-                                <span style="margin-left: 8px;">UDAS Assessments</span>
-                                <?php if ($totalMissingAssessments > 0): ?>
-                                    <span class="notification-counter"><?= $totalMissingAssessments; ?></span>
-                                <?php endif; ?>
+                            <span style="margin-left: 8px;">UDAS Assessments</span>
+                            <?php if ($totalMissingAssessments > 0): ?>
+                                <span class="notification-counter"><?= $totalMissingAssessments; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Assessment History</span>

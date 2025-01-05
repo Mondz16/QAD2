@@ -82,9 +82,7 @@ function displayRegistrations($conn, $tableName, $title)
         echo "<table id='collegeTable' class='data-table table border rounded-2'>
             <tr>
                 <th>ID</th>
-                <th>FIRST NAME</th>
-                <th>MIDDLE INITIAL</th>
-                <th>LAST NAME</th>
+                <th>Full NAME</th>
                 <th>EMAIL</th>";
     
         if ($tableName === 'internal_users') {
@@ -114,9 +112,7 @@ function displayRegistrations($conn, $tableName, $title)
     
             echo "<tr>
                 <td>{$row['user_id']}</td>
-                <td>{$row['first_name']}</td>
-                <td>{$row['middle_initial']}</td>
-                <td>{$row['last_name']}</td>
+                <td>{$row['first_name']} {$row['middle_initial']}. {$row['last_name']}</td>
                 <td>{$row['email']}</td>";
     
             if ($tableName === 'internal_users') {

@@ -239,7 +239,7 @@ table {
 }
 
 th, td {
-    padding: 15px;
+    padding: 5px;
     text-align: left;
     font-size: 16px;
     border-bottom: 1px solid #e5e5e5;
@@ -251,6 +251,10 @@ th {
 
 tr td:first-child{
     max-width: 600px;
+}
+
+tr td:last-child{
+    min-width: 210px;
 }
 
 tr:last-child td {
