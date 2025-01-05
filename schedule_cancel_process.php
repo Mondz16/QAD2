@@ -7,7 +7,7 @@ require 'vendor/autoload.php'; // Ensure PHPMailer is installed and autoloaded
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['schedule_id']) && isset($_POST['college'])) {
     $schedule_id = mysqli_real_escape_string($conn, $_POST['schedule_id']);
-    $college_code = mysqli_real_escape_string($conn, $_POST['college']);
+    $college_code = mysqli_real_escape_string($conn, $_POST['college_code']);
     $cancel_reason = mysqli_real_escape_string($conn, $_POST['cancel_reason']); // Get the cancellation reason
 
     // Set the timezone to Philippines

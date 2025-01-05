@@ -161,6 +161,10 @@ $sqlPendingOrientationsCount = "
             border-bottom: 1px solid #ddd;
             background-color: white;
         }
+
+        .modal-content {
+            top: 5% !important;
+        }
     </style>
 </head>
 
@@ -416,7 +420,7 @@ $sqlPendingOrientationsCount = "
 
         <!-- The Modal for Acceptance -->
         <div id="acceptModal" class="modal">
-            <div class="modal-content">
+            <div class="approved-modal-content">
                 <h4>Are you sure you want to approve this request?</h4>
                 <form id="acceptForm" action="college_transfer_process.php" method="post">
                     <input type="hidden" name="action" value="accept">

@@ -649,7 +649,7 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
                         $maxAreas = 0; // Initialize variable to store the max areas
 
                         // Fetch areas dynamically based on level_applied and program_name
-                        if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2) {
+                        if ($schedule['level_applied'] == 1 || $schedule['level_applied'] == 2 || $schedule['level_applied'] == 'PSV' || $schedule['level_applied'] == 'Candidate') {
                             // Level 1 and 2 areas
                             $sql_areas = "SELECT id, area_name FROM area WHERE area_name IN (
                             'Vision, Mission, Goals, and Objectives', 
@@ -708,15 +708,15 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
                             }
                         }
                         ?>
-<div id="assessment-<?php echo $schedule['schedule_id']; ?>" 
-class="notification-list1" 
-     data-max-areas="<?php echo $maxAreas; ?>"
-     data-areas='<?php 
-        $areasArray = array_map(function($id, $name) {
-            return ['id' => $id, 'name' => $name];
-        }, array_keys($areas), array_values($areas));
-        echo htmlspecialchars(json_encode($areasArray), ENT_QUOTES, 'UTF-8'); 
-     ?>'>
+                            <div id="assessment-<?php echo $schedule['schedule_id']; ?>" 
+                            class="notification-list1" 
+                                data-max-areas="<?php echo $maxAreas; ?>"
+                                data-areas='<?php 
+                                    $areasArray = array_map(function($id, $name) {
+                                        return ['id' => $id, 'name' => $name];
+                                    }, array_keys($areas), array_values($areas));
+                                    echo htmlspecialchars(json_encode($areasArray), ENT_QUOTES, 'UTF-8'); 
+                                ?>'>
                                  <div class="orientation3">
                                 <div class="container">
                                     <div class="body4">
@@ -977,14 +977,13 @@ class="notification-list1"
                                                                 <div class="titleContainer3">
                                                                     <?php if (in_array($member['assessment_id'], $approved_assessments)): ?>
                                                                         <?php
-                                                                            // Query to fetch the approved_assessment_file
                                                                             $sql_approved_file = "
                                                                             SELECT approved_assessment_file
                                                                             FROM approved_assessment
                                                                             WHERE assessment_id = ?
                                                                             ";
                                                                             $stmt_approved_file = $conn->prepare($sql_approved_file);
-                                                                            $stmt_approved_file->bind_param("i", $member['assessment_id']); // Bind the assessment_id
+                                                                            $stmt_approved_file->bind_param("i", $member['assessment_id']);
                                                                             $stmt_approved_file->execute();
                                                                             $stmt_approved_file->bind_result($approved_assessment_file);
                                                                             $stmt_approved_file->fetch();
@@ -1279,17 +1278,6 @@ class="notification-list1"
             <div class="assessmentmodal-content">
                 <h2>ASSESSMENT FORM</h2>
                 <form action="internal_assessment_process.php" method="POST" enctype="multipart/form-data">
-                    <div class="orientationname1">
-                        <div class="titleContainer">
-                            <label for="result"><strong>AREAS ASSIGNED</strong></label>
-                        </div>
-                        <div class="titleContainer">
-                            <label for="area_evaluated"><strong>RATING<span style="color: red;"> *<span></strong></label>
-                        </div>
-                    </div>
-
-                    <div id="Ratingarea_container">
-                    </div>
                     <div class="assessment-group">
                         <input type="hidden" name="schedule_id" id="modal_schedule_id">
                         <label for="college">COLLEGE</label>
@@ -1336,6 +1324,17 @@ class="notification-list1"
                         <div style="height: 20px;"></div>
                         <label for="recommendations"><strong>RECOMMENDATIONS<span style="color: red;"> *<span></strong></label>
                         <textarea style="border: 1px solid #AFAFAF; border-radius: 10px; width: 100%; padding: 20px;" id="recommendations" name="recommendations" rows="10" placeholder="Add a comment" required></textarea>
+                    </div>
+                    <div class="orientationname1">
+                        <div class="titleContainer">
+                            <label for="result"><strong>AREAS ASSIGNED</strong></label>
+                        </div>
+                        <div class="titleContainer">
+                            <label for="area_evaluated"><strong>RATING<span style="color: red;"> *<span></strong></label>
+                        </div>
+                    </div>
+
+                    <div id="Ratingarea_container">
                     </div>
                     <div class="orientationname1">
                         <div class="titleContainer">

@@ -50,6 +50,7 @@ $sql = "CREATE TABLE IF NOT EXISTS program (
     college_code VARCHAR(2),
     program_name VARCHAR(255) NOT NULL,
     program_level_id INT(6) UNSIGNED,
+    board_action_link VARCHAR(255),
     FOREIGN KEY (college_code) REFERENCES college(code)
 )";
 
@@ -64,7 +65,7 @@ $sql = "CREATE TABLE IF NOT EXISTS program_level_history (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     program_id INT(6) UNSIGNED NOT NULL,
     program_level VARCHAR(20) NOT NULL,
-    date_received DATE NOT NULL,
+    date_received DATE NULL,
     year_of_validity DATE NULL,
     FOREIGN KEY (program_id) REFERENCES program(id)
 )";
@@ -408,7 +409,7 @@ if ($conn->query($sql) === TRUE) {
 // SQL to create accreditation_standard table
 $sql = "CREATE TABLE IF NOT EXISTS accreditation_standard (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    Level VARCHAR(3) NOT NULL,
+    Level VARCHAR(3) NOT NULL UNIQUE,
     Standard DECIMAL(3, 2) NOT NULL
 )";
 
@@ -419,7 +420,8 @@ if ($conn->query($sql) === TRUE) {
 }
 
 // Insert data into accreditation_standard table
-$sql = "INSERT INTO accreditation_standard (Level, Standard) VALUES
+$sql = "INSERT IGNORE INTO accreditation_standard (Level, Standard) VALUES
+    ('Candidate', 1.00),
     ('PSV', 1.00),
     ('1', 3.00),
     ('2', 3.50),

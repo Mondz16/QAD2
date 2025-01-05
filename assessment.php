@@ -78,7 +78,7 @@ if (count($teamLeaders) > 0) {
             JOIN college c ON s.college_code = c.code
             JOIN program p ON s.program_id = p.id
             WHERE s.id = '$scheduleId' 
-              AND (s.schedule_status = 'approved' OR s.schedule_status = 'pending')";
+              AND (s.schedule_status = 'approved')";
         $scheduleResult = $conn->query($scheduleQuery);
         $schedule = $scheduleResult->fetch_assoc();
 

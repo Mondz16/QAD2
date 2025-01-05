@@ -13,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $orientation_time = $_POST['orientation_time'];
     $mode = $_POST['mode'];
 
-    // Check if orientation already exists for the given schedule
     $sql_check = "SELECT id FROM orientation WHERE schedule_id = ?";
     $stmt_check = $conn->prepare($sql_check);
     $stmt_check->bind_param("i", $schedule_id);
@@ -24,14 +23,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $message = '';
     
     if ($stmt_check->num_rows > 0) {
-        // Orientation already requested for this schedule
         $stmt_check->close();
         header("Location: internal_orientation.php?error=orientation_already_requested");
         exit();
     }
     $stmt_check->close();
 
-    // Check for existing orientations on the same date with status 'pending' or 'approved'
     $sql_date_check = "
         SELECT id FROM orientation 
         WHERE orientation_date = ? 
@@ -43,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt_date_check->store_result();
 
     if ($stmt_date_check->num_rows > 0) {
-        // An orientation on the same date already exists
         $stmt_date_check->close();
         
         $status = "error";

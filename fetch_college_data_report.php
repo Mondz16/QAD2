@@ -13,7 +13,7 @@ if ($programLevel == "All") {
     $sql = "
         SELECT 
             c.college_campus, 
-            SUM(CASE WHEN plh.program_level = 'Not Accreditable' THEN 1 ELSE 0 END) AS 'Not Accreditable',
+            SUM(CASE WHEN plh.program_level = 'No Graduates Yet' THEN 1 ELSE 0 END) AS 'Not Accreditable',
             SUM(CASE WHEN plh.program_level = 'PSV' THEN 1 ELSE 0 END) AS 'PSV',
             SUM(CASE WHEN plh.program_level = 'Candidate' THEN 1 ELSE 0 END) AS 'Candidate',
             SUM(CASE WHEN plh.program_level = '1' THEN 1 ELSE 0 END) AS '1',
@@ -24,10 +24,16 @@ if ($programLevel == "All") {
             college c
         LEFT JOIN 
             program p ON c.code = p.college_code
-        LEFT JOIN 
-            program_level_history plh ON p.id = plh.program_id
-        WHERE 
-            ('$year' = 'All' OR YEAR(plh.date_received) = '$year')
+        LEFT JOIN (
+            SELECT plh.*
+            FROM program_level_history plh
+            INNER JOIN (
+                SELECT program_id, MAX(id) as latest_history_id
+                FROM program_level_history
+                WHERE ('$year' = 'All' OR YEAR(date_received) = '$year')
+                GROUP BY program_id
+            ) latest ON plh.id = latest.latest_history_id
+        ) plh ON p.id = plh.program_id
         GROUP BY 
             c.college_campus
     ";
@@ -60,4 +66,3 @@ while ($row = $result->fetch_assoc()) {
 $conn->close();
 
 echo json_encode($data);
-?>

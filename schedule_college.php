@@ -198,7 +198,7 @@ $result = $stmt->get_result();
     <div style="height: 1px; width: 100%; background: #E5E5E5"></div>
     <div class="container d-flex align-items-center mt-4">
         <a class="btn-back" href="schedule.php">&lt; BACK</a>
-        <h2 class="mt-4 mb-4">SCHEDULE DETAILS FOR <?php echo strtoupper($college_name) ?></h2>
+        <h2 class="mt-4 mb-4"><?php echo strtoupper($college_name) ?></h2>
     </div>
     <div class="container">
         <div class="filter-container text-end">

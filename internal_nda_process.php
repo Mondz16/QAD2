@@ -38,70 +38,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date_added = $_POST['date_added'];
     $internal_accreditor_signature = $_FILES['internal_accreditor_signature'];
 
-    // Format the date
     $date = new DateTime($date_added);
     $month = $date->format('F');
     $day = $date->format('j') . getOrdinalSuffix($date->format('j'));
     $year = $date->format('Y');
 
-    // Read the image file into binary data
     $signature_data = file_get_contents($internal_accreditor_signature['tmp_name']);
 
-    // Retrieve the encryption key from environment variables
     $encryption_key = getenv('ENCRYPTION_KEY');
     $iv = openssl_random_pseudo_bytes(16);
     $encrypted_signature_data = openssl_encrypt($signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
 
-    // Initialize the FPDI object
     $pdf = new FPDI();
 
-    // Convert inches to millimeters (since FPDI uses millimeters)
-    $width = 216.12; // Convert width from inches to mm
-    $height = 330.42; // Convert height from inches to mm
+    $width = 216.12;
+    $height = 330.42; 
 
-    // Add the page with custom dimensions
     $pdf->AddPage('P', array($width, $height));
     $pdf->setSourceFile('NDA/NDA.pdf');
     $tplIdx = $pdf->importPage(1);
     $pdf->useTemplate($tplIdx);
 
-    // Add the Century Gothic font
     $pdf->AddFont('CenturyGothic','','CenturyGothic.php');
 
-    // Set font
     $pdf->SetFont('CenturyGothic', '', 11);
 
-    // Add dynamic data to the PDF
-    $pdf->SetXY(30, 78); // Adjust position for internal accreditor's name
+    $pdf->SetXY(30, 78);
     $pdf->Write(0, $internal_accreditor);
 
-    // Print the month, day, and year separately
-    $pdf->SetXY(117, 247); // Adjust position for month
+    $pdf->SetXY(117, 247);
     $pdf->Write(0, $month);
 
-    $pdf->SetXY(92, 247); // Adjust position for day
+    $pdf->SetXY(92, 247);
     $pdf->Write(0, $day);
 
-    $pdf->SetXY(140, 247); // Adjust position for year
+    $pdf->SetXY(140, 247);
     $pdf->Write(0, $year);
 
-    // Decrypt the signature image before adding it to the PDF
     $decrypted_signature_data = openssl_decrypt($encrypted_signature_data, 'AES-256-CBC', $encryption_key, 0, $iv);
 
-    // Create an image resource from the decrypted data
     $signature_image = imagecreatefromstring($decrypted_signature_data);
     if ($signature_image === false) {
         $message = "Error: Failed to create an image from the decrypted signature data.";
     } else {
-        // Save the image temporarily
         $temp_image_path = 'temp_signature.png';
         
-        // Preserve transparency when saving the PNG
         imagesavealpha($signature_image, true);
         $transparency = imagecolorallocatealpha($signature_image, 0, 0, 0, 127);
         imagefill($signature_image, 0, 0, $transparency);
 
-        // Save the image as a PNG with transparency
         imagepng($signature_image, $temp_image_path);
         imagedestroy($signature_image); // Free up memory
 
