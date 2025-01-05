@@ -421,6 +421,7 @@ if ($conn->query($sql) === TRUE) {
 
 // Insert data into accreditation_standard table
 $sql = "INSERT IGNORE INTO accreditation_standard (Level, Standard) VALUES
+    ('Candidate', 1.00),
     ('PSV', 1.00),
     ('1', 3.00),
     ('2', 3.50),
