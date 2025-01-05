@@ -409,7 +409,7 @@ if ($conn->query($sql) === TRUE) {
 // SQL to create accreditation_standard table
 $sql = "CREATE TABLE IF NOT EXISTS accreditation_standard (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    Level VARCHAR(3) NOT NULL,
+    Level VARCHAR(3) NOT NULL UNIQUE,
     Standard DECIMAL(3, 2) NOT NULL
 )";
 
@@ -420,7 +420,7 @@ if ($conn->query($sql) === TRUE) {
 }
 
 // Insert data into accreditation_standard table
-$sql = "INSERT INTO accreditation_standard (Level, Standard) VALUES
+$sql = "INSERT IGNORE INTO accreditation_standard (Level, Standard) VALUES
     ('PSV', 1.00),
     ('1', 3.00),
     ('2', 3.50),
