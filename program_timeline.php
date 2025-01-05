@@ -792,94 +792,126 @@ function setupCollegeMultiSelect() {
 
 function createTimeline(programsGroupedByCollege, selectedColleges) {
     const chartContainer = document.getElementById('chartContainer');
-
-    // Clear previous content in chartContainer
     chartContainer.innerHTML = '';
 
-    // Iterate through each selected college
     selectedColleges.forEach(selectedCollege => {
         const collegeCode = selectedCollege.code;
         const collegeName = selectedCollege.name;
         const programs = programsGroupedByCollege[collegeCode] || [];
 
-        // Create a section for the college
         const collegeSection = document.createElement('div');
         collegeSection.classList.add('college-timeline-section');
-        collegeSection.style.marginBottom = '40px'; // Add space between sections
+        collegeSection.style.marginBottom = '40px';
 
-        // Add the college name as a heading
         const collegeHeading = document.createElement('h2');
         collegeHeading.textContent = `${collegeName}`;
         collegeHeading.style.textAlign = 'center';
         collegeHeading.style.marginBottom = '20px';
         collegeSection.appendChild(collegeHeading);
 
-        // Create a canvas for the timeline chart
         const canvas = document.createElement('canvas');
         canvas.id = `timelineChart-${collegeCode}`;
         collegeSection.appendChild(canvas);
 
         chartContainer.appendChild(collegeSection);
 
+        // Create a map to group programs by their full name
+        const programGroups = new Map();
+        programs.forEach(program => {
+            const key = program.program_name;
+            if (!programGroups.has(key)) {
+                programGroups.set(key, []);
+            }
+            programGroups.get(key).push(program);
+        });
+
         // Prepare data for the timeline chart
-        const acronymsSet = new Set();
         const dataPoints = [];
+        const programInfo = []; // Store program information including acronym and full name
         const datesSet = new Set();
 
-        programs.forEach(program => {
-            const acronym = getAcronym(program.program_name); // Generate acronym
-            const level = program.program_level;
-            const date = new Date(program.date_received);
-            const year = date.getFullYear();
-            const month = date.getMonth(); // 0-based (0 = January)
-            const fractionalYear = year + (month + 1) / 12; // Proper fractional year for proportional spacing
+        // Create a map to track acronym counts
+        const acronymCounts = new Map();
 
-            acronymsSet.add(acronym);
-            dataPoints.push({
-                x: fractionalYear, // Use fractional year for X-axis
-                y: acronym,        // Use acronym directly for Y-axis
-                level: level,
-                formattedDate: `${date.toLocaleString('default', { month: 'short' })} ${date.getDate()}`
+        // First pass: count occurrences of each acronym
+        programGroups.forEach((_, programName) => {
+            const acronym = getAcronym(programName);
+            acronymCounts.set(acronym, (acronymCounts.get(acronym) || 0) + 1);
+        });
+
+        // Second pass: create display names with proper numbering
+        programGroups.forEach((programEntries, programName) => {
+            const acronym = getAcronym(programName);
+            
+            // Initialize counter for this acronym if it doesn't exist
+            if (!acronymCounts.has(`${acronym}_counter`)) {
+                acronymCounts.set(`${acronym}_counter`, 0);
+            }
+            
+            // Increment the counter for this specific acronym
+            const currentCount = acronymCounts.get(`${acronym}_counter`) + 1;
+            acronymCounts.set(`${acronym}_counter`, currentCount);
+            
+            // Only add number if there are multiple instances of this acronym
+            const displayedAcronym = acronymCounts.get(acronym) > 1 
+                ? `${acronym} (${currentCount})` 
+                : acronym;
+            
+            programInfo.push({
+                acronym: displayedAcronym,
+                fullName: programName
             });
 
-            datesSet.add(fractionalYear);
+            programEntries.forEach(program => {
+                const date = new Date(program.date_received);
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const fractionalYear = year + (month + 1) / 12;
+
+                dataPoints.push({
+                    x: fractionalYear,
+                    y: displayedAcronym,
+                    fullName: programName,
+                    level: program.program_level,
+                    formattedDate: `${date.toLocaleString('default', { month: 'short' })} ${date.getDate()}`
+                });
+
+                datesSet.add(fractionalYear);
+            });
         });
 
-        const sortedAcronyms = Array.from(acronymsSet).sort();
+        const sortedProgramInfo = programInfo.sort((a, b) => a.acronym.localeCompare(b.acronym));
+        const sortedAcronyms = sortedProgramInfo.map(p => p.acronym);
         const sortedFractionalYears = Array.from(datesSet).sort((a, b) => a - b);
 
-        const mappedDataPoints = dataPoints.map(point => {
-            const yIndex = sortedAcronyms.indexOf(point.y);
-            return {
-                x: point.x,
-                y: yIndex,
-                level: point.level,
-                formattedDate: point.formattedDate
-            };
-        });
+        const mappedDataPoints = dataPoints.map(point => ({
+            x: point.x,
+            y: sortedAcronyms.indexOf(point.y),
+            fullName: point.fullName,
+            level: point.level,
+            formattedDate: point.formattedDate
+        }));
 
-        // Render the timeline chart for the college
+        // Rest of the code remains the same...
         new Chart(canvas.getContext('2d'), {
             type: 'scatter',
             data: {
                 labels: sortedAcronyms,
-                datasets: [
-                    {
-                        label: `Timeline for ${collegeName}`,
-                        data: mappedDataPoints,
-                        pointBackgroundColor: 'blue',
-                        borderColor: 'blue',
-                        showLine: false,
-                        pointRadius: 0,
-                    },
-                ],
+                datasets: [{
+                    label: `Timeline for ${collegeName}`,
+                    data: mappedDataPoints,
+                    pointBackgroundColor: 'blue',
+                    borderColor: 'blue',
+                    showLine: false,
+                    pointRadius: 0,
+                }],
             },
             options: {
                 responsive: true,
                 layout: {
                     padding: {
-                        top: 20, // Add padding to the top
-                        bottom: 40, // Add padding to the bottom
+                        top: 20,
+                        bottom: 40,
                     },
                 },
                 scales: {
@@ -892,12 +924,12 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                         },
                         ticks: {
                             stepSize: 1,
-                            callback: function (value) {
-                                return Math.floor(value); // Display integer years only
+                            callback: function(value) {
+                                return Math.floor(value);
                             },
-                            min: Math.floor(Math.min(...sortedFractionalYears)) - 0.1, // Add padding before the first year
-                            max: Math.ceil(Math.max(...sortedFractionalYears)) + 0.1, // Add padding after the last year
-                            padding: 10, // Add spacing for X-axis labels
+                            min: Math.floor(Math.min(...sortedFractionalYears)) - 0.1,
+                            max: Math.ceil(Math.max(...sortedFractionalYears)) + 0.1,
+                            padding: 10,
                         },
                     },
                     y: {
@@ -907,7 +939,7 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                         },
                         labels: sortedAcronyms,
                         ticks: {
-                            padding: 10, // Add spacing for Y-axis labels
+                            padding: 10,
                         },
                     },
                 },
@@ -916,8 +948,23 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                         display: false,
                     },
                     tooltip: {
-                        enabled: false,
+                        enabled: true,
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].raw.fullName;
+                            },
+                            label: function(context) {
+                                return [
+                                    `Level: ${context.raw.level}`,
+                                    `Date: ${context.raw.formattedDate}`
+                                ];
+                            }
+                        }
                     },
+                },
+                onHover: (event, elements) => {
+                    const canvas = event.native.target;
+                    canvas.style.cursor = elements.length ? 'pointer' : 'default';
                 },
                 animation: false,
             },
@@ -934,7 +981,6 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                                 const x = xAxis.getPixelForValue(dataPoint.x);
                                 const y = yAxis.getPixelForValue(dataPoint.y);
 
-                                // Determine the level short code and color
                                 let levelShort = '';
                                 let levelColor = '';
 
@@ -968,16 +1014,14 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                                         levelColor = '#000000';
                                 }
 
-                                // Define box dimensions
                                 const boxWidth = 60;
                                 const boxHeight = 40;
                                 const borderRadius = 10;
 
-                                // Calculate box top-left corner
                                 const boxX = x - boxWidth / 2;
                                 const boxY = y - boxHeight / 2;
 
-                                // Draw the top half with rounded corners
+                                // Draw top half
                                 ctx.beginPath();
                                 ctx.moveTo(boxX + borderRadius, boxY);
                                 ctx.lineTo(boxX + boxWidth - borderRadius, boxY);
@@ -993,7 +1037,7 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                                 ctx.strokeStyle = '#000000';
                                 ctx.stroke();
 
-                                // Draw the bottom half (rectangular)
+                                // Draw bottom half
                                 ctx.beginPath();
                                 ctx.rect(boxX, boxY + boxHeight / 2, boxWidth, boxHeight / 2);
                                 ctx.fillStyle = '#FFFFFF';
@@ -1001,18 +1045,14 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                                 ctx.strokeStyle = '#000000';
                                 ctx.stroke();
 
-                                // Add level text
+                                // Add texts
                                 ctx.fillStyle = 'white';
                                 ctx.font = '12px Arial';
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
                                 ctx.fillText(levelShort, x, boxY + boxHeight / 4);
 
-                                // Add date text
                                 ctx.fillStyle = 'black';
-                                ctx.font = '12px Arial';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
                                 ctx.fillText(dataPoint.formattedDate, x, boxY + (3 * boxHeight) / 4);
                             });
                         });
