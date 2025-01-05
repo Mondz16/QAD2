@@ -285,9 +285,9 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
                     <div class="sidebar-dropdown">
                         <a href="<?php echo $is_admin === false ? 'internal_assigned_schedule.php' : 'reports_program_schedule.php'; ?>" class="sidebar-link">
                             <span style="margin-left: 8px;"><?php echo $is_admin === false ? 'View Assigned Schedule' : 'View Program Schedule'; ?></span></a>
-                        <a href="reports_dashboard.php" class="sidebar-link">
+                        <a href="<?php echo $is_admin ? 'reports_dashboard.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">View Programs</span></a>
-                        <a href="program_timeline.php" class="sidebar-link">
+                        <a href="<?php echo $is_admin ? 'program_timeline.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">View Timeline</span></a>
                         <a href="<?php echo $is_admin ? 'reports_member.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">View Accreditors</span></a>
