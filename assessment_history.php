@@ -224,9 +224,9 @@ $sqlPendingOrientationsCount = "
         WHERE o.orientation_status = 'pending'
     ";
 
-    $Qresult = $conn->query($sqlPendingOrientationsCount);
-    $Qrow = $Qresult->fetch_assoc();
-    $totalPendingOrientations = $Qrow['total_pending_orientations'];
+$Qresult = $conn->query($sqlPendingOrientationsCount);
+$Qrow = $Qresult->fetch_assoc();
+$totalPendingOrientations = $Qrow['total_pending_orientations'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -377,6 +377,7 @@ $sqlPendingOrientationsCount = "
             font-weight: bold;
             height: 46px;
             width: 100%;
+            height: 100%;
             margin: 10px 0;
             border-radius: 8px;
 
@@ -785,6 +786,13 @@ $sqlPendingOrientationsCount = "
         .btn-failed {
             background-color: #B73033 !important;
             color: white;
+            border-color: white;
+        }
+
+        .btn-improvement {
+            background-color: #bfbfbf !important;
+            color: white;
+            border-color: white;
         }
 
         .status-cancelled {
@@ -840,10 +848,10 @@ $sqlPendingOrientationsCount = "
                             <span style="margin-left: 8px;">Schedule</span>
                             <?php if ($totalPendingSchedules > 0 || $totalPendingOrientations > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -1030,6 +1038,8 @@ $sqlPendingOrientationsCount = "
                                                                                         echo 'btn-passed';
                                                                                     } elseif ($assessment['schedule_status'] == 'failed') {
                                                                                         echo 'btn-failed';
+                                                                                    } elseif ($assessment['schedule_status'] == 'needs improvement') {
+                                                                                        echo 'btn-improvement';
                                                                                     }
                                                                                     ?>">
                                                 <?php
@@ -1039,6 +1049,8 @@ $sqlPendingOrientationsCount = "
                                                     echo "READY";
                                                 } elseif ($assessment['schedule_status'] == 'failed') {
                                                     echo "NOT READY";
+                                                } elseif ($assessment['schedule_status'] == 'needs improvement') {
+                                                    echo "NEEDS IMPROVEMENT";
                                                 }
                                                 ?></button>
                                         </td>
@@ -1284,7 +1296,7 @@ $sqlPendingOrientationsCount = "
                     );
 
                 const datasets = {
-                    finished: [],
+                    'needs improvement': [], // Changed from 'finished'
                     passed: [],
                     failed: []
                 };
@@ -1320,7 +1332,7 @@ $sqlPendingOrientationsCount = "
                     type: 'scatter',
                     data: {
                         datasets: [{
-                                label: 'Approved',
+                                label: 'Needs Improvement', // Updated label
                                 data: [],
                                 backgroundColor: '#bfbfbf',
                                 pointRadius: 8,
@@ -1355,9 +1367,6 @@ $sqlPendingOrientationsCount = "
                                     label: function(context) {
                                         const point = context.raw;
                                         let status = point.status.charAt(0).toUpperCase() + point.status.slice(1);
-                                        if (status == 'Finished') {
-                                            status = 'Approved';
-                                        }
                                         return [
                                             `College: ${point.college}`,
                                             `Program: ${point.program}`,
@@ -1408,7 +1417,7 @@ $sqlPendingOrientationsCount = "
                 function updateChart(selectedYear) {
                     const data = processAssessmentData(assessments, selectedYear);
 
-                    chart.data.datasets[0].data = data.datasets.finished;
+                    chart.data.datasets[0].data = data.datasets['needs improvement'];
                     chart.data.datasets[1].data = data.datasets.passed;
                     chart.data.datasets[2].data = data.datasets.failed;
 

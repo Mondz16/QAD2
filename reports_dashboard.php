@@ -609,7 +609,7 @@ $conn->close();
             const campuses = data.map(item => item.college_campus);
             const uniqueCampuses = [...new Set(campuses)];
 
-            const levels = ['No Graduates Yet', 'Candidate', 'PSV', '1', '2', '3', '4'];
+            const levels = ['Not Accreditable', 'Candidate', '1', '2', '3', '4'];
             const colors = ['#FF6262', '#818181', '#34C759', '#DEFF81', '#C8FFF8', '#AA8CFF', '#FEC269'];
 
             // Create datasets for each level

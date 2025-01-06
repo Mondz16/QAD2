@@ -14,9 +14,8 @@ $whereClause = $campus != "All" ? "WHERE c.college_campus = '$campus'" : "";
 $sql = "
     SELECT 
         c.college_campus, 
-        SUM(CASE WHEN plh.program_level = 'No Graduates Yet' THEN 1 ELSE 0 END) AS 'No Graduates Yet',
-        SUM(CASE WHEN plh.program_level = 'Candidate' THEN 1 ELSE 0 END) AS 'Candidate',
-        SUM(CASE WHEN plh.program_level = 'PSV' THEN 1 ELSE 0 END) AS 'PSV',
+        SUM(CASE WHEN plh.program_level = 'No Graduates Yet' THEN 1 ELSE 0 END) AS 'Not Accreditable',
+        SUM(CASE WHEN plh.program_level = 'Candidate' || plh.program_level = 'PSV' THEN 1 ELSE 0 END) AS 'Candidate',
         SUM(CASE WHEN plh.program_level = '1' THEN 1 ELSE 0 END) AS '1',
         SUM(CASE WHEN plh.program_level = '2' THEN 1 ELSE 0 END) AS '2',
         SUM(CASE WHEN plh.program_level = '3' THEN 1 ELSE 0 END) AS '3',

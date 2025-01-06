@@ -42,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $current_datetime = $_POST['current_datetime'];
     $qad_officer = $_POST['qad_officer'];
     $qad_officer_signature = $_FILES['qad_officer_signature'];
-    $qad_director = $_POST['qad_director'];
 
     // Check if file upload was successful
     if (!isset($qad_officer_signature) || $qad_officer_signature['error'] !== UPLOAD_ERR_OK) {
@@ -169,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $pdf->SetFont('Arial', 'B', 10);
     $pdf->SetXY(24.5, 252); // Adjust position
-    $pdf->Write(0, $qad_director);
+    $pdf->Write(0, $qad_officer);
 
     // Save the filled PDF
     $output_path = $directory . '/UDAS-Assessment-Report-' . $schedule_id . '.pdf';
@@ -224,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Insert assessment details into the database
         $sql_insert = "INSERT INTO udas_assessment (schedule_id, area, comments, remarks, udas_assessment_file, submission_date, qad_officer, qad_officer_signature, qad_director) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt_insert = $conn->prepare($sql_insert);
-        $stmt_insert->bind_param("issssssss", $schedule_id, $area, $comments, $remarks, $output_path, $current_datetime, $qad_officer, $encrypted_signature_data, $qad_director);
+        $stmt_insert->bind_param("issssssss", $schedule_id, $area, $comments, $remarks, $output_path, $current_datetime, $qad_officer, $encrypted_signature_data, $qad_officer);
         $stmt_insert->execute();
         $stmt_insert->close();
 

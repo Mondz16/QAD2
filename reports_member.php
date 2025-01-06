@@ -743,7 +743,7 @@ $conn->close();
                     datasets: [{
                         label: 'User Status',
                         data: userStatusData,
-                        backgroundColor: 'rgba(213, 11, 0, .2)',
+                        backgroundColor: 'rgba(213, 11, 0, 1)',
                         borderColor: 'rgba(213, 11, 0, 1)',
                         borderWidth: 1
                     }]

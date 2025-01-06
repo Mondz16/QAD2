@@ -828,7 +828,7 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
                                                     <p>SCHEDULE STATUS</p>
                                                     <div style="height: 10px;"></div>
                                                     <button class="assessment-button-done" style="background-color: #AFAFAF; color: black; border: 1px solid #AFAFAF; width: 441px;">WAIT FOR THE SCHEDULE TO BE CONFIRMED</button>
-                                                <?php elseif ($schedule['schedule_status'] == 'approved'): ?>
+                                                <?php elseif ($schedule['schedule_status'] == 'approved' || $schedule['schedule_status'] == 'passed' || $schedule['schedule_status'] == 'failed' || $schedule['schedule_status'] == 'needs improvement'): ?>
                                                     <!-- Existing code for NDA and further steps -->
                                                     <?php if (!$nda_signed_status[$schedule['schedule_id']]): ?>
                                                         <p>NON-DISCLOSURE AGREEMENT</p>

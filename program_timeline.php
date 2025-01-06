@@ -1037,33 +1037,33 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                     switch (dataPoint.level.toUpperCase()) {
                         case 'CANDIDATE':
                             levelShort = 'CAN';
-                            levelColor = '#34C759';
-                            lowerBoxColor = '#CFFFDB';  // Candidate lower box color
+                            levelColor = 'rgb(221, 224, 0)';
+                            lowerBoxColor = 'rgba(251, 254, 3, .2)';  // Candidate lower box color
                             break;
                         case 'PSV':
                             levelShort = 'PSV';
-                            levelColor = '#575757';
-                            lowerBoxColor = '#C5C5C5';  // PSV lower box color
+                            levelColor = 'rgba(20, 130, 0, 1)';
+                            lowerBoxColor = 'rgba(20, 130, 0, .2)';  // PSV lower box color
                             break;
                         case '1':
                             levelShort = 'LVL 1';
-                            levelColor = '#F39200';
-                            lowerBoxColor = '#FDC879';  // Level 1 lower box color
+                            levelColor = 'rgba(213, 11, 0, 1)';
+                            lowerBoxColor = 'rgba(213, 11, 0, .2)';  // Level 1 lower box color
                             break;
                         case '2':
                             levelShort = 'LVL 2';
-                            levelColor = '#F39200';
-                            lowerBoxColor = '#FDC879';  // Level 2 lower box color
+                            levelColor = 'rgba(213, 11, 0, 1)';
+                            lowerBoxColor = 'rgba(213, 11, 0, .2)';  // Level 2 lower box color
                             break;
                         case '3':
                             levelShort = 'LVL 3';
-                            levelColor = '#F39200';
-                            lowerBoxColor = '#FDC879';  // Level 3 lower box color
+                            levelColor = 'rgba(213, 11, 0, 1)';
+                            lowerBoxColor = 'rgba(213, 11, 0, .2)';  // Level 3 lower box color
                             break;
                         case '4':
                             levelShort = 'LVL 4';
-                            levelColor = '#F39200';
-                            lowerBoxColor = '#FDC879';  // Level 4 lower box color
+                            levelColor = 'rgba(213, 11, 0, 1)';
+                            lowerBoxColor = 'rgba(213, 11, 0, .2)';  // Level 4 lower box color
                             break;
                         default:
                             levelShort = 'UNK';

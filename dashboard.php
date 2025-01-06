@@ -803,14 +803,16 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
                                         $schedule_date = date("F j, Y", strtotime($row['schedule_date'])); // Format the date as "Month Day, Year"
                                         $schedule_time = date("g:i A", strtotime($row['schedule_time']));  // Format the time as "hour:minute AM/PM"
 
-                                        if ($row['schedule_status'] == 'failed' || $row['schedule_status'] == 'passed') {
+                                        if ($row['schedule_status'] == 'failed' || $row['schedule_status'] == 'passed' || $row['schedule_status'] == 'needs improvement') {
                                             $isPassed = true;
+                                            $needsImprovement = $row['schedule_status'] == 'needs improvement';
                                             if ($row['schedule_status'] == 'failed')
                                                 $isPassed = false;
 
-                                            $hideFail = $isPassed == false ? '' : 'hide-result';
-                                            $hidePass = $isPassed == true ? '' : 'hide-result';
-                                            $color = $isPassed == true ? 'result-passed-color' : 'result-failed-color';
+                                            $hideFail = $isPassed == false && $needsImprovement == false ? '' : 'hide-result';
+                                            $hideNeedsImprovement = $isPassed == true && $needsImprovement == true? '' : 'hide-result';
+                                            $hidePass = $isPassed == true && $needsImprovement == false ? '' : 'hide-result';
+                                            $color = $isPassed == true && $needsImprovement == false ? 'result-passed-color' : 'result-failed-color';
 
                                             echo "<div class='result-schedule-modal-container  $color'>
                                                     <div>
@@ -829,6 +831,7 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
                                             // Only show 'finished-buttons' if $is_admin is true
                                             if ($is_admin) {
                                                 echo "<div class='finished-buttons'>
+                                                    <button type='none' id='retain-button-active' class='$hideNeedsImprovement' disabled='disabled'>NEEDS IMPROVEMENT</button>
                                                     <button type='none' id='retain-button-active' class='$hideFail' disabled='disabled'>NOT READY</button>
                                                     <button type='none' id='pass-button-active' class='$hidePass' disabled='disabled'>READY</button>
                                                 </div>";

@@ -608,13 +608,13 @@ if (!isset($_SESSION['user_id'])) {
                 var levelAppliedTextOutput = program.levelApplied;
 
                 if (program.level === 'No Graduates Yet') {
-                    currentLevelTextOutput = 'NGY';
+                    currentLevelTextOutput = 'NA';
                 } else if (program.level === 'Candidate') {
                     currentLevelTextOutput = 'CAN';
                 } 
                 
                 if (program.levelApplied === 'No Graduates Yet') {
-                    levelAppliedTextOutput = 'NGY';
+                    levelAppliedTextOutput = 'NA';
                 } else if (program.levelApplied === 'Candidate') {
                     levelAppliedTextOutput = 'CAN';
                 } 
@@ -818,14 +818,14 @@ if (!isset($_SESSION['user_id'])) {
                     },
                     success: function(response) {
                         const data = JSON.parse(response);
-                        const currentLevel = data.program_level.trim();
+                        let currentLevel = data.program_level.trim();
                         const year_of_validity = data.year_of_validity.trim();
                         let levelApplied;
                         var currentLevelTextOutput = currentLevel;
                         var levelAppliedTextOutput = levelApplied;
 
                         if (currentLevel === 'No Graduates Yet') {
-                            currentLevelTextOutput = 'NGY';
+                            currentLevelTextOutput = 'NA';
                             levelAppliedTextOutput = 'PSV';
                             levelApplied = 'PSV';
                         } 

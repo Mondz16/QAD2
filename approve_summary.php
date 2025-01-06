@@ -187,10 +187,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt->execute();
                 $stmt->close();
 
-                $stmt = $conn->prepare("UPDATE schedule SET schedule_status = 'finished' WHERE id = ?");
-                $stmt->bind_param("i", $scheduleId);
-                $stmt->execute();
-                $stmt->close();
+                // $stmt = $conn->prepare("UPDATE schedule SET schedule_status = 'finished' WHERE id = ?");
+                // $stmt->bind_param("i", $scheduleId);
+                // $stmt->execute();
+                // $stmt->close();
 
                 // Display success message
                 echo "<!DOCTYPE html>

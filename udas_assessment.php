@@ -885,10 +885,10 @@ $sqlPendingOrientationsCount = "
                     </div>
                 </div>
                 <div style="height: 20px;"></div>
-                <div class="assessment-group">
+                <!-- <div class="assessment-group">
                     <label for="qad_director">QAD DIRECTOR<span style="color: red;"> *<span></label>
                     <input class="assessment-group-program" type="text" id="qad_director" name="qad_director" required>
-                </div>
+                </div> -->
                 <div class="button-container">
                     <button class="cancel-button1" type="button" onclick="closePopup()">CLOSE</button>
                     <button class="submit-button1" type="submit">SUBMIT</button>
@@ -921,16 +921,16 @@ $sqlPendingOrientationsCount = "
 
             if (level === "Candidate" || level === "PSV" || level === "1" || level === "2") {
                 areas = [
-                    'Vision, Mission, Goals, and Objectives',
-                    'Faculty',
-                    'Curriculum and Instruction',
-                    'Support to Students',
-                    'Research',
-                    'Extension and Community Development',
-                    'Library',
-                    'Physical Plant and Facilities',
-                    'Laboratories',
-                    'Administration'
+                    'Area 1',
+                    'Area 2',
+                    'Area 3',
+                    'Area 4',
+                    'Area 5',
+                    'Area 6',
+                    'Area 7',
+                    'Area 8',
+                    'Area 9',
+                    'Area 10'
                 ];
             } else if (level === "3") {
                 if (programName.startsWith('Bachelor')) {

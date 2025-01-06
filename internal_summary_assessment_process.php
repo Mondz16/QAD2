@@ -110,7 +110,7 @@ foreach ($area_ratings as $area_id => $rating) {
     $stmt_rating->close();
 
     if ($level_applied == 4 || $level_applied == 3) {
-        $areas[] = $area_name;
+        $areas[] = $area_name . "\n";
     } else {
         $areas[] = "Area " . $area_id;
     }

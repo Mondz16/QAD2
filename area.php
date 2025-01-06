@@ -140,9 +140,9 @@ $sqlPendingOrientationsCount = "
         WHERE o.orientation_status = 'pending'
     ";
 
-    $Qresult = $conn->query($sqlPendingOrientationsCount);
-    $Qrow = $Qresult->fetch_assoc();
-    $totalPendingOrientations = $Qrow['total_pending_orientations'];
+$Qresult = $conn->query($sqlPendingOrientationsCount);
+$Qrow = $Qresult->fetch_assoc();
+$totalPendingOrientations = $Qrow['total_pending_orientations'];
 
 ?>
 <!DOCTYPE html>
@@ -206,6 +206,37 @@ $sqlPendingOrientationsCount = "
             border-radius: 10px;
             background-color: #f9f9f9;
         }
+
+        .area-content {
+            top: 30%;
+            width: 50%;
+            max-width: 1000px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .area-content tr td:last-child{
+            width: 50px;
+        }
+        
+
+        .edit-btn {
+            padding: 5px;
+            width: 70px;
+            background: white;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+        }
+
+        #add-btn {
+            padding: 10px;
+            width: 100px;
+            background:   #2CB84F;
+            border: 1px solid #2CB84F;
+            border-radius: 5px;
+            color: white
+        }
     </style>
 </head>
 
@@ -257,10 +288,10 @@ $sqlPendingOrientationsCount = "
                             <span style="margin-left: 8px;">Schedule</span>
                             <?php if ($totalPendingSchedules > 0 || $totalPendingOrientations > 0): ?>
                                 <span class="notification-counter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
-                            <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-                            </svg>
-                            </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+                                        <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+                                    </svg>
+                                </span>
                             <?php endif; ?>
                         </a>
                         <div class="sidebar-dropdown">
@@ -320,7 +351,7 @@ $sqlPendingOrientationsCount = "
                                 <?php if ($totalMissingAssessments > 0): ?>
                                     <span class="notification-counter"><?= $totalMissingAssessments; ?></span>
                                 <?php endif; ?>
-                            </a>                            <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
+                            </a> <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                                 <span style="margin-left: 8px;">Assessment History</span>
                             </a>
                         </div>
@@ -466,7 +497,7 @@ $sqlPendingOrientationsCount = "
         </div>
 
         <div id="standardModal" class="modal">
-            <div class="modal-content">
+            <div class="modal-content area-content">
                 <div class="existing-standards">
                     <h3>ACCREDITATION STANDARDS</h3>
                     <table>
@@ -775,53 +806,53 @@ $sqlPendingOrientationsCount = "
         }
 
         function saveNewStandard(button) {
-    const row = button.closest('tr');
-    const levelInput = row.querySelector('.level-value input');
-    const standardInput = row.querySelector('.standard-value input');
+            const row = button.closest('tr');
+            const levelInput = row.querySelector('.level-value input');
+            const standardInput = row.querySelector('.standard-value input');
 
-    const newLevel = levelInput.value.trim();
-    const newStandard = parseFloat(standardInput.value).toFixed(2);
+            const newLevel = levelInput.value.trim();
+            const newStandard = parseFloat(standardInput.value).toFixed(2);
 
-    if (!newLevel || isNaN(newStandard)) {
-        alert('Please fill out both fields correctly.');
-        return;
-    }
-
-    fetch('add_standard.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                level: newLevel,
-                standard: newStandard
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                row.setAttribute('data-id', data.id);
-                row.querySelector('.level-value').textContent = newLevel;
-                row.querySelector('.standard-value').textContent = newStandard;
-
-                row.querySelector('.action-buttons').innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
-
-                const addBtn = document.getElementById('add-btn');
-                addBtn.parentElement.appendChild(addBtn);
-            } else {
-                // Show the specific error message from the server
-                alert(data.message || 'Failed to add standard.');
-                // Keep focus on the level input if it's a duplicate
-                if (data.message.includes('already exists')) {
-                    levelInput.focus();
-                }
+            if (!newLevel || isNaN(newStandard)) {
+                alert('Please fill out both fields correctly.');
+                return;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while adding the standard.');
-        });
-}
+
+            fetch('add_standard.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        level: newLevel,
+                        standard: newStandard
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        row.setAttribute('data-id', data.id);
+                        row.querySelector('.level-value').textContent = newLevel;
+                        row.querySelector('.standard-value').textContent = newStandard;
+
+                        row.querySelector('.action-buttons').innerHTML = `<button class='edit-btn' onclick='makeEditable(this)'>Edit</button>`;
+
+                        const addBtn = document.getElementById('add-btn');
+                        addBtn.parentElement.appendChild(addBtn);
+                    } else {
+                        // Show the specific error message from the server
+                        alert(data.message || 'Failed to add standard.');
+                        // Keep focus on the level input if it's a duplicate
+                        if (data.message.includes('already exists')) {
+                            levelInput.focus();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while adding the standard.');
+                });
+        }
 
         function cancelNewStandard(button) {
             const row = button.closest('tr');
