@@ -4,7 +4,7 @@ include 'connection.php';
 if (isset($_POST['program_id'])) {
     $program_id = $_POST['program_id'];
 
-    $sql = "SELECT plh.program_level, plh.date_received 
+    $sql = "SELECT plh.program_level, plh.year_of_validity 
             FROM program p 
             LEFT JOIN program_level_history plh 
             ON p.program_level_id = plh.id 
@@ -17,13 +17,13 @@ if (isset($_POST['program_id'])) {
     if ($row = $result->fetch_assoc()) {
         $response = [
             'program_level' => $row['program_level'] ?? 'N/A',
-            'date_received' => $row['date_received'] ?? 'N/A'
+            'year_of_validity' => $row['year_of_validity'] ?? 'N/A'
         ];
         echo json_encode($response);
     } else {
         $response = [
             'program_level' => 'N/A',
-            'date_received' => 'N/A'
+            'year_of_validity' => 'N/A'
         ];
         echo json_encode($response);
     }

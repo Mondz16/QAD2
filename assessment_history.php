@@ -1000,8 +1000,8 @@ $sqlPendingOrientationsCount = "
                                         <td><?= htmlspecialchars($assessment['college_name']); ?></td>
                                         <td><?= htmlspecialchars($assessment['program_name']); ?></td>
                                         <td>
-                                            <?= ($assessment['level_applied'] === 'Not Accreditable') ? 'NA' : (($assessment['level_applied'] === 'Candidate') ? 'CAN' :
-                                                htmlspecialchars($assessment['level_applied'])); ?>
+                                            <?= ($assessment['level_applied'] === 'No Graduates Yet') ? 'NGY'  :
+                                                htmlspecialchars($assessment['level_applied']); ?>
                                         </td>
                                         <td><?= htmlspecialchars($assessment['schedule_date']); ?></td>
                                         <td><?= htmlspecialchars($assessment['schedule_time']); ?></td>
@@ -1252,13 +1252,6 @@ $sqlPendingOrientationsCount = "
             // Define level order
             const levelOrder = ['Candidate', 'PSV', '1', '2', '3', '4'];
 
-            // Function to normalize level display
-            function normalizeLevel(level) {
-                if (level === 'Not Accreditable') return 'Candidate';
-                if (level === 'CAN') return 'Candidate';
-                return level;
-            }
-
             // Function to filter table rows
             function filterTable(selectedYear) {
                 const table = document.getElementById('assessmentTable');
@@ -1297,7 +1290,7 @@ $sqlPendingOrientationsCount = "
                 };
 
                 filteredAssessments.forEach(assessment => {
-                    const normalizedLevel = normalizeLevel(assessment.level_applied);
+                    const normalizedLevel = assessment.level_applied;
 
                     if (levelOrder.includes(normalizedLevel)) {
                         const point = {

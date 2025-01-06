@@ -416,7 +416,7 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
     }
 
     .schedule-wrapper {
-        width: 400px;
+        width: 620px;
         padding: 20px;
         background: #f9f9f9;
         border: 1px solid #ddd;
@@ -505,6 +505,10 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
     .notification-counter {
         color: #E6A33E;
         /* Text color */
+    }
+
+    .center-container-dashboard {
+        justify-content: space-between;
     }
 </style>
 
@@ -714,7 +718,7 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
             </nav>
             <div class="container text-center ps-5">
                 <p class="fw-bold mt-5 mb-5" style="font-size: 1.5rem">SCHEDULE LIST</p>
-                <div class="row d-flex justify-content-center">
+                <div class="row d-flex center-container-dashboard">
                     <div class="col-12 bg-white">
                         <div class="filter text-end mx-4">
                             <form method="get" action="">
@@ -742,7 +746,7 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
                                 </select>
                             </form>
                         </div>
-                        <div class="row row justify-content-center mt-3">
+                        <div class="row row center-container-dashboard mt-3">
                             <div class="schedule-wrapper col-md-4">
                                 <h3>UPCOMING</h3>
                                 <?php
@@ -751,8 +755,8 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
                                         $schedule_date = date("F j, Y", strtotime($row['schedule_date'])); // Format the date as "Month Day, Year"
                                         $schedule_time = date("g:i A", strtotime($row['schedule_time']));  // Format the time as "hour:minute AM/PM"
 
-                                        if ($row['schedule_status'] == 'approved') {
-                                            $approved_class = ($row['schedule_status'] == 'approved') ? 'status-holder' : 'hidden-status-holder';
+                                        if ($row['schedule_status'] == 'approved' || $row['schedule_status'] == 'finished') {
+                                            $approved_class = ($row['schedule_status'] == 'approved' || $row['schedule_status'] == 'finished') ? 'status-holder' : 'hidden-status-holder';
                                             echo "<div class='schedule-modal-container'>
                                                 <div>
                                                     <div>{$row['college_name']}</div>
@@ -786,58 +790,6 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
                                     }
                                 } else {
                                     echo "<p class='no-schedule-prompt'>NO UPCOMING SCHEDULE</p>";
-                                }
-                                ?>
-                            </div>
-                            <div class="schedule-wrapper col-md-4">
-                                <h3>FINISHED</h3>
-                                <?php
-                                if ($result->num_rows > 0) {
-                                    $result->data_seek(0); // Reset result pointer to the beginning
-                                    while ($row = $result->fetch_assoc()) {
-                                        $schedule_date = date("F j, Y", strtotime($row['schedule_date'])); // Format the date as "Month Day, Year"
-                                        $schedule_time = date("g:i A", strtotime($row['schedule_time']));  // Format the time as "hour:minute AM/PM"
-
-                                        if ($row['schedule_status'] == 'finished') {
-                                            echo "<div class='schedule-modal-container finished-schedule' data-schedule-id='{$row['id']}'>
-                                                    <div>
-                                                        <div>{$row['college_name']}</div>
-                                                        <div>
-                                                            <h5 class='fw-bold'>{$row['program_name']}</h5>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <div class='level-status-holder'>
-                                                            <div class='level-applied-holder'>
-                                                                <label>Level Applied:</label> 
-                                                                {$row['level_applied']}
-                                                            </div>";
-
-                                            // Show 'finished-buttons' only if $is_admin is true
-                                            if ($is_admin) {
-                                                echo "<div class='finished-buttons'>
-                                                            <button type='button' id='retain-button'>Not Ready</button>
-                                                            <button type='button' id='pass-button'>Ready</button>
-                                                </div>";
-                                            }
-
-                                            echo "</div>
-                                                <div class='schedule-holder'>
-                                                    <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-calendar-week' viewBox='0 0 16 16'>
-                                                    <path d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z'/>
-                                                        <path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z'/>
-                                                        </svg> {$schedule_date}</div>
-                                                    <div><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-clock' viewBox='0 0 16 16'>
-                                                            <path d='M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z'/>
-                                                            <path d='M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0'/>
-                                                        </svg> {$schedule_time}</div>
-                                                </div>
-                                            </div>
-                                        </div>";
-                                        }
-                                    }
-                                } else {
-                                    echo "<p class='no-schedule-prompt'>NO FINISHED SCHEDULE</p>";
                                 }
                                 ?>
                             </div>
