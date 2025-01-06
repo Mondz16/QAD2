@@ -604,7 +604,7 @@ if (!isset($_SESSION['user_id'])) {
                 document.getElementById('time-temp').value = program.time;
                 document.getElementById('zoom-temp').value = program.zoom;
 
-                var currentLevelTextOutput = program.validity;
+                var currentLevelTextOutput = program.level;
                 var levelAppliedTextOutput = program.levelApplied;
 
                 if (program.level === 'No Graduates Yet') {
@@ -908,7 +908,7 @@ if (!isset($_SESSION['user_id'])) {
         //                 $('#level-acquired').val(''); // Clear the program level display
         //                 $('#program-level-output').val('');
         //                 $('#level-output').val('');
-        //                 $('#level-acquired').html(''); // Update the date received display
+        //                 $('#level-acquired').html(''); // Update the start of validity display
         //             },
         //             error: function(xhr, status, error) {
         //                 console.error('Error:', error);
@@ -921,7 +921,7 @@ if (!isset($_SESSION['user_id'])) {
         //         $('#level-acquired').html(''); // Clear the program level display
         //         $('#program-level-output').val('');
         //         $('#level-output').val('');
-        //         $('#level-acquired').html(''); // Update the date received display
+        //         $('#level-acquired').html(''); // Update the start of validity display
         //     }
         // }
 
@@ -971,7 +971,7 @@ if (!isset($_SESSION['user_id'])) {
 
                         $('#year_validity').val(3);
                         if (dateReceived !== 'N/A' && currentLevelTextOutput !== 'NA') {
-                            $('#level-acquired').html('AQUIRED IN ' + dateReceived); // Update the date received display
+                            $('#level-acquired').html('AQUIRED IN ' + dateReceived); // Update the start of validity display
                         }
                     }
                 });
@@ -979,10 +979,10 @@ if (!isset($_SESSION['user_id'])) {
                 // Clear both program level display and level dropdown
                 $('#program-level').val(''); // Clear the program level display
                 $('#level').val(''); // Clear the program level display
-                $('#level-acquired').html(''); // Clear the date received display
+                $('#level-acquired').html(''); // Clear the start of validity display
                 $('#program-level-output').val('');
                 $('#level-output').val('');
-                $('#level-acquired').html(''); // Update the date received display
+                $('#level-acquired').html(''); // Update the start of validity display
             }
         }
 

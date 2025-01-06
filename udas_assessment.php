@@ -868,10 +868,10 @@ $sqlPendingOrientationsCount = "
                 </div>
                 <div class="orientationname1">
                     <div class="titleContainer">
-                        <label for="qad_officer"><strong>QAD OFFICER</strong></label>
+                        <label for="qad_officer"><strong>QA OFFICER</strong></label>
                     </div>
                     <div class="titleContainer">
-                        <label for="qad_officer_signature"><strong>QAD Officer E-SIGN<span style="color: red;"> *<span></strong></label>
+                        <label for="qad_officer_signature"><strong>QA OFFICER E-SIGN<span style="color: red;"> *<span></strong></label>
                     </div>
                 </div>
                 <div class="orientationname1 upload">
@@ -919,7 +919,7 @@ $sqlPendingOrientationsCount = "
         function getAreas(level, programName) {
             let areas = [];
 
-            if (level === "1" || level === "2") {
+            if (level === "Candidate" || level === "PSV" || level === "1" || level === "2") {
                 areas = [
                     'Vision, Mission, Goals, and Objectives',
                     'Faculty',

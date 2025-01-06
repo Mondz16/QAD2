@@ -1000,7 +1000,7 @@ $sqlPendingOrientationsCount = "
                 <h2>Approve Summary</h2>
                 <form id="approveForm" method="POST" action="approve_summary.php" enctype="multipart/form-data">
                     <div class="label-holder">
-                        <label for="qadOfficerName"><strong>QAD OFFICER NAME:</strong></label>
+                        <label for="qadOfficerName"><strong>QA OFFICER NAME:</strong></label>
                         <label for="qadOfficerSignature" style="margin-right: 35px;"><strong>SIGNATURE (PNG ONLY):<span style="color: red;"> *<span></strong></label>
                     </div>
                     <div class="input-holder">

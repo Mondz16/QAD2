@@ -121,7 +121,7 @@ if (!isset($_SESSION['user_id'])) {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="modal_date_received">DATE RECEIVED:</label>
+                            <label for="modal_date_received">START OF VALIDITY:</label>
                             <input type="date" id="modal_date_received" name="modal_date_received" onclick="openDatePicker('modal_date_received')" required>
                         </div>
                         <div class="bottom-button-holder">

@@ -594,13 +594,13 @@ $totalPendingOrientations = $Qrow['total_pending_orientations'];
                     </select>
             </div>
             <div class="form-group">
-                <label>Date Received:</label>
+                <label>Validity Period:</label>
                 <input type="date" class="form-control" name="new-date_received" 
                        value="${today}"
                        onchange="updateModalValidityPeriod()" required>
             </div>
             <div class="form-group">
-                <label>Validity Period:</label>
+                <label>To</label>
                 <input type="date" class="form-control" name="new-year_of_validity" required>
             </div>
         </div>
@@ -842,13 +842,13 @@ $totalPendingOrientations = $Qrow['total_pending_orientations'];
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Date Received:</label>
+                    <label>Validity Period:</label>
                     <input type="date" class="form-control" name="date_received"
                            value="${history.date_received}" 
                            onchange="updateValidityPeriod(${history.id})">
                 </div>
                 <div class="form-group">
-                    <label>Validity Period:</label>
+                    <label>To</label>
                     <input type="date" class="form-control" name="year_of_validity"
                            value="${history.year_of_validity || defaultValidity.toISOString().split('T')[0]}">
                 </div>

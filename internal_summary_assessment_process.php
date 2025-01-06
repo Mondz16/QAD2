@@ -69,6 +69,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $areas = [];
 $results = [];
 
+$sql_level = "SELECT level_applied FROM schedule WHERE id = ?";
+$stmt_level = $conn->prepare($sql_level);
+$stmt_level->bind_param("i", $schedule_id);
+$stmt_level->execute();
+$stmt_level->bind_result($level_applied);
+$stmt_level->fetch();
+$stmt_level->close();
+
 foreach ($area_ratings as $area_id => $rating) {
     // Fetch the area name using the area_id
     $sql_area = "SELECT area_name FROM area WHERE id = ?";
@@ -87,18 +95,14 @@ foreach ($area_ratings as $area_id => $rating) {
     $stmt_rating->execute();
     $stmt_rating->close();
 
-    $areas[] = $area_name;
+    if($level_applied == 4 || $level_applied == 3){
+        $areas[] = $area_name;
+    }
+    else{
+        $areas[] = "Area " . $area_id;
+    }
     $results[] = $rating;
 }
-
-
-$sql_level = "SELECT level_applied FROM schedule WHERE id = ?";
-$stmt_level = $conn->prepare($sql_level);
-$stmt_level->bind_param("i", $schedule_id);
-$stmt_level->execute();
-$stmt_level->bind_result($level_applied);
-$stmt_level->fetch();
-$stmt_level->close();
 
 $sql_standard = "SELECT Standard FROM accreditation_standard WHERE Level = ?";
 $stmt_standard = $conn->prepare($sql_standard);
@@ -152,7 +156,7 @@ $pdf->Write(0, $_POST['program']);
 $pdf->SetXY(50, 116);
 $pdf->Write(0, $_POST['level']);
 
-$pdf->SetXY(12, 141); // Starting position for area names
+$pdf->SetXY(12, 145); // Starting position for area names
 $pdf->MultiCell(37, 5, implode("\n", $areas)); // Print all area names, line by line
 
 $pdf->SetXY(50, 145); // Starting position for ratings

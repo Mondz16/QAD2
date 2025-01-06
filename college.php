@@ -77,7 +77,7 @@ $sql_programs = "SELECT
                     p.program_name,
                     p.board_action_link, 
                     plh.program_level, 
-                    plh.date_received
+                    plh.year_of_validity
                  FROM 
                     program p
                  LEFT JOIN 
@@ -92,7 +92,7 @@ while ($row_program = $result_programs->fetch_assoc()) {
     $collegePrograms[$row_program['college_code']]['programs'][] = [
         'program_name' => $row_program['program_name'],
         'program_level' => $program_level,
-        'date_received' => $row_program['date_received'],
+        'year_of_validity' => $row_program['year_of_validity'],
         'board_action_link' => $row_program['board_action_link']
     ];
 }
@@ -617,7 +617,7 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
                         <th>Level <button onclick="sortPrograms('program_level')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
                                     <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5" />
                                 </svg></button></th>
-                        <th>Date Received <button onclick="sortPrograms('date_received')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
+                        <th>End of Validity <button onclick="sortPrograms('date_received')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
                                     <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5" />
                                 </svg></button></th>
                         <th>Board Action</th>
@@ -739,7 +739,7 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
             <th>Level <button class="sort-buttons" onclick="sortPrograms('program_level')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
                                     <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5" />
                                 </svg></button></th>
-            <th>Date Received <button class="sort-buttons" onclick="sortPrograms('date_received')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
+            <th>End of Validity <button class="sort-buttons" onclick="sortPrograms('year_of_valdity')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
                                     <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5" />
                                 </svg></button></th>
                                 <th>Board Action</th>
@@ -755,7 +755,7 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
 
                 cell1.innerHTML = program.program_name;
                 cell2.innerHTML = program.program_level || 'N/A';
-                cell3.innerHTML = program.date_received;
+                cell3.innerHTML = program.year_of_validity;
                 if(program.board_action_link){
                     cell4.innerHTML = `<a href="${program.board_action_link}">Link</a>`;
                 }

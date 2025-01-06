@@ -487,7 +487,7 @@ $conn->close();
                             <thead>
                                 <tr>
                                     <th>Program Name</th>
-                                    <th>Date Received</th>
+                                    <th>Start of Validity</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>

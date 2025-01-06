@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $imageXPosition = $centerImageX - ($imageWidth / 2);
                             $imageYPosition = $centerImageY - ($imageHeight / 2);
 
-                            // Add QAD Officer Signature
+                            // Add QA OFFICER Signature
                             $pdf->Image($temp_signature_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight); // Adjust positions as needed
 
                             // Remove the temporary decrypted signature file

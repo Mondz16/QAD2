@@ -18,7 +18,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 $college = $result->fetch_assoc();
 
-// Fetch programs along with their levels and date received from program_level_history
+// Fetch programs along with their levels and start of validity from program_level_history
 $sql = "SELECT 
             p.id, 
             p.program_name, 
@@ -163,7 +163,7 @@ while ($row = $programs_result->fetch_assoc()) {
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="modal_date_received">Date Received:</label>
+                                <label for="modal_date_received">Start of Validity:</label>
                                 <input type="date" id="modal_date_received" name="modal_date_received" required>
                             </div>
                             <div class="bottom-button-holder">

@@ -816,7 +816,7 @@ $total_pending_schedules = $row_pending_count['total_pending_schedules'];
                                             // Show 'finished-buttons' only if $is_admin is true
                                             if ($is_admin) {
                                                 echo "<div class='finished-buttons'>
-                                                            <button type='button' id='retain-button'>No Ready</button>
+                                                            <button type='button' id='retain-button'>Not Ready</button>
                                                             <button type='button' id='pass-button'>Ready</button>
                                                 </div>";
                                             }

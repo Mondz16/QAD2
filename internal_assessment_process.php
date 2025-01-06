@@ -204,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Calculate the X position to center the text
         $textXPosition = $centerTextX - ($textWidth / 2);
 
-        // Print the QAD Officer's name centered at the specified centerTextX
+        // Print the QA OFFICER's name centered at the specified centerTextX
         $pdf->SetXY($textXPosition, $textYPosition);
         $pdf->Write(0, $evaluator);
 
@@ -236,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imageXPosition = $centerImageX - ($imageWidth / 2);
             $imageYPosition = $centerImageY - ($imageHeight / 2);
 
-            // Add QAD Officer Signature from the temporary file
+            // Add QA OFFICER Signature from the temporary file
             $pdf->Image($temp_image_path, $imageXPosition, $imageYPosition, $imageWidth, $imageHeight, 'PNG'); // Adjust positions as needed
 
             // Delete the temporary image file
