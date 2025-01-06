@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $encrypted_signature_data = encryptData($signature_data, $encryption_key);
 
         // Process the areas and ratings
-        $area_ratings = $_POST['area_rating']; // Contains the ratings from the form
+$area_ratings = $_POST['area_rating']; // Contains the ratings from the form
 $areas = [];
 $results = [];
 
@@ -77,6 +77,19 @@ $stmt_level->bind_result($level_applied);
 $stmt_level->fetch();
 $stmt_level->close();
 
+// Retrieve accreditation standard based on level
+$sql_standard = "SELECT Standard FROM accreditation_standard WHERE Level = ?";
+$stmt_standard = $conn->prepare($sql_standard);
+$stmt_standard->bind_param("s", $level_applied);
+$stmt_standard->execute();
+$stmt_standard->bind_result($standard);
+$stmt_standard->fetch();
+$stmt_standard->close();
+
+// Calculate the threshold for ratings (standard - 0.50)
+$threshold = $standard - 0.50;
+
+// Now loop through the area ratings and process them
 foreach ($area_ratings as $area_id => $rating) {
     // Fetch the area name using the area_id
     $sql_area = "SELECT area_name FROM area WHERE id = ?";
@@ -87,6 +100,7 @@ foreach ($area_ratings as $area_id => $rating) {
     $stmt_area->fetch();
     $stmt_area->close();
 
+    // Insert or update the ratings in the team_areas table
     $sql_rating = "INSERT INTO team_areas (team_id, area_id, rating) VALUES (?, ?, ?) 
                   ON DUPLICATE KEY UPDATE rating = ?";
     $stmt_rating = $conn->prepare($sql_rating);
@@ -95,45 +109,31 @@ foreach ($area_ratings as $area_id => $rating) {
     $stmt_rating->execute();
     $stmt_rating->close();
 
-    if($level_applied == 4 || $level_applied == 3){
+    if ($level_applied == 4 || $level_applied == 3) {
         $areas[] = $area_name;
-    }
-    else{
+    } else {
         $areas[] = "Area " . $area_id;
     }
     $results[] = $rating;
 }
 
-$sql_standard = "SELECT Standard FROM accreditation_standard WHERE Level = ?";
-$stmt_standard = $conn->prepare($sql_standard);
-$stmt_standard->bind_param("s", $level_applied);
-$stmt_standard->execute();
-$stmt_standard->bind_result($standard);
-$stmt_standard->fetch();
-$stmt_standard->close();
+// Calculate the Grand Mean of the ratings
+$grand_mean = array_sum($results) / count($results);
 
-if (empty($results)) {
-    $interpretation = "No Ratings"; 
-} else {
-    $threshold = $standard - 0.50;
-
-    $above_standard_count = count(array_filter($results, function($r) use ($standard) {
-        return $r > $standard;
-    }));
+// 3. New interpretation logic based on Grand Mean and individual ratings.
+if ($grand_mean > $standard) {
+    // Case when Grand Mean is greater than the standard
     $below_threshold_count = count(array_filter($results, function($r) use ($threshold) {
         return $r < $threshold;
     }));
-    $total_ratings = count($results);
 
-    if ($below_threshold_count === $total_ratings && $total_ratings > 0) {
-        $interpretation = "Revisit";
-    } elseif ($above_standard_count === $total_ratings && $below_threshold_count === 0) {
-        $interpretation = "Ready";
-    } elseif ($below_threshold_count >= 1 && $below_threshold_count <= 3) {
-        $interpretation = "Needs Improvement";
-    } else {
-        $interpretation = "Needs Improvement";
+    if ($below_threshold_count == 0) {
+        $interpretation = "Ready"; // All ratings are above the threshold
+    } elseif ($below_threshold_count >= 1) {
+        $interpretation = "Needs Improvement"; // 2 or more ratings below the threshold
     }
+} elseif ($grand_mean < $standard) {
+    $interpretation = "Revisit"; // Grand Mean is below the standard
 }
 
 
@@ -162,11 +162,17 @@ $pdf->MultiCell(37, 5, implode("\n", $areas)); // Print all area names, line by 
 $pdf->SetXY(50, 145); // Starting position for ratings
 $pdf->MultiCell(148, 5, implode("\n", $results)); // Print all ratings, line by line
 
-// Add interpretation below the last rating
+// Add the Grand Mean after the ratings
 $last_result_y = 145 + (count($results) * 5); // Calculate Y position dynamically based on the number of ratings
 $pdf->SetXY(50, $last_result_y + 10); // Add some spacing after the last rating
 $pdf->SetFont('Arial', 'B', 12); // Bold font for emphasis
-$pdf->Write(0, "$interpretation");
+$pdf->Write(0, "Grand Mean: " . number_format($grand_mean, 2)); // Print the Grand Mean
+
+// Add interpretation below the Grand Mean
+$last_result_y += 10; // Add some spacing after the Grand Mean
+$pdf->SetXY(50, $last_result_y + 10); // Position for interpretation
+$pdf->SetFont('Arial', 'B', 12); // Bold font for emphasis
+$pdf->Write(0, "Interpretation: " . "$interpretation");
 
 // Add evaluator's signature and name
 $centerTextX = 65;

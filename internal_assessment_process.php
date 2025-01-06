@@ -100,39 +100,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt_schedule->fetch();
         $stmt_schedule->close();
 
-        // Note the level_applied from the schedule
-        // level_applied is the value we need to use for comparison
-
         // Retrieve standard based on level_applied from accreditation_standard
         $sql_standard = "SELECT Standard FROM accreditation_standard WHERE Level = ?";
         $stmt_standard = $conn->prepare($sql_standard);
-        $stmt_standard->bind_param("s", $level_applied);  // Compare with Level in accreditation_standard
+        $stmt_standard->bind_param("s", $level_applied);
         $stmt_standard->execute();
         $stmt_standard->bind_result($standard);
         $stmt_standard->fetch();
         $stmt_standard->close();
 
-        // Determine the average_rating based on the new logic
+        // Calculate the Grand Mean of the ratings
+        $grand_mean = empty($all_ratings) ? 0 : array_sum($all_ratings) / count($all_ratings);
+
+        // Determine the threshold based on the standard
+        $threshold = $standard - 0.50;
+        $below_threshold = array_filter($all_ratings, fn($r) => $r < $threshold);
+        $below_threshold_count = count($below_threshold);
+
+        // Determine the result based on the new logic
         if ($standard === null) {
             $result_display = "Standard Not Found";
         } elseif (empty($all_ratings)) {
             $result_display = "No Ratings";
         } else {
-            $threshold = $standard - 0.50;
-            $above_standard = array_filter($all_ratings, fn($r) => $r > $standard);
-            $below_threshold = array_filter($all_ratings, fn($r) => $r < $threshold);
-            $below_threshold_count = count($below_threshold);
-
-            if (count($above_standard) === count($all_ratings) && $below_threshold_count === 0) {
+            if ($grand_mean > $standard && $below_threshold_count === 0) {
                 $result_display = "Ready";
-            } elseif ($below_threshold_count === count($all_ratings)) {
+            } elseif ($grand_mean < $standard) {
                 $result_display = "Revisit";
-            } elseif ($below_threshold_count >= 1 && $below_threshold_count <= 3) {
+            } elseif ($grand_mean > $standard && $below_threshold_count >= 1) {
                 $result_display = "Needs Improvement";
             } else {
                 $result_display = "Needs Improvement";
             }
         }
+
 
     if (!$team_id) {
         $message = "No matching team found for the user.";
