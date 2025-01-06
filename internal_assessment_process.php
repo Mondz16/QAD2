@@ -79,60 +79,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Retrieve all ratings for the current team_id
-        $sql_ratings = "SELECT rating FROM team_areas WHERE team_id = ?";
-        $stmt_ratings = $conn->prepare($sql_ratings);
-        $stmt_ratings->bind_param("i", $team_id);
-        $stmt_ratings->execute();
-        $stmt_ratings->bind_result($rating);
+// Retrieve all ratings for the current team_id
+$sql_ratings = "SELECT rating FROM team_areas WHERE team_id = ?";
+$stmt_ratings = $conn->prepare($sql_ratings);
+$stmt_ratings->bind_param("i", $team_id);
+$stmt_ratings->execute();
+$stmt_ratings->bind_result($rating);
 
-        $all_ratings = [];
-        while ($stmt_ratings->fetch()) {
-            $all_ratings[] = $rating;
-        }
-        $stmt_ratings->close();
+$all_ratings = [];
+while ($stmt_ratings->fetch()) {
+    $all_ratings[] = $rating;
+}
+$stmt_ratings->close();
 
-        // Retrieve schedule_id and level_applied
-        $sql_schedule = "SELECT level_applied FROM schedule WHERE id = ?";
-        $stmt_schedule = $conn->prepare($sql_schedule);
-        $stmt_schedule->bind_param("i", $schedule_id);
-        $stmt_schedule->execute();
-        $stmt_schedule->bind_result($level_applied);
-        $stmt_schedule->fetch();
-        $stmt_schedule->close();
+// Retrieve schedule_id and level_applied
+$sql_schedule = "SELECT level_applied FROM schedule WHERE id = ?";
+$stmt_schedule = $conn->prepare($sql_schedule);
+$stmt_schedule->bind_param("i", $schedule_id);
+$stmt_schedule->execute();
+$stmt_schedule->bind_result($level_applied);
+$stmt_schedule->fetch();
+$stmt_schedule->close();
 
-        // Retrieve standard based on level_applied from accreditation_standard
-        $sql_standard = "SELECT Standard FROM accreditation_standard WHERE Level = ?";
-        $stmt_standard = $conn->prepare($sql_standard);
-        $stmt_standard->bind_param("s", $level_applied);
-        $stmt_standard->execute();
-        $stmt_standard->bind_result($standard);
-        $stmt_standard->fetch();
-        $stmt_standard->close();
+// Retrieve standard based on level_applied from accreditation_standard
+$sql_standard = "SELECT Standard FROM accreditation_standard WHERE Level = ?";
+$stmt_standard = $conn->prepare($sql_standard);
+$stmt_standard->bind_param("s", $level_applied);
+$stmt_standard->execute();
+$stmt_standard->bind_result($standard);
+$stmt_standard->fetch();
+$stmt_standard->close();
 
-        // Calculate the Grand Mean of the ratings
-        $grand_mean = empty($all_ratings) ? 0 : array_sum($all_ratings) / count($all_ratings);
+// Calculate the Grand Mean of the ratings
+$grand_mean = empty($all_ratings) ? 0 : array_sum($all_ratings) / count($all_ratings);
 
-        // Determine the threshold based on the standard
-        $threshold = $standard - 0.50;
-        $below_threshold = array_filter($all_ratings, fn($r) => $r < $threshold);
-        $below_threshold_count = count($below_threshold);
+// Determine the threshold based on the standard
+$threshold = $standard - 0.50;
+$below_threshold = array_filter($all_ratings, fn($r) => $r < $threshold);
+$below_threshold_count = count($below_threshold);
 
-        // Determine the result based on the new logic
-        if ($standard === null) {
-            $result_display = "Standard Not Found";
-        } elseif (empty($all_ratings)) {
-            $result_display = "No Ratings";
-        } else {
-            if ($grand_mean > $standard && $below_threshold_count === 0) {
-                $result_display = "Ready";
-            } elseif ($grand_mean < $standard) {
-                $result_display = "Revisit";
-            } elseif ($grand_mean > $standard && $below_threshold_count >= 1) {
-                $result_display = "Needs Improvement";
-            } else {
-                $result_display = "Needs Improvement";
-            }
-        }
+// Determine the result based on the new logic
+if ($standard === null) {
+    $result_display = "Standard Not Found";
+} elseif (empty($all_ratings)) {
+    $result_display = "No Ratings";
+} else {
+    // Check if any rating is below the threshold
+    if ($below_threshold_count >= 1) {
+        $result_display = "Needs Improvement";
+    } elseif ($grand_mean > $standard) {
+        // If the Grand Mean is above the standard and no ratings are below the threshold
+        $result_display = "Ready";
+    } elseif ($grand_mean < $standard) {
+        // If the Grand Mean is below the standard
+        $result_display = "Revisit";
+    }
+}
+
 
 
     if (!$team_id) {

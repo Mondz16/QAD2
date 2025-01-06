@@ -819,21 +819,20 @@ if (!isset($_SESSION['user_id'])) {
                     success: function(response) {
                         const data = JSON.parse(response);
                         const currentLevel = data.program_level.trim();
-                        const dateReceived = data.date_received.trim();
+                        const year_of_validity = data.year_of_validity.trim();
                         let levelApplied;
                         var currentLevelTextOutput = currentLevel;
                         var levelAppliedTextOutput = levelApplied;
 
                         if (currentLevel === 'No Graduates Yet') {
                             currentLevelTextOutput = 'NGY';
-                            levelAppliedTextOutput = 'CAN';
-                            levelApplied = 'Candidate';
-                        } else if (currentLevel === 'Candidate') {
-                            currentLevelTextOutput = 'CAN';
+                            levelAppliedTextOutput = 'PSV';
                             levelApplied = 'PSV';
-                            levelAppliedTextOutput = levelApplied;
-                        } else if (currentLevel === 'PSV') {
-                            levelApplied = '1';
+                        } 
+                        else if (currentLevel === 'PSV' || currentLevel === 'Candidate') {
+                            currentLevelTextOutput = 'CAN';
+                            currentLevel = 'Candidate';
+                            levelApplied = 1;
                             levelAppliedTextOutput = levelApplied;
                         } else if (currentLevel < 4) {
                             levelApplied = parseInt(currentLevel) + 1;
@@ -849,8 +848,8 @@ if (!isset($_SESSION['user_id'])) {
                         $('#program-level-output').val(currentLevelTextOutput);
                         $('#level-output').val(levelAppliedTextOutput);
 
-                        if (dateReceived !== 'N/A' && currentLevel !== 'NA') {
-                            document.getElementById(`level-acquired-${count}`).innerText = `ACQUIRED IN ${dateReceived}`;
+                        if (year_of_validity !== 'N/A' && currentLevel !== 'NA') {
+                            document.getElementById(`level-acquired-${count}`).innerText = `End of Validity : \n${year_of_validity}`;
                         }
                     },
                     error: function(xhr, status, error) {

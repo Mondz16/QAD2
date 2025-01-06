@@ -188,7 +188,7 @@ $sql = "CREATE TABLE IF NOT EXISTS schedule (
     schedule_date DATE NOT NULL,
     schedule_time TIME NOT NULL,
     zoom VARCHAR(50),
-    schedule_status ENUM('pending', 'approved', 'cancelled', 'finished', 'failed', 'passed', 'done') NOT NULL DEFAULT 'pending',
+    schedule_status ENUM('pending', 'approved', 'cancelled', 'finished', 'failed', 'passed', 'done', 'needs improvement') NOT NULL DEFAULT 'pending',
     manually_unlocked TINYINT(1) DEFAULT 0,
     unlock_expiration DATETIME NULL,
     status_date DATETIME NOT NULL,

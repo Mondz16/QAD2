@@ -64,10 +64,6 @@ $sql_programs = "SELECT COUNT(*) as total_programs FROM program";
 $result_programs = $conn->query($sql_programs);
 $total_programs = $result_programs->fetch_assoc()['total_programs'];
 
-$sql_users = "SELECT (SELECT COUNT(*) FROM internal_users) + (SELECT COUNT(*) FROM external_users) as total_users";
-$result_users = $conn->query($sql_users);
-$total_users = $result_users->fetch_assoc()['total_users'];
-
 // Fetch notifications for the logged-in user
 $sql_notifications = "
     SELECT COUNT(*) 
@@ -178,11 +174,11 @@ $sqlPendingOrientationsCount = "
         WHERE o.orientation_status = 'pending'
     ";
 
-    $Qresult = $conn->query($sqlPendingOrientationsCount);
-    $Qrow = $Qresult->fetch_assoc();
-    $totalPendingOrientations = $Qrow['total_pending_orientations'];
+$Qresult = $conn->query($sqlPendingOrientationsCount);
+$Qrow = $Qresult->fetch_assoc();
+$totalPendingOrientations = $Qrow['total_pending_orientations'];
 
-    $sql_pending_count = "
+$sql_pending_count = "
     SELECT 
         COUNT(*) AS total_pending_schedules
     FROM schedule s
@@ -226,6 +222,14 @@ $conn->close();
     .notification-counter {
         color: #E6A33E;
         /* Text color */
+    }
+
+    .charts-container {
+        display: flex;
+        gap: 20px;
+        margin: 20px 0;
+        height: 730px;
+        /* Fixed height for the container */
     }
 </style>
 
@@ -274,7 +278,7 @@ $conn->close();
                 <li class="sidebar-item has-dropdown">
                     <a href="#" class="sidebar-link">
                         <span style="margin-left: 8px;">Schedule</span>
-                        <?php if ($total_pending_schedules > 0 || $totalPendingSchedules > 0  && $is_admin|| $totalPendingOrientations > 0 && $is_admin): ?>
+                        <?php if ($total_pending_schedules > 0 || $totalPendingSchedules > 0  && $is_admin || $totalPendingOrientations > 0 && $is_admin): ?>
                             <span class="notification-counter">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
                                     <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
@@ -295,13 +299,13 @@ $conn->close();
                         <a href="<?php echo $is_admin ? 'orientation.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">View Orientation</span>
                             <?php if ($totalPendingOrientations > 0 && $is_admin): ?>
-                                    <span class="notification-counter"><?= $totalPendingOrientations; ?></span>
-                                <?php endif; ?>
+                                <span class="notification-counter"><?= $totalPendingOrientations; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin === false ? 'internal_orientation.php' : '#'; ?>" class="<?php echo $is_admin === false ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Request Orientation</span>
                             <?php if ($total_pending_schedules > 0): ?>
-                                    <span class="notification-counter"><?= $total_pending_schedules; ?></span>
+                                <span class="notification-counter"><?= $total_pending_schedules; ?></span>
                             <?php endif; ?>
                         </a>
                     </div>
@@ -348,10 +352,10 @@ $conn->close();
                             <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'udas_assessment.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
-                                <span style="margin-left: 8px;">UDAS Assessments</span>
-                                <?php if ($totalMissingAssessments > 0): ?>
-                                    <span class="notification-counter"><?= $totalMissingAssessments; ?></span>
-                                <?php endif; ?>
+                            <span style="margin-left: 8px;">UDAS Assessments</span>
+                            <?php if ($totalMissingAssessments > 0): ?>
+                                <span class="notification-counter"><?= $totalMissingAssessments; ?></span>
+                            <?php endif; ?>
                         </a>
                         <a href="<?php echo $is_admin ? 'assessment_history.php' : '#'; ?>" class="<?php echo $is_admin ? 'sidebar-link' : 'sidebar-link-disabled'; ?>">
                             <span style="margin-left: 8px;">Assessment History</span>
@@ -444,27 +448,16 @@ $conn->close();
                     <h2><?php echo $total_programs; ?></h2>
                     <p>Total Programs</p>
                 </div>
-                <div class="card">
-                    <h2><?php echo $total_users; ?></h2>
-                    <p>Total Users</p>
-                </div>
             </div>
 
             <div class="button-container">
                 <div class="filter">
-                    <!-- <select id="programLevel" onchange="updateCharts()">
-                        <option value="All">All Level</option>
-                        <option value="Not Accreditable">Not Accreditable</option>
-                        <option value="PSV">PSV</option>
-                        <option value="Candidate">Candidate</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
+                    <select id="campusFilter" onchange="updateCharts()">
+                        <option value="All">All Campuses</option>
                     </select>
-                    <select id="year" onchange="updateCharts()">
+                    <select id="year" onchange="updateCharts()" hidden>
                         <option value="All">All Years</option>
-                    </select> -->
+                    </select>
                 </div>
                 <!-- <div>
                     <button type="button" id="exportPDF">EXPORT <img style="margin-left: 5px;" src="images/export.png"></button>
@@ -502,6 +495,29 @@ $conn->close();
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script>
+        async function fetchCampuses() {
+            try {
+                const response = await fetch('fetch_campuses.php');
+                const campuses = await response.json();
+                const campusSelect = document.getElementById('campusFilter');
+
+                // Clear existing options except "All Campuses"
+                while (campusSelect.options.length > 1) {
+                    campusSelect.remove(1);
+                }
+
+                // Add campus options
+                campuses.forEach(campus => {
+                    const option = document.createElement('option');
+                    option.value = campus;
+                    option.textContent = campus;
+                    campusSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error fetching campuses:', error);
+            }
+        }
+
         async function fetchCollegeData(programLevel, year) {
             const response = await fetch(`fetch_college_data_report.php?programLevel=${programLevel}&year=${year}`);
             const data = await response.json();
@@ -580,10 +596,10 @@ $conn->close();
         Chart.register(ChartDataLabels);
 
         async function updateCharts() {
-            const programLevel = "All";
-            const year = "All";
+            const campus = document.getElementById('campusFilter').value;
+            const year = document.getElementById('year').value;
 
-            await updateBarChart(programLevel, year);
+            await updateBarChart(campus, year);
             updateRecentPrograms();
         }
 
@@ -902,6 +918,7 @@ $conn->close();
 
         window.addEventListener('DOMContentLoaded', async () => {
             // await fetchYears();
+            await fetchCampuses();
             updatePieChart();
             updateRecentPrograms();
             fetchProgramLevelHistoryData('Campus1', 'College1', 'Program1');

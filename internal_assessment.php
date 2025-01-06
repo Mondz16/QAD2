@@ -100,7 +100,7 @@ $sql_schedules = "
     LEFT JOIN area a ON ta.area_id = a.id
     WHERE t.internal_users_id = ? 
     AND t.status = 'accepted'
-    AND s.schedule_status NOT IN ('cancelled', 'finished')
+    AND s.schedule_status NOT IN ('cancelled', 'finished', 'needs improvement')
     GROUP BY t.id, s.id
 ";
 

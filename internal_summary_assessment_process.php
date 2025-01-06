@@ -298,6 +298,24 @@ $pdf->Output('F', $output_path);
             $stmt_approved_assessment->close();
         }
 
+        // Determine the schedule status based on interpretation
+$schedule_status = '';
+
+if ($interpretation === "Ready") {
+    $schedule_status = "passed";
+} elseif ($interpretation === "Needs Improvement") {
+    $schedule_status = "needs improvement";
+} elseif ($interpretation === "Revisit") {
+    $schedule_status = "failed";
+}
+
+// Update the schedule_status in the schedule table
+$sql_update_status = "UPDATE schedule SET schedule_status = ? WHERE id = ?";
+$stmt_update_status = $conn->prepare($sql_update_status);
+$stmt_update_status->bind_param("si", $schedule_status, $schedule_id);
+$stmt_update_status->execute();
+$stmt_update_status->close();
+
         // === Step 6: Save the compiled PDF ===
         $compiled_output_path = 'Summary/' . $team_id . '_summary_compilation.pdf';
         $compiled_pdf->Output('F', $compiled_output_path);

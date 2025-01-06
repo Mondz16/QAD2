@@ -758,7 +758,7 @@ $totalPendingOrientations = $Qrow['total_pending_orientations'];
                         updateProgramsList(data);
 
                         console.log(programCount);
-                        if (programCount >= 5) {
+                        if (programCount >= 6) {
                             addProgramButton.disabled = true;
                         } else {
                             addProgramButton.disabled = false;
@@ -806,10 +806,9 @@ $totalPendingOrientations = $Qrow['total_pending_orientations'];
         <div class="level-history-item" data-history-id="${history.id}">
             <div class="level-info">
                 <span class="level-badge">${levelToShow}</span>
-                <span class="level-date" ${showDateReceived ? '' : 'hidden'}>Received: ${new Date(history.date_received).toLocaleDateString()}</span>
-                ${history.year_of_validity ? 
-                    `<span class="validity" ${showDateReceived ? '' : 'hidden'}>Valid until: ${new Date(history.year_of_validity).toLocaleDateString()}</span>` 
-                    : ''}
+                <span class="level-date" ${showDateReceived ? '' : 'hidden'}>Validity Period: ${new Date(history.date_received).toLocaleDateString()} - ${history.year_of_validity ? 
+                    `${new Date(history.year_of_validity).toLocaleDateString()}`
+                    : ''}</span>
             </div>
             <div class="history-actions" ${showDateReceived ? '' : 'hidden'}>
                 <button type="button" class="edit-history-btn" onclick="editHistory(${history.id})">
