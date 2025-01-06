@@ -388,17 +388,17 @@ $conn->close();
         }
 
         .green-line {
-            background-color: #76FA97;
+            background-color: #34C759;
             /* Color for 'Candidate' */
         }
 
         .grey-line {
-            background-color: #CCCCCC;
+            background-color: #575757;
             /* Color for 'PSV' */
         }
 
         .yellow-line {
-            background-color: #FDC879;
+            background-color: #F39200;
             /* Color for Levels 1-4 */
         }
 
@@ -827,6 +827,10 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
     const chartContainer = document.getElementById('chartContainer');
     chartContainer.innerHTML = '';
 
+    // Set fixed height for each college timeline
+    const timelineHeight = 1000;  // Height for each college's timeline
+    const chartSpacing = 10;      // The space between charts
+
     selectedColleges.forEach(selectedCollege => {
         const collegeCode = selectedCollege.code;
         const collegeName = selectedCollege.name;
@@ -834,18 +838,28 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
 
         const collegeSection = document.createElement('div');
         collegeSection.classList.add('college-timeline-section');
-        collegeSection.style.marginBottom = '40px';
+        collegeSection.style.position = 'relative'; // Ensure proper positioning
 
+        // Set dynamic spacing between sections
+        if (selectedColleges.indexOf(selectedCollege) !== 0) {
+            collegeSection.style.marginTop = `${chartSpacing}px`;  // Add margin only between sections
+        }
+
+        // Heading for college
         const collegeHeading = document.createElement('h2');
         collegeHeading.textContent = `${collegeName}`;
         collegeHeading.style.textAlign = 'center';
         collegeHeading.style.marginBottom = '20px';
         collegeSection.appendChild(collegeHeading);
 
+        // Create and append the canvas for the timeline chart
         const canvas = document.createElement('canvas');
         canvas.id = `timelineChart-${collegeCode}`;
+        canvas.height = timelineHeight;  // Fixed height for each timeline
+        canvas.width = 1200;             // Set width as needed
         collegeSection.appendChild(canvas);
 
+        // Add the college section to the chart container
         chartContainer.appendChild(collegeSection);
 
         // Create a map to group programs by their full name
@@ -925,6 +939,7 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
             formattedDate: point.formattedDate
         }));
 
+
         // Rest of the code remains the same...
         new Chart(canvas.getContext('2d'), {
             type: 'scatter',
@@ -940,7 +955,8 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                 }],
             },
             options: {
-                responsive: true,
+                responsive: false,
+                maintainAspectRatio: false,
                 layout: {
                     padding: {
                         top: 20,
@@ -1002,96 +1018,101 @@ function createTimeline(programsGroupedByCollege, selectedColleges) {
                 animation: false,
             },
             plugins: [
-                {
-                    id: 'customBoxes',
-                    afterDraw: (chart) => {
-                        const ctx = chart.ctx;
-                        const xAxis = chart.scales.x;
-                        const yAxis = chart.scales.y;
+    {
+        id: 'customBoxes',
+        afterDraw: (chart) => {
+            const ctx = chart.ctx;
+            const xAxis = chart.scales.x;
+            const yAxis = chart.scales.y;
 
-                        chart.data.datasets.forEach((dataset) => {
-                            dataset.data.forEach((dataPoint) => {
-                                const x = xAxis.getPixelForValue(dataPoint.x);
-                                const y = yAxis.getPixelForValue(dataPoint.y);
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.forEach((dataPoint) => {
+                    const x = xAxis.getPixelForValue(dataPoint.x);
+                    const y = yAxis.getPixelForValue(dataPoint.y);
 
-                                let levelShort = '';
-                                let levelColor = '';
+                    let levelShort = '';
+                    let levelColor = '';
+                    let lowerBoxColor = '';
 
-                                switch (dataPoint.level.toUpperCase()) {
-                                    case 'CANDIDATE':
-                                        levelShort = 'CAN';
-                                        levelColor = '#76FA97';
-                                        break;
-                                    case 'PSV':
-                                        levelShort = 'PSV';
-                                        levelColor = '#CCCCCC';
-                                        break;
-                                    case '1':
-                                        levelShort = 'LVL 1';
-                                        levelColor = '#FDC879';
-                                        break;
-                                    case '2':
-                                        levelShort = 'LVL 2';
-                                        levelColor = '#FDC879';
-                                        break;
-                                    case '3':
-                                        levelShort = 'LVL 3';
-                                        levelColor = '#FDC879';
-                                        break;
-                                    case '4':
-                                        levelShort = 'LVL 4';
-                                        levelColor = '#FDC879';
-                                        break;
-                                    default:
-                                        levelShort = 'UNK';
-                                        levelColor = '#000000';
-                                }
+                    switch (dataPoint.level.toUpperCase()) {
+                        case 'CANDIDATE':
+                            levelShort = 'CAN';
+                            levelColor = '#34C759';
+                            lowerBoxColor = '#CFFFDB';  // Candidate lower box color
+                            break;
+                        case 'PSV':
+                            levelShort = 'PSV';
+                            levelColor = '#575757';
+                            lowerBoxColor = '#C5C5C5';  // PSV lower box color
+                            break;
+                        case '1':
+                            levelShort = 'LVL 1';
+                            levelColor = '#F39200';
+                            lowerBoxColor = '#FDC879';  // Level 1 lower box color
+                            break;
+                        case '2':
+                            levelShort = 'LVL 2';
+                            levelColor = '#F39200';
+                            lowerBoxColor = '#FDC879';  // Level 2 lower box color
+                            break;
+                        case '3':
+                            levelShort = 'LVL 3';
+                            levelColor = '#F39200';
+                            lowerBoxColor = '#FDC879';  // Level 3 lower box color
+                            break;
+                        case '4':
+                            levelShort = 'LVL 4';
+                            levelColor = '#F39200';
+                            lowerBoxColor = '#FDC879';  // Level 4 lower box color
+                            break;
+                        default:
+                            levelShort = 'UNK';
+                            levelColor = '#000000';
+                            lowerBoxColor = '#FFFFFF';  // Default color for unknown levels
+                    }
 
-                                const boxWidth = 60;
-                                const boxHeight = 40;
-                                const borderRadius = 10;
+                    const boxWidth = 60;
+                    const boxHeight = 40;
+                    const borderRadius = 0;
 
-                                const boxX = x - boxWidth / 2;
-                                const boxY = y - boxHeight / 2;
+                    const boxX = x - boxWidth / 2;
+                    const boxY = y - boxHeight / 2;
 
-                                // Draw top half
-                                ctx.beginPath();
-                                ctx.moveTo(boxX + borderRadius, boxY);
-                                ctx.lineTo(boxX + boxWidth - borderRadius, boxY);
-                                ctx.quadraticCurveTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + borderRadius);
-                                ctx.lineTo(boxX + boxWidth, boxY + boxHeight / 2);
-                                ctx.lineTo(boxX, boxY + boxHeight / 2);
-                                ctx.lineTo(boxX, boxY + borderRadius);
-                                ctx.quadraticCurveTo(boxX, boxY, boxX + borderRadius, boxY);
-                                ctx.closePath();
+                    // Draw top half
+                    ctx.beginPath();
+                    ctx.moveTo(boxX + borderRadius, boxY);
+                    ctx.lineTo(boxX + boxWidth - borderRadius, boxY);
+                    ctx.quadraticCurveTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + borderRadius);
+                    ctx.lineTo(boxX + boxWidth, boxY + boxHeight / 2);
+                    ctx.lineTo(boxX, boxY + boxHeight / 2);
+                    ctx.lineTo(boxX, boxY + borderRadius);
+                    ctx.quadraticCurveTo(boxX, boxY, boxX + borderRadius, boxY);
+                    ctx.closePath();
 
-                                ctx.fillStyle = levelColor;
-                                ctx.fill();
-                                ctx.strokeStyle = '#000000';
-                                ctx.stroke();
+                    ctx.fillStyle = levelColor;
+                    ctx.fill();
 
-                                // Draw bottom half
-                                ctx.beginPath();
-                                ctx.rect(boxX, boxY + boxHeight / 2, boxWidth, boxHeight / 2);
-                                ctx.fillStyle = '#FFFFFF';
-                                ctx.fill();
-                                ctx.strokeStyle = '#000000';
-                                ctx.stroke();
+                    // Draw bottom half with lowerBoxColor
+                    ctx.beginPath();
+                    ctx.rect(boxX, boxY + boxHeight / 2, boxWidth, boxHeight / 2);
+                    ctx.fillStyle = lowerBoxColor;  // Set color for the lower part
+                    ctx.fill();
 
-                                // Add texts
-                                ctx.fillStyle = 'white';
-                                ctx.font = '12px Arial';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.fillText(levelShort, x, boxY + boxHeight / 4);
+                    // Add texts
+                    ctx.fillStyle = 'white';
+                    ctx.font = '12px Quicksand';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(levelShort, x, boxY + boxHeight / 4);
 
-                                ctx.fillStyle = 'black';
-                                ctx.fillText(dataPoint.formattedDate, x, boxY + (3 * boxHeight) / 4);
-                            });
-                        });
-                    },
-                },
-            ],
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(dataPoint.formattedDate, x, boxY + (3 * boxHeight) / 4);
+                });
+            });
+        },
+    },
+],
+
         });
     });
 }
@@ -1421,7 +1442,7 @@ function loadProgramsForColleges(collegeCodes, selectedValues) {
 
                         // Draw the level abbreviation inside the first rectangle
                         ctx.fillStyle = 'black'; // Text color
-                        ctx.font = 'bold 16px Arial'; // Bold font style
+                        ctx.font = 'bold 16px Quicksand'; // Bold font style
                         ctx.textAlign = 'center'; // Center the text
                         ctx.textBaseline = 'middle';
                         ctx.fillText(levelAbbreviations[level] || '', xPosition, lineTop - offset + 35); // Centered at 35 pixels
@@ -1435,7 +1456,7 @@ function loadProgramsForColleges(collegeCodes, selectedValues) {
 
                         // Draw the date inside the second rectangle, centered vertically
                         ctx.fillStyle = 'black'; // Text color
-                        ctx.font = 'bold 14px Arial'; // Bold font style for date
+                        ctx.font = 'bold 14px Quicksand'; // Bold font style for date
                         ctx.textBaseline = 'middle'; // Center the text vertically
                         ctx.fillText(
                             new Date(event.x).toLocaleDateString('en-US', {
